@@ -15,10 +15,10 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
-  phone as Phone, 
-  user as User, 
-  edit as Edit,
-  calendar as Calendar 
+  Phone, 
+  User, 
+  Edit,
+  Calendar 
 } from "lucide-react";
 
 interface LeadModalProps {
@@ -168,7 +168,7 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                   <Label>Tem FGTS?</Label>
                   <select
                     className="w-full p-2 border rounded-md"
-                    value={editMode ? (formData.temFGTS ?? lead.temFGTS) : lead.temFGTS}
+                    value={editMode ? String(formData.temFGTS ?? lead.temFGTS) : String(lead.temFGTS)}
                     onChange={(e) => setFormData({ ...formData, temFGTS: e.target.value === 'true' })}
                     disabled={!editMode}
                   >
@@ -180,7 +180,7 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                   <Label>Possui Entrada?</Label>
                   <select
                     className="w-full p-2 border rounded-md"
-                    value={editMode ? (formData.possuiEntrada ?? lead.possuiEntrada) : lead.possuiEntrada}
+                    value={editMode ? String(formData.possuiEntrada ?? lead.possuiEntrada) : String(lead.possuiEntrada)}
                     onChange={(e) => setFormData({ ...formData, possuiEntrada: e.target.value === 'true' })}
                     disabled={!editMode}
                   >

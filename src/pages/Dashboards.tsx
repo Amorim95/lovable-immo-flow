@@ -1,9 +1,9 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
-  calendar as Calendar,
-  users as Users,
-  layout_list as LayoutList
+  Calendar,
+  Users,
+  LayoutList
 } from "lucide-react";
 
 const Dashboards = () => {

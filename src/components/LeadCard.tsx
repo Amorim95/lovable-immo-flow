@@ -1,9 +1,8 @@
-
 import { Lead, LeadTag } from "@/types/crm";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { phone as Phone, user as User, calendar as Calendar } from "lucide-react";
+import { Phone, User, Calendar } from "lucide-react";
 
 interface LeadCardProps {
   lead: Lead;

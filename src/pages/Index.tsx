@@ -7,10 +7,10 @@ import { LeadModal } from "@/components/LeadModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
-  layout_list as LayoutList, 
-  layout_grid as LayoutGrid,
-  plus as Plus,
-  calendar as Calendar
+  LayoutList, 
+  LayoutGrid,
+  Plus,
+  Calendar
 } from "lucide-react";
 
 // Dados mock para demonstração

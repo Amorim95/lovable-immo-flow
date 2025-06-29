@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
-  plus as Plus,
-  user as User,
-  phone as Phone,
-  edit as Edit
+  Plus,
+  User,
+  Phone,
+  Edit
 } from "lucide-react";
 
 const mockCorretores: Corretor[] = [

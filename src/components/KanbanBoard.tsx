@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Lead, LeadStage } from "@/types/crm";
 import { LeadCard } from "./LeadCard";
 import { Button } from "@/components/ui/button";
-import { plus as Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 const stageConfig = {
   'aguardando-atendimento': {

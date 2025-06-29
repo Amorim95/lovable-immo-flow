@@ -14,12 +14,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { 
-  layout_list as LayoutList, 
-  calendar as Calendar,
-  users as Users,
-  phone as Phone,
-  edit as Edit,
-  user as User
+  LayoutList, 
+  Calendar,
+  Users,
+  Phone,
+  Edit,
+  User
 } from "lucide-react";
 
 const menuItems = [
@@ -62,9 +62,10 @@ const menuItems = [
 ];
 
 export function CRMSidebar() {
-  const { collapsed } = useSidebar();
+  const { state } = useSidebar();
   const location = useLocation();
   const currentPath = location.pathname;
+  const collapsed = state === "collapsed";
 
   const isActive = (path: string) => {
     if (path === "/" && currentPath === "/") return true;
@@ -81,7 +82,7 @@ export function CRMSidebar() {
   };
 
   return (
-    <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-r bg-card`} collapsible>
+    <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-r bg-card`} collapsible="icon">
       <div className="p-6">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">

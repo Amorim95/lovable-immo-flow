@@ -1,4 +1,3 @@
-
 import { Lead } from "@/types/crm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { phone as Phone } from "lucide-react";
+import { Phone } from "lucide-react";
 
 interface ListViewProps {
   leads: Lead[];
