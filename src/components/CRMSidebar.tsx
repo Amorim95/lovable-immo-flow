@@ -74,7 +74,7 @@ export function CRMSidebar() {
   };
 
   const getNavClassName = (path: string) => {
-    const baseClass = "flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200";
+    const baseClass = "flex items-center gap-4 px-4 py-4 rounded-lg transition-all duration-200 min-h-[60px]";
     if (isActive(path)) {
       return `${baseClass} bg-primary text-primary-foreground font-medium shadow-sm`;
     }
@@ -82,7 +82,7 @@ export function CRMSidebar() {
   };
 
   return (
-    <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-r bg-card`} collapsible="icon">
+    <Sidebar className={`${collapsed ? "w-16" : "w-72"} border-r bg-card`} collapsible="icon">
       <div className="p-6">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
@@ -103,20 +103,20 @@ export function CRMSidebar() {
             Menu Principal
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild size="lg">
                     <NavLink 
                       to={item.url} 
                       className={getNavClassName(item.url)}
                       title={collapsed ? item.title : ""}
                     >
-                      <item.icon className={`${collapsed ? "w-5 h-5" : "w-4 h-4"} flex-shrink-0`} />
+                      <item.icon className={`${collapsed ? "w-6 h-6" : "w-5 h-5"} flex-shrink-0`} />
                       {!collapsed && (
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium">{item.title}</span>
-                          <span className="text-xs opacity-70">{item.description}</span>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-base font-medium leading-tight">{item.title}</span>
+                          <span className="text-sm opacity-70 leading-tight">{item.description}</span>
                         </div>
                       )}
                     </NavLink>
