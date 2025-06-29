@@ -85,12 +85,16 @@ export function CRMSidebar() {
     <Sidebar className={`${collapsed ? "w-16" : "w-72"} border-r bg-card`} collapsible="icon">
       <div className="p-6">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <Edit className="w-4 h-4 text-primary-foreground" />
+          <div className="w-10 h-10 flex-shrink-0">
+            <img 
+              src="/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png" 
+              alt="Click Imóveis Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
           {!collapsed && (
             <div>
-              <h1 className="text-lg font-bold text-foreground">CRM Imobiliário</h1>
+              <h1 className="text-lg font-bold text-foreground">Click Imóveis</h1>
               <p className="text-xs text-muted-foreground">Sistema de gestão</p>
             </div>
           )}

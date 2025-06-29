@@ -31,7 +31,7 @@ const App = () => (
                 <div className="flex-1" />
                 <div className="flex items-center gap-4">
                   <div className="text-sm text-gray-600">
-                    Bem-vindo ao CRM Imobiliário
+                    Bem-vindo ao Click Imóveis
                   </div>
                 </div>
               </header>
