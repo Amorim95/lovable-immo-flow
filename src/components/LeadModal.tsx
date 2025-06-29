@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Lead, LeadTag, Atividade } from "@/types/crm";
 import {
@@ -14,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { TagSelector } from "@/components/TagSelector";
 import { 
   Phone, 
   User, 
@@ -64,6 +64,10 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
   };
 
+  const handleTagsChange = (newTags: LeadTag[]) => {
+    onUpdate(lead.id, { etiquetas: newTags });
+  };
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -98,6 +102,17 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                 {editMode ? 'Cancelar' : 'Editar'}
               </Button>
             </div>
+
+            {/* Etiquetas */}
+            <div className="space-y-4">
+              <h4 className="font-medium text-gray-700">Etiquetas</h4>
+              <TagSelector
+                selectedTags={lead.etiquetas}
+                onTagsChange={handleTagsChange}
+              />
+            </div>
+
+            <Separator />
 
             {/* Dados Primários */}
             <div className="space-y-4">

@@ -1,7 +1,9 @@
+
 import { Lead, LeadTag } from "@/types/crm";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TagSelector } from "@/components/TagSelector";
 import { Phone, User, Calendar } from "lucide-react";
 
 interface LeadCardProps {
@@ -42,6 +44,10 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
   };
 
+  const handleTagsChange = (newTags: LeadTag[]) => {
+    onUpdate({ etiquetas: newTags });
+  };
+
   return (
     <Card 
       className="lead-card cursor-pointer bg-white shadow-sm hover:shadow-md border border-gray-200"
@@ -61,20 +67,14 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
           <p className="text-sm font-medium text-primary truncate">{lead.imovel}</p>
         </div>
 
-        {/* Etiquetas */}
-        {lead.etiquetas.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {lead.etiquetas.map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className={`text-xs px-2 py-1 ${tagConfig[tag].className}`}
-              >
-                {tagConfig[tag].label}
-              </Badge>
-            ))}
-          </div>
-        )}
+        {/* Seletor de Etiquetas */}
+        <div className="mb-3" onClick={(e) => e.stopPropagation()}>
+          <TagSelector
+            selectedTags={lead.etiquetas}
+            onTagsChange={handleTagsChange}
+            variant="compact"
+          />
+        </div>
 
         {/* Informações principais */}
         <div className="space-y-2 mb-3">
