@@ -1,9 +1,17 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { CRMSidebar } from "@/components/CRMSidebar";
 import Index from "./pages/Index";
+import Dashboards from "./pages/Dashboards";
+import Corretores from "./pages/Corretores";
+import Imoveis from "./pages/Imoveis";
+import Filas from "./pages/Filas";
+import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -14,11 +22,33 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <SidebarProvider>
+          <div className="min-h-screen flex w-full bg-gray-50">
+            <CRMSidebar />
+            <div className="flex-1 flex flex-col">
+              <header className="h-16 bg-white border-b border-gray-200 flex items-center px-6 shadow-sm">
+                <SidebarTrigger className="lg:hidden" />
+                <div className="flex-1" />
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-gray-600">
+                    Bem-vindo ao CRM Imobiliário
+                  </div>
+                </div>
+              </header>
+              <main className="flex-1 p-6">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/dashboards" element={<Dashboards />} />
+                  <Route path="/corretores" element={<Corretores />} />
+                  <Route path="/imoveis" element={<Imoveis />} />
+                  <Route path="/filas" element={<Filas />} />
+                  <Route path="/configuracoes" element={<Configuracoes />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+            </div>
+          </div>
+        </SidebarProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
