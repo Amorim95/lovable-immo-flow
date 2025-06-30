@@ -109,7 +109,7 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
           </Badge>
         </div>
 
-        {/* Botões de ação */}
+        {/* Botão de ação único */}
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -120,16 +120,6 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
             <Phone className="w-3 h-3 mr-1" />
             WhatsApp
           </Button>
-          {lead.telefoneExtra && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="px-2"
-              onClick={(e) => handleWhatsAppClick(lead.telefoneExtra!, e)}
-            >
-              <Phone className="w-3 h-3" />
-            </Button>
-          )}
         </div>
       </CardContent>
     </Card>

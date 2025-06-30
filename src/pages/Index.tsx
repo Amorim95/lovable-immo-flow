@@ -4,6 +4,7 @@ import { Lead } from "@/types/crm";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { ListView } from "@/components/ListView";
 import { LeadModal } from "@/components/LeadModal";
+import { NewLeadModal } from "@/components/NewLeadModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -179,6 +180,7 @@ const Index = () => {
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
@@ -192,6 +194,11 @@ const Index = () => {
   const handleLeadClick = (lead: Lead) => {
     setSelectedLead(lead);
     setIsModalOpen(true);
+  };
+
+  const handleCreateLead = (leadData: Partial<Lead>) => {
+    const newLead = leadData as Lead;
+    setLeads([...leads, newLead]);
   };
 
   const filteredLeads = leads.filter(lead =>
@@ -219,7 +226,10 @@ const Index = () => {
         </div>
         
         <div className="flex items-center gap-3">
-          <Button className="bg-primary hover:bg-primary/90">
+          <Button 
+            className="bg-primary hover:bg-primary/90"
+            onClick={() => setIsNewLeadModalOpen(true)}
+          >
             <Plus className="w-4 h-4 mr-2" />
             Novo Lead
           </Button>
@@ -301,7 +311,7 @@ const Index = () => {
               className="px-3"
             >
               <LayoutGrid className="w-4 h-4 mr-2" />
-              Kanban
+              Padrão
             </Button>
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
@@ -328,11 +338,12 @@ const Index = () => {
           <ListView
             leads={filteredLeads}
             onLeadClick={handleLeadClick}
+            onLeadUpdate={handleLeadUpdate}
           />
         )}
       </div>
 
-      {/* Modal */}
+      {/* Modals */}
       <LeadModal
         lead={selectedLead}
         isOpen={isModalOpen}
@@ -341,6 +352,12 @@ const Index = () => {
           setSelectedLead(null);
         }}
         onUpdate={handleLeadUpdate}
+      />
+
+      <NewLeadModal
+        isOpen={isNewLeadModalOpen}
+        onClose={() => setIsNewLeadModalOpen(false)}
+        onCreateLead={handleCreateLead}
       />
     </div>
   );

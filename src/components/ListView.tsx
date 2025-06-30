@@ -1,4 +1,5 @@
-import { Lead } from "@/types/crm";
+
+import { Lead, LeadTag } from "@/types/crm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,11 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TagSelector } from "@/components/TagSelector";
 import { Phone } from "lucide-react";
 
 interface ListViewProps {
   leads: Lead[];
   onLeadClick: (lead: Lead) => void;
+  onLeadUpdate: (leadId: string, updates: Partial<Lead>) => void;
 }
 
 const stageLabels = {
@@ -34,7 +37,7 @@ const stageColors = {
   'em-pausa': 'bg-orange-100 text-orange-800'
 };
 
-export function ListView({ leads, onLeadClick }: ListViewProps) {
+export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -51,6 +54,10 @@ export function ListView({ leads, onLeadClick }: ListViewProps) {
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
   };
 
+  const handleTagsChange = (leadId: string, newTags: LeadTag[]) => {
+    onLeadUpdate(leadId, { etiquetas: newTags });
+  };
+
   return (
     <div className="bg-white rounded-lg border shadow-sm">
       <Table>
@@ -61,6 +68,7 @@ export function ListView({ leads, onLeadClick }: ListViewProps) {
             <TableHead>Telefone</TableHead>
             <TableHead>Renda</TableHead>
             <TableHead>Etapa</TableHead>
+            <TableHead>Etiquetas</TableHead>
             <TableHead>Corretor</TableHead>
             <TableHead>Data</TableHead>
             <TableHead>Ações</TableHead>
@@ -99,18 +107,23 @@ export function ListView({ leads, onLeadClick }: ListViewProps) {
                   {stageLabels[lead.etapa]}
                 </Badge>
               </TableCell>
+              <TableCell onClick={(e) => e.stopPropagation()}>
+                <TagSelector
+                  selectedTags={lead.etiquetas}
+                  onTagsChange={(newTags) => handleTagsChange(lead.id, newTags)}
+                  variant="compact"
+                />
+              </TableCell>
               <TableCell>{lead.corretor}</TableCell>
               <TableCell>{formatDate(lead.dataCriacao)}</TableCell>
               <TableCell>
-                <div className="flex gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => handleWhatsAppClick(lead.telefone, e)}
-                  >
-                    <Phone className="w-3 h-3" />
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={(e) => handleWhatsAppClick(lead.telefone, e)}
+                >
+                  <Phone className="w-3 h-3" />
+                </Button>
               </TableCell>
             </TableRow>
           ))}

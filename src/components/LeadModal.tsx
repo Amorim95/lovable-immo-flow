@@ -85,7 +85,23 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="w-5 h-5" />
-            {lead.nome} - {lead.imovel}
+            {editMode ? (
+              <div className="flex gap-2 flex-1">
+                <Input
+                  value={formData.nome ?? lead.nome}
+                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                  placeholder="Nome do lead"
+                />
+                <span>-</span>
+                <Input
+                  value={formData.imovel ?? lead.imovel}
+                  onChange={(e) => setFormData({ ...formData, imovel: e.target.value })}
+                  placeholder="Imóvel"
+                />
+              </div>
+            ) : (
+              `${lead.nome} - ${lead.imovel}`
+            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -176,10 +192,10 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                     <div>
                       <Label>Renda Familiar</Label>
                       <Input
-                        type="number"
-                        value={editMode ? (formData.rendaFamiliar ?? lead.rendaFamiliar) : lead.rendaFamiliar}
-                        onChange={(e) => setFormData({ ...formData, rendaFamiliar: Number(e.target.value) })}
+                        value={editMode ? (formData.rendaFamiliar?.toString() ?? lead.rendaFamiliar.toString()) : lead.rendaFamiliar.toString()}
+                        onChange={(e) => setFormData({ ...formData, rendaFamiliar: e.target.value ? Number(e.target.value) : 0 })}
                         disabled={!editMode}
+                        placeholder="Ex: 5000"
                       />
                     </div>
                     <div>
@@ -191,27 +207,21 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                     </div>
                     <div>
                       <Label>Tem FGTS?</Label>
-                      <select
-                        className="w-full p-2 border rounded-md"
-                        value={editMode ? String(formData.temFGTS ?? lead.temFGTS) : String(lead.temFGTS)}
-                        onChange={(e) => setFormData({ ...formData, temFGTS: e.target.value === 'true' })}
+                      <Input
+                        value={editMode ? (formData.temFGTS?.toString() ?? lead.temFGTS.toString()) : lead.temFGTS ? 'Sim' : 'Não'}
+                        onChange={(e) => setFormData({ ...formData, temFGTS: e.target.value.toLowerCase().includes('sim') || e.target.value.toLowerCase().includes('true') })}
                         disabled={!editMode}
-                      >
-                        <option value="true">Sim</option>
-                        <option value="false">Não</option>
-                      </select>
+                        placeholder="Sim ou Não"
+                      />
                     </div>
                     <div>
                       <Label>Possui Entrada?</Label>
-                      <select
-                        className="w-full p-2 border rounded-md"
-                        value={editMode ? String(formData.possuiEntrada ?? lead.possuiEntrada) : String(lead.possuiEntrada)}
-                        onChange={(e) => setFormData({ ...formData, possuiEntrada: e.target.value === 'true' })}
+                      <Input
+                        value={editMode ? (formData.possuiEntrada?.toString() ?? lead.possuiEntrada.toString()) : lead.possuiEntrada ? 'Sim' : 'Não'}
+                        onChange={(e) => setFormData({ ...formData, possuiEntrada: e.target.value.toLowerCase().includes('sim') || e.target.value.toLowerCase().includes('true') })}
                         disabled={!editMode}
-                      >
-                        <option value="true">Sim</option>
-                        <option value="false">Não</option>
-                      </select>
+                        placeholder="Sim ou Não"
+                      />
                     </div>
                     <div>
                       <Label>Data de Criação</Label>
