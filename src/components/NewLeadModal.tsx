@@ -42,8 +42,8 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
       telefone: formData.telefone,
       telefoneExtra: formData.telefoneExtra || undefined,
       rendaFamiliar: formData.rendaFamiliar ? Number(formData.rendaFamiliar) : 0,
-      temFGTS: formData.temFGTS.toLowerCase().includes('sim') || formData.temFGTS.toLowerCase().includes('true'),
-      possuiEntrada: formData.possuiEntrada.toLowerCase().includes('sim') || formData.possuiEntrada.toLowerCase().includes('true'),
+      temFGTS: formData.temFGTS || 'Não informado',
+      possuiEntrada: formData.possuiEntrada || 'Não informado',
       imovel: 'A definir',
       dataCriacao: new Date(),
       etapa: 'aguardando-atendimento',
@@ -129,7 +129,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
               id="temFGTS"
               value={formData.temFGTS}
               onChange={(e) => setFormData({ ...formData, temFGTS: e.target.value })}
-              placeholder="Sim ou Não"
+              placeholder="Digite qualquer informação sobre FGTS"
             />
           </div>
 
@@ -139,7 +139,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
               id="possuiEntrada"
               value={formData.possuiEntrada}
               onChange={(e) => setFormData({ ...formData, possuiEntrada: e.target.value })}
-              placeholder="Sim ou Não"
+              placeholder="Digite qualquer informação sobre entrada"
             />
           </div>
 

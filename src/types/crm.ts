@@ -5,9 +5,9 @@ export interface Lead {
   imovel: string;
   telefone: string;
   telefoneExtra?: string;
-  temFGTS: boolean;
+  temFGTS: string; // Changed from boolean to string
   rendaFamiliar: number;
-  possuiEntrada: boolean;
+  possuiEntrada: string; // Changed from boolean to string
   campanha?: string;
   conjunto?: string;
   anuncio?: string;
@@ -42,6 +42,7 @@ export interface Atividade {
 
 export interface Corretor {
   id: string;
+  numero: string; // Added numero field
   nome: string;
   email: string;
   telefone: string;
@@ -74,4 +75,17 @@ export interface DashboardData {
   leadsPorCorretor: Record<string, number>;
   leadsPorMes: Record<string, number>;
   valorTotalVendas: number;
+}
+
+export interface Fila {
+  id: string;
+  nome: string;
+  corretores: string[];
+  ordem: 'sequencial' | 'random';
+  origem: 'meta-ads' | 'google-ads' | 'indicacao' | 'geral';
+  status: 'ativa' | 'pausada';
+  configuracoes: {
+    tempoResposta: number;
+    maxLeadsPorCorretor: number;
+  };
 }

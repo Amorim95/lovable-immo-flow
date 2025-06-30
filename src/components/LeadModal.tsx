@@ -79,6 +79,13 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
     });
   };
 
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden">
@@ -192,10 +199,14 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                     <div>
                       <Label>Renda Familiar</Label>
                       <Input
-                        value={editMode ? (formData.rendaFamiliar?.toString() ?? lead.rendaFamiliar.toString()) : lead.rendaFamiliar.toString()}
+                        value={editMode 
+                          ? (formData.rendaFamiliar?.toString() ?? lead.rendaFamiliar.toString()) 
+                          : formatCurrency(lead.rendaFamiliar)
+                        }
                         onChange={(e) => setFormData({ ...formData, rendaFamiliar: e.target.value ? Number(e.target.value) : 0 })}
                         disabled={!editMode}
                         placeholder="Ex: 5000"
+                        type={editMode ? "number" : "text"}
                       />
                     </div>
                     <div>
@@ -208,19 +219,19 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                     <div>
                       <Label>Tem FGTS?</Label>
                       <Input
-                        value={editMode ? (formData.temFGTS?.toString() ?? lead.temFGTS.toString()) : lead.temFGTS ? 'Sim' : 'Não'}
-                        onChange={(e) => setFormData({ ...formData, temFGTS: e.target.value.toLowerCase().includes('sim') || e.target.value.toLowerCase().includes('true') })}
+                        value={editMode ? (formData.temFGTS ?? lead.temFGTS) : lead.temFGTS}
+                        onChange={(e) => setFormData({ ...formData, temFGTS: e.target.value })}
                         disabled={!editMode}
-                        placeholder="Sim ou Não"
+                        placeholder="Digite qualquer informação sobre FGTS"
                       />
                     </div>
                     <div>
                       <Label>Possui Entrada?</Label>
                       <Input
-                        value={editMode ? (formData.possuiEntrada?.toString() ?? lead.possuiEntrada.toString()) : lead.possuiEntrada ? 'Sim' : 'Não'}
-                        onChange={(e) => setFormData({ ...formData, possuiEntrada: e.target.value.toLowerCase().includes('sim') || e.target.value.toLowerCase().includes('true') })}
+                        value={editMode ? (formData.possuiEntrada ?? lead.possuiEntrada) : lead.possuiEntrada}
+                        onChange={(e) => setFormData({ ...formData, possuiEntrada: e.target.value })}
                         disabled={!editMode}
-                        placeholder="Sim ou Não"
+                        placeholder="Digite qualquer informação sobre entrada"
                       />
                     </div>
                     <div>

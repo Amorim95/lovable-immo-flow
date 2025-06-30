@@ -1,24 +1,128 @@
-
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Fila } from "@/types/crm";
 import { 
   Plus,
-  Phone
+  Phone,
+  Settings
 } from "lucide-react";
 
+const mockFilas: Fila[] = [
+  {
+    id: '1',
+    nome: 'Fila Facebook Ads - Apartamentos',
+    corretores: ['Maria Santos', 'Pedro Oliveira'],
+    ordem: 'sequencial',
+    origem: 'meta-ads',
+    status: 'ativa',
+    configuracoes: {
+      tempoResposta: 90,
+      maxLeadsPorCorretor: 10
+    }
+  },
+  {
+    id: '2',
+    nome: 'Fila Google Ads - Casas',
+    corretores: ['Pedro Oliveira', 'Ana Costa'],
+    ordem: 'sequencial',
+    origem: 'google-ads',
+    status: 'ativa',
+    configuracoes: {
+      tempoResposta: 120,
+      maxLeadsPorCorretor: 8
+    }
+  }
+];
+
 const Filas = () => {
+  const [filas, setFilas] = useState<Fila[]>(mockFilas);
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [newFila, setNewFila] = useState({
+    nome: '',
+    corretores: [] as string[],
+    ordem: 'sequencial' as 'sequencial' | 'random',
+    origem: 'meta-ads' as 'meta-ads' | 'google-ads' | 'indicacao' | 'geral',
+    tempoResposta: 90,
+    maxLeadsPorCorretor: 10
+  });
+
+  const corretoresDisponiveis = ['Maria Santos', 'Pedro Oliveira', 'Ana Costa'];
+
+  const handleCreateFila = () => {
+    if (!newFila.nome.trim()) {
+      alert('Nome da fila é obrigatório');
+      return;
+    }
+
+    const fila: Fila = {
+      id: Date.now().toString(),
+      nome: newFila.nome,
+      corretores: newFila.corretores,
+      ordem: newFila.ordem,
+      origem: newFila.origem,
+      status: 'ativa',
+      configuracoes: {
+        tempoResposta: newFila.tempoResposta,
+        maxLeadsPorCorretor: newFila.maxLeadsPorCorretor
+      }
+    };
+
+    setFilas([...filas, fila]);
+    setNewFila({
+      nome: '',
+      corretores: [],
+      ordem: 'sequencial',
+      origem: 'meta-ads',
+      tempoResposta: 90,
+      maxLeadsPorCorretor: 10
+    });
+    setShowNewModal(false);
+  };
+
+  const toggleFilaStatus = (filaId: string) => {
+    setFilas(filas.map(fila =>
+      fila.id === filaId
+        ? { ...fila, status: fila.status === 'ativa' ? 'pausada' : 'ativa' }
+        : fila
+    ));
+  };
+
+  const getOrigemLabel = (origem: string) => {
+    const labels = {
+      'meta-ads': 'Meta Ads',
+      'google-ads': 'Google Ads',
+      'indicacao': 'Indicação',
+      'geral': 'Geral'
+    };
+    return labels[origem as keyof typeof labels] || origem;
+  };
+
+  const handleCorretorToggle = (corretor: string) => {
+    setNewFila(prev => ({
+      ...prev,
+      corretores: prev.corretores.includes(corretor)
+        ? prev.corretores.filter(c => c !== corretor)
+        : [...prev.corretores, corretor]
+    }));
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Sistema de Filas</h1>
           <p className="text-gray-600 mt-1">
-            Gerencie filas de atendimento e integração com Meta Ads
+            Gerencie filas de atendimento e distribuição de leads
           </p>
         </div>
         
-        <Button className="bg-primary hover:bg-primary/90">
+        <Button className="bg-primary hover:bg-primary/90" onClick={() => setShowNewModal(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Nova Fila
         </Button>
@@ -33,7 +137,7 @@ const Filas = () => {
                 <Phone className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">4</p>
+                <p className="text-2xl font-bold text-gray-900">{filas.filter(f => f.status === 'ativa').length}</p>
                 <p className="text-sm text-gray-600">Filas Ativas</p>
               </div>
             </div>
@@ -85,151 +189,169 @@ const Filas = () => {
 
       {/* Filas */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Fila Facebook Ads - Apartamentos</CardTitle>
-              <Badge className="bg-green-100 text-green-800">Ativa</Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Leads na fila:</span>
-                <span className="font-medium">8</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Corretores ativos:</span>
-                <span className="font-medium">2</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Tempo médio de resposta:</span>
-                <span className="font-medium">1.5 min</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Taxa de conversão:</span>
-                <span className="font-medium text-green-600">18.5%</span>
-              </div>
-              <div className="pt-2">
-                <p className="text-xs text-gray-500 mb-2">Corretores:</p>
-                <div className="flex gap-1">
-                  <Badge variant="outline" className="text-xs">Maria Santos</Badge>
-                  <Badge variant="outline" className="text-xs">Pedro Oliveira</Badge>
+        {filas.map((fila) => (
+          <Card key={fila.id}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">{fila.nome}</CardTitle>
+                <div className="flex gap-2">
+                  <Badge className={fila.status === 'ativa' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                    {fila.status === 'ativa' ? 'Ativa' : 'Pausada'}
+                  </Badge>
+                  <Badge variant="outline">{getOrigemLabel(fila.origem)}</Badge>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Fila Google Ads - Casas</CardTitle>
-              <Badge className="bg-green-100 text-green-800">Ativa</Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Leads na fila:</span>
-                <span className="font-medium">12</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Corretores ativos:</span>
-                <span className="font-medium">2</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Tempo médio de resposta:</span>
-                <span className="font-medium">2.1 min</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Taxa de conversão:</span>
-                <span className="font-medium text-green-600">22.1%</span>
-              </div>
-              <div className="pt-2">
-                <p className="text-xs text-gray-500 mb-2">Corretores:</p>
-                <div className="flex gap-1">
-                  <Badge variant="outline" className="text-xs">Pedro Oliveira</Badge>
-                  <Badge variant="outline" className="text-xs">Ana Costa</Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Corretores na fila:</span>
+                  <span className="font-medium">{fila.corretores.length}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Ordem de distribuição:</span>
+                  <span className="font-medium">{fila.ordem === 'sequencial' ? 'Sequencial' : 'Aleatória'}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Tempo de resposta:</span>
+                  <span className="font-medium">{fila.configuracoes.tempoResposta}s</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Max leads por corretor:</span>
+                  <span className="font-medium">{fila.configuracoes.maxLeadsPorCorretor}</span>
+                </div>
+                <div className="pt-2">
+                  <p className="text-xs text-gray-500 mb-2">Corretores:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {fila.corretores.map((corretor) => (
+                      <Badge key={corretor} variant="outline" className="text-xs">
+                        {corretor}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <Button variant="outline" size="sm" className="flex-1">
+                    <Settings className="w-3 h-3 mr-1" />
+                    Configurar
+                  </Button>
+                  <Button 
+                    variant={fila.status === 'ativa' ? 'destructive' : 'default'}
+                    size="sm"
+                    onClick={() => toggleFilaStatus(fila.id)}
+                  >
+                    {fila.status === 'ativa' ? 'Pausar' : 'Ativar'}
+                  </Button>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Fila Instagram - Primeira Casa</CardTitle>
-              <Badge className="bg-yellow-100 text-yellow-800">Pausada</Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Leads na fila:</span>
-                <span className="font-medium">3</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Corretores ativos:</span>
-                <span className="font-medium">0</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Último processamento:</span>
-                <span className="font-medium">Há 2 horas</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Taxa de conversão:</span>
-                <span className="font-medium text-green-600">15.8%</span>
-              </div>
-              <div className="pt-2">
-                <Button variant="default" size="sm" className="w-full">
-                  Reativar Fila
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Fila Geral - Indicações</CardTitle>
-              <Badge className="bg-green-100 text-green-800">Ativa</Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Leads na fila:</span>
-                <span className="font-medium">0</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Corretores ativos:</span>
-                <span className="font-medium">3</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Tempo médio de resposta:</span>
-                <span className="font-medium">0.8 min</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">Taxa de conversão:</span>
-                <span className="font-medium text-green-600">35.2%</span>
-              </div>
-              <div className="pt-2">
-                <p className="text-xs text-gray-500 mb-2">Corretores:</p>
-                <div className="flex gap-1">
-                  <Badge variant="outline" className="text-xs">Maria Santos</Badge>
-                  <Badge variant="outline" className="text-xs">Pedro Oliveira</Badge>
-                  <Badge variant="outline" className="text-xs">Ana Costa</Badge>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      {/* Configuração Meta Ads */}
+      {/* Modal Nova Fila */}
+      <Dialog open={showNewModal} onOpenChange={setShowNewModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5" />
+              Nova Fila
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="nome">Nome da Fila</Label>
+              <Input
+                id="nome"
+                value={newFila.nome}
+                onChange={(e) => setNewFila({ ...newFila, nome: e.target.value })}
+                placeholder="Ex: Fila Meta Ads - Apartamentos"
+              />
+            </div>
+
+            <div>
+              <Label>Origem dos Leads</Label>
+              <Select value={newFila.origem} onValueChange={(value: any) => setNewFila({ ...newFila, origem: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="meta-ads">Meta Ads (Facebook/Instagram)</SelectItem>
+                  <SelectItem value="google-ads">Google Ads</SelectItem>
+                  <SelectItem value="indicacao">Indicação</SelectItem>
+                  <SelectItem value="geral">Geral</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Ordem de Distribuição</Label>
+              <Select value={newFila.ordem} onValueChange={(value: any) => setNewFila({ ...newFila, ordem: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sequencial">Sequencial</SelectItem>
+                  <SelectItem value="random">Aleatória</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label>Corretores na Fila</Label>
+              <div className="space-y-2 mt-2">
+                {corretoresDisponiveis.map((corretor) => (
+                  <div key={corretor} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={corretor}
+                      checked={newFila.corretores.includes(corretor)}
+                      onChange={() => handleCorretorToggle(corretor)}
+                      className="rounded"
+                    />
+                    <label htmlFor={corretor} className="text-sm">
+                      {corretor}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="tempoResposta">Tempo Resposta (s)</Label>
+                <Input
+                  id="tempoResposta"
+                  type="number"
+                  value={newFila.tempoResposta}
+                  onChange={(e) => setNewFila({ ...newFila, tempoResposta: Number(e.target.value) })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="maxLeads">Max Leads/Corretor</Label>
+                <Input
+                  id="maxLeads"
+                  type="number"
+                  value={newFila.maxLeadsPorCorretor}
+                  onChange={(e) => setNewFila({ ...newFila, maxLeadsPorCorretor: Number(e.target.value) })}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setShowNewModal(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateFila}>
+                Criar Fila
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Integração Meta Ads */}
       <Card>
         <CardHeader>
           <CardTitle>Integração Meta Ads</CardTitle>

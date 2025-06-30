@@ -38,6 +38,13 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
     });
   };
 
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
+
   const handleWhatsAppClick = (telefone: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const cleanPhone = telefone.replace(/\D/g, '');
@@ -81,22 +88,19 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Renda:</span>
             <span className="font-medium">
-              {lead.rendaFamiliar.toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-              })}
+              {formatCurrency(lead.rendaFamiliar)}
             </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">FGTS:</span>
-            <span className={`font-medium ${lead.temFGTS ? 'text-green-600' : 'text-red-600'}`}>
-              {lead.temFGTS ? 'Sim' : 'Não'}
+            <span className="font-medium text-gray-800">
+              {lead.temFGTS || 'Não informado'}
             </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-gray-600">Entrada:</span>
-            <span className={`font-medium ${lead.possuiEntrada ? 'text-green-600' : 'text-red-600'}`}>
-              {lead.possuiEntrada ? 'Sim' : 'Não'}
+            <span className="font-medium text-gray-800">
+              {lead.possuiEntrada || 'Não informado'}
             </span>
           </div>
         </div>

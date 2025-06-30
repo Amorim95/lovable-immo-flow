@@ -48,6 +48,13 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
     });
   };
 
+  const formatCurrency = (value: number) => {
+    return value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  };
+
   const handleWhatsAppClick = (telefone: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const cleanPhone = telefone.replace(/\D/g, '');
@@ -97,10 +104,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
                 </div>
               </TableCell>
               <TableCell>
-                {lead.rendaFamiliar.toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL'
-                })}
+                {formatCurrency(lead.rendaFamiliar)}
               </TableCell>
               <TableCell>
                 <Badge className={stageColors[lead.etapa]}>

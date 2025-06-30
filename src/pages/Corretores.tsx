@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { NewCorretorModal } from "@/components/NewCorretorModal";
+import { EditCorretorModal } from "@/components/EditCorretorModal";
 import { 
   Plus,
   User,
@@ -15,6 +17,7 @@ import {
 const mockCorretores: Corretor[] = [
   {
     id: '1',
+    numero: '001',
     nome: 'Maria Santos',
     email: 'maria@imobiliaria.com',
     telefone: '(11) 99999-9999',
@@ -24,6 +27,7 @@ const mockCorretores: Corretor[] = [
   },
   {
     id: '2',
+    numero: '002',
     nome: 'Pedro Oliveira',
     email: 'pedro@imobiliaria.com',
     telefone: '(11) 88888-8888',
@@ -33,6 +37,7 @@ const mockCorretores: Corretor[] = [
   },
   {
     id: '3',
+    numero: '003',
     nome: 'Ana Costa',
     email: 'ana@imobiliaria.com',
     telefone: '(11) 77777-7777',
@@ -45,10 +50,14 @@ const mockCorretores: Corretor[] = [
 const Corretores = () => {
   const [corretores, setCorretores] = useState<Corretor[]>(mockCorretores);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedCorretor, setSelectedCorretor] = useState<Corretor | null>(null);
 
   const filteredCorretores = corretores.filter(corretor =>
     corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    corretor.email.toLowerCase().includes(searchTerm.toLowerCase())
+    corretor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    corretor.numero.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const toggleStatus = (corretorId: string) => {
@@ -57,6 +66,22 @@ const Corretores = () => {
         ? { ...corretor, status: corretor.status === 'ativo' ? 'inativo' : 'ativo' }
         : corretor
     ));
+  };
+
+  const handleCreateCorretor = (corretorData: Partial<Corretor>) => {
+    const newCorretor = corretorData as Corretor;
+    setCorretores([...corretores, newCorretor]);
+  };
+
+  const handleUpdateCorretor = (corretorId: string, updates: Partial<Corretor>) => {
+    setCorretores(corretores.map(corretor =>
+      corretor.id === corretorId ? { ...corretor, ...updates } : corretor
+    ));
+  };
+
+  const handleEditClick = (corretor: Corretor) => {
+    setSelectedCorretor(corretor);
+    setShowEditModal(true);
   };
 
   return (
@@ -69,7 +94,7 @@ const Corretores = () => {
           </p>
         </div>
         
-        <Button className="bg-primary hover:bg-primary/90">
+        <Button className="bg-primary hover:bg-primary/90" onClick={() => setShowNewModal(true)}>
           <Plus className="w-4 h-4 mr-2" />
           Novo Corretor
         </Button>
@@ -150,6 +175,7 @@ const Corretores = () => {
                   </div>
                   <div>
                     <CardTitle className="text-lg">{corretor.nome}</CardTitle>
+                    <p className="text-sm text-gray-600">#{corretor.numero}</p>
                     <p className="text-sm text-gray-600">{corretor.email}</p>
                   </div>
                 </div>
@@ -185,7 +211,12 @@ const Corretores = () => {
                 </div>
 
                 <div className="flex gap-2 pt-3">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => handleEditClick(corretor)}
+                  >
                     <Edit className="w-3 h-3 mr-1" />
                     Editar
                   </Button>
@@ -202,6 +233,22 @@ const Corretores = () => {
           </Card>
         ))}
       </div>
+
+      <NewCorretorModal
+        isOpen={showNewModal}
+        onClose={() => setShowNewModal(false)}
+        onCreateCorretor={handleCreateCorretor}
+      />
+
+      <EditCorretorModal
+        corretor={selectedCorretor}
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedCorretor(null);
+        }}
+        onUpdateCorretor={handleUpdateCorretor}
+      />
     </div>
   );
 };
