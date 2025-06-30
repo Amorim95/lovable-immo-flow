@@ -213,39 +213,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                         <option value="false">Não</option>
                       </select>
                     </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Dados Secundários */}
-                <div className="space-y-4">
-                  <h4 className="font-medium text-gray-700">Dados Secundários</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Campanha</Label>
-                      <Input
-                        value={editMode ? (formData.campanha ?? lead.campanha ?? '') : lead.campanha ?? ''}
-                        onChange={(e) => setFormData({ ...formData, campanha: e.target.value })}
-                        disabled={!editMode}
-                      />
-                    </div>
-                    <div>
-                      <Label>Conjunto</Label>
-                      <Input
-                        value={editMode ? (formData.conjunto ?? lead.conjunto ?? '') : lead.conjunto ?? ''}
-                        onChange={(e) => setFormData({ ...formData, conjunto: e.target.value })}
-                        disabled={!editMode}
-                      />
-                    </div>
-                    <div>
-                      <Label>Anúncio</Label>
-                      <Input
-                        value={editMode ? (formData.anuncio ?? lead.anuncio ?? '') : lead.anuncio ?? ''}
-                        onChange={(e) => setFormData({ ...formData, anuncio: e.target.value })}
-                        disabled={!editMode}
-                      />
-                    </div>
                     <div>
                       <Label>Data de Criação</Label>
                       <Input
