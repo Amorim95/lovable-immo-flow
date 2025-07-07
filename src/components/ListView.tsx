@@ -71,9 +71,8 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Nome</TableHead>
-            <TableHead>Imóvel</TableHead>
             <TableHead>Telefone</TableHead>
-            <TableHead>Renda</TableHead>
+            <TableHead>Dados Adicionais</TableHead>
             <TableHead>Etapa</TableHead>
             <TableHead>Etiquetas</TableHead>
             <TableHead>Corretor</TableHead>
@@ -89,7 +88,6 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
               onClick={() => onLeadClick(lead)}
             >
               <TableCell className="font-medium">{lead.nome}</TableCell>
-              <TableCell>{lead.imovel}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   <span>{lead.telefone}</span>
@@ -103,8 +101,8 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
                   </Button>
                 </div>
               </TableCell>
-              <TableCell>
-                {formatCurrency(lead.rendaFamiliar)}
+              <TableCell className="max-w-xs truncate">
+                {lead.dadosAdicionais || '-'}
               </TableCell>
               <TableCell>
                 <Badge className={stageColors[lead.etapa]}>

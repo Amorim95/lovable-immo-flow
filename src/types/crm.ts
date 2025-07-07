@@ -2,12 +2,8 @@
 export interface Lead {
   id: string;
   nome: string;
-  imovel: string;
   telefone: string;
-  telefoneExtra?: string;
-  temFGTS: string; // Changed from boolean to string
-  rendaFamiliar: number;
-  possuiEntrada: string; // Changed from boolean to string
+  dadosAdicionais?: string;
   campanha?: string;
   conjunto?: string;
   anuncio?: string;

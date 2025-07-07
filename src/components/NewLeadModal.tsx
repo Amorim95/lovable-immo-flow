@@ -22,10 +22,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
-    telefoneExtra: '',
-    rendaFamiliar: '',
-    temFGTS: '',
-    possuiEntrada: ''
+    dadosAdicionais: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -40,11 +37,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
       id: Date.now().toString(),
       nome: formData.nome,
       telefone: formData.telefone,
-      telefoneExtra: formData.telefoneExtra || undefined,
-      rendaFamiliar: formData.rendaFamiliar ? Number(formData.rendaFamiliar) : 0,
-      temFGTS: formData.temFGTS || 'Não informado',
-      possuiEntrada: formData.possuiEntrada || 'Não informado',
-      imovel: 'A definir',
+      dadosAdicionais: formData.dadosAdicionais || undefined,
       dataCriacao: new Date(),
       etapa: 'aguardando-atendimento',
       etiquetas: [],
@@ -61,10 +54,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
     setFormData({
       nome: '',
       telefone: '',
-      telefoneExtra: '',
-      rendaFamiliar: '',
-      temFGTS: '',
-      possuiEntrada: ''
+      dadosAdicionais: ''
     });
     onClose();
   };
@@ -103,43 +93,14 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
           </div>
 
           <div>
-            <Label htmlFor="telefoneExtra">Telefone Extra</Label>
-            <Input
-              id="telefoneExtra"
-              value={formData.telefoneExtra}
-              onChange={(e) => setFormData({ ...formData, telefoneExtra: e.target.value })}
-              placeholder="(11) 88888-8888"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="rendaFamiliar">Renda Familiar</Label>
-            <Input
-              id="rendaFamiliar"
-              value={formData.rendaFamiliar}
-              onChange={(e) => setFormData({ ...formData, rendaFamiliar: e.target.value })}
-              placeholder="Ex: 5000"
-              type="number"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="temFGTS">Tem FGTS?</Label>
-            <Input
-              id="temFGTS"
-              value={formData.temFGTS}
-              onChange={(e) => setFormData({ ...formData, temFGTS: e.target.value })}
-              placeholder="Digite qualquer informação sobre FGTS"
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="possuiEntrada">Possui Entrada?</Label>
-            <Input
-              id="possuiEntrada"
-              value={formData.possuiEntrada}
-              onChange={(e) => setFormData({ ...formData, possuiEntrada: e.target.value })}
-              placeholder="Digite qualquer informação sobre entrada"
+            <Label htmlFor="dadosAdicionais">Dados Adicionais do Lead</Label>
+            <textarea
+              id="dadosAdicionais"
+              value={formData.dadosAdicionais}
+              onChange={(e) => setFormData({ ...formData, dadosAdicionais: e.target.value })}
+              placeholder="Digite informações adicionais sobre o lead..."
+              rows={4}
+              className="w-full px-3 py-2 text-sm border border-input bg-background rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             />
           </div>
 

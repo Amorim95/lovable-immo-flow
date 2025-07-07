@@ -71,7 +71,7 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
             <Calendar className="w-3 h-3" />
             <span>{formatDate(lead.dataCriacao)}</span>
           </div>
-          <p className="text-sm font-medium text-primary truncate">{lead.imovel}</p>
+          <p className="text-sm text-gray-600 line-clamp-2">{lead.dadosAdicionais || 'Sem informações adicionais'}</p>
         </div>
 
         {/* Seletor de Etiquetas */}
@@ -83,24 +83,12 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
           />
         </div>
 
-        {/* Informações principais */}
-        <div className="space-y-2 mb-3">
+        {/* Telefone */}
+        <div className="mb-3">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Renda:</span>
-            <span className="font-medium">
-              {formatCurrency(lead.rendaFamiliar)}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">FGTS:</span>
+            <span className="text-gray-600">Telefone:</span>
             <span className="font-medium text-gray-800">
-              {lead.temFGTS || 'Não informado'}
-            </span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Entrada:</span>
-            <span className="font-medium text-gray-800">
-              {lead.possuiEntrada || 'Não informado'}
+              {lead.telefone}
             </span>
           </div>
         </div>

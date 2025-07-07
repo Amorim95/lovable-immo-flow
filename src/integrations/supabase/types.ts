@@ -113,43 +113,31 @@ export type Database = {
       leads: {
         Row: {
           created_at: string
+          dados_adicionais: string | null
           etapa: Database["public"]["Enums"]["lead_stage"]
           id: string
-          imovel: string
           nome: string
-          possui_entrada: string | null
-          renda_familiar: number | null
           telefone: string
-          telefone_extra: string | null
-          tem_fgts: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          dados_adicionais?: string | null
           etapa?: Database["public"]["Enums"]["lead_stage"]
           id?: string
-          imovel: string
           nome: string
-          possui_entrada?: string | null
-          renda_familiar?: number | null
           telefone: string
-          telefone_extra?: string | null
-          tem_fgts?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          dados_adicionais?: string | null
           etapa?: Database["public"]["Enums"]["lead_stage"]
           id?: string
-          imovel?: string
           nome?: string
-          possui_entrada?: string | null
-          renda_familiar?: number | null
           telefone?: string
-          telefone_extra?: string | null
-          tem_fgts?: string | null
           updated_at?: string
           user_id?: string
         }

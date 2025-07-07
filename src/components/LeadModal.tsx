@@ -33,8 +33,30 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Partial<Lead>>({});
   const [newActivity, setNewActivity] = useState("");
+  const [hasLoggedView, setHasLoggedView] = useState(false);
 
   if (!lead) return null;
+
+  // Log visualização do lead (apenas uma vez por abertura do modal)
+  if (isOpen && !hasLoggedView) {
+    const activity: Atividade = {
+      id: Date.now().toString(),
+      tipo: 'observacao',
+      descricao: `Lead Visualizado Por: ${lead.corretor} às ${new Date().toLocaleString('pt-BR')}`,
+      data: new Date(),
+      corretor: lead.corretor
+    };
+
+    onUpdate(lead.id, {
+      atividades: [...lead.atividades, activity]
+    });
+    setHasLoggedView(true);
+  }
+
+  // Reset flag quando modal fechar
+  if (!isOpen && hasLoggedView) {
+    setHasLoggedView(false);
+  }
 
   const handleSave = () => {
     onUpdate(lead.id, formData);
@@ -63,6 +85,19 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const handleWhatsAppClick = (telefone: string) => {
     const cleanPhone = telefone.replace(/\D/g, '');
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
+    
+    // Log primeira tentativa de contato
+    const activity: Atividade = {
+      id: Date.now().toString(),
+      tipo: 'observacao',
+      descricao: `Primeira tentativa de contato Por: ${lead.corretor}`,
+      data: new Date(),
+      corretor: lead.corretor
+    };
+
+    onUpdate(lead.id, {
+      atividades: [...lead.atividades, activity]
+    });
   };
 
   const handleTagsChange = (newTags: LeadTag[]) => {
@@ -98,16 +133,11 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                   value={formData.nome ?? lead.nome}
                   onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                   placeholder="Nome do lead"
-                />
-                <span>-</span>
-                <Input
-                  value={formData.imovel ?? lead.imovel}
-                  onChange={(e) => setFormData({ ...formData, imovel: e.target.value })}
-                  placeholder="Imóvel"
+                  className="flex-1"
                 />
               </div>
             ) : (
-              `${lead.nome} - ${lead.imovel}`
+              lead.nome
             )}
           </DialogTitle>
         </DialogHeader>
@@ -153,14 +183,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                       />
                     </div>
                     <div>
-                      <Label>Imóvel</Label>
-                      <Input
-                        value={editMode ? (formData.imovel ?? lead.imovel) : lead.imovel}
-                        onChange={(e) => setFormData({ ...formData, imovel: e.target.value })}
-                        disabled={!editMode}
-                      />
-                    </div>
-                    <div>
                       <Label>Telefone</Label>
                       <div className="flex gap-2">
                         <Input
@@ -178,60 +200,10 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                       </div>
                     </div>
                     <div>
-                      <Label>Telefone Extra</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={editMode ? (formData.telefoneExtra ?? lead.telefoneExtra ?? '') : lead.telefoneExtra ?? ''}
-                          onChange={(e) => setFormData({ ...formData, telefoneExtra: e.target.value })}
-                          disabled={!editMode}
-                        />
-                        {lead.telefoneExtra && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleWhatsAppClick(lead.telefoneExtra!)}
-                          >
-                            <Phone className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Renda Familiar</Label>
-                      <Input
-                        value={editMode 
-                          ? (formData.rendaFamiliar?.toString() ?? lead.rendaFamiliar.toString()) 
-                          : formatCurrency(lead.rendaFamiliar)
-                        }
-                        onChange={(e) => setFormData({ ...formData, rendaFamiliar: e.target.value ? Number(e.target.value) : 0 })}
-                        disabled={!editMode}
-                        placeholder="Ex: 5000"
-                        type={editMode ? "number" : "text"}
-                      />
-                    </div>
-                    <div>
                       <Label>Corretor</Label>
                       <Input
                         value={lead.corretor}
                         disabled
-                      />
-                    </div>
-                    <div>
-                      <Label>Tem FGTS?</Label>
-                      <Input
-                        value={editMode ? (formData.temFGTS ?? lead.temFGTS) : lead.temFGTS}
-                        onChange={(e) => setFormData({ ...formData, temFGTS: e.target.value })}
-                        disabled={!editMode}
-                        placeholder="Digite qualquer informação sobre FGTS"
-                      />
-                    </div>
-                    <div>
-                      <Label>Possui Entrada?</Label>
-                      <Input
-                        value={editMode ? (formData.possuiEntrada ?? lead.possuiEntrada) : lead.possuiEntrada}
-                        onChange={(e) => setFormData({ ...formData, possuiEntrada: e.target.value })}
-                        disabled={!editMode}
-                        placeholder="Digite qualquer informação sobre entrada"
                       />
                     </div>
                     <div>
@@ -241,6 +213,18 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                         disabled
                       />
                     </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Dados Adicionais do Lead</Label>
+                    <Textarea
+                      value={editMode ? (formData.dadosAdicionais ?? lead.dadosAdicionais ?? '') : lead.dadosAdicionais ?? ''}
+                      onChange={(e) => setFormData({ ...formData, dadosAdicionais: e.target.value })}
+                      disabled={!editMode}
+                      placeholder="Digite informações adicionais sobre o lead..."
+                      rows={6}
+                      className="resize-none"
+                    />
                   </div>
                 </div>
 

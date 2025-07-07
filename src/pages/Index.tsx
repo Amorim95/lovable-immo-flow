@@ -18,12 +18,8 @@ const mockLeads: Lead[] = [
   {
     id: '1',
     nome: 'João Silva',
-    imovel: 'Apartamento 2 quartos - Centro',
     telefone: '(11) 99999-9999',
-    telefoneExtra: '(11) 88888-8888',
-    temFGTS: 'Sim',
-    rendaFamiliar: 5000,
-    possuiEntrada: 'Sim',
+    dadosAdicionais: 'Interessado em apartamento de 2 quartos no centro. Possui FGTS disponível. Renda familiar de R$ 5.000. Possui entrada de R$ 50.000.',
     campanha: 'Facebook Ads - Apartamentos Centro',
     conjunto: 'Interesse Apartamentos',
     anuncio: 'Apartamento 2Q Centro',
@@ -45,11 +41,8 @@ const mockLeads: Lead[] = [
   {
     id: '2',
     nome: 'Ana Costa',
-    imovel: 'Casa 3 quartos - Vila Prudente',
     telefone: '(11) 77777-7777',
-    temFGTS: 'Não',
-    rendaFamiliar: 8000,
-    possuiEntrada: 'Não',
+    dadosAdicionais: 'Procura casa de 3 quartos na Zona Leste. Não tem FGTS. Renda familiar de R$ 8.000. Não possui entrada ainda.',
     campanha: 'Google Ads - Casas Zone Leste',
     conjunto: 'Casas Zona Leste',
     anuncio: 'Casa 3Q Vila Prudente',
@@ -71,11 +64,8 @@ const mockLeads: Lead[] = [
   {
     id: '3',
     nome: 'Carlos Rodrigues',
-    imovel: 'Apartamento 1 quarto - Mooca',
     telefone: '(11) 66666-6666',
-    temFGTS: 'Sim',
-    rendaFamiliar: 3500,
-    possuiEntrada: 'Sim',
+    dadosAdicionais: 'Apartamento compacto na Mooca. Tem FGTS. Renda de R$ 3.500. Entrada de R$ 30.000 disponível.',
     campanha: 'Instagram Ads - Apartamentos Compactos',
     conjunto: 'Apartamentos 1Q',
     anuncio: 'Apt 1Q Mooca',
@@ -97,11 +87,8 @@ const mockLeads: Lead[] = [
   {
     id: '4',
     nome: 'Fernanda Lima',
-    imovel: 'Casa 4 quartos - Tatuapé',
     telefone: '(11) 55555-5555',
-    temFGTS: 'Sim',
-    rendaFamiliar: 12000,
-    possuiEntrada: 'Sim',
+    dadosAdicionais: 'Casa de alto padrão no Tatuapé. Tem FGTS. Renda familiar de R$ 12.000. Entrada substancial disponível.',
     campanha: 'Facebook Ads - Casas Luxo',
     conjunto: 'Casas Premium',
     anuncio: 'Casa 4Q Tatuapé',
@@ -123,11 +110,8 @@ const mockLeads: Lead[] = [
   {
     id: '5',
     nome: 'Roberto Santos',
-    imovel: 'Apartamento 3 quartos - Ipiranga',
     telefone: '(11) 44444-4444',
-    temFGTS: 'Não',
-    rendaFamiliar: 7500,
-    possuiEntrada: 'Sim',
+    dadosAdicionais: 'Apartamento familiar no Ipiranga. Não tem FGTS. Renda de R$ 7.500. Possui entrada.',
     campanha: 'Google Ads - Apartamentos Familiares',
     conjunto: 'Apartamentos 3Q',
     anuncio: 'Apt 3Q Ipiranga',
@@ -149,11 +133,8 @@ const mockLeads: Lead[] = [
   {
     id: '6',
     nome: 'Patricia Alves',
-    imovel: 'Casa 2 quartos - Penha',
     telefone: '(11) 33333-3333',
-    temFGTS: 'Sim',
-    rendaFamiliar: 4200,
-    possuiEntrada: 'Não',
+    dadosAdicionais: 'Primeira casa própria na Penha. Tem FGTS. Renda de R$ 4.200. Não possui entrada ainda. CPF com restrição.',
     campanha: 'Facebook Ads - Primeira Casa',
     conjunto: 'Casas Primeira Compra',
     anuncio: 'Casa 2Q Penha',
@@ -202,7 +183,7 @@ const Index = () => {
 
   const filteredLeads = leads.filter(lead =>
     lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.imovel.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) ||
     lead.corretor.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
