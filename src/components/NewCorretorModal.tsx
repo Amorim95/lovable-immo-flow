@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Corretor } from "@/types/crm";
+import { Corretor, Equipe } from "@/types/crm";
 import {
   Dialog,
   DialogContent,
@@ -11,12 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 
 interface NewCorretorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateCorretor: (corretorData: Partial<Corretor>) => void;
+  equipes?: Equipe[];
 }
 
 const availablePermissions = [
@@ -26,12 +28,13 @@ const availablePermissions = [
   { id: 'configuracoes', label: 'Configurações Gerais' }
 ];
 
-export function NewCorretorModal({ isOpen, onClose, onCreateCorretor }: NewCorretorModalProps) {
+export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = [] }: NewCorretorModalProps) {
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
     telefone: '',
-    permissoes: [] as string[]
+    permissoes: [] as string[],
+    equipeId: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -42,6 +45,8 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor }: NewCorre
       return;
     }
 
+    const equipeSelecionada = equipes.find(e => e.id === formData.equipeId);
+    
     const newCorretor: Partial<Corretor> = {
       id: Date.now().toString(),
       nome: formData.nome,
@@ -49,7 +54,9 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor }: NewCorre
       telefone: formData.telefone,
       status: 'ativo',
       permissoes: formData.permissoes,
-      leads: []
+      leads: [],
+      equipeId: formData.equipeId || undefined,
+      equipeNome: equipeSelecionada?.nome || undefined
     };
 
     onCreateCorretor(newCorretor);
@@ -61,7 +68,8 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor }: NewCorre
       nome: '',
       email: '',
       telefone: '',
-      permissoes: []
+      permissoes: [],
+      equipeId: ''
     });
     onClose();
   };
@@ -122,6 +130,22 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor }: NewCorre
               onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
               placeholder="(11) 99999-9999"
             />
+          </div>
+
+          <div>
+            <Label htmlFor="equipe">Equipe (Opcional)</Label>
+            <Select value={formData.equipeId} onValueChange={(value) => setFormData({ ...formData, equipeId: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma equipe" />
+              </SelectTrigger>
+              <SelectContent>
+                {equipes.map((equipe) => (
+                  <SelectItem key={equipe.id} value={equipe.id}>
+                    {equipe.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

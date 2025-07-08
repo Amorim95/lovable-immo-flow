@@ -1,17 +1,20 @@
 
 import { useState } from "react";
-import { Corretor } from "@/types/crm";
+import { Corretor, Equipe } from "@/types/crm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NewCorretorModal } from "@/components/NewCorretorModal";
 import { EditCorretorModal } from "@/components/EditCorretorModal";
+import { NewTeamModal } from "@/components/NewTeamModal";
 import { 
   Plus,
   User,
   Phone,
-  Edit
+  Edit,
+  Users
 } from "lucide-react";
 
 const mockCorretores: Corretor[] = [
@@ -22,7 +25,9 @@ const mockCorretores: Corretor[] = [
     telefone: '(11) 99999-9999',
     status: 'ativo',
     permissoes: ['leads', 'dashboards'],
-    leads: ['1', '3', '5']
+    leads: ['1', '3', '5'],
+    equipeId: '1',
+    equipeNome: 'Equipe Zona Sul'
   },
   {
     id: '2',
@@ -31,7 +36,9 @@ const mockCorretores: Corretor[] = [
     telefone: '(11) 88888-8888',
     status: 'ativo',
     permissoes: ['leads'],
-    leads: ['2', '4', '6']
+    leads: ['2', '4', '6'],
+    equipeId: '2',
+    equipeNome: 'Equipe Barra'
   },
   {
     id: '3',
@@ -44,18 +51,42 @@ const mockCorretores: Corretor[] = [
   }
 ];
 
+const mockEquipes: Equipe[] = [
+  {
+    id: '1',
+    nome: 'Equipe Zona Sul',
+    responsavelId: '1',
+    responsavelNome: 'Maria Santos',
+    corretores: ['1']
+  },
+  {
+    id: '2',
+    nome: 'Equipe Barra',
+    responsavelId: '2',
+    responsavelNome: 'Pedro Oliveira',
+    corretores: ['2']
+  }
+];
+
 const Corretores = () => {
   const [corretores, setCorretores] = useState<Corretor[]>(mockCorretores);
+  const [equipes, setEquipes] = useState<Equipe[]>(mockEquipes);
   const [searchTerm, setSearchTerm] = useState('');
+  const [teamFilter, setTeamFilter] = useState('');
   const [showNewModal, setShowNewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showNewTeamModal, setShowNewTeamModal] = useState(false);
   const [selectedCorretor, setSelectedCorretor] = useState<Corretor | null>(null);
 
   const filteredCorretores = corretores
-    .filter(corretor =>
-      corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      corretor.email.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter(corretor => {
+      const matchesSearch = corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           corretor.email.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesTeam = teamFilter === '' || corretor.equipeId === teamFilter;
+      
+      return matchesSearch && matchesTeam;
+    })
     .sort((a, b) => {
       // Corretores ativos primeiro
       if (a.status === 'ativo' && b.status === 'inativo') return -1;
@@ -87,6 +118,11 @@ const Corretores = () => {
     setShowEditModal(true);
   };
 
+  const handleCreateTeam = (teamData: Partial<Equipe>) => {
+    const newTeam = teamData as Equipe;
+    setEquipes([...equipes, newTeam]);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -97,10 +133,16 @@ const Corretores = () => {
           </p>
         </div>
         
-        <Button className="bg-primary hover:bg-primary/90" onClick={() => setShowNewModal(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Corretor
-        </Button>
+        <div className="flex flex-col gap-2">
+          <Button className="bg-primary hover:bg-primary/90" onClick={() => setShowNewModal(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Corretor
+          </Button>
+          <Button variant="outline" onClick={() => setShowNewTeamModal(true)}>
+            <Users className="w-4 h-4 mr-2" />
+            Criar Equipe
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -162,6 +204,19 @@ const Corretores = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
             />
+            <Select value={teamFilter} onValueChange={setTeamFilter}>
+              <SelectTrigger className="max-w-sm">
+                <SelectValue placeholder="Filtrar por equipe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todas as equipes</SelectItem>
+                {equipes.map((equipe) => (
+                  <SelectItem key={equipe.id} value={equipe.id}>
+                    {equipe.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -207,6 +262,13 @@ const Corretores = () => {
                   </div>
                 </div>
 
+                {corretor.equipeNome && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Users className="w-4 h-4" />
+                    <span>{corretor.equipeNome}</span>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">Leads Ativos:</span>
                   <span className="font-medium">{corretor.leads.length}</span>
@@ -240,6 +302,7 @@ const Corretores = () => {
         isOpen={showNewModal}
         onClose={() => setShowNewModal(false)}
         onCreateCorretor={handleCreateCorretor}
+        equipes={equipes}
       />
 
       <EditCorretorModal
@@ -250,6 +313,14 @@ const Corretores = () => {
           setSelectedCorretor(null);
         }}
         onUpdateCorretor={handleUpdateCorretor}
+        equipes={equipes}
+      />
+
+      <NewTeamModal
+        isOpen={showNewTeamModal}
+        onClose={() => setShowNewTeamModal(false)}
+        onCreateTeam={handleCreateTeam}
+        corretores={corretores}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Corretor } from "@/types/crm";
+import { Corretor, Equipe } from "@/types/crm";
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit } from "lucide-react";
 
 interface EditCorretorModalProps {
@@ -18,6 +19,7 @@ interface EditCorretorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdateCorretor: (corretorId: string, updates: Partial<Corretor>) => void;
+  equipes?: Equipe[];
 }
 
 const availablePermissions = [
@@ -27,12 +29,13 @@ const availablePermissions = [
   { id: 'configuracoes', label: 'Configurações Gerais' }
 ];
 
-export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor }: EditCorretorModalProps) {
+export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor, equipes = [] }: EditCorretorModalProps) {
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
     telefone: '',
-    permissoes: [] as string[]
+    permissoes: [] as string[],
+    equipeId: ''
   });
 
   useEffect(() => {
@@ -41,7 +44,8 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor 
         nome: corretor.nome || '',
         email: corretor.email || '',
         telefone: corretor.telefone || '',
-        permissoes: corretor.permissoes || []
+        permissoes: corretor.permissoes || [],
+        equipeId: corretor.equipeId || ''
       });
     }
   }, [corretor]);
@@ -54,11 +58,15 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor 
       return;
     }
 
+    const equipeSelecionada = equipes.find(e => e.id === formData.equipeId);
+    
     onUpdateCorretor(corretor.id, {
       nome: formData.nome,
       email: formData.email,
       telefone: formData.telefone,
-      permissoes: formData.permissoes
+      permissoes: formData.permissoes,
+      equipeId: formData.equipeId || undefined,
+      equipeNome: equipeSelecionada?.nome || undefined
     });
     
     onClose();
@@ -122,6 +130,23 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor 
               onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
               placeholder="(11) 99999-9999"
             />
+          </div>
+
+          <div>
+            <Label htmlFor="equipe">Equipe</Label>
+            <Select value={formData.equipeId} onValueChange={(value) => setFormData({ ...formData, equipeId: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma equipe" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Sem equipe</SelectItem>
+                {equipes.map((equipe) => (
+                  <SelectItem key={equipe.id} value={equipe.id}>
+                    {equipe.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

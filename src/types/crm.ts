@@ -36,6 +36,14 @@ export interface Atividade {
   corretor: string;
 }
 
+export interface Equipe {
+  id: string;
+  nome: string;
+  responsavelId: string;
+  responsavelNome: string;
+  corretores: string[];
+}
+
 export interface Corretor {
   id: string;
   nome: string;
@@ -44,6 +52,8 @@ export interface Corretor {
   status: 'ativo' | 'inativo';
   permissoes: string[];
   leads: string[];
+  equipeId?: string;
+  equipeNome?: string;
 }
 
 export interface Imovel {
