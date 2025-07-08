@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 interface CompanySettings {
   name: string;
@@ -25,6 +25,15 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   const updateSettings = (newSettings: Partial<CompanySettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
   };
+
+  // Apply dark mode to document
+  useEffect(() => {
+    if (settings.isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [settings.isDarkMode]);
 
   return (
     <CompanyContext.Provider value={{ settings, updateSettings }}>

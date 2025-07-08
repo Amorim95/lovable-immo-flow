@@ -54,11 +54,18 @@ const Corretores = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCorretor, setSelectedCorretor] = useState<Corretor | null>(null);
 
-  const filteredCorretores = corretores.filter(corretor =>
-    corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    corretor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    corretor.numero.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCorretores = corretores
+    .filter(corretor =>
+      corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      corretor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      corretor.numero.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      // Corretores ativos primeiro
+      if (a.status === 'ativo' && b.status === 'inativo') return -1;
+      if (a.status === 'inativo' && b.status === 'ativo') return 1;
+      return 0;
+    });
 
   const toggleStatus = (corretorId: string) => {
     setCorretores(corretores.map(corretor =>

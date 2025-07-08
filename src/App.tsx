@@ -11,7 +11,6 @@ import Index from "./pages/Index";
 import Dashboards from "./pages/Dashboards";
 import Corretores from "./pages/Corretores";
 import Imoveis from "./pages/Imoveis";
-import Filas from "./pages/Filas";
 import Configuracoes from "./pages/Configuracoes";
 import NotFound from "./pages/NotFound";
 
@@ -40,7 +39,6 @@ function AppContent() {
               <Route path="/dashboards" element={<Dashboards />} />
               <Route path="/corretores" element={<Corretores />} />
               <Route path="/imoveis" element={<Imoveis />} />
-              <Route path="/filas" element={<Filas />} />
               <Route path="/configuracoes" element={<Configuracoes />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

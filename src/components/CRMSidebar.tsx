@@ -43,12 +43,6 @@ const menuItems = [
     description: "Gestão de equipe"
   },
   { 
-    title: "Filas", 
-    url: "/filas", 
-    icon: Phone,
-    description: "Filas de atendimento"
-  },
-  { 
     title: "Configurações", 
     url: "/configuracoes", 
     icon: User,

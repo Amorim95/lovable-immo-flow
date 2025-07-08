@@ -123,51 +123,25 @@ const Configuracoes = () => {
         </Card>
 
 
-        {/* Personalização da Interface */}
+        {/* Modo Escuro */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Palette className="w-5 h-5" />
-              Personalização da Interface
+              {settings.isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              Modo Escuro
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label className="text-base font-medium">Tema de Cores</Label>
-              <div className="grid grid-cols-5 gap-3 mt-3">
-                {themes.map((theme) => (
-                  <div key={theme.id} className="text-center">
-                    <button
-                      onClick={() => updateSettings({ theme: theme.id })}
-                      className={`w-12 h-12 rounded-lg border-2 ${
-                        settings.theme === theme.id ? 'border-gray-800' : 'border-gray-200'
-                      }`}
-                      style={{ backgroundColor: theme.color }}
-                    />
-                    <p className="text-xs mt-1">{theme.name}</p>
-                  </div>
-                ))}
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-base font-medium">Tema Escuro</Label>
+                <p className="text-sm text-gray-600">Alternar entre tema claro e escuro</p>
               </div>
+              <Switch 
+                checked={settings.isDarkMode} 
+                onCheckedChange={(checked) => updateSettings({ isDarkMode: checked })}
+              />
             </div>
-            
-            <Separator />
-            
-            <div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {settings.isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-                  <div>
-                    <Label className="text-base font-medium">Modo Escuro</Label>
-                    <p className="text-sm text-gray-600">Alternar entre tema claro e escuro</p>
-                  </div>
-                </div>
-                <Switch 
-                  checked={settings.isDarkMode} 
-                  onCheckedChange={(checked) => updateSettings({ isDarkMode: checked })}
-                />
-              </div>
-            </div>
-            
             <Button className="w-full" onClick={handleSaveTheme}>Salvar Configurações</Button>
           </CardContent>
         </Card>
