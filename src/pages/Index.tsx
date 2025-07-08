@@ -201,7 +201,7 @@ const Index = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gestão de Leads</h1>
           <p className="text-gray-600 mt-1">
-            Gerencie todos os seus leads de forma eficiente
+            Gerencie seus leads aqui
           </p>
         </div>
         
@@ -213,76 +213,6 @@ const Index = () => {
             <Plus className="w-4 h-4 mr-2" />
             Novo Lead
           </Button>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <LayoutList className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{totalLeads}</p>
-              <p className="text-sm text-gray-600">Total de Leads</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{leadsHoje}</p>
-              <p className="text-sm text-gray-600">Leads de Hoje</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <LayoutGrid className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {leads.filter(l => l.etapa === 'vendas-fechadas').length}
-              </p>
-              <p className="text-sm text-gray-600">Vendas Fechadas</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {leads.filter(l => l.etapa === 'visita').length}
-              </p>
-              <p className="text-sm text-gray-600">Visitas Agendadas</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filtros e Controles */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Input
-              placeholder="Buscar leads..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64"
-            />
-          </div>
-          
           <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
             <Button
               variant={viewMode === 'kanban' ? 'default' : 'ghost'}
@@ -302,6 +232,37 @@ const Index = () => {
               <LayoutList className="w-4 h-4 mr-2" />
               Lista
             </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Card - Apenas Visitas Agendadas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+              <Calendar className="w-6 h-6 text-orange-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">
+                {leads.filter(l => l.etapa === 'visita').length}
+              </p>
+              <p className="text-sm text-gray-600">Visitas Agendadas</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filtros */}
+      <div className="bg-white p-4 rounded-lg shadow-sm border">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Input
+              placeholder="Buscar leads..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64"
+            />
           </div>
         </div>
       </div>

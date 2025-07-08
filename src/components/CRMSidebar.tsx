@@ -13,6 +13,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useCompany } from "@/contexts/CompanyContext";
 import { 
   LayoutList, 
   Calendar,
@@ -57,6 +58,7 @@ const menuItems = [
 
 export function CRMSidebar() {
   const { state } = useSidebar();
+  const { settings } = useCompany();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
@@ -81,15 +83,15 @@ export function CRMSidebar() {
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 flex-shrink-0">
             <img 
-              src="/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png" 
-              alt="Click Imóveis Logo" 
+              src={settings.logo || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
+              alt={`${settings.name} Logo`} 
               className="w-full h-full object-contain"
             />
           </div>
           {!collapsed && (
             <div>
-              <h1 className="text-lg font-bold text-foreground">Click Imóveis</h1>
-              <p className="text-xs text-muted-foreground">Sistema de gestão</p>
+              <h1 className="text-lg font-bold text-foreground">{settings.name}</h1>
+              <p className="text-xs text-muted-foreground">Gerencie seus leads aqui</p>
             </div>
           )}
         </div>

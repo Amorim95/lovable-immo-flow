@@ -7,13 +7,61 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { User, Edit, Settings, Link } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { useCompany } from "@/contexts/CompanyContext";
+import { useToast } from "@/hooks/use-toast";
+import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun } from "lucide-react";
 
 const Configuracoes = () => {
+  const { settings, updateSettings } = useCompany();
+  const { toast } = useToast();
   const [showMetaModal, setShowMetaModal] = useState(false);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [metaConnected, setMetaConnected] = useState(true);
   const [googleConnected, setGoogleConnected] = useState(false);
+  const [companyName, setCompanyName] = useState(settings.name);
+  const [companyLogo, setCompanyLogo] = useState<string | null>(settings.logo);
+
+  const themes = [
+    { id: 'blue', name: 'Azul', color: '#3B82F6' },
+    { id: 'green', name: 'Verde', color: '#10B981' },
+    { id: 'purple', name: 'Roxo', color: '#8B5CF6' },
+    { id: 'orange', name: 'Laranja', color: '#F59E0B' },
+    { id: 'red', name: 'Vermelho', color: '#EF4444' }
+  ];
+
+  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setCompanyLogo(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveCompany = () => {
+    updateSettings({
+      name: companyName,
+      logo: companyLogo
+    });
+    toast({
+      title: "Configurações salvas",
+      description: "As configurações da empresa foram atualizadas com sucesso.",
+    });
+  };
+
+  const handleSaveTheme = () => {
+    updateSettings({
+      theme: settings.theme,
+      isDarkMode: settings.isDarkMode
+    });
+    toast({
+      title: "Tema salvo",
+      description: "As configurações de tema foram atualizadas com sucesso.",
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -36,25 +84,45 @@ const Configuracoes = () => {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="empresa-nome">Nome da Empresa</Label>
-              <Input id="empresa-nome" placeholder="Nome da sua imobiliária" />
+              <Input 
+                id="empresa-nome" 
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="Nome da sua imobiliária" 
+              />
             </div>
             <div>
-              <Label htmlFor="empresa-cnpj">CNPJ</Label>
-              <Input id="empresa-cnpj" placeholder="00.000.000/0000-00" />
+              <Label htmlFor="empresa-logo">Logo da Empresa</Label>
+              <div className="mt-2">
+                <div className="flex items-center gap-4">
+                  <input
+                    type="file"
+                    id="empresa-logo"
+                    accept="image/*"
+                    onChange={handleLogoUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => document.getElementById('empresa-logo')?.click()}
+                    className="flex items-center gap-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Coloque aqui sua logo
+                  </Button>
+                  {companyLogo && (
+                    <div className="w-16 h-16 border rounded-lg overflow-hidden">
+                      <img 
+                        src={companyLogo} 
+                        alt="Logo da empresa" 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-            <div>
-              <Label htmlFor="empresa-endereco">Endereço</Label>
-              <Input id="empresa-endereco" placeholder="Endereço completo" />
-            </div>
-            <div>
-              <Label htmlFor="empresa-telefone">Telefone</Label>
-              <Input id="empresa-telefone" placeholder="(11) 99999-9999" />  
-            </div>
-            <div>
-              <Label htmlFor="empresa-email">E-mail</Label>
-              <Input id="empresa-email" type="email" placeholder="contato@imobiliaria.com" />
-            </div>
-            <Button className="w-full">Salvar Alterações</Button>
+            <Button className="w-full" onClick={handleSaveCompany}>Salvar Alterações</Button>
           </CardContent>
         </Card>
 
@@ -117,34 +185,52 @@ const Configuracoes = () => {
           </CardContent>
         </Card>
 
-        {/* Configurações de Notificações */}
+        {/* Personalização da Interface */}
         <Card>
           <CardHeader>
-            <CardTitle>Notificações</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="w-5 h-5" />
+              Personalização da Interface
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div>
-              <h4 className="font-medium mb-3">E-mail:</h4>
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <span className="text-sm">Novos leads</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <span className="text-sm">Leads sem resposta</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Relatórios diários</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Vendas fechadas</span>
-                </label>
+              <Label className="text-base font-medium">Tema de Cores</Label>
+              <div className="grid grid-cols-5 gap-3 mt-3">
+                {themes.map((theme) => (
+                  <div key={theme.id} className="text-center">
+                    <button
+                      onClick={() => updateSettings({ theme: theme.id })}
+                      className={`w-12 h-12 rounded-lg border-2 ${
+                        settings.theme === theme.id ? 'border-gray-800' : 'border-gray-200'
+                      }`}
+                      style={{ backgroundColor: theme.color }}
+                    />
+                    <p className="text-xs mt-1">{theme.name}</p>
+                  </div>
+                ))}
               </div>
             </div>
-            <Button className="w-full">Salvar Preferências</Button>
+            
+            <Separator />
+            
+            <div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {settings.isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                  <div>
+                    <Label className="text-base font-medium">Modo Escuro</Label>
+                    <p className="text-sm text-gray-600">Alternar entre tema claro e escuro</p>
+                  </div>
+                </div>
+                <Switch 
+                  checked={settings.isDarkMode} 
+                  onCheckedChange={(checked) => updateSettings({ isDarkMode: checked })}
+                />
+              </div>
+            </div>
+            
+            <Button className="w-full" onClick={handleSaveTheme}>Salvar Configurações</Button>
           </CardContent>
         </Card>
 
