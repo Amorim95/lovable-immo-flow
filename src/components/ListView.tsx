@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TagSelector } from "@/components/TagSelector";
 import { Phone } from "lucide-react";
 
@@ -65,6 +66,10 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
     onLeadUpdate(leadId, { etiquetas: newTags });
   };
 
+  const handleStageChange = (leadId: string, newStage: Lead['etapa']) => {
+    onLeadUpdate(leadId, { etapa: newStage });
+  };
+
   return (
     <div className="bg-white rounded-lg border shadow-sm">
       <Table>
@@ -104,10 +109,23 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
               <TableCell className="max-w-xs truncate">
                 {lead.dadosAdicionais || '-'}
               </TableCell>
-              <TableCell>
-                <Badge className={stageColors[lead.etapa]}>
-                  {stageLabels[lead.etapa]}
-                </Badge>
+              <TableCell onClick={(e) => e.stopPropagation()}>
+                <Select
+                  value={lead.etapa}
+                  onValueChange={(value) => handleStageChange(lead.id, value as Lead['etapa'])}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="aguardando-atendimento">Aguardando Atendimento</SelectItem>
+                    <SelectItem value="tentativas-contato">Em Tentativas de Contato</SelectItem>
+                    <SelectItem value="atendeu">Atendeu</SelectItem>
+                    <SelectItem value="visita">Visita</SelectItem>
+                    <SelectItem value="vendas-fechadas">Vendas Fechadas</SelectItem>
+                    <SelectItem value="em-pausa">Em Pausa</SelectItem>
+                  </SelectContent>
+                </Select>
               </TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <TagSelector

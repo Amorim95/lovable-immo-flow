@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TagSelector } from "@/components/TagSelector";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Phone, 
   User, 
@@ -157,6 +158,27 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                     <Edit className="w-4 h-4 mr-2" />
                     {editMode ? 'Cancelar' : 'Editar'}
                   </Button>
+                </div>
+
+                {/* Etapa do Lead */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-gray-700">Etapa do Lead</h4>
+                  <Select
+                    value={lead.etapa}
+                    onValueChange={(value) => onUpdate(lead.id, { etapa: value as Lead['etapa'] })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="aguardando-atendimento">Aguardando Atendimento</SelectItem>
+                      <SelectItem value="tentativas-contato">Em Tentativas de Contato</SelectItem>
+                      <SelectItem value="atendeu">Atendeu</SelectItem>
+                      <SelectItem value="visita">Visita</SelectItem>
+                      <SelectItem value="vendas-fechadas">Vendas Fechadas</SelectItem>
+                      <SelectItem value="em-pausa">Em Pausa</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Etiquetas */}

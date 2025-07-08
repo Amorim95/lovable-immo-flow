@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { CalendarIcon, Download } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
@@ -49,8 +50,8 @@ const chartConfig = {
 
 const PerformancePorCorretor = () => {
   const [corretorSelecionado, setCorretorSelecionado] = useState("1");
-  const [dataInicio, setDataInicio] = useState("2024-01-01");
-  const [dataFim, setDataFim] = useState("2024-12-31");
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
+  const [customDateRange, setCustomDateRange] = useState<DateRange>();
 
   const corretor = corretoresFicticios.find(c => c.id === corretorSelecionado) || corretoresFicticios[0];
 
@@ -72,6 +73,13 @@ const PerformancePorCorretor = () => {
   const exportarPDF = () => {
     // Implementação futura do export PDF
     alert("Funcionalidade de export PDF será implementada");
+  };
+
+  const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
+    setDateFilter(option);
+    if (customRange) {
+      setCustomDateRange(customRange);
+    }
   };
 
   return (
@@ -98,7 +106,7 @@ const PerformancePorCorretor = () => {
           <CardTitle>Filtros</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Corretor</label>
               <Select value={corretorSelecionado} onValueChange={setCorretorSelecionado}>
@@ -115,21 +123,11 @@ const PerformancePorCorretor = () => {
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Data Início</label>
-              <input
-                type="date"
-                value={dataInicio}
-                onChange={(e) => setDataInicio(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Data Fim</label>
-              <input
-                type="date"
-                value={dataFim}
-                onChange={(e) => setDataFim(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              <label className="text-sm font-medium">Filtro de Data</label>
+              <DateFilter
+                value={dateFilter}
+                customRange={customDateRange}
+                onValueChange={handleDateFilterChange}
               />
             </div>
           </div>

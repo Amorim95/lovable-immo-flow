@@ -6,6 +6,7 @@ import { LeadModal } from "@/components/LeadModal";
 import { NewLeadModal } from "@/components/NewLeadModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { 
   LayoutList, 
   LayoutGrid,
@@ -162,6 +163,8 @@ const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
+  const [customDateRange, setCustomDateRange] = useState<DateRange>();
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
     setLeads(prevLeads => prevLeads.map(lead => 
@@ -185,11 +188,27 @@ const Index = () => {
     setLeads([...leads, newLead]);
   };
 
-  const filteredLeads = leads.filter(lead =>
-    lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    lead.corretor.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
+    setDateFilter(option);
+    if (customRange) {
+      setCustomDateRange(customRange);
+    }
+  };
+
+  const filteredLeads = leads.filter(lead => {
+    // Filtro de busca
+    const matchesSearch = lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      lead.corretor.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Filtro de data
+    const dateRange = getDateRangeFromFilter(dateFilter, customDateRange);
+    const matchesDate = !dateRange || (
+      lead.dataCriacao >= dateRange.from && lead.dataCriacao <= dateRange.to
+    );
+
+    return matchesSearch && matchesDate;
+  });
 
   const totalLeads = leads.length;
   const leadsHoje = leads.filter(lead => {
@@ -249,6 +268,11 @@ const Index = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-64"
+            />
+            <DateFilter
+              value={dateFilter}
+              customRange={customDateRange}
+              onValueChange={handleDateFilterChange}
             />
           </div>
         </div>
