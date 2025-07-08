@@ -85,7 +85,7 @@ export function CRMSidebar() {
           {!collapsed && (
             <div>
               <h1 className="text-lg font-bold text-foreground">{settings.name}</h1>
-              <p className="text-xs text-muted-foreground">Gerencie seus leads aqui</p>
+              <p className="text-xs text-muted-foreground">Feito Por: Monumental Marketing</p>
             </div>
           )}
         </div>
