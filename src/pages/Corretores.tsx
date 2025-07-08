@@ -72,7 +72,7 @@ const Corretores = () => {
   const [corretores, setCorretores] = useState<Corretor[]>(mockCorretores);
   const [equipes, setEquipes] = useState<Equipe[]>(mockEquipes);
   const [searchTerm, setSearchTerm] = useState('');
-  const [teamFilter, setTeamFilter] = useState('');
+  const [teamFilter, setTeamFilter] = useState('all');
   const [showNewModal, setShowNewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showNewTeamModal, setShowNewTeamModal] = useState(false);
@@ -83,9 +83,11 @@ const Corretores = () => {
       const matchesSearch = corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            corretor.email.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesTeam = teamFilter === '' || teamFilter === 'no-team' 
-        ? (teamFilter === '' || !corretor.equipeId) 
-        : corretor.equipeId === teamFilter;
+      const matchesTeam = teamFilter === 'all' 
+        ? true 
+        : teamFilter === 'no-team' 
+          ? !corretor.equipeId 
+          : corretor.equipeId === teamFilter;
       
       return matchesSearch && matchesTeam;
     })
@@ -124,6 +126,8 @@ const Corretores = () => {
     const newTeam = teamData as Equipe;
     setEquipes([...equipes, newTeam]);
   };
+
+  console.log('Corretores page rendering, teamFilter:', teamFilter, 'equipes:', equipes);
 
   return (
     <div className="space-y-6">
@@ -211,7 +215,7 @@ const Corretores = () => {
                 <SelectValue placeholder="Filtrar por equipe" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as equipes</SelectItem>
+                <SelectItem value="all">Todas as equipes</SelectItem>
                 <SelectItem value="no-team">Sem equipe</SelectItem>
                 {equipes.map((equipe) => (
                   <SelectItem key={equipe.id} value={equipe.id}>
