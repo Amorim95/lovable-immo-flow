@@ -270,8 +270,16 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      crypt_password: {
+        Args: { password: string }
+        Returns: string
+      }
       is_admin: {
         Args: { user_id: string }
+        Returns: boolean
+      }
+      verify_password: {
+        Args: { password: string; hash: string }
         Returns: boolean
       }
     }

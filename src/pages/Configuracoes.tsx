@@ -8,9 +8,11 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useToast } from "@/hooks/use-toast";
-import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun } from "lucide-react";
+import { SecuritySettings } from "@/components/SecuritySettings";
+import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun, Shield } from "lucide-react";
 
 const Configuracoes = () => {
   const { settings, updateSettings } = useCompany();
@@ -68,119 +70,138 @@ const Configuracoes = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Configurações da Empresa */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Edit className="w-5 h-5" />
-              Dados da Empresa
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="empresa-nome">Nome da Empresa</Label>
-              <Input 
-                id="empresa-nome" 
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Nome da sua imobiliária" 
-              />
-            </div>
-            <div>
-              <Label htmlFor="empresa-logo">Logo da Empresa</Label>
-              <div className="mt-2">
-                <div className="flex items-center gap-4">
-                  <input
-                    type="file"
-                    id="empresa-logo"
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    className="hidden"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => document.getElementById('empresa-logo')?.click()}
-                    className="flex items-center gap-2"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Coloque aqui sua logo
-                  </Button>
-                  {companyLogo && (
-                    <div className="w-16 h-16 border rounded-lg overflow-hidden">
-                      <img 
-                        src={companyLogo} 
-                        alt="Logo da empresa" 
-                        className="w-full h-full object-contain"
-                      />
+      <Tabs defaultValue="empresa" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="empresa" className="flex items-center gap-2">
+            <Edit className="w-4 h-4" />
+            Empresa
+          </TabsTrigger>
+          <TabsTrigger value="integracoes" className="flex items-center gap-2">
+            <Link className="w-4 h-4" />
+            Integrações
+          </TabsTrigger>
+          <TabsTrigger value="seguranca" className="flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            Acessos e Segurança
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="empresa" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Edit className="w-5 h-5" />
+                Dados da Empresa
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="empresa-nome">Nome da Empresa</Label>
+                <Input 
+                  id="empresa-nome" 
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Nome da sua imobiliária" 
+                />
+              </div>
+              <div>
+                <Label htmlFor="empresa-logo">Logo da Empresa</Label>
+                <div className="mt-2">
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="file"
+                      id="empresa-logo"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => document.getElementById('empresa-logo')?.click()}
+                      className="flex items-center gap-2"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Coloque aqui sua logo
+                    </Button>
+                    {companyLogo && (
+                      <div className="w-16 h-16 border rounded-lg overflow-hidden">
+                        <img 
+                          src={companyLogo} 
+                          alt="Logo da empresa" 
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <Button className="w-full" onClick={handleSaveCompany}>Salvar Alterações</Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="integracoes" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Link className="w-5 h-5" />
+                Integrações
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Settings className="w-5 h-5 text-blue-600" />
                     </div>
-                  )}
+                    <div>
+                      <div className="font-medium">Meta Ads (Facebook/Instagram)</div>
+                      <div className="text-sm text-gray-500">Integração com Facebook e Instagram Ads</div>
+                      {metaConnected && (
+                        <Badge className="bg-green-100 text-green-800 text-xs mt-1">Conectado</Badge>
+                      )}
+                    </div>
+                  </div>
+                  <Button 
+                    variant={metaConnected ? "outline" : "default"} 
+                    size="sm"
+                    onClick={() => setShowMetaModal(true)}
+                  >
+                    {metaConnected ? 'Configurar' : 'Conectar'}
+                  </Button>
+                </div>
+                
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                      <Settings className="w-5 h-5 text-red-600" />
+                    </div>
+                    <div>
+                      <div className="font-medium">Google Ads</div>
+                      <div className="text-sm text-gray-500">Integração com Google Ads para captura de leads</div>
+                      {googleConnected && (
+                        <Badge className="bg-green-100 text-green-800 text-xs mt-1">Conectado</Badge>
+                      )}
+                    </div>
+                  </div>
+                  <Button 
+                    variant={googleConnected ? "outline" : "default"} 
+                    size="sm"
+                    onClick={() => setShowGoogleModal(true)}
+                  >
+                    {googleConnected ? 'Configurar' : 'Conectar'}
+                  </Button>
                 </div>
               </div>
-            </div>
-            <Button className="w-full" onClick={handleSaveCompany}>Salvar Alterações</Button>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-
-
-        {/* Integrações */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Link className="w-5 h-5" />
-              Integrações
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Settings className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium">Meta Ads (Facebook/Instagram)</div>
-                    <div className="text-sm text-gray-500">Integração com Facebook e Instagram Ads</div>
-                    {metaConnected && (
-                      <Badge className="bg-green-100 text-green-800 text-xs mt-1">Conectado</Badge>
-                    )}
-                  </div>
-                </div>
-                <Button 
-                  variant={metaConnected ? "outline" : "default"} 
-                  size="sm"
-                  onClick={() => setShowMetaModal(true)}
-                >
-                  {metaConnected ? 'Configurar' : 'Conectar'}
-                </Button>
-              </div>
-              
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                    <Settings className="w-5 h-5 text-red-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium">Google Ads</div>
-                    <div className="text-sm text-gray-500">Integração com Google Ads para captura de leads</div>
-                    {googleConnected && (
-                      <Badge className="bg-green-100 text-green-800 text-xs mt-1">Conectado</Badge>
-                    )}
-                  </div>
-                </div>
-                <Button 
-                  variant={googleConnected ? "outline" : "default"} 
-                  size="sm"
-                  onClick={() => setShowGoogleModal(true)}
-                >
-                  {googleConnected ? 'Configurar' : 'Conectar'}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="seguranca" className="space-y-6">
+          <SecuritySettings />
+        </TabsContent>
+      </Tabs>
 
       {/* Modal Meta Ads */}
       <Dialog open={showMetaModal} onOpenChange={setShowMetaModal}>
