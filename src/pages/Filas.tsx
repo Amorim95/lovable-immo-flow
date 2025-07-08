@@ -39,15 +39,20 @@ const mockFilas: Fila[] = [
 ];
 
 const Filas = () => {
-  const corretoresDisponiveis = [
+  const [corretoresDisponiveis, setCorretoresDisponiveis] = useState([
     { nome: 'Maria Santos', ativo: true },
     { nome: 'Pedro Oliveira', ativo: true },
     { nome: 'Ana Costa', ativo: false }
-  ];
+  ]);
 
   const toggleCorretorStatus = (nomeCorretor: string) => {
-    // Função para alternar status do corretor
-    console.log('Alternando status do corretor:', nomeCorretor);
+    setCorretoresDisponiveis(prevCorretores => 
+      prevCorretores.map(corretor => 
+        corretor.nome === nomeCorretor 
+          ? { ...corretor, ativo: !corretor.ativo }
+          : corretor
+      )
+    );
   };
 
 

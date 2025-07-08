@@ -164,11 +164,15 @@ const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
-    setLeads(leads.map(lead => 
+    setLeads(prevLeads => prevLeads.map(lead => 
       lead.id === leadId 
         ? { ...lead, ...updates }
         : lead
     ));
+    // Force re-render by updating the selected lead if it's the one being updated
+    if (selectedLead && selectedLead.id === leadId) {
+      setSelectedLead(prev => prev ? { ...prev, ...updates } : null);
+    }
   };
 
   const handleLeadClick = (lead: Lead) => {
@@ -197,7 +201,7 @@ const Index = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gestão de Leads</h1>
           <p className="text-gray-600 mt-1">
@@ -232,23 +236,6 @@ const Index = () => {
               <LayoutList className="w-4 h-4 mr-2" />
               Lista
             </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Card - Apenas Visitas Agendadas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {leads.filter(l => l.etapa === 'visita').length}
-              </p>
-              <p className="text-sm text-gray-600">Visitas Agendadas</p>
-            </div>
           </div>
         </div>
       </div>

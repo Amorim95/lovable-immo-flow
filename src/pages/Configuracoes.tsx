@@ -53,10 +53,6 @@ const Configuracoes = () => {
   };
 
   const handleSaveTheme = () => {
-    updateSettings({
-      theme: settings.theme,
-      isDarkMode: settings.isDarkMode
-    });
     toast({
       title: "Tema salvo",
       description: "As configurações de tema foram atualizadas com sucesso.",
@@ -126,64 +122,6 @@ const Configuracoes = () => {
           </CardContent>
         </Card>
 
-        {/* Configurações de Acesso */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
-              Controle de Acesso
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h4 className="font-medium mb-3">Permissões Disponíveis:</h4>
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <span className="text-sm">Visualizar Leads</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <span className="text-sm">Editar Leads</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <span className="text-sm">Acessar Dashboards</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Gerenciar Corretores</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Configurar Filas</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Configurações Gerais</span>
-                </label>
-              </div>
-            </div>
-            <Separator />
-            <div>
-              <h4 className="font-medium mb-3">Níveis de Acesso:</h4>
-              <div className="space-y-2 text-sm">
-                <div className="p-3 bg-blue-50 rounded-lg">
-                  <div className="font-medium">Administrador</div>
-                  <div className="text-gray-600">Acesso total ao sistema</div>
-                </div>
-                <div className="p-3 bg-green-50 rounded-lg">
-                  <div className="font-medium">Corretor Senior</div>
-                  <div className="text-gray-600">Leads, dashboards e filas</div>
-                </div>
-                <div className="p-3 bg-yellow-50 rounded-lg">
-                  <div className="font-medium">Corretor</div>
-                  <div className="text-gray-600">Apenas leads</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Personalização da Interface */}
         <Card>
