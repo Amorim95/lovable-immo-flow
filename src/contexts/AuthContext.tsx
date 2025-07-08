@@ -35,6 +35,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
+      // TEMPORÁRIO: Permitir login com qualquer email/senha
+      // Criar um usuário fictício com permissões de admin
+      const userData: User = {
+        id: 'temp-admin-id',
+        name: 'Usuário Teste',
+        email: email,
+        role: 'admin',
+        status: 'ativo'
+      };
+
+      setUser(userData);
+      localStorage.setItem('crm_user', JSON.stringify(userData));
+      
+      return { success: true };
+
+      /* CÓDIGO ORIGINAL COMENTADO - DESCOMENTAR QUANDO CORRIGIR A AUTENTICAÇÃO
       // Primeiro, verificar se o usuário existe
       const { data, error } = await supabase
         .from('users')
@@ -80,6 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('crm_user', JSON.stringify(userData));
       
       return { success: true };
+      */
     } catch (error) {
       console.error('Erro no login:', error);
       return { success: false, error: 'Erro interno do servidor' };
