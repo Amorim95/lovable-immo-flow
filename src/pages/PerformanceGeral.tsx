@@ -63,9 +63,14 @@ const PerformanceGeral = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Performance Geral</h1>
-          <p className="text-gray-600 mt-1">Visão consolidada de toda a empresa</p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={() => window.history.back()}>
+            ← Voltar
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Performance Geral</h1>
+            <p className="text-gray-600 mt-1">Visão consolidada de toda a empresa</p>
+          </div>
         </div>
         <Button onClick={exportarPDF} className="flex items-center gap-2">
           <Download className="w-4 h-4" />

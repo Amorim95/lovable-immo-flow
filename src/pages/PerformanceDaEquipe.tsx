@@ -75,18 +75,66 @@ const PerformanceDaEquipe = () => {
     alert("Funcionalidade de export PDF será implementada");
   };
 
+  const rankingEquipes = [
+    { posicao: 1, nome: "Equipe Zona Sul", conversao: "22%", tempoResposta: "10 min", vendas: 40 },
+    { posicao: 2, nome: "Equipe Barra", conversao: "19%", tempoResposta: "12 min", vendas: 35 },
+    { posicao: 3, nome: "Equipe Centro", conversao: "17%", tempoResposta: "14 min", vendas: 31 }
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Performance da Equipe</h1>
-          <p className="text-gray-600 mt-1">Análise consolidada da performance da equipe</p>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={() => window.history.back()}>
+            ← Voltar
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Performance da Equipe</h1>
+            <p className="text-gray-600 mt-1">Análise consolidada da performance da equipe</p>
+          </div>
         </div>
         <Button onClick={exportarPDF} className="flex items-center gap-2">
           <Download className="w-4 h-4" />
           Exportar PDF
         </Button>
       </div>
+
+      {/* Ranking das Equipes */}
+      <Card>
+        <CardHeader>
+          <CardTitle>🏆 Ranking das 3 Melhores Equipes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {rankingEquipes.map((equipe) => (
+              <div key={equipe.posicao} className={`p-4 rounded-lg border ${equipe.posicao === 1 ? 'border-yellow-400 bg-yellow-50' : equipe.posicao === 2 ? 'border-gray-400 bg-gray-50' : 'border-orange-400 bg-orange-50'}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${equipe.posicao === 1 ? 'bg-yellow-400 text-white' : equipe.posicao === 2 ? 'bg-gray-400 text-white' : 'bg-orange-400 text-white'}`}>
+                      {equipe.posicao}
+                    </div>
+                    <h3 className="font-semibold">{equipe.nome}</h3>
+                  </div>
+                  <div className="flex gap-6 text-sm">
+                    <div className="text-center">
+                      <div className="font-semibold text-green-600">{equipe.conversao}</div>
+                      <div className="text-gray-500">Conversão</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-semibold text-blue-600">{equipe.tempoResposta}</div>
+                      <div className="text-gray-500">Tempo Resp.</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-semibold text-purple-600">{equipe.vendas}</div>
+                      <div className="text-gray-500">Vendas</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filtros */}
       <Card>
