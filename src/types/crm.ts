@@ -38,7 +38,6 @@ export interface Atividade {
 
 export interface Corretor {
   id: string;
-  numero: string; // Added numero field
   nome: string;
   email: string;
   telefone: string;

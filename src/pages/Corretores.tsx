@@ -17,27 +17,24 @@ import {
 const mockCorretores: Corretor[] = [
   {
     id: '1',
-    numero: '001',
     nome: 'Maria Santos',
     email: 'maria@imobiliaria.com',
     telefone: '(11) 99999-9999',
     status: 'ativo',
-    permissoes: ['leads', 'dashboards', 'imoveis'],
+    permissoes: ['leads', 'dashboards'],
     leads: ['1', '3', '5']
   },
   {
     id: '2',
-    numero: '002',
     nome: 'Pedro Oliveira',
     email: 'pedro@imobiliaria.com',
     telefone: '(11) 88888-8888',
     status: 'ativo',
-    permissoes: ['leads', 'imoveis'],
+    permissoes: ['leads'],
     leads: ['2', '4', '6']
   },
   {
     id: '3',
-    numero: '003',
     nome: 'Ana Costa',
     email: 'ana@imobiliaria.com',
     telefone: '(11) 77777-7777',
@@ -57,8 +54,7 @@ const Corretores = () => {
   const filteredCorretores = corretores
     .filter(corretor =>
       corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      corretor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      corretor.numero.toLowerCase().includes(searchTerm.toLowerCase())
+      corretor.email.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
       // Corretores ativos primeiro
@@ -182,7 +178,6 @@ const Corretores = () => {
                   </div>
                   <div>
                     <CardTitle className="text-lg">{corretor.nome}</CardTitle>
-                    <p className="text-sm text-gray-600">#{corretor.numero}</p>
                     <p className="text-sm text-gray-600">{corretor.email}</p>
                   </div>
                 </div>

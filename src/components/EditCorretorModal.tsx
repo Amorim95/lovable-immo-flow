@@ -23,15 +23,12 @@ interface EditCorretorModalProps {
 const availablePermissions = [
   { id: 'leads', label: 'Gerenciar Leads' },
   { id: 'dashboards', label: 'Visualizar Dashboards' },
-  { id: 'imoveis', label: 'Gerenciar Imóveis' },
   { id: 'corretores', label: 'Gerenciar Corretores' },
-  { id: 'filas', label: 'Configurar Filas' },
   { id: 'configuracoes', label: 'Configurações Gerais' }
 ];
 
 export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor }: EditCorretorModalProps) {
   const [formData, setFormData] = useState({
-    numero: '',
     nome: '',
     email: '',
     telefone: '',
@@ -41,7 +38,6 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor 
   useEffect(() => {
     if (corretor) {
       setFormData({
-        numero: corretor.numero || '',
         nome: corretor.nome || '',
         email: corretor.email || '',
         telefone: corretor.telefone || '',
@@ -53,13 +49,12 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!corretor || !formData.nome.trim() || !formData.email.trim() || !formData.numero.trim()) {
-      alert('Número, Nome e Email são obrigatórios');
+    if (!corretor || !formData.nome.trim() || !formData.email.trim()) {
+      alert('Nome e Email são obrigatórios');
       return;
     }
 
     onUpdateCorretor(corretor.id, {
-      numero: formData.numero,
       nome: formData.nome,
       email: formData.email,
       telefone: formData.telefone,
@@ -96,17 +91,6 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor 
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="numero">Número do Corretor *</Label>
-            <Input
-              id="numero"
-              value={formData.numero}
-              onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
-              placeholder="Ex: 001"
-              required
-            />
-          </div>
-
           <div>
             <Label htmlFor="nome">Nome *</Label>
             <Input
