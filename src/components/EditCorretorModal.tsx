@@ -45,7 +45,7 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor,
         email: corretor.email || '',
         telefone: corretor.telefone || '',
         permissoes: corretor.permissoes || [],
-        equipeId: corretor.equipeId || ''
+        equipeId: corretor.equipeId || 'no-team'
       });
     }
   }, [corretor]);
@@ -58,14 +58,14 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor,
       return;
     }
 
-    const equipeSelecionada = equipes.find(e => e.id === formData.equipeId);
+    const equipeSelecionada = formData.equipeId !== 'no-team' ? equipes.find(e => e.id === formData.equipeId) : null;
     
     onUpdateCorretor(corretor.id, {
       nome: formData.nome,
       email: formData.email,
       telefone: formData.telefone,
       permissoes: formData.permissoes,
-      equipeId: formData.equipeId || undefined,
+      equipeId: formData.equipeId === 'no-team' ? undefined : formData.equipeId,
       equipeNome: equipeSelecionada?.nome || undefined
     });
     
@@ -139,7 +139,7 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor,
                 <SelectValue placeholder="Selecione uma equipe" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Sem equipe</SelectItem>
+                <SelectItem value="no-team">Sem equipe</SelectItem>
                 {equipes.map((equipe) => (
                   <SelectItem key={equipe.id} value={equipe.id}>
                     {equipe.nome}

@@ -83,7 +83,9 @@ const Corretores = () => {
       const matchesSearch = corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            corretor.email.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesTeam = teamFilter === '' || corretor.equipeId === teamFilter;
+      const matchesTeam = teamFilter === '' || teamFilter === 'no-team' 
+        ? (teamFilter === '' || !corretor.equipeId) 
+        : corretor.equipeId === teamFilter;
       
       return matchesSearch && matchesTeam;
     })
@@ -210,6 +212,7 @@ const Corretores = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">Todas as equipes</SelectItem>
+                <SelectItem value="no-team">Sem equipe</SelectItem>
                 {equipes.map((equipe) => (
                   <SelectItem key={equipe.id} value={equipe.id}>
                     {equipe.nome}

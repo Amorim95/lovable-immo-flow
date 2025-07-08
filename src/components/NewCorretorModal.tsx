@@ -45,7 +45,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
       return;
     }
 
-    const equipeSelecionada = equipes.find(e => e.id === formData.equipeId);
+    const equipeSelecionada = formData.equipeId && formData.equipeId !== 'no-team' ? equipes.find(e => e.id === formData.equipeId) : null;
     
     const newCorretor: Partial<Corretor> = {
       id: Date.now().toString(),
@@ -55,7 +55,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
       status: 'ativo',
       permissoes: formData.permissoes,
       leads: [],
-      equipeId: formData.equipeId || undefined,
+      equipeId: formData.equipeId === 'no-team' ? undefined : (formData.equipeId || undefined),
       equipeNome: equipeSelecionada?.nome || undefined
     };
 
