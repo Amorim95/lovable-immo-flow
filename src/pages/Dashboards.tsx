@@ -1,12 +1,37 @@
 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { 
   Calendar,
   Users,
-  LayoutList
+  LayoutList,
+  Download,
+  Clock,
+  UserCheck,
+  CalendarCheck,
+  TrendingUp
 } from "lucide-react";
 
+// Dados fictícios para métricas gerais
+const metricas = {
+  totalLeads: 1250,
+  leadsAguardando: 142,
+  visitasAgendadas: 215,
+  vendasFechadas: 85,
+  tempoMedioAtendimento: 13.5
+};
+
 const Dashboards = () => {
+  const navigate = useNavigate();
+  const [dataInicio, setDataInicio] = useState("2024-01-01");
+  const [dataFim, setDataFim] = useState("2024-12-31");
+
+  const exportarPDF = () => {
+    alert("Funcionalidade de export PDF será implementada");
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -16,8 +41,89 @@ const Dashboards = () => {
         </p>
       </div>
 
+      {/* Filtros e Export */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Métricas Gerais</CardTitle>
+            <Button onClick={exportarPDF} className="flex items-center gap-2">
+              <Download className="w-4 h-4" />
+              Exportar PDF
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Data Início</label>
+              <input
+                type="date"
+                value={dataInicio}
+                onChange={(e) => setDataInicio(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Data Fim</label>
+              <input
+                type="date"
+                value={dataFim}
+                onChange={(e) => setDataFim(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <LayoutList className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-medium text-blue-600">Total de Leads</span>
+              </div>
+              <div className="text-2xl font-bold text-blue-900">{metricas.totalLeads}</div>
+            </div>
+
+            <div className="bg-yellow-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-5 h-5 text-yellow-600" />
+                <span className="text-sm font-medium text-yellow-600">Aguardando</span>
+              </div>
+              <div className="text-2xl font-bold text-yellow-900">{metricas.leadsAguardando}</div>
+            </div>
+
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <CalendarCheck className="w-5 h-5 text-purple-600" />
+                <span className="text-sm font-medium text-purple-600">Visitas Agendadas</span>
+              </div>
+              <div className="text-2xl font-bold text-purple-900">{metricas.visitasAgendadas}</div>
+            </div>
+
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-green-600" />
+                <span className="text-sm font-medium text-green-600">Vendas Fechadas</span>
+              </div>
+              <div className="text-2xl font-bold text-green-900">{metricas.vendasFechadas}</div>
+            </div>
+
+            <div className="bg-orange-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <UserCheck className="w-5 h-5 text-orange-600" />
+                <span className="text-sm font-medium text-orange-600">Tempo Médio</span>
+              </div>
+              <div className="text-2xl font-bold text-orange-900">{metricas.tempoMedioAtendimento}min</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Cards de Dashboards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate('/dashboards/performance-corretor')}
+        >
           <CardHeader className="pb-3">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -32,18 +138,21 @@ const Dashboards = () => {
             </p>
             <div className="mt-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Leads Ativos:</span>
-                <span className="font-medium">23</span>
+                <span>Corretor Destaque:</span>
+                <span className="font-medium">João Silva</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Taxa Conversão:</span>
-                <span className="font-medium text-green-600">18.5%</span>
+                <span className="font-medium text-green-600">14.4%</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate('/dashboards/performance-equipe')}
+        >
           <CardHeader className="pb-3">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -58,18 +167,21 @@ const Dashboards = () => {
             </p>
             <div className="mt-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Total da Equipe:</span>
-                <span className="font-medium">156 leads</span>
+                <span>Equipe Zona Sul:</span>
+                <span className="font-medium">530 leads</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Meta do Mês:</span>
-                <span className="font-medium text-blue-600">82% atingida</span>
+                <span className="font-medium text-blue-600">106% atingida</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate('/dashboards/performance-geral')}
+        >
           <CardHeader className="pb-3">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -80,119 +192,16 @@ const Dashboards = () => {
           </CardHeader>
           <CardContent>
             <p className="text-gray-600 text-sm">
-              Relatórios gerais da empresa, incluindo receita, leads por fonte e análise de campanhas.
+              Relatórios gerais da empresa, incluindo análise de campanhas e performance consolidada.
             </p>
             <div className="mt-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Receita Mensal:</span>
-                <span className="font-medium text-green-600">R$ 125.000</span>
+                <span>Conversão Geral:</span>
+                <span className="font-medium text-green-600">6.8%</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Crescimento:</span>
                 <span className="font-medium text-green-600">+12.3%</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Leads por Etapa</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Aguardando Atendimento</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-1/3 h-2 bg-slate-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">12</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Em Tentativas de Contato</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-2/3 h-2 bg-yellow-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">24</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Atendeu</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-1/2 h-2 bg-blue-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">18</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Visita</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-1/4 h-2 bg-purple-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">8</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Vendas Fechadas</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-1/5 h-2 bg-green-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">6</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Fontes de Leads</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Facebook Ads</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-full h-2 bg-blue-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">45%</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Google Ads</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-3/4 h-2 bg-green-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">32%</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Instagram</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-1/2 h-2 bg-purple-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">15%</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Indicação</span>
-                <div className="flex items-center gap-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-1/4 h-2 bg-orange-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">8%</span>
-                </div>
               </div>
             </div>
           </CardContent>

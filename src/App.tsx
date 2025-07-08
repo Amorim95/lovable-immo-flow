@@ -10,6 +10,9 @@ import { CompanyProvider, useCompany } from "@/contexts/CompanyContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Dashboards from "./pages/Dashboards";
+import PerformancePorCorretor from "./pages/PerformancePorCorretor";
+import PerformanceDaEquipe from "./pages/PerformanceDaEquipe";
+import PerformanceGeral from "./pages/PerformanceGeral";
 import Corretores from "./pages/Corretores";
 import Imoveis from "./pages/Imoveis";
 import Configuracoes from "./pages/Configuracoes";
@@ -68,6 +71,9 @@ function AppContent() {
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/dashboards" element={<Dashboards />} />
+                    <Route path="/dashboards/performance-corretor" element={<PerformancePorCorretor />} />
+                    <Route path="/dashboards/performance-equipe" element={<PerformanceDaEquipe />} />
+                    <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
                     <Route path="/corretores" element={<Corretores />} />
                     <Route path="/imoveis" element={<Imoveis />} />
                     <Route path="/configuracoes" element={<Configuracoes />} />
