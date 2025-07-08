@@ -73,11 +73,11 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden">
-      {/* Elementos decorativos de fundo */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-orange-400 to-red-500 rounded-full transform -translate-x-32 -translate-y-32 opacity-20"></div>
-      <div className="absolute top-20 right-0 w-48 h-48 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full transform translate-x-24 opacity-20"></div>
-      <div className="absolute bottom-0 left-20 w-56 h-56 bg-gradient-to-br from-orange-400 to-yellow-500 rounded-full transform translate-y-28 opacity-20"></div>
-      <div className="absolute bottom-20 right-0 w-40 h-40 bg-gradient-to-br from-red-400 to-orange-500 rounded-full transform translate-x-20 opacity-20"></div>
+      {/* Elementos decorativos de fundo com tons de azul */}
+      <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full transform -translate-x-32 -translate-y-32 opacity-20"></div>
+      <div className="absolute top-20 right-0 w-48 h-48 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full transform translate-x-24 opacity-20"></div>
+      <div className="absolute bottom-0 left-20 w-56 h-56 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-full transform translate-y-28 opacity-20"></div>
+      <div className="absolute bottom-20 right-0 w-40 h-40 bg-gradient-to-br from-sky-400 to-blue-500 rounded-full transform translate-x-20 opacity-20"></div>
 
       {/* Container principal */}
       <div className="w-full max-w-md mx-4">
@@ -86,7 +86,7 @@ const Login = () => {
           {/* Logo da empresa */}
           <div className="flex justify-center mb-8">
             {settings.logo ? (
-              <div className="w-24 h-24 rounded-full border-2 border-orange-400/50 p-2 bg-slate-800/50">
+              <div className="w-24 h-24 rounded-full border-2 border-blue-400/50 p-2 bg-slate-800/50">
                 <img 
                   src={settings.logo} 
                   alt={settings.name}
@@ -94,7 +94,7 @@ const Login = () => {
                 />
               </div>
             ) : (
-              <div className="w-24 h-24 rounded-full border-2 border-orange-400/50 flex items-center justify-center bg-slate-800/50">
+              <div className="w-24 h-24 rounded-full border-2 border-blue-400/50 flex items-center justify-center bg-slate-800/50">
                 <span className="text-white font-bold text-xl">{settings.name.slice(0, 2).toUpperCase()}</span>
               </div>
             )}
@@ -113,7 +113,7 @@ const Login = () => {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="Código utente"
-                  className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-white/40 focus:border-orange-400/50"
+                  className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-white/40 focus:border-blue-400/50"
                   required
                 />
               </div>
@@ -130,7 +130,7 @@ const Login = () => {
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="Password"
-                  className="pl-10 pr-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-white/40 focus:border-orange-400/50"
+                  className="pl-10 pr-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-white/40 focus:border-blue-400/50"
                   required
                 />
                 <button
@@ -147,7 +147,7 @@ const Login = () => {
             <Button 
               type="submit" 
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium py-3 rounded-lg transition-all"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-3 rounded-lg transition-all"
             >
               {isLoading ? 'Entrando...' : 'ENTRAR'}
             </Button>
