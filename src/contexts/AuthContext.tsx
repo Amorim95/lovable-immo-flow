@@ -35,23 +35,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
+      // Primeiro, verificar se o usuário existe
       const { data, error } = await supabase
         .from('users')
         .select('*')
         .eq('email', email.toLowerCase())
         .eq('status', 'ativo')
-        .single();
+        .maybeSingle();
 
-      if (error || !data) {
+      if (error) {
+        console.error('Erro ao buscar usuário:', error);
+        return { success: false, error: 'Erro interno do servidor' };
+      }
+
+      if (!data) {
         return { success: false, error: 'Email ou senha incorretos' };
       }
 
       // Verificar senha usando a função do banco
-      const { data: passwordCheck } = await supabase
+      const { data: passwordCheck, error: passwordError } = await supabase
         .rpc('verify_password', {
           password: password,
           hash: data.password_hash
         });
+
+      if (passwordError) {
+        console.error('Erro ao verificar senha:', passwordError);
+        return { success: false, error: 'Erro interno do servidor' };
+      }
 
       if (!passwordCheck) {
         return { success: false, error: 'Email ou senha incorretos' };
