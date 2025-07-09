@@ -9,12 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { NewCorretorModal } from "@/components/NewCorretorModal";
 import { EditCorretorModal } from "@/components/EditCorretorModal";
 import { NewTeamModal } from "@/components/NewTeamModal";
+import { EditTeamModal } from "@/components/EditTeamModal";
 import { 
   Plus,
   User,
   Phone,
   Edit,
-  Users
+  Users,
+  Settings
 } from "lucide-react";
 
 const mockCorretores: Corretor[] = [
@@ -76,7 +78,9 @@ const Corretores = () => {
   const [showNewModal, setShowNewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showNewTeamModal, setShowNewTeamModal] = useState(false);
+  const [showEditTeamModal, setShowEditTeamModal] = useState(false);
   const [selectedCorretor, setSelectedCorretor] = useState<Corretor | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<Equipe | null>(null);
 
   const filteredCorretores = corretores
     .filter(corretor => {
@@ -125,6 +129,45 @@ const Corretores = () => {
   const handleCreateTeam = (teamData: Partial<Equipe>) => {
     const newTeam = teamData as Equipe;
     setEquipes([...equipes, newTeam]);
+  };
+
+  const handleUpdateTeam = (equipeId: string, updates: Partial<Equipe>) => {
+    setEquipes(equipes.map(equipe =>
+      equipe.id === equipeId ? { ...equipe, ...updates } : equipe
+    ));
+    
+    // Atualizar os corretores que tiveram mudanças na equipe
+    setCorretores(corretores.map(corretor => {
+      // Se o corretor estava na equipe e foi removido
+      if (corretor.equipeId === equipeId && !updates.corretores?.includes(corretor.id)) {
+        return { ...corretor, equipeId: undefined, equipeNome: undefined };
+      }
+      // Se o corretor foi adicionado à equipe
+      if (updates.corretores?.includes(corretor.id) && corretor.equipeId !== equipeId) {
+        return { ...corretor, equipeId, equipeNome: updates.nome };
+      }
+      // Se o corretor permanece na equipe mas o nome da equipe mudou
+      if (corretor.equipeId === equipeId && updates.nome) {
+        return { ...corretor, equipeNome: updates.nome };
+      }
+      return corretor;
+    }));
+  };
+
+  const handleDeleteTeam = (equipeId: string) => {
+    setEquipes(equipes.filter(equipe => equipe.id !== equipeId));
+    
+    // Remover a equipe dos corretores
+    setCorretores(corretores.map(corretor =>
+      corretor.equipeId === equipeId
+        ? { ...corretor, equipeId: undefined, equipeNome: undefined }
+        : corretor
+    ));
+  };
+
+  const handleEditTeamClick = (equipe: Equipe) => {
+    setSelectedTeam(equipe);
+    setShowEditTeamModal(true);
   };
 
   console.log('Corretores page rendering, teamFilter:', teamFilter, 'equipes:', equipes);
@@ -228,6 +271,47 @@ const Corretores = () => {
         </CardContent>
       </Card>
 
+      {/* Seção de Equipes */}
+      {equipes.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Equipes Cadastradas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {equipes.map((equipe) => (
+                <div
+                  key={equipe.id}
+                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-gray-900">{equipe.nome}</h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditTeamClick(equipe)}
+                    >
+                      <Settings className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div>
+                      <span className="font-medium">Responsável:</span> {equipe.responsavelNome}
+                    </div>
+                    <div>
+                      <span className="font-medium">Corretores:</span> {equipe.corretores.length}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Lista de Corretores */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredCorretores.map((corretor) => (
@@ -327,6 +411,18 @@ const Corretores = () => {
         isOpen={showNewTeamModal}
         onClose={() => setShowNewTeamModal(false)}
         onCreateTeam={handleCreateTeam}
+        corretores={corretores}
+      />
+
+      <EditTeamModal
+        equipe={selectedTeam}
+        isOpen={showEditTeamModal}
+        onClose={() => {
+          setShowEditTeamModal(false);
+          setSelectedTeam(null);
+        }}
+        onUpdateTeam={handleUpdateTeam}
+        onDeleteTeam={handleDeleteTeam}
         corretores={corretores}
       />
     </div>
