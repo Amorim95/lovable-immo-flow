@@ -18,6 +18,8 @@ import {
   Users,
   Settings
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const mockCorretores: Corretor[] = [
   {
@@ -71,6 +73,8 @@ const mockEquipes: Equipe[] = [
 ];
 
 const Corretores = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [corretores, setCorretores] = useState<Corretor[]>(mockCorretores);
   const [equipes, setEquipes] = useState<Equipe[]>(mockEquipes);
   const [searchTerm, setSearchTerm] = useState('');
@@ -187,10 +191,12 @@ const Corretores = () => {
             <Plus className="w-4 h-4 mr-2" />
             Novo Corretor
           </Button>
-          <Button variant="outline" onClick={() => setShowNewTeamModal(true)}>
-            <Users className="w-4 h-4 mr-2" />
-            Criar Equipe
-          </Button>
+          {user?.role === 'admin' && (
+            <Button variant="outline" onClick={() => navigate('/equipes')}>
+              <Users className="w-4 h-4 mr-2" />
+              Gerenciar Equipes
+            </Button>
+          )}
         </div>
       </div>
 
@@ -271,46 +277,6 @@ const Corretores = () => {
         </CardContent>
       </Card>
 
-      {/* Seção de Equipes */}
-      {equipes.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              Equipes Cadastradas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {equipes.map((equipe) => (
-                <div
-                  key={equipe.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-gray-900">{equipe.nome}</h3>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditTeamClick(equipe)}
-                    >
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div>
-                      <span className="font-medium">Responsável:</span> {equipe.responsavelNome}
-                    </div>
-                    <div>
-                      <span className="font-medium">Corretores:</span> {equipe.corretores.length}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Lista de Corretores */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -407,24 +373,6 @@ const Corretores = () => {
         equipes={equipes}
       />
 
-      <NewTeamModal
-        isOpen={showNewTeamModal}
-        onClose={() => setShowNewTeamModal(false)}
-        onCreateTeam={handleCreateTeam}
-        corretores={corretores}
-      />
-
-      <EditTeamModal
-        equipe={selectedTeam}
-        isOpen={showEditTeamModal}
-        onClose={() => {
-          setShowEditTeamModal(false);
-          setSelectedTeam(null);
-        }}
-        onUpdateTeam={handleUpdateTeam}
-        onDeleteTeam={handleDeleteTeam}
-        corretores={corretores}
-      />
     </div>
   );
 };

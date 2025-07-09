@@ -14,6 +14,7 @@ import PerformancePorCorretor from "./pages/PerformancePorCorretor";
 import PerformanceDaEquipe from "./pages/PerformanceDaEquipe";
 import PerformanceGeral from "./pages/PerformanceGeral";
 import Corretores from "./pages/Corretores";
+import EquipesCadastradas from "./pages/EquipesCadastradas";
 import Imoveis from "./pages/Imoveis";
 import Configuracoes from "./pages/Configuracoes";
 import Login from "./pages/Login";
@@ -75,6 +76,7 @@ function AppContent() {
                     <Route path="/dashboards/performance-equipe" element={<PerformanceDaEquipe />} />
                     <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
                     <Route path="/corretores" element={<Corretores />} />
+                    <Route path="/equipes" element={<EquipesCadastradas />} />
                     <Route path="/imoveis" element={<Imoveis />} />
                     <Route path="/configuracoes" element={<Configuracoes />} />
                     <Route path="*" element={<NotFound />} />
