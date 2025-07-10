@@ -110,6 +110,48 @@ export type Database = {
           },
         ]
       }
+      lead_queue: {
+        Row: {
+          assigned_at: string | null
+          assigned_to: string | null
+          created_at: string
+          id: string
+          lead_id: string
+          status: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          lead_id: string
+          status?: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_queue_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_queue_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           created_at: string
@@ -233,6 +275,8 @@ export type Database = {
           password_hash: string
           role: Database["public"]["Enums"]["user_role"]
           status: Database["public"]["Enums"]["user_status"]
+          telefone: string | null
+          ultimo_lead_recebido: string | null
           updated_at: string
         }
         Insert: {
@@ -243,6 +287,8 @@ export type Database = {
           password_hash: string
           role?: Database["public"]["Enums"]["user_role"]
           status?: Database["public"]["Enums"]["user_status"]
+          telefone?: string | null
+          ultimo_lead_recebido?: string | null
           updated_at?: string
         }
         Update: {
@@ -253,6 +299,8 @@ export type Database = {
           password_hash?: string
           role?: Database["public"]["Enums"]["user_role"]
           status?: Database["public"]["Enums"]["user_status"]
+          telefone?: string | null
+          ultimo_lead_recebido?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -272,6 +320,10 @@ export type Database = {
       }
       crypt_password: {
         Args: { password: string }
+        Returns: string
+      }
+      get_next_corretor_in_queue: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       is_admin: {
