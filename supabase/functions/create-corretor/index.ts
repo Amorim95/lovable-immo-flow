@@ -116,10 +116,11 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // 1. Criar usuário no Supabase Auth
+    // 1. Criar usuário no Supabase Auth com senha padrão
     console.log("Creating auth user...");
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email: email.toLowerCase(),
+      password: 'mudar123', // Senha padrão para todos os corretores
       email_confirm: true, // Confirmar email automaticamente
       user_metadata: {
         name,
@@ -185,77 +186,19 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log("Permissions created successfully");
 
-      // 4. Enviar email de boas-vindas
-      try {
-        console.log("Attempting to send welcome email...");
-        
-        // Gerar link de recuperação para definir senha
-        const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
-          type: 'recovery',
-          email: email.toLowerCase(),
-        });
-
-        if (resetError) {
-          console.error("Reset link generation failed:", resetError);
-        } else {
-          console.log("Reset link generated successfully");
-          
-          // Enviar email usando Resend
-          const resendApiKey = Deno.env.get('RESEND_API_KEY');
-          if (resendApiKey) {
-            console.log("Sending welcome email via Resend...");
-            
-            const emailResponse = await fetch('https://api.resend.com/emails', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${resendApiKey}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                from: 'Sistema CRM <noreply@sistema-crm.com>',
-                to: [email.toLowerCase()],
-                subject: 'Bem-vindo ao Sistema CRM',
-                html: `
-                  <h1>Bem-vindo ao Sistema CRM, ${name}!</h1>
-                  <p>Sua conta foi criada com sucesso como corretor.</p>
-                  <p>Para acessar o sistema, clique no link abaixo para definir sua senha:</p>
-                  <p><a href="${resetData.properties?.action_link}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Definir Senha e Acessar</a></p>
-                  <p>Se o botão não funcionar, copie e cole este link no seu navegador:</p>
-                  <p>${resetData.properties?.action_link}</p>
-                  <p>Este link expira em 24 horas.</p>
-                  <br>
-                  <p>Atenciosamente,<br>Equipe do Sistema CRM</p>
-                `
-              })
-            });
-
-            if (emailResponse.ok) {
-              const emailData = await emailResponse.json();
-              console.log("Email sent successfully:", emailData);
-            } else {
-              const errorText = await emailResponse.text();
-              console.error("Failed to send email:", errorText);
-            }
-          } else {
-            console.log("RESEND_API_KEY not configured - email not sent");
-          }
-        }
-      } catch (emailErr) {
-        console.error("Email sending failed (non-critical):", emailErr);
-      }
-
       console.log("=== CREATE CORRETOR FUNCTION SUCCESS ===");
       
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: "Corretor criado com sucesso",
+          message: "Corretor criado com sucesso! Senha padrão: mudar123",
           user: {
             id: authUserId,
             name,
             email: email.toLowerCase(),
             telefone,
-            status: 'ativo'
+            status: 'ativo',
+            defaultPassword: 'mudar123'
           }
         }), 
         {
