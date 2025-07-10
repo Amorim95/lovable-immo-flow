@@ -116,11 +116,10 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // 1. Criar usuário no Supabase Auth com senha padrão
+    // 1. Criar usuário no Supabase Auth
     console.log("Creating auth user...");
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email: email.toLowerCase(),
-      password: 'mudar123', // Senha padrão para todos os corretores
       email_confirm: true, // Confirmar email automaticamente
       user_metadata: {
         name,
@@ -186,19 +185,39 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log("Permissions created successfully");
 
+      // 4. Enviar email de boas-vindas (opcional - não bloqueia o processo)
+      try {
+        console.log("Attempting to send welcome email...");
+        
+        // Primeiro tentar gerar um link de reset de senha
+        const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
+          type: 'recovery',
+          email: email.toLowerCase(),
+        });
+
+        if (resetError) {
+          console.error("Reset link generation failed:", resetError);
+        } else {
+          console.log("Reset link generated successfully");
+          // Aqui você pode integrar com Resend ou outro serviço de email
+          // Por enquanto, vamos apenas logar que o processo foi bem-sucedido
+        }
+      } catch (emailErr) {
+        console.error("Email sending failed (non-critical):", emailErr);
+      }
+
       console.log("=== CREATE CORRETOR FUNCTION SUCCESS ===");
       
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: "Corretor criado com sucesso! Senha padrão: mudar123",
+          message: "Corretor criado com sucesso",
           user: {
             id: authUserId,
             name,
             email: email.toLowerCase(),
             telefone,
-            status: 'ativo',
-            defaultPassword: 'mudar123'
+            status: 'ativo'
           }
         }), 
         {
