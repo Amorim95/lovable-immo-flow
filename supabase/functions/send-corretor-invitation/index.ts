@@ -30,6 +30,7 @@ const handler = async (req: Request): Promise<Response> => {
     const { email, name, telefone, permissions, equipe_id }: InvitationRequest = await req.json();
 
     console.log("Creating corretor with data:", { email, name, telefone, permissions, equipe_id });
+    console.log("RESEND_API_KEY exists:", !!Deno.env.get("RESEND_API_KEY"));
 
     // Criar hash da senha padrão
     const { data: hashedPassword, error: hashError } = await supabase.rpc('crypt_password', {
