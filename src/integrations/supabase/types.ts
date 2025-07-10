@@ -44,6 +44,41 @@ export type Database = {
         }
         Relationships: []
       }
+      equipes: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          responsavel_id: string | null
+          responsavel_nome: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          responsavel_id?: string | null
+          responsavel_nome?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          responsavel_id?: string | null
+          responsavel_nome?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipes_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null
@@ -233,24 +268,39 @@ export type Database = {
       }
       permissions: {
         Row: {
+          can_access_configurations: boolean
           can_invite_users: boolean
+          can_manage_leads: boolean
+          can_manage_properties: boolean
+          can_manage_teams: boolean
           can_view_all_leads: boolean
+          can_view_reports: boolean
           created_at: string
           id: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          can_access_configurations?: boolean
           can_invite_users?: boolean
+          can_manage_leads?: boolean
+          can_manage_properties?: boolean
+          can_manage_teams?: boolean
           can_view_all_leads?: boolean
+          can_view_reports?: boolean
           created_at?: string
           id?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          can_access_configurations?: boolean
           can_invite_users?: boolean
+          can_manage_leads?: boolean
+          can_manage_properties?: boolean
+          can_manage_teams?: boolean
           can_view_all_leads?: boolean
+          can_view_reports?: boolean
           created_at?: string
           id?: string
           updated_at?: string
@@ -270,6 +320,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string
+          equipe_id: string | null
           id: string
           name: string
           password_hash: string
@@ -282,6 +333,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
+          equipe_id?: string | null
           id?: string
           name: string
           password_hash: string
@@ -294,6 +346,7 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
+          equipe_id?: string | null
           id?: string
           name?: string
           password_hash?: string
@@ -303,7 +356,15 @@ export type Database = {
           ultimo_lead_recebido?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_equipe_id_fkey"
+            columns: ["equipe_id"]
+            isOneToOne: false
+            referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

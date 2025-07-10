@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Equipe, Corretor } from "@/types/crm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,63 +12,79 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-// Mock data - em produção virá do banco de dados
-const mockEquipes: Equipe[] = [
-  {
-    id: '1',
-    nome: 'Equipe Zona Sul',
-    responsavelId: '1',
-    responsavelNome: 'Maria Santos',
-    corretores: ['1']
-  },
-  {
-    id: '2',
-    nome: 'Equipe Barra',
-    responsavelId: '2',
-    responsavelNome: 'Pedro Oliveira',
-    corretores: ['2']
-  }
-];
-
-const mockCorretores: Corretor[] = [
-  {
-    id: '1',
-    nome: 'Maria Santos',
-    email: 'maria@imobiliaria.com',
-    telefone: '(11) 99999-9999',
-    status: 'ativo',
-    permissoes: ['leads', 'dashboards'],
-    leads: ['1', '3', '5'],
-    equipeId: '1',
-    equipeNome: 'Equipe Zona Sul'
-  },
-  {
-    id: '2',
-    nome: 'Pedro Oliveira',
-    email: 'pedro@imobiliaria.com',
-    telefone: '(11) 88888-8888',
-    status: 'ativo',
-    permissoes: ['leads'],
-    leads: ['2', '4', '6'],
-    equipeId: '2',
-    equipeNome: 'Equipe Barra'
-  },
-  {
-    id: '3',
-    nome: 'Ana Costa',
-    email: 'ana@imobiliaria.com',
-    telefone: '(11) 77777-7777',
-    status: 'inativo',
-    permissoes: ['leads'],
-    leads: []
-  }
-];
+// Dados serão carregados do banco de dados
 
 const EquipesCadastradas = () => {
   const navigate = useNavigate();
-  const [equipes, setEquipes] = useState<Equipe[]>(mockEquipes);
-  const [corretores] = useState<Corretor[]>(mockCorretores);
+  const [equipes, setEquipes] = useState<Equipe[]>([]);
+  const [corretores, setCorretores] = useState<Corretor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      // Carregar equipes
+      const { data: equipesData, error: equipesError } = await supabase
+        .from('equipes')
+        .select('*')
+        .order('nome');
+
+      if (equipesError) {
+        console.error('Error loading equipes:', equipesError);
+        toast.error('Erro ao carregar equipes');
+        return;
+      }
+
+      // Carregar corretores
+      const { data: corretoresData, error: corretoresError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('role', 'corretor');
+
+      if (corretoresError) {
+        console.error('Error loading corretores:', corretoresError);
+        toast.error('Erro ao carregar corretores');
+        return;
+      }
+
+      // Transformar dados
+      const equipesFormatted = (equipesData || []).map(equipe => ({
+        id: equipe.id,
+        nome: equipe.nome,
+        responsavelId: equipe.responsavel_id,
+        responsavelNome: equipe.responsavel_nome,
+        corretores: corretoresData?.filter(c => c.equipe_id === equipe.id).map(c => c.id) || []
+      }));
+
+      const corretoresFormatted = (corretoresData || []).map(corretor => ({
+        id: corretor.id,
+        nome: corretor.name,
+        email: corretor.email,
+        telefone: corretor.telefone || '',
+        status: corretor.status as 'ativo' | 'inativo' | 'pendente',
+        permissoes: [], // Will be loaded if needed
+        leads: [], // Will be loaded if needed
+        equipeId: corretor.equipe_id,
+        equipeNome: equipesFormatted.find(e => e.id === corretor.equipe_id)?.nome
+      }));
+
+      setEquipes(equipesFormatted);
+      setCorretores(corretoresFormatted);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast.error('Erro ao carregar dados');
+    } finally {
+      setLoading(false);
+    }
+  };
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewTeamModal, setShowNewTeamModal] = useState(false);
   const [showEditTeamModal, setShowEditTeamModal] = useState(false);

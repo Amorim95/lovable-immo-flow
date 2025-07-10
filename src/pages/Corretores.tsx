@@ -23,56 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const mockCorretores: Corretor[] = [
-  {
-    id: '1',
-    nome: 'Maria Santos',
-    email: 'maria@imobiliaria.com',
-    telefone: '(11) 99999-9999',
-    status: 'ativo',
-    permissoes: ['leads', 'dashboards'],
-    leads: ['1', '3', '5'],
-    equipeId: '1',
-    equipeNome: 'Equipe Zona Sul'
-  },
-  {
-    id: '2',
-    nome: 'Pedro Oliveira',
-    email: 'pedro@imobiliaria.com',
-    telefone: '(11) 88888-8888',
-    status: 'ativo',
-    permissoes: ['leads'],
-    leads: ['2', '4', '6'],
-    equipeId: '2',
-    equipeNome: 'Equipe Barra'
-  },
-  {
-    id: '3',
-    nome: 'Ana Costa',
-    email: 'ana@imobiliaria.com',
-    telefone: '(11) 77777-7777',
-    status: 'inativo',
-    permissoes: ['leads'],
-    leads: []
-  }
-];
-
-const mockEquipes: Equipe[] = [
-  {
-    id: '1',
-    nome: 'Equipe Zona Sul',
-    responsavelId: '1',
-    responsavelNome: 'Maria Santos',
-    corretores: ['1']
-  },
-  {
-    id: '2',
-    nome: 'Equipe Barra',
-    responsavelId: '2',
-    responsavelNome: 'Pedro Oliveira',
-    corretores: ['2']
-  }
-];
+// Dados serão carregados do banco de dados
 
 const Corretores = () => {
   const { user } = useAuth();
@@ -110,7 +61,12 @@ const Corretores = () => {
           role,
           permissions (
             can_view_all_leads,
-            can_invite_users
+            can_invite_users,
+            can_manage_leads,
+            can_view_reports,
+            can_manage_properties,
+            can_manage_teams,
+            can_access_configurations
           )
         `)
         .eq('role', 'corretor');
@@ -132,8 +88,13 @@ const Corretores = () => {
         const leadCount = leadsData?.filter(lead => lead.user_id === user.id).length || 0;
         
         const permissoesList = [];
-        if (permissions?.can_view_all_leads) permissoesList.push('can_view_all_leads');
-        if (permissions?.can_invite_users) permissoesList.push('can_invite_users');
+        if (permissions?.can_view_all_leads) permissoesList.push('Visualizar Todos os Leads');
+        if (permissions?.can_invite_users) permissoesList.push('Convidar Usuários');
+        if (permissions?.can_manage_leads) permissoesList.push('Gerenciar Leads');
+        if (permissions?.can_view_reports) permissoesList.push('Ver Relatórios');
+        if (permissions?.can_manage_properties) permissoesList.push('Gerenciar Imóveis');
+        if (permissions?.can_manage_teams) permissoesList.push('Gerenciar Equipes');
+        if (permissions?.can_access_configurations) permissoesList.push('Acessar Configurações');
 
         return {
           id: user.id,
@@ -474,7 +435,6 @@ const Corretores = () => {
         isOpen={showNewModal}
         onClose={() => setShowNewModal(false)}
         onCreateCorretor={handleCreateCorretor}
-        equipes={equipes}
       />
 
       <EditCorretorModal
@@ -485,7 +445,6 @@ const Corretores = () => {
           setSelectedCorretor(null);
         }}
         onUpdateCorretor={handleUpdateCorretor}
-        equipes={equipes}
       />
 
     </div>

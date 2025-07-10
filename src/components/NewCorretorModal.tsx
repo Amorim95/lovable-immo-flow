@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Corretor, Equipe } from "@/types/crm";
 import {
   Dialog,
@@ -25,10 +24,50 @@ interface NewCorretorModalProps {
 
 const availablePermissions = [
   { id: 'can_view_all_leads', label: 'Visualizar Todos os Leads' },
-  { id: 'can_invite_users', label: 'Convidar Usuários' }
+  { id: 'can_invite_users', label: 'Convidar Usuários' },
+  { id: 'can_manage_leads', label: 'Gerenciar Leads' },
+  { id: 'can_view_reports', label: 'Ver Relatórios' },
+  { id: 'can_manage_properties', label: 'Gerenciar Imóveis' },
+  { id: 'can_manage_teams', label: 'Gerenciar Equipes' },
+  { id: 'can_access_configurations', label: 'Acessar Configurações' }
 ];
 
 export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = [] }: NewCorretorModalProps) {
+  const [equipesFromDB, setEquipesFromDB] = useState<Equipe[]>([]);
+  const [loadingEquipes, setLoadingEquipes] = useState(true);
+
+  // Carregar equipes do banco de dados
+  useEffect(() => {
+    loadEquipes();
+  }, [isOpen]);
+
+  const loadEquipes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('equipes')
+        .select('*')
+        .order('nome');
+
+      if (error) {
+        console.error('Error loading equipes:', error);
+        return;
+      }
+
+      // Transformar dados do banco para o formato esperado
+      const equipesFormatted = (data || []).map(equipe => ({
+        id: equipe.id,
+        nome: equipe.nome,
+        responsavelId: equipe.responsavel_id,
+        responsavelNome: equipe.responsavel_nome,
+        corretores: [] // Will be populated when needed
+      }));
+      setEquipesFromDB(equipesFormatted);
+    } catch (error) {
+      console.error('Error loading equipes:', error);
+    } finally {
+      setLoadingEquipes(false);
+    }
+  };
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -55,7 +94,8 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
           email: formData.email,
           name: formData.nome,
           telefone: formData.telefone,
-          permissions: formData.permissoes
+          permissions: formData.permissoes,
+          equipe_id: formData.equipeId && formData.equipeId !== 'no-team' ? formData.equipeId : null
         }
       });
 
@@ -82,7 +122,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
         permissoes: formData.permissoes,
         leads: [],
         equipeId: formData.equipeId === 'no-team' ? undefined : (formData.equipeId || undefined),
-        equipeNome: equipes.find(e => e.id === formData.equipeId)?.nome
+        equipeNome: equipesFromDB.find(e => e.id === formData.equipeId)?.nome
       };
 
       onCreateCorretor(newCorretor);
@@ -172,11 +212,21 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
                 <SelectValue placeholder="Selecione uma equipe" />
               </SelectTrigger>
               <SelectContent>
-                {equipes.map((equipe) => (
-                  <SelectItem key={equipe.id} value={equipe.id}>
-                    {equipe.nome}
+                {loadingEquipes ? (
+                  <SelectItem value="loading" disabled>
+                    Carregando equipes...
                   </SelectItem>
-                ))}
+                ) : equipesFromDB.length > 0 ? (
+                  equipesFromDB.map((equipe) => (
+                    <SelectItem key={equipe.id} value={equipe.id}>
+                      {equipe.nome}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="no-teams" disabled>
+                    Nenhuma equipe encontrada
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>

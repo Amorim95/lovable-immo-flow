@@ -18,6 +18,7 @@ interface InvitationRequest {
   name: string;
   telefone: string;
   permissions: string[];
+  equipe_id?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -26,9 +27,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, name, telefone, permissions }: InvitationRequest = await req.json();
+    const { email, name, telefone, permissions, equipe_id }: InvitationRequest = await req.json();
 
-    console.log("Creating corretor with data:", { email, name, telefone, permissions });
+    console.log("Creating corretor with data:", { email, name, telefone, permissions, equipe_id });
 
     // Criar hash da senha padrão
     const { data: hashedPassword, error: hashError } = await supabase.rpc('crypt_password', {
@@ -49,7 +50,8 @@ const handler = async (req: Request): Promise<Response> => {
         telefone,
         password_hash: hashedPassword,
         role: 'corretor',
-        status: 'pendente'
+        status: 'pendente',
+        equipe_id: equipe_id || null
       })
       .select()
       .single();
@@ -65,7 +67,12 @@ const handler = async (req: Request): Promise<Response> => {
     const permissionsData = {
       user_id: userData.id,
       can_view_all_leads: permissions.includes('can_view_all_leads'),
-      can_invite_users: permissions.includes('can_invite_users')
+      can_invite_users: permissions.includes('can_invite_users'),
+      can_manage_leads: permissions.includes('can_manage_leads'),
+      can_view_reports: permissions.includes('can_view_reports'),
+      can_manage_properties: permissions.includes('can_manage_properties'),
+      can_manage_teams: permissions.includes('can_manage_teams'),
+      can_access_configurations: permissions.includes('can_access_configurations')
     };
 
     const { error: permError } = await supabase
