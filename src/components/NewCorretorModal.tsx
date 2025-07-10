@@ -23,11 +23,9 @@ interface NewCorretorModalProps {
 }
 
 const availablePermissions = [
-  { id: 'can_view_all_leads', label: 'Visualizar Todos os Leads' },
   { id: 'can_invite_users', label: 'Convidar Usuários' },
   { id: 'can_manage_leads', label: 'Gerenciar Leads' },
   { id: 'can_view_reports', label: 'Ver Relatórios' },
-  { id: 'can_manage_properties', label: 'Gerenciar Imóveis' },
   { id: 'can_manage_teams', label: 'Gerenciar Equipes' },
   { id: 'can_access_configurations', label: 'Acessar Configurações' }
 ];
@@ -118,7 +116,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
         nome: formData.nome,
         email: formData.email,
         telefone: formData.telefone,
-        status: 'pendente',
+        status: data.user.status || 'ativo', // Usar status do retorno da função
         permissoes: formData.permissoes,
         leads: [],
         equipeId: formData.equipeId === 'no-team' ? undefined : (formData.equipeId || undefined),

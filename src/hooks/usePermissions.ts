@@ -3,11 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface UserPermissions {
-  canViewAllLeads: boolean;
   canInviteUsers: boolean;
   canManageLeads: boolean;
   canViewReports: boolean;
-  canManageProperties: boolean;
   canManageTeams: boolean;
   canAccessConfigurations: boolean;
   isAdmin: boolean;
@@ -17,11 +15,9 @@ interface UserPermissions {
 export function usePermissions(): UserPermissions {
   const { user } = useAuth();
   const [permissions, setPermissions] = useState<UserPermissions>({
-    canViewAllLeads: false,
     canInviteUsers: false,
     canManageLeads: false,
     canViewReports: false,
-    canManageProperties: false,
     canManageTeams: false,
     canAccessConfigurations: false,
     isAdmin: false,
@@ -31,11 +27,9 @@ export function usePermissions(): UserPermissions {
   useEffect(() => {
     if (!user) {
       setPermissions({
-        canViewAllLeads: false,
         canInviteUsers: false,
         canManageLeads: false,
         canViewReports: false,
-        canManageProperties: false,
         canManageTeams: false,
         canAccessConfigurations: false,
         isAdmin: false,
@@ -56,11 +50,9 @@ export function usePermissions(): UserPermissions {
 
       if (isAdmin) {
         setPermissions({
-          canViewAllLeads: true,
           canInviteUsers: true,
           canManageLeads: true,
           canViewReports: true,
-          canManageProperties: true,
           canManageTeams: true,
           canAccessConfigurations: true,
           isAdmin: true,
@@ -81,11 +73,9 @@ export function usePermissions(): UserPermissions {
       }
 
       setPermissions({
-        canViewAllLeads: userPermissions?.can_view_all_leads || false,
         canInviteUsers: userPermissions?.can_invite_users || false,
         canManageLeads: userPermissions?.can_manage_leads || false,
         canViewReports: userPermissions?.can_view_reports || false,
-        canManageProperties: userPermissions?.can_manage_properties || false,
         canManageTeams: userPermissions?.can_manage_teams || false,
         canAccessConfigurations: userPermissions?.can_access_configurations || false,
         isAdmin: false,
@@ -95,11 +85,9 @@ export function usePermissions(): UserPermissions {
     } catch (error) {
       console.error('Error loading permissions:', error);
       setPermissions({
-        canViewAllLeads: false,
         canInviteUsers: false,
         canManageLeads: false,
         canViewReports: false,
-        canManageProperties: false,
         canManageTeams: false,
         canAccessConfigurations: false,
         isAdmin: false,
