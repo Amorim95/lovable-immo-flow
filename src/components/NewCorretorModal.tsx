@@ -88,8 +88,8 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
     setIsLoading(true);
     
     try {
-      // Chamar edge function para criar corretor e enviar email
-      const { data, error } = await supabase.functions.invoke('send-corretor-invitation', {
+      // Chamar edge function para criar corretor
+      const { data, error } = await supabase.functions.invoke('create-corretor', {
         body: {
           email: formData.email,
           name: formData.nome,
