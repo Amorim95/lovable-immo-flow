@@ -110,7 +110,7 @@ const handler = async (req: Request): Promise<Response> => {
     const confirmationUrl = `${Deno.env.get('SUPABASE_URL')}/auth/v1/confirm?token=${inviteToken}&type=invite&redirect_to=${supabaseUrl}`;
     
     const emailResponse = await resend.emails.send({
-      from: "CRM System <onboarding@resend.dev>",
+      from: "CRM Imobiliária <onboarding@resend.dev>",
       to: [email],
       subject: "Bem-vindo ao CRM - Confirme sua conta",
       html: `
