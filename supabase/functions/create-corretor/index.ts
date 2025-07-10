@@ -4,15 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
-  },
-  db: {
-    schema: 'public'
-  }
-});
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,34 +27,20 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const { email, name, telefone, permissions, equipe_id }: CreateCorretorRequest = await req.json();
 
-    console.log("Creating corretor with data:", { email, name, telefone, permissions, equipe_id });
+    console.log("Starting corretor creation:", { email, name, telefone, permissions, equipe_id });
 
-    // 1. Primeiro criar registro na tabela users (sem depender do auth)
-    const tempUserId = crypto.randomUUID();
-    
-    const { data: userData, error: userError } = await supabase
+    // Verificar se email já existe
+    const { data: existingUser } = await supabase
       .from('users')
-      .insert({
-        id: tempUserId,
-        name,
-        email,
-        telefone,
-        password_hash: 'temp_hash', 
-        role: 'corretor',
-        status: 'pendente',
-        equipe_id: equipe_id || null
-      })
-      .select()
+      .select('email')
+      .eq('email', email)
       .single();
 
-    if (userError) {
-      console.error("Error creating user record:", userError);
-      throw new Error("Erro ao criar registro do usuário: " + userError.message);
+    if (existingUser) {
+      throw new Error("Email já está em uso");
     }
 
-    console.log("User record created:", userData);
-
-    // 2. Criar usuário no Supabase Auth usando o mesmo ID
+    // 1. Criar usuário no Supabase Auth primeiro
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email,
       password: 'Mudar123',
@@ -70,74 +48,114 @@ const handler = async (req: Request): Promise<Response> => {
       user_metadata: {
         name,
         telefone,
-        role: 'corretor',
-        user_id: userData.id
+        role: 'corretor'
       }
     });
 
     if (authError) {
       console.error("Error creating auth user:", authError);
-      // Reverter criação do usuário
-      await supabase.from('users').delete().eq('id', userData.id);
       throw new Error("Erro ao criar usuário de autenticação: " + authError.message);
     }
 
-    console.log("Auth user created:", authUser.user?.id);
+    const authUserId = authUser.user!.id;
+    console.log("Auth user created with ID:", authUserId);
 
-    // 3. Criar permissões
-    const permissionsData = {
-      user_id: userData.id,
-      can_view_all_leads: permissions.includes('can_view_all_leads'),
-      can_invite_users: permissions.includes('can_invite_users'),
-      can_manage_leads: permissions.includes('can_manage_leads'),
-      can_view_reports: permissions.includes('can_view_reports'),
-      can_manage_properties: permissions.includes('can_manage_properties'),
-      can_manage_teams: permissions.includes('can_manage_teams'),
-      can_access_configurations: permissions.includes('can_access_configurations')
-    };
+    try {
+      // 2. Criar registro na tabela users
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .insert({
+          id: authUserId,
+          name,
+          email,
+          telefone,
+          password_hash: 'supabase_managed',
+          role: 'corretor',
+          status: 'pendente',
+          equipe_id: equipe_id || null
+        })
+        .select()
+        .single();
 
-    const { error: permError } = await supabase
-      .from('permissions')
-      .insert(permissionsData);
-
-    if (permError) {
-      console.error("Error creating permissions:", permError);
-      // Reverter criações
-      await supabase.auth.admin.deleteUser(authUser.user!.id);
-      await supabase.from('users').delete().eq('id', userData.id);
-      throw new Error("Erro ao criar permissões: " + permError.message);
-    }
-
-    console.log("Permissions created successfully");
-
-    // 4. Enviar email de confirmação usando Supabase Auth
-    const { error: emailError } = await supabase.auth.admin.generateLink({
-      type: 'signup',
-      email,
-      options: {
-        redirectTo: `${supabaseUrl}/auth/v1/callback?next=${supabaseUrl}`
+      if (userError) {
+        console.error("Error creating user record:", userError);
+        throw new Error("Erro ao criar registro do usuário: " + userError.message);
       }
-    });
 
-    if (emailError) {
-      console.error("Error sending confirmation email:", emailError);
-      console.log("User created but email sending failed - this is not critical");
-    } else {
-      console.log("Confirmation email sent successfully");
-    }
+      console.log("User record created:", userData.id);
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: "Corretor criado com sucesso",
-        user: userData,
-        email_sent: !emailError
-      }), 
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+      // 3. Criar permissões
+      const permissionsData = {
+        user_id: authUserId,
+        can_view_all_leads: permissions.includes('can_view_all_leads'),
+        can_invite_users: permissions.includes('can_invite_users'),
+        can_manage_leads: permissions.includes('can_manage_leads'),
+        can_view_reports: permissions.includes('can_view_reports'),
+        can_manage_properties: permissions.includes('can_manage_properties'),
+        can_manage_teams: permissions.includes('can_manage_teams'),
+        can_access_configurations: permissions.includes('can_access_configurations')
+      };
+
+      const { error: permError } = await supabase
+        .from('permissions')
+        .insert(permissionsData);
+
+      if (permError) {
+        console.error("Error creating permissions:", permError);
+        throw new Error("Erro ao criar permissões: " + permError.message);
       }
-    );
+
+      console.log("Permissions created successfully");
+
+      // 4. Tentar enviar email (não crítico)
+      try {
+        const { error: emailError } = await supabase.auth.admin.generateLink({
+          type: 'signup',
+          email,
+          options: {
+            redirectTo: `${supabaseUrl}/auth/v1/callback`
+          }
+        });
+
+        if (emailError) {
+          console.error("Email sending failed:", emailError);
+        } else {
+          console.log("Confirmation email sent");
+        }
+      } catch (emailErr) {
+        console.error("Email error (non-critical):", emailErr);
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: "Corretor criado com sucesso",
+          user: {
+            id: authUserId,
+            name,
+            email,
+            telefone,
+            status: 'pendente'
+          }
+        }), 
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+
+    } catch (error) {
+      // Rollback: deletar usuário auth se algo deu errado
+      console.log("Rolling back auth user due to error:", error);
+      try {
+        await supabase.auth.admin.deleteUser(authUserId);
+        await supabase.from('users').delete().eq('id', authUserId);
+        await supabase.from('permissions').delete().eq('user_id', authUserId);
+      } catch (rollbackError) {
+        console.error("Rollback failed:", rollbackError);
+      }
+      throw error;
+    }
 
   } catch (error: any) {
     console.error("Error in create-corretor function:", error);
