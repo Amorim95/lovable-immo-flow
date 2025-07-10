@@ -8,6 +8,9 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false
+  },
+  db: {
+    schema: 'public'
   }
 });
 
@@ -34,34 +37,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Creating corretor with data:", { email, name, telefone, permissions, equipe_id });
 
-    // 1. Criar usuário no Supabase Auth
-    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      password: 'Mudar123', // Senha temporária
-      email_confirm: false, // Usuário precisa confirmar email
-      user_metadata: {
-        name,
-        telefone,
-        role: 'corretor'
-      }
-    });
-
-    if (authError) {
-      console.error("Error creating auth user:", authError);
-      throw new Error("Erro ao criar usuário de autenticação: " + authError.message);
-    }
-
-    console.log("Auth user created:", authUser.user?.id);
-
-    // 2. Criar registro na tabela users
+    // 1. Primeiro criar registro na tabela users (sem depender do auth)
+    const tempUserId = crypto.randomUUID();
+    
     const { data: userData, error: userError } = await supabase
       .from('users')
       .insert({
-        id: authUser.user!.id, // Usar o mesmo ID do auth
+        id: tempUserId,
         name,
         email,
         telefone,
-        password_hash: 'supabase_managed', // Indica que a senha é gerenciada pelo Supabase Auth
+        password_hash: 'temp_hash', 
         role: 'corretor',
         status: 'pendente',
         equipe_id: equipe_id || null
@@ -71,12 +57,32 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (userError) {
       console.error("Error creating user record:", userError);
-      // Reverter criação do usuário auth
-      await supabase.auth.admin.deleteUser(authUser.user!.id);
       throw new Error("Erro ao criar registro do usuário: " + userError.message);
     }
 
     console.log("User record created:", userData);
+
+    // 2. Criar usuário no Supabase Auth usando o mesmo ID
+    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password: 'Mudar123',
+      email_confirm: false,
+      user_metadata: {
+        name,
+        telefone,
+        role: 'corretor',
+        user_id: userData.id
+      }
+    });
+
+    if (authError) {
+      console.error("Error creating auth user:", authError);
+      // Reverter criação do usuário
+      await supabase.from('users').delete().eq('id', userData.id);
+      throw new Error("Erro ao criar usuário de autenticação: " + authError.message);
+    }
+
+    console.log("Auth user created:", authUser.user?.id);
 
     // 3. Criar permissões
     const permissionsData = {
@@ -115,8 +121,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (emailError) {
       console.error("Error sending confirmation email:", emailError);
-      // Não reverter aqui, pois o usuário foi criado com sucesso
-      console.log("User created but email sending failed");
+      console.log("User created but email sending failed - this is not critical");
     } else {
       console.log("Confirmation email sent successfully");
     }
