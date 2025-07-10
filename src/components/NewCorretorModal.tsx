@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface NewCorretorModalProps {
   isOpen: boolean;
@@ -22,10 +24,8 @@ interface NewCorretorModalProps {
 }
 
 const availablePermissions = [
-  { id: 'leads', label: 'Gerenciar Leads' },
-  { id: 'dashboards', label: 'Visualizar Dashboards' },
-  { id: 'corretores', label: 'Gerenciar Corretores' },
-  { id: 'configuracoes', label: 'Configurações Gerais' }
+  { id: 'can_view_all_leads', label: 'Visualizar Todos os Leads' },
+  { id: 'can_invite_users', label: 'Convidar Usuários' }
 ];
 
 export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = [] }: NewCorretorModalProps) {
@@ -36,31 +36,64 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
     permissoes: [] as string[],
     equipeId: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.nome.trim() || !formData.email.trim()) {
-      alert('Nome e Email são obrigatórios');
+      toast.error('Nome e Email são obrigatórios');
       return;
     }
 
-    const equipeSelecionada = formData.equipeId && formData.equipeId !== 'no-team' ? equipes.find(e => e.id === formData.equipeId) : null;
+    setIsLoading(true);
     
-    const newCorretor: Partial<Corretor> = {
-      id: Date.now().toString(),
-      nome: formData.nome,
-      email: formData.email,
-      telefone: formData.telefone,
-      status: 'ativo',
-      permissoes: formData.permissoes,
-      leads: [],
-      equipeId: formData.equipeId === 'no-team' ? undefined : (formData.equipeId || undefined),
-      equipeNome: equipeSelecionada?.nome || undefined
-    };
+    try {
+      // Chamar edge function para criar corretor e enviar email
+      const { data, error } = await supabase.functions.invoke('send-corretor-invitation', {
+        body: {
+          email: formData.email,
+          name: formData.nome,
+          telefone: formData.telefone,
+          permissions: formData.permissoes
+        }
+      });
 
-    onCreateCorretor(newCorretor);
-    handleClose();
+      if (error) {
+        console.error('Error calling edge function:', error);
+        toast.error('Erro ao criar corretor: ' + error.message);
+        return;
+      }
+
+      if (!data.success) {
+        toast.error(data.error || 'Erro ao criar corretor');
+        return;
+      }
+
+      toast.success('Corretor criado com sucesso! Email de confirmação enviado.');
+      
+      // Criar objeto corretor para atualizar a interface
+      const newCorretor: Partial<Corretor> = {
+        id: data.user.id,
+        nome: formData.nome,
+        email: formData.email,
+        telefone: formData.telefone,
+        status: 'pendente',
+        permissoes: formData.permissoes,
+        leads: [],
+        equipeId: formData.equipeId === 'no-team' ? undefined : (formData.equipeId || undefined),
+        equipeNome: equipes.find(e => e.id === formData.equipeId)?.nome
+      };
+
+      onCreateCorretor(newCorretor);
+      handleClose();
+      
+    } catch (error: any) {
+      console.error('Error creating corretor:', error);
+      toast.error('Erro ao criar corretor');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
@@ -175,8 +208,8 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancelar
             </Button>
-            <Button type="submit">
-              Criar Corretor
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Criando...' : 'Criar Corretor'}
             </Button>
           </div>
         </form>

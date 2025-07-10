@@ -49,7 +49,7 @@ export interface Corretor {
   nome: string;
   email: string;
   telefone: string;
-  status: 'ativo' | 'inativo';
+  status: 'ativo' | 'inativo' | 'pendente';
   permissoes: string[];
   leads: string[];
   equipeId?: string;
