@@ -54,25 +54,66 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Creating corretor:", { email, name, telefone, permissions, equipe_id });
 
-    // Verificar se email já existe
+    // Verificar se email já existe no auth.users (mais confiável)
+    console.log("Checking if email exists in auth...");
+    const { data: authUserCheck, error: authCheckError } = await supabase.auth.admin.listUsers();
+    
+    if (authCheckError) {
+      console.error("Error checking auth users:", authCheckError);
+    } else {
+      const existingAuthUser = authUserCheck.users?.find(user => 
+        user.email?.toLowerCase() === email.toLowerCase()
+      );
+      
+      if (existingAuthUser) {
+        console.log("Email already exists in auth:", email);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Este email já está em uso" 
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+    }
+
+    // Verificar na tabela users e limpar órfãos se necessário
+    console.log("Checking users table...");
     const { data: existingUser } = await supabase
       .from('users')
-      .select('email')
+      .select('id, email, status, created_at')
       .eq('email', email.toLowerCase())
-      .single();
+      .maybeSingle();
 
     if (existingUser) {
-      console.log("Email already exists:", email);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "Este email já está em uso" 
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        }
-      );
+      console.log("Found existing user in users table:", existingUser);
+      
+      // Se o usuário está pendente há mais de 5 minutos, provavelmente é órfão
+      const isOldPendingUser = existingUser.status === 'pendente' && 
+        new Date(existingUser.created_at).getTime() < Date.now() - (5 * 60 * 1000);
+      
+      if (isOldPendingUser) {
+        console.log("Cleaning up orphaned pending user...");
+        // Limpar usuário órfão
+        await supabase.from('permissions').delete().eq('user_id', existingUser.id);
+        await supabase.from('users').delete().eq('id', existingUser.id);
+        console.log("Orphaned user cleaned up");
+      } else {
+        // Usuário válido existe
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            error: "Este email já está em uso" 
+          }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
     }
 
     // 1. Criar usuário no Supabase Auth
