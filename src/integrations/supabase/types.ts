@@ -415,7 +415,7 @@ export type Database = {
         | "visita"
         | "vendas-fechadas"
         | "em-pausa"
-      user_role: "admin" | "corretor"
+      user_role: "admin" | "corretor" | "gestor"
       user_status: "ativo" | "inativo" | "pendente"
     }
     CompositeTypes: {
@@ -560,7 +560,7 @@ export const Constants = {
         "vendas-fechadas",
         "em-pausa",
       ],
-      user_role: ["admin", "corretor"],
+      user_role: ["admin", "corretor", "gestor"],
       user_status: ["ativo", "inativo", "pendente"],
     },
   },
