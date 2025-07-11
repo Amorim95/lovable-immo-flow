@@ -151,7 +151,7 @@ const handler = async (req: Request): Promise<Response> => {
           telefone: telefone || null,
           password_hash: 'supabase_managed',
           role: role,
-          status: 'ativo', // Ativar usuário automaticamente
+          status: 'pendente', // Usuário inicia como pendente até confirmar email
           equipe_id: equipe_id || null
         })
         .select()
@@ -231,7 +231,7 @@ const handler = async (req: Request): Promise<Response> => {
             email: email.toLowerCase(),
             telefone,
             role,
-            status: 'ativo'
+            status: 'pendente'
           }
         }),
         {
