@@ -116,10 +116,11 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // 1. Criar usuário no Supabase Auth
+    // 1. Criar usuário no Supabase Auth com senha padrão
     console.log("Creating auth user...");
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email: email.toLowerCase(),
+      password: 'mudar123', // Senha padrão
       email_confirm: true, // Confirmar email automaticamente
       user_metadata: {
         name,
@@ -217,19 +218,13 @@ const handler = async (req: Request): Promise<Response> => {
       try {
         console.log("Sending confirmation email...");
         
-        // Usar o serviço de email do Supabase para enviar confirmação
-        const { data: emailData, error: emailError } = await supabase.auth.admin.inviteUserByEmail(
-          email.toLowerCase(),
-          {
-            data: {
-              name,
-              telefone,
-              role,
-              temporary_password: 'mudar123'
-            },
-            redirectTo: `${Deno.env.get('SUPABASE_URL')?.replace('/supabase', '')}/login`
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
+          body: {
+            email: email.toLowerCase(),
+            name,
+            role
           }
-        );
+        });
 
         if (emailError) {
           console.error("Email sending failed:", emailError);
@@ -246,7 +241,7 @@ const handler = async (req: Request): Promise<Response> => {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: "Usuário criado com sucesso e email de confirmação enviado",
+          message: "Usuário criado com sucesso! Um email de redefinição de senha foi enviado.",
           user: {
             id: authUserId,
             name,

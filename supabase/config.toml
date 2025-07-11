@@ -1,5 +1,8 @@
 project_id = "loxpoehsddfearnzcdla"
 
+[functions.send-confirmation-email]
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
