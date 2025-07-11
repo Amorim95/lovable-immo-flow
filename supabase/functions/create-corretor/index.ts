@@ -116,16 +116,18 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // 1. Criar usuário no Supabase Auth (sem confirmar email automaticamente)
+    // 1. Criar usuário no Supabase Auth e enviar email de confirmação
     console.log("Creating auth user...");
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email: email.toLowerCase(),
       password: 'mudar123', // Senha padrão
-      email_confirm: false, // NÃO confirmar automaticamente para enviar email
+      email_confirm: false, // Deixar false para enviar email de confirmação
       user_metadata: {
         name,
         telefone,
-        role
+        role,
+        login_email: email.toLowerCase(),
+        password_info: 'mudar123'
       }
     });
 
@@ -214,42 +216,19 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log("Permissions created successfully");
 
-      // 4. Usar Supabase para enviar email de confirmação nativo
-      try {
-        console.log("Sending Supabase confirmation email...");
-        
-        // Usar o método nativo do Supabase para gerar link de confirmação
-        const { data: confirmationData, error: confirmationError } = await supabase.auth.admin.generateLink({
-          type: 'signup',
-          email: email.toLowerCase(),
-          password: 'mudar123',
-          options: {
-            data: {
-              name,
-              telefone,
-              role,
-              welcome_message: `Olá ${name}! Bem-vindo ao Sistema CRM. Seu login é: ${email.toLowerCase()} e sua senha provisória é: mudar123`
-            }
-          }
-        });
-
-        if (confirmationError) {
-          console.error("Supabase confirmation email failed:", confirmationError);
-        } else {
-          console.log("Supabase confirmation email link generated successfully");
-          
-          // Confirmar o email automaticamente após gerar o link
-          const { error: confirmError } = await supabase.auth.admin.updateUserById(authUserId, {
-            email_confirm: true
-          });
-          
-          if (confirmError) {
-            console.error("Error confirming email:", confirmError);
-          }
-        }
-      } catch (emailErr) {
-        console.error("Supabase email generation failed (non-critical):", emailErr);
+      // 4. Confirmar email automaticamente - sem envio de email customizado
+      console.log("Confirming user email automatically...");
+      
+      const { error: confirmError } = await supabase.auth.admin.updateUserById(authUserId, {
+        email_confirm: true
+      });
+      
+      if (confirmError) {
+        console.error("Error confirming email:", confirmError);
+        throw new Error("Erro ao confirmar email: " + confirmError.message);
       }
+      
+      console.log("User email confirmed successfully");
 
       console.log("=== CREATE CORRETOR FUNCTION SUCCESS ===");
       
