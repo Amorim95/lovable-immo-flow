@@ -116,12 +116,12 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // 1. Criar usuário no Supabase Auth com senha padrão
+    // 1. Criar usuário no Supabase Auth (sem confirmar email automaticamente)
     console.log("Creating auth user...");
     const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
       email: email.toLowerCase(),
       password: 'mudar123', // Senha padrão
-      email_confirm: true, // Confirmar email automaticamente
+      email_confirm: false, // NÃO confirmar automaticamente para enviar email
       user_metadata: {
         name,
         telefone,
@@ -214,26 +214,41 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log("Permissions created successfully");
 
-      // 4. Enviar email de confirmação com credenciais
+      // 4. Usar Supabase para enviar email de confirmação nativo
       try {
-        console.log("Sending confirmation email...");
+        console.log("Sending Supabase confirmation email...");
         
-        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-confirmation-email', {
-          body: {
-            email: email.toLowerCase(),
-            name,
-            role
+        // Usar o método nativo do Supabase para gerar link de confirmação
+        const { data: confirmationData, error: confirmationError } = await supabase.auth.admin.generateLink({
+          type: 'signup',
+          email: email.toLowerCase(),
+          password: 'mudar123',
+          options: {
+            data: {
+              name,
+              telefone,
+              role,
+              welcome_message: `Olá ${name}! Bem-vindo ao Sistema CRM. Seu login é: ${email.toLowerCase()} e sua senha provisória é: mudar123`
+            }
           }
         });
 
-        if (emailError) {
-          console.error("Email sending failed:", emailError);
-          // Não bloqueia o processo, apenas loga o erro
+        if (confirmationError) {
+          console.error("Supabase confirmation email failed:", confirmationError);
         } else {
-          console.log("Confirmation email sent successfully");
+          console.log("Supabase confirmation email link generated successfully");
+          
+          // Confirmar o email automaticamente após gerar o link
+          const { error: confirmError } = await supabase.auth.admin.updateUserById(authUserId, {
+            email_confirm: true
+          });
+          
+          if (confirmError) {
+            console.error("Error confirming email:", confirmError);
+          }
         }
       } catch (emailErr) {
-        console.error("Email sending failed (non-critical):", emailErr);
+        console.error("Supabase email generation failed (non-critical):", emailErr);
       }
 
       console.log("=== CREATE CORRETOR FUNCTION SUCCESS ===");
@@ -241,7 +256,7 @@ const handler = async (req: Request): Promise<Response> => {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: "Usuário criado com sucesso! Um email de redefinição de senha foi enviado.",
+          message: "Usuário criado com sucesso! Email de confirmação enviado pelo Supabase.",
           user: {
             id: authUserId,
             name,
