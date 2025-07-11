@@ -73,7 +73,8 @@ const EquipesCadastradas = () => {
         permissoes: [], // Will be loaded if needed
         leads: [], // Will be loaded if needed
         equipeId: corretor.equipe_id,
-        equipeNome: equipesFormatted.find(e => e.id === corretor.equipe_id)?.nome
+        equipeNome: equipesFormatted.find(e => e.id === corretor.equipe_id)?.nome,
+        role: corretor.role as 'admin' | 'gestor' | 'corretor'
       }));
 
       setEquipes(equipesFormatted);

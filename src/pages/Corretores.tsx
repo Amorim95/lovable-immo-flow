@@ -49,7 +49,7 @@ const Corretores = () => {
     try {
       setLoading(true);
       
-      // Buscar corretores
+      // Buscar todos os usuários (admin, gestor, corretor)
       const { data: usersData, error: usersError } = await supabase
         .from('users')
         .select(`
@@ -69,7 +69,7 @@ const Corretores = () => {
             can_access_configurations
           )
         `)
-        .eq('role', 'corretor');
+        .in('role', ['admin', 'gestor', 'corretor']);
 
       if (usersError) {
         console.error('Error loading corretores:', usersError);
@@ -105,7 +105,8 @@ const Corretores = () => {
           permissoes: permissoesList,
           leads: Array(leadCount).fill('').map((_, i) => i.toString()), // Mock lead IDs
           equipeId: undefined,
-          equipeNome: undefined
+          equipeNome: undefined,
+          role: user.role // Adicionar role para mostrar no card
         };
       }) || [];
 
@@ -256,9 +257,9 @@ const Corretores = () => {
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestão de Corretores</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Gestão de Usuários</h1>
           <p className="text-gray-600 mt-1">
-            Gerencie sua equipe de corretores e suas permissões
+            Gerencie administradores, gestores e corretores do sistema
           </p>
         </div>
         
@@ -374,6 +375,19 @@ const Corretores = () => {
                   className={corretor.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
                 >
                   {corretor.status}
+                </Badge>
+              </div>
+              <div className="mt-2">
+                <Badge 
+                  variant="outline"
+                  className={
+                    corretor.role === 'admin' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+                    corretor.role === 'gestor' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                    'bg-gray-100 text-gray-800 border-gray-200'
+                  }
+                >
+                  {corretor.role === 'admin' ? 'Administrador' : 
+                   corretor.role === 'gestor' ? 'Gestor' : 'Corretor'}
                 </Badge>
               </div>
             </CardHeader>
