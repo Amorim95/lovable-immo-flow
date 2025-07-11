@@ -35,12 +35,14 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
       return;
     }
 
-    const responsavel = formData.responsavelId ? corretores.find(c => c.id === formData.responsavelId) : null;
+    const responsavel = formData.responsavelId && formData.responsavelId !== 'none' 
+      ? corretores.find(c => c.id === formData.responsavelId) 
+      : null;
     
     const newTeam: Partial<Equipe> = {
       id: Date.now().toString(),
       nome: formData.nome,
-      responsavelId: formData.responsavelId || null,
+      responsavelId: formData.responsavelId === 'none' ? null : formData.responsavelId || null,
       responsavelNome: responsavel?.nome || null,
       corretores: formData.corretoresSelecionados
     };
@@ -103,7 +105,7 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
                 <SelectValue placeholder="Selecione o responsável (opcional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Sem responsável</SelectItem>
+                <SelectItem value="none">Sem responsável</SelectItem>
                 {corretoresDisponiveis.map((corretor) => (
                   <SelectItem key={corretor.id} value={corretor.id}>
                     {corretor.nome}
