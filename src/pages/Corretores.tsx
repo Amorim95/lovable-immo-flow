@@ -43,6 +43,7 @@ const Corretores = () => {
   // Carregar dados do banco
   useEffect(() => {
     loadCorretores();
+    console.log('Loading corretores and equipes...');
   }, []);
 
   const loadCorretores = async () => {
@@ -109,6 +110,25 @@ const Corretores = () => {
           role: user.role // Adicionar role para mostrar no card
         };
       }) || [];
+
+      // Carregar equipes também
+      const { data: equipesData, error: equipesError } = await supabase
+        .from('equipes')
+        .select('*')
+        .order('nome', { ascending: true });
+
+      if (equipesError) {
+        console.error('Error loading equipes:', equipesError);
+      } else {
+        const formattedEquipes: Equipe[] = equipesData?.map(equipe => ({
+          id: equipe.id,
+          nome: equipe.nome,
+          responsavelId: equipe.responsavel_id || '',
+          responsavelNome: equipe.responsavel_nome || '',
+          corretores: [] // Will be populated if needed
+        })) || [];
+        setEquipes(formattedEquipes);
+      }
 
       setCorretores(formattedCorretores);
     } catch (error) {
