@@ -20,7 +20,7 @@ interface CreateCorretorRequest {
   email: string;
   name: string;
   telefone: string;
-  permissions: string[];
+  role: 'admin' | 'gestor' | 'corretor';
   equipe_id?: string;
 }
 
@@ -35,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
     const requestBody = await req.json();
     console.log("Request body:", JSON.stringify(requestBody, null, 2));
     
-    const { email, name, telefone, permissions, equipe_id }: CreateCorretorRequest = requestBody;
+    const { email, name, telefone, role, equipe_id }: CreateCorretorRequest = requestBody;
 
     // Validação básica
     if (!email || !name) {
@@ -52,7 +52,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log("Creating corretor:", { email, name, telefone, permissions, equipe_id });
+    console.log("Creating corretor:", { email, name, telefone, role, equipe_id });
 
     // Verificar se email já existe no auth.users (mais confiável)
     console.log("Checking if email exists in auth...");
@@ -124,7 +124,7 @@ const handler = async (req: Request): Promise<Response> => {
       user_metadata: {
         name,
         telefone,
-        role: 'corretor'
+        role
       }
     });
 
@@ -147,8 +147,8 @@ const handler = async (req: Request): Promise<Response> => {
           email: email.toLowerCase(),
           telefone: telefone || null,
           password_hash: 'supabase_managed',
-          role: 'corretor',
-          status: 'ativo', // Ativar corretor automaticamente
+          role: role,
+          status: 'ativo', // Ativar usuário automaticamente
           equipe_id: equipe_id || null
         })
         .select()
@@ -161,18 +161,46 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log("User record created:", userData.id);
 
-      // 3. Criar permissões
+      // 3. Criar permissões baseadas no cargo
       console.log("Creating permissions...");
-      const permissionsData = {
+      let permissionsData = {
         user_id: authUserId,
-        can_view_all_leads: false, // Removido da interface
-        can_invite_users: permissions.includes('can_invite_users'),
-        can_manage_leads: permissions.includes('can_manage_leads'),
-        can_view_reports: permissions.includes('can_view_reports'),
-        can_manage_properties: false, // Removido da interface
-        can_manage_teams: permissions.includes('can_manage_teams'),
-        can_access_configurations: permissions.includes('can_access_configurations')
+        can_view_all_leads: false,
+        can_invite_users: false,
+        can_manage_leads: false,
+        can_view_reports: false,
+        can_manage_properties: false,
+        can_manage_teams: false,
+        can_access_configurations: false
       };
+
+      // Definir permissões baseadas no cargo
+      if (role === 'admin') {
+        permissionsData = {
+          ...permissionsData,
+          can_view_all_leads: true,
+          can_invite_users: true,
+          can_manage_leads: true,
+          can_view_reports: true,
+          can_manage_properties: true,
+          can_manage_teams: true,
+          can_access_configurations: true
+        };
+      } else if (role === 'gestor') {
+        permissionsData = {
+          ...permissionsData,
+          can_manage_leads: true,
+          can_view_reports: true,
+          can_manage_teams: true,
+          can_access_configurations: false // Só acesso às próprias configurações
+        };
+      } else if (role === 'corretor') {
+        permissionsData = {
+          ...permissionsData,
+          can_manage_leads: true, // Só leads próprios
+          can_access_configurations: false // Só acesso às próprias configurações
+        };
+      }
 
       const { error: permError } = await supabase
         .from('permissions')
@@ -185,22 +213,29 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log("Permissions created successfully");
 
-      // 4. Enviar email de boas-vindas (opcional - não bloqueia o processo)
+      // 4. Enviar email de confirmação com credenciais
       try {
-        console.log("Attempting to send welcome email...");
+        console.log("Sending confirmation email...");
         
-        // Primeiro tentar gerar um link de reset de senha
-        const { data: resetData, error: resetError } = await supabase.auth.admin.generateLink({
-          type: 'recovery',
-          email: email.toLowerCase(),
-        });
+        // Usar o serviço de email do Supabase para enviar confirmação
+        const { data: emailData, error: emailError } = await supabase.auth.admin.inviteUserByEmail(
+          email.toLowerCase(),
+          {
+            data: {
+              name,
+              telefone,
+              role,
+              temporary_password: 'mudar123'
+            },
+            redirectTo: `${Deno.env.get('SUPABASE_URL')?.replace('/supabase', '')}/login`
+          }
+        );
 
-        if (resetError) {
-          console.error("Reset link generation failed:", resetError);
+        if (emailError) {
+          console.error("Email sending failed:", emailError);
+          // Não bloqueia o processo, apenas loga o erro
         } else {
-          console.log("Reset link generated successfully");
-          // Aqui você pode integrar com Resend ou outro serviço de email
-          // Por enquanto, vamos apenas logar que o processo foi bem-sucedido
+          console.log("Confirmation email sent successfully");
         }
       } catch (emailErr) {
         console.error("Email sending failed (non-critical):", emailErr);
@@ -211,15 +246,16 @@ const handler = async (req: Request): Promise<Response> => {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: "Corretor criado com sucesso",
+          message: "Usuário criado com sucesso e email de confirmação enviado",
           user: {
             id: authUserId,
             name,
             email: email.toLowerCase(),
             telefone,
+            role,
             status: 'ativo'
           }
-        }), 
+        }),
         {
           status: 200,
           headers: { "Content-Type": "application/json", ...corsHeaders },

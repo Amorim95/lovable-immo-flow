@@ -22,12 +22,10 @@ interface NewCorretorModalProps {
   equipes?: Equipe[];
 }
 
-const availablePermissions = [
-  { id: 'can_invite_users', label: 'Convidar Usuários' },
-  { id: 'can_manage_leads', label: 'Gerenciar Leads' },
-  { id: 'can_view_reports', label: 'Ver Relatórios' },
-  { id: 'can_manage_teams', label: 'Gerenciar Equipes' },
-  { id: 'can_access_configurations', label: 'Acessar Configurações' }
+const availableRoles = [
+  { id: 'admin', label: 'Administrador', description: 'Acesso completo ao sistema, sem restrições' },
+  { id: 'gestor', label: 'Gestor', description: 'Gerenciar leads, ver relatórios, gerenciar equipes' },
+  { id: 'corretor', label: 'Corretor', description: 'Gerenciar apenas leads próprios' }
 ];
 
 export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = [] }: NewCorretorModalProps) {
@@ -70,7 +68,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
     nome: '',
     email: '',
     telefone: '',
-    permissoes: [] as string[],
+    role: 'corretor' as 'admin' | 'gestor' | 'corretor',
     equipeId: ''
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +90,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
           email: formData.email,
           name: formData.nome,
           telefone: formData.telefone,
-          permissions: formData.permissoes,
+          role: formData.role,
           equipe_id: formData.equipeId && formData.equipeId !== 'no-team' ? formData.equipeId : null
         }
       });
@@ -108,7 +106,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
         return;
       }
 
-      toast.success('Corretor criado com sucesso! Email de confirmação enviado.');
+      toast.success('Usuário criado com sucesso! Email de confirmação enviado.');
       
       // Criar objeto corretor para atualizar a interface
       const newCorretor: Partial<Corretor> = {
@@ -117,7 +115,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
         email: formData.email,
         telefone: formData.telefone,
         status: data.user.status || 'ativo', // Usar status do retorno da função
-        permissoes: formData.permissoes,
+        permissoes: [], // Permissões definidas pelo cargo
         leads: [],
         equipeId: formData.equipeId === 'no-team' ? undefined : (formData.equipeId || undefined),
         equipeNome: equipesFromDB.find(e => e.id === formData.equipeId)?.nome
@@ -139,24 +137,17 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
       nome: '',
       email: '',
       telefone: '',
-      permissoes: [],
+      role: 'corretor',
       equipeId: ''
     });
     onClose();
   };
 
-  const handlePermissionChange = (permission: string, checked: boolean) => {
-    if (checked) {
-      setFormData(prev => ({
-        ...prev,
-        permissoes: [...prev.permissoes, permission]
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        permissoes: prev.permissoes.filter(p => p !== permission)
-      }));
-    }
+  const handleRoleChange = (role: 'admin' | 'gestor' | 'corretor') => {
+    setFormData(prev => ({
+      ...prev,
+      role
+    }));
   };
 
   return (
@@ -230,23 +221,27 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
           </div>
 
           <div>
-            <Label>Permissões e Acessos</Label>
-            <div className="space-y-2 mt-2">
-              {availablePermissions.map((permission) => (
-                <div key={permission.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={permission.id}
-                    checked={formData.permissoes.includes(permission.id)}
-                    onCheckedChange={(checked) =>
-                      handlePermissionChange(permission.id, checked as boolean)
-                    }
+            <Label>Cargo e Permissões</Label>
+            <div className="space-y-3 mt-2">
+              {availableRoles.map((role) => (
+                <div key={role.id} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer" onClick={() => handleRoleChange(role.id as 'admin' | 'gestor' | 'corretor')}>
+                  <input
+                    type="radio"
+                    id={role.id}
+                    name="role"
+                    value={role.id}
+                    checked={formData.role === role.id}
+                    onChange={() => handleRoleChange(role.id as 'admin' | 'gestor' | 'corretor')}
+                    className="mt-1"
                   />
-                  <label
-                    htmlFor={permission.id}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {permission.label}
-                  </label>
+                  <div className="flex-1">
+                    <Label htmlFor={role.id} className="text-sm font-medium cursor-pointer">
+                      {role.label}
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {role.description}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -257,7 +252,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Criando...' : 'Criar Corretor'}
+              {isLoading ? 'Criando...' : 'Criar Usuário'}
             </Button>
           </div>
         </form>
