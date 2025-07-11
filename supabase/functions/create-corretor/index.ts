@@ -216,19 +216,8 @@ const handler = async (req: Request): Promise<Response> => {
 
       console.log("Permissions created successfully");
 
-      // 4. Confirmar email automaticamente - sem envio de email customizado
-      console.log("Confirming user email automatically...");
-      
-      const { error: confirmError } = await supabase.auth.admin.updateUserById(authUserId, {
-        email_confirm: true
-      });
-      
-      if (confirmError) {
-        console.error("Error confirming email:", confirmError);
-        throw new Error("Erro ao confirmar email: " + confirmError.message);
-      }
-      
-      console.log("User email confirmed successfully");
+      // 4. Email será enviado automaticamente pelo Supabase
+      console.log("User created successfully, Supabase will send confirmation email automatically");
 
       console.log("=== CREATE CORRETOR FUNCTION SUCCESS ===");
       
