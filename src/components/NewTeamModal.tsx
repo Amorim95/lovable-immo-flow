@@ -30,18 +30,18 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome.trim() || !formData.responsavelId) {
-      alert('Nome da equipe e responsável são obrigatórios');
+    if (!formData.nome.trim()) {
+      alert('Nome da equipe é obrigatório');
       return;
     }
 
-    const responsavel = corretores.find(c => c.id === formData.responsavelId);
+    const responsavel = formData.responsavelId ? corretores.find(c => c.id === formData.responsavelId) : null;
     
     const newTeam: Partial<Equipe> = {
       id: Date.now().toString(),
       nome: formData.nome,
-      responsavelId: formData.responsavelId,
-      responsavelNome: responsavel?.nome || '',
+      responsavelId: formData.responsavelId || null,
+      responsavelNome: responsavel?.nome || null,
       corretores: formData.corretoresSelecionados
     };
 
@@ -97,12 +97,13 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
           </div>
 
           <div>
-            <Label htmlFor="responsavel">Responsável pela Equipe *</Label>
+            <Label htmlFor="responsavel">Responsável pela Equipe</Label>
             <Select value={formData.responsavelId} onValueChange={(value) => setFormData({ ...formData, responsavelId: value })}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o responsável" />
+                <SelectValue placeholder="Selecione o responsável (opcional)" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="">Sem responsável</SelectItem>
                 {corretoresDisponiveis.map((corretor) => (
                   <SelectItem key={corretor.id} value={corretor.id}>
                     {corretor.nome}
