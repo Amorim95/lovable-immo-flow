@@ -298,7 +298,7 @@ const Corretores = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center gap-3">
@@ -309,7 +309,23 @@ const Corretores = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {corretores.filter(c => c.status === 'ativo').length}
                 </p>
-                <p className="text-sm text-gray-600">Corretores Ativos</p>
+                <p className="text-sm text-gray-600">Usuários Ativos</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <User className="w-6 h-6 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gray-900">
+                  {corretores.filter(c => c.status === 'pendente').length}
+                </p>
+                <p className="text-sm text-gray-600">Aguardando Confirmação</p>
               </div>
             </div>
           </CardContent>
@@ -325,7 +341,7 @@ const Corretores = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {corretores.filter(c => c.status === 'inativo').length}
                 </p>
-                <p className="text-sm text-gray-600">Corretores Inativos</p>
+                <p className="text-sm text-gray-600">Usuários Inativos</p>
               </div>
             </div>
           </CardContent>
@@ -339,7 +355,7 @@ const Corretores = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{corretores.length}</p>
-                <p className="text-sm text-gray-600">Total de Corretores</p>
+                <p className="text-sm text-gray-600">Total de Usuários</p>
               </div>
             </div>
           </CardContent>
@@ -391,10 +407,14 @@ const Corretores = () => {
                   </div>
                 </div>
                 <Badge 
-                  variant={corretor.status === 'ativo' ? 'default' : 'secondary'}
-                  className={corretor.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+                  variant={corretor.status === 'ativo' ? 'default' : corretor.status === 'pendente' ? 'secondary' : 'destructive'}
+                  className={
+                    corretor.status === 'ativo' ? 'bg-green-100 text-green-800' : 
+                    corretor.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-red-100 text-red-800'
+                  }
                 >
-                  {corretor.status}
+                  {corretor.status === 'pendente' ? 'Aguardando confirmação' : corretor.status}
                 </Badge>
               </div>
               <div className="mt-2">
@@ -436,10 +456,16 @@ const Corretores = () => {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Leads Ativos:</span>
-                  <span className="font-medium">{corretor.leads.length}</span>
-                </div>
+                 <div className="flex items-center justify-between text-sm">
+                   <span className="text-gray-600">Leads Ativos:</span>
+                   <span className="font-medium">{corretor.leads.length}</span>
+                 </div>
+
+                 {corretor.status === 'pendente' && (
+                   <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-xs text-yellow-800">
+                     <p>Este usuário foi criado mas ainda não confirmou seu email. Aguardando confirmação.</p>
+                   </div>
+                 )}
 
                 <div className="flex gap-2 pt-3">
                   <Button 
