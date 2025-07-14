@@ -58,23 +58,25 @@ const handler = async (req: Request): Promise<Response> => {
     const temporaryPassword = 'Mudar123'; // Define temporary password here
 
     try {
-      // First, try to get the user by email from Supabase Auth
+      // First, try to get the user by email from Supabase Auth using listUsers
       console.log("Checking if email exists in Supabase Auth...");
-      const { data: existingAuthUser, error: getAuthUserError } = await supabase.auth.admin.getUserByEmail(email.toLowerCase());
-
-      if (getAuthUserError && getAuthUserError.status !== 404) { // 404 means user not found, which is fine
-          console.error("Error checking existing auth user by email:", getAuthUserError);
-          throw new Error("Erro ao verificar usuário de autenticação existente: " + getAuthUserError.message);
+      const { data: authUsers, error: getAuthUserError } = await supabase.auth.admin.listUsers();
+      
+      if (getAuthUserError) {
+        console.error("Error listing auth users:", getAuthUserError);
+        throw new Error("Erro ao verificar usuários de autenticação: " + getAuthUserError.message);
       }
+      
+      const existingAuthUser = authUsers.users?.find(user => user.email?.toLowerCase() === email.toLowerCase()) || null;
 
-      if (existingAuthUser.user) {
-          console.log("Email already exists in Supabase Auth:", existingAuthUser.user.id);
+      if (existingAuthUser) {
+          console.log("Email already exists in Supabase Auth:", existingAuthUser.id);
           // If the user exists in auth.users, check its status and also if it exists in public.users
           
           const { data: existingUserInPublic, error: existingPublicError } = await supabase
             .from('users')
             .select('id, email, status, created_at')
-            .eq('id', existingAuthUser.user.id)
+            .eq('id', existingAuthUser.id)
             .maybeSingle();
 
           if (existingPublicError && existingPublicError.code !== 'PGRST116') { // PGRST116 means no rows found
@@ -104,18 +106,18 @@ const handler = async (req: Request): Promise<Response> => {
                   // Clean up orphaned public user and permissions, then allow re-creation of public user record.
                   await supabase.from('permissions').delete().eq('user_id', existingUserInPublic.id);
                   await supabase.from('users').delete().eq('id', existingUserInPublic.id);
-                  // Auth user might still exist, we'll try to re-use it or just let it be.
-                  authUserId = existingAuthUser.user.id; // Use existing auth user ID
-              } else if (existingUserInPublic.status === 'inativo') {
-                  console.log("Existing user is inactive. Reactivating and re-inviting.");
-                  authUserId = existingAuthUser.user.id;
+                   // Auth user might still exist, we'll try to re-use it or just let it be.
+                   authUserId = existingAuthUser.id; // Use existing auth user ID
+               } else if (existingUserInPublic.status === 'inativo') {
+                   console.log("Existing user is inactive. Reactivating and re-inviting.");
+                   authUserId = existingAuthUser.id;
                   // Update public user to pending, and re-send invitation
                   await supabase.from('users').update({ status: 'pendente' }).eq('id', authUserId);
               }
-          } else {
-              console.log("User exists in Auth but not in public.users. Re-using Auth user and creating public record.");
-              authUserId = existingAuthUser.user.id;
-          }
+           } else {
+               console.log("User exists in Auth but not in public.users. Re-using Auth user and creating public record.");
+               authUserId = existingAuthUser.id;
+           }
       } else {
           // User does not exist in Auth, so create a new one
           console.log("Auth user does not exist. Creating new auth user...");
