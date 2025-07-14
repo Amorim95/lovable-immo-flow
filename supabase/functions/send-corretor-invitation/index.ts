@@ -40,13 +40,30 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Generate the confirmation link using Supabase's admin API
-    const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({
-      type: 'signup', // Use 'signup' type for new user confirmation
-      email: email,
-      options: {
-        redirectTo: Deno.env.get('SITE_URL') || supabaseUrl // Redirect to your site URL after confirmation
-      }
-    });
+    // For existing users, use 'invite' type; for new users, use 'signup'
+    let generateLinkResult;
+    try {
+      // Try 'invite' first (for existing users)
+      generateLinkResult = await supabase.auth.admin.generateLink({
+        type: 'invite',
+        email: email,
+        options: {
+          redirectTo: Deno.env.get('SITE_URL') || supabaseUrl
+        }
+      });
+    } catch (inviteError) {
+      console.log("Invite link generation failed, trying signup...");
+      // If invite fails, try 'signup' (for new users)
+      generateLinkResult = await supabase.auth.admin.generateLink({
+        type: 'signup',
+        email: email,
+        options: {
+          redirectTo: Deno.env.get('SITE_URL') || supabaseUrl
+        }
+      });
+    }
+
+    const { data: { properties }, error: generateLinkError } = generateLinkResult;
 
     if (generateLinkError) {
       console.error("Error generating confirmation link:", generateLinkError);
