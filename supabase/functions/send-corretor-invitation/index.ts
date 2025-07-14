@@ -26,10 +26,18 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log("=== SEND INVITATION EMAIL START ===");
+    
     const { userId, email, name, temporaryPassword }: SendInvitationRequest = await req.json();
 
     console.log("Sending invitation email for user:", { userId, email, name });
     console.log("RESEND_API_KEY exists:", !!Deno.env.get("RESEND_API_KEY"));
+
+    // Check if RESEND_API_KEY is configured
+    if (!Deno.env.get("RESEND_API_KEY")) {
+      console.error("RESEND_API_KEY is not configured");
+      throw new Error("Configuração de email não encontrada. Configure a chave RESEND_API_KEY.");
+    }
 
     // Generate the confirmation link using Supabase's admin API
     const { data: { properties }, error: generateLinkError } = await supabase.auth.admin.generateLink({

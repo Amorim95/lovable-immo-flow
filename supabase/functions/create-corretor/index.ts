@@ -219,22 +219,28 @@ const handler = async (req: Request): Promise<Response> => {
 
       // 4. Trigger custom invitation email
       console.log("Invoking send-corretor-invitation Edge Function...");
-      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-corretor-invitation', {
-        body: {
-          userId: authUserId,
-          email: email.toLowerCase(),
-          name: name,
-          temporaryPassword: temporaryPassword // Pass the temporary password
-        }
-      });
+      try {
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-corretor-invitation', {
+          body: {
+            userId: authUserId,
+            email: email.toLowerCase(),
+            name: name,
+            temporaryPassword: temporaryPassword // Pass the temporary password
+          }
+        });
 
-      if (emailError) {
-        console.error("Error invoking send-corretor-invitation:", emailError);
-        // Log, but don't fail the entire function if email sending fails. The user is still created.
-      } else if (emailData && !emailData.success) {
-        console.error("send-corretor-invitation reported an error:", emailData.error);
-      } else {
-        console.log("Invitation email function successfully triggered.");
+        if (emailError) {
+          console.error("Error invoking send-corretor-invitation:", emailError);
+          console.error("Email error details:", JSON.stringify(emailError, null, 2));
+          // Log, but don't fail the entire function if email sending fails. The user is still created.
+        } else if (emailData && !emailData.success) {
+          console.error("send-corretor-invitation reported an error:", emailData.error);
+        } else {
+          console.log("Invitation email function successfully triggered.");
+        }
+      } catch (emailInvokeError) {
+        console.error("Exception calling send-corretor-invitation:", emailInvokeError);
+        // Don't fail the entire function if email sending fails
       }
 
       console.log("=== CREATE CORRETOR FUNCTION SUCCESS ===");
