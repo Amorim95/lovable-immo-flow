@@ -54,98 +54,102 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Attempting to create corretor:", { email, name, telefone, role, equipe_id });
 
-    // Check if user already exists in public.users to prevent orphaned records or duplicates
-    console.log("Checking public.users table for existing user...");
-    const { data: existingUserInPublic, error: existingPublicError } = await supabase
-      .from('users')
-      .select('id, email, status, created_at')
-      .eq('email', email.toLowerCase())
-      .maybeSingle();
-
-    if (existingPublicError && existingPublicError.code !== 'PGRST116') { // PGRST116 means no rows found
-        console.error("Error checking existing public user:", existingPublicError);
-        throw new Error("Erro ao verificar usuário existente: " + existingPublicError.message);
-    }
-
-    if (existingUserInPublic) {
-        console.log("Found existing user in public.users:", existingUserInPublic);
-        // If an old pending user exists, assume it's an orphan from a failed previous attempt and clean up.
-        const isOldPendingUser = existingUserInPublic.status === 'pendente' && 
-                                 new Date(existingUserInPublic.created_at).getTime() < Date.now() - (10 * 60 * 1000); // 10 minutes threshold
-
-        if (isOldPendingUser) {
-            console.log("Cleaning up orphaned pending user:", existingUserInPublic.id);
-            // Delete associated permissions and user record
-            await supabase.from('permissions').delete().eq('user_id', existingUserInPublic.id);
-            await supabase.from('users').delete().eq('id', existingUserInPublic.id);
-            // Attempt to delete from auth.users as well if it exists, though it might not if orphaned
-            try {
-              await supabase.auth.admin.deleteUser(existingUserInPublic.id);
-              console.log("Orphaned auth user also cleaned up.");
-            } catch (e) {
-              console.warn("Could not delete orphaned auth user (might not exist):", e.message);
-            }
-            console.log("Orphaned user cleaned up. Proceeding with new creation.");
-        } else {
-            console.log("User email already exists and is not an old pending orphan.");
-            // If the email exists and is active or a recent pending, prevent re-creation.
-            return new Response(
-                JSON.stringify({ 
-                    success: false, 
-                    error: "Este email já está em uso ou aguardando confirmação." 
-                }),
-                {
-                    status: 400,
-                    headers: { "Content-Type": "application/json", ...corsHeaders },
-                }
-            );
-        }
-    }
-
-    // Attempt to create user in Supabase Auth first
-    console.log("Creating auth user with temporary password...");
+    let authUserId: string | null = null;
     const temporaryPassword = 'Mudar123'; // Define temporary password here
 
-    const { data: authUserResponse, error: authError } = await supabase.auth.admin.createUser({
-      email: email.toLowerCase(),
-      password: temporaryPassword, // Set a temporary password for the user
-      email_confirm: false, // We will send a custom confirmation email
-      user_metadata: {
-        name,
-        telefone,
-        role,
-        login_email: email.toLowerCase(),
-        password_info: 'mudar123'
-      }
-    });
-
-    if (authError) {
-      console.error("Error creating auth user:", authError);
-      // Handle cases where email might already be in use in auth.users but not in public.users (e.g., deleted public.users entry)
-      if (authError.message.includes('already exists') || authError.message.includes('User already registered')) {
-        return new Response(
-          JSON.stringify({ 
-            success: false, 
-            error: "Este email já está em uso no sistema de autenticação." 
-          }),
-          {
-            status: 400,
-            headers: { "Content-Type": "application/json", ...corsHeaders },
-          }
-        );
-      }
-      throw new Error("Erro ao criar usuário de autenticação: " + authError.message);
-    }
-
-    const authUserId = authUserResponse.user!.id;
-    console.log("Auth user created with ID:", authUserId);
-
     try {
-      // 2. Create record in public.users table
-      console.log("Creating user record in public.users...");
+      // First, try to get the user by email from Supabase Auth
+      console.log("Checking if email exists in Supabase Auth...");
+      const { data: existingAuthUser, error: getAuthUserError } = await supabase.auth.admin.getUserByEmail(email.toLowerCase());
+
+      if (getAuthUserError && getAuthUserError.status !== 404) { // 404 means user not found, which is fine
+          console.error("Error checking existing auth user by email:", getAuthUserError);
+          throw new Error("Erro ao verificar usuário de autenticação existente: " + getAuthUserError.message);
+      }
+
+      if (existingAuthUser.user) {
+          console.log("Email already exists in Supabase Auth:", existingAuthUser.user.id);
+          // If the user exists in auth.users, check its status and also if it exists in public.users
+          
+          const { data: existingUserInPublic, error: existingPublicError } = await supabase
+            .from('users')
+            .select('id, email, status, created_at')
+            .eq('id', existingAuthUser.user.id)
+            .maybeSingle();
+
+          if (existingPublicError && existingPublicError.code !== 'PGRST116') { // PGRST116 means no rows found
+              console.error("Error checking existing public user linked to auth user:", existingPublicError);
+              throw new Error("Erro ao verificar vínculo do usuário existente: " + existingPublicError.message);
+          }
+
+          if (existingUserInPublic) {
+              console.log("Found existing user in public.users linked to auth user:", existingUserInPublic);
+              // If user exists in both and is active or recent pending, return conflict
+              const isOldPendingUser = existingUserInPublic.status === 'pendente' && 
+                                       new Date(existingUserInPublic.created_at).getTime() < Date.now() - (10 * 60 * 1000); // 10 minutes threshold
+
+              if (!isOldPendingUser && existingUserInPublic.status !== 'inativo') {
+                  return new Response(
+                      JSON.stringify({ 
+                          success: false, 
+                          error: "Este email já está em uso ou aguardando confirmação." 
+                      }),
+                      {
+                          status: 400,
+                          headers: { "Content-Type": "application/json", ...corsHeaders },
+                      }
+                  );
+              } else if (isOldPendingUser) {
+                  console.log("Existing user is an old pending user. Attempting to clean up and re-create.");
+                  // Clean up orphaned public user and permissions, then allow re-creation of public user record.
+                  await supabase.from('permissions').delete().eq('user_id', existingUserInPublic.id);
+                  await supabase.from('users').delete().eq('id', existingUserInPublic.id);
+                  // Auth user might still exist, we'll try to re-use it or just let it be.
+                  authUserId = existingAuthUser.user.id; // Use existing auth user ID
+              } else if (existingUserInPublic.status === 'inativo') {
+                  console.log("Existing user is inactive. Reactivating and re-inviting.");
+                  authUserId = existingAuthUser.user.id;
+                  // Update public user to pending, and re-send invitation
+                  await supabase.from('users').update({ status: 'pendente' }).eq('id', authUserId);
+              }
+          } else {
+              console.log("User exists in Auth but not in public.users. Re-using Auth user and creating public record.");
+              authUserId = existingAuthUser.user.id;
+          }
+      } else {
+          // User does not exist in Auth, so create a new one
+          console.log("Auth user does not exist. Creating new auth user...");
+          const { data: newAuthUserResponse, error: newAuthError } = await supabase.auth.admin.createUser({
+            email: email.toLowerCase(),
+            password: temporaryPassword,
+            email_confirm: false, // Control email sending manually
+            user_metadata: {
+              name,
+              telefone,
+              role,
+              login_email: email.toLowerCase(),
+              password_info: 'mudar123'
+            }
+          });
+
+          if (newAuthError) {
+            console.error("Error creating new auth user:", newAuthError);
+            throw new Error("Erro ao criar novo usuário de autenticação: " + newAuthError.message);
+          }
+          authUserId = newAuthUserResponse.user!.id;
+          console.log("New auth user created with ID:", authUserId);
+      }
+
+      // If we reached here, authUserId is set (either from existing or newly created)
+      if (!authUserId) {
+        throw new Error("Falha ao obter ID do usuário de autenticação.");
+      }
+
+      // 2. Create or update record in public.users table
+      console.log("Creating/updating user record in public.users...");
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .insert({
+        .upsert({
           id: authUserId,
           name,
           email: email.toLowerCase(),
@@ -154,19 +158,19 @@ const handler = async (req: Request): Promise<Response> => {
           role: role,
           status: 'pendente', // User starts as pending until email is confirmed
           equipe_id: equipe_id || null
-        })
+        }, { onConflict: 'id' }) // Upsert based on ID if authUserId already existed
         .select()
         .single();
 
       if (userError) {
-        console.error("User record creation failed:", userError);
-        throw new Error("Erro ao criar registro do usuário: " + userError.message);
+        console.error("User record creation/update failed:", userError);
+        throw new Error("Erro ao criar/atualizar registro do usuário: " + userError.message);
       }
 
-      console.log("User record created:", userData.id);
+      console.log("User record created/updated:", userData.id);
 
-      // 3. Create permissions based on role
-      console.log("Creating permissions...");
+      // 3. Create or update permissions based on role
+      console.log("Creating/updating permissions...");
       let permissionsData = {
         user_id: authUserId,
         can_view_all_leads: false,
@@ -208,14 +212,14 @@ const handler = async (req: Request): Promise<Response> => {
 
       const { error: permError } = await supabase
         .from('permissions')
-        .insert(permissionsData);
+        .upsert(permissionsData, { onConflict: 'user_id' }); // Upsert based on user_id
 
       if (permError) {
-        console.error("Error creating permissions:", permError);
-        throw new Error("Erro ao criar permissões: " + permError.message);
+        console.error("Error creating/updating permissions:", permError);
+        throw new Error("Erro ao criar/atualizar permissões: " + permError.message);
       }
 
-      console.log("Permissions created successfully");
+      console.log("Permissions created/updated successfully");
 
       // 4. Trigger custom invitation email
       console.log("Invoking send-corretor-invitation Edge Function...");
@@ -268,10 +272,13 @@ const handler = async (req: Request): Promise<Response> => {
       // Rollback: delete auth user if something went wrong after auth user creation
       console.log("Error occurred after auth user creation, performing rollback...");
       try {
-        await supabase.auth.admin.deleteUser(authUserId);
-        await supabase.from('users').delete().eq('id', authUserId);
-        await supabase.from('permissions').delete().eq('user_id', authUserId);
-        console.log("Rollback completed successfully.");
+        if (authUserId) { // Only attempt to delete if auth user was actually created
+            await supabase.auth.admin.deleteUser(authUserId);
+            // Delete from public.users and permissions too, as they might have been partially created
+            await supabase.from('users').delete().eq('id', authUserId);
+            await supabase.from('permissions').delete().eq('user_id', authUserId);
+            console.log("Rollback completed successfully.");
+        }
       } catch (rollbackError) {
         console.error("Rollback failed:", rollbackError);
       }
