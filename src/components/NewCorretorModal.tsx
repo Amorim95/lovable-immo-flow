@@ -84,38 +84,106 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
     setIsLoading(true);
     
     try {
-      // Chamar edge function para criar corretor
-      const { data, error } = await supabase.functions.invoke('create-corretor', {
-        body: {
+      // Usar o signup nativo do Supabase com confirmação por email
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: 'temp123456', // Senha temporária - usuário definirá própria senha via email
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            name: formData.nome,
+            telefone: formData.telefone,
+            role: formData.role,
+            equipe_id: formData.equipeId && formData.equipeId !== 'no-team' ? formData.equipeId : null
+          }
+        }
+      });
+
+      if (authError) {
+        console.error('Error creating auth user:', authError);
+        toast.error('Erro ao criar corretor: ' + authError.message);
+        return;
+      }
+
+      if (!authData.user) {
+        toast.error('Erro ao criar usuário na autenticação');
+        return;
+      }
+
+      // Criar registro na tabela users
+      const { error: userError } = await supabase
+        .from('users')
+        .insert({
+          id: authData.user.id,
           email: formData.email,
           name: formData.nome,
           telefone: formData.telefone,
           role: formData.role,
-          equipe_id: formData.equipeId && formData.equipeId !== 'no-team' ? formData.equipeId : null
+          equipe_id: formData.equipeId && formData.equipeId !== 'no-team' ? formData.equipeId : null,
+          status: 'pendente',
+          password_hash: 'temp' // Será atualizado quando usuário confirmar
+        });
+
+      if (userError) {
+        console.error('Error creating user record:', userError);
+        toast.error('Erro ao criar registro do usuário');
+        return;
+      }
+
+      // Criar permissões baseadas no role
+      const permissions = {
+        admin: {
+          can_view_all_leads: true,
+          can_invite_users: true,
+          can_manage_leads: true,
+          can_view_reports: true,
+          can_access_configurations: true,
+          can_manage_teams: true,
+          can_manage_properties: true
+        },
+        gestor: {
+          can_view_all_leads: true,
+          can_invite_users: true,
+          can_manage_leads: true,
+          can_view_reports: true,
+          can_access_configurations: false,
+          can_manage_teams: true,
+          can_manage_properties: true
+        },
+        corretor: {
+          can_view_all_leads: false,
+          can_invite_users: false,
+          can_manage_leads: true,
+          can_view_reports: false,
+          can_access_configurations: false,
+          can_manage_teams: false,
+          can_manage_properties: false
         }
-      });
+      };
 
-      if (error) {
-        console.error('Error calling edge function:', error);
-        toast.error('Erro ao criar corretor: ' + error.message);
+      const { error: permissionsError } = await supabase
+        .from('permissions')
+        .insert({
+          user_id: authData.user.id,
+          ...permissions[formData.role]
+        });
+
+      if (permissionsError) {
+        console.error('Error creating permissions:', permissionsError);
+        toast.error('Erro ao criar permissões do usuário');
         return;
       }
 
-      if (!data.success) {
-        toast.error(data.error || 'Erro ao criar corretor');
-        return;
-      }
-
-      toast.success('Usuário criado com sucesso! Email de confirmação enviado.');
+      toast.success('Corretor criado com sucesso! Um email de confirmação foi enviado para o endereço informado.');
       
       // Criar objeto corretor para atualizar a interface
       const newCorretor: Partial<Corretor> = {
-        id: data.user.id,
+        id: authData.user.id,
         nome: formData.nome,
         email: formData.email,
         telefone: formData.telefone,
-        status: data.user.status || 'ativo', // Usar status do retorno da função
-        permissoes: [], // Permissões definidas pelo cargo
+        status: 'pendente',
+        permissoes: [],
         leads: [],
         equipeId: formData.equipeId === 'no-team' ? undefined : (formData.equipeId || undefined),
         equipeNome: equipesFromDB.find(e => e.id === formData.equipeId)?.nome
