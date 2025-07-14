@@ -89,7 +89,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
         email: formData.email,
         password: 'temp123456', // Senha temporária - usuário definirá própria senha via email
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/login`,
           data: {
             name: formData.nome,
             telefone: formData.telefone,
