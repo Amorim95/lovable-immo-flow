@@ -41,11 +41,5 @@ enable_confirmations = true
 enabled = true
 port = 54327
 
-[functions.create-corretor]
-verify_jwt = false
-
-[functions.send-corretor-invitation]
-verify_jwt = false
-
 [functions.auth-webhook]
 verify_jwt = false
