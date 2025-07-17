@@ -17,7 +17,8 @@ export function useUserRole(): UserRole {
     isAdmin: false,
     isGestor: false,
     isCorretor: false,
-    loading: true
+    loading: true,
+    equipeId: undefined
   });
 
   useEffect(() => {
@@ -26,68 +27,21 @@ export function useUserRole(): UserRole {
         isAdmin: false,
         isGestor: false,
         isCorretor: false,
-        loading: false
+        loading: false,
+        equipeId: undefined
       });
       return;
     }
 
-    loadUserRole();
+    // Como os dados do usuário já vêm do AuthContext, podemos usar diretamente
+    setRoleInfo({
+      isAdmin: user.role === 'admin',
+      isGestor: user.role === 'gestor',
+      isCorretor: user.role === 'corretor',
+      loading: false,
+      equipeId: undefined // Pode ser expandido se necessário
+    });
   }, [user]);
-
-  const loadUserRole = async () => {
-    if (!user) return;
-
-    try {
-      // Se o usuário tem um ID temporário (para desenvolvimento), assumir como admin
-      if (user.id === 'temp-admin-id' || !user.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        console.log('Using temporary admin user for development');
-        setRoleInfo({
-          isAdmin: true,
-          isGestor: false,
-          isCorretor: false,
-          loading: false
-        });
-        return;
-      }
-
-      // Buscar informações do usuário no banco
-      const { data: userData, error } = await supabase
-        .from('users')
-        .select('role, equipe_id')
-        .eq('id', user.id)
-        .single();
-
-      if (error) {
-        console.error('Error loading user role:', error);
-        // Em caso de erro, assumir como corretor para não bloquear a interface
-        setRoleInfo({
-          isAdmin: false,
-          isGestor: false,
-          isCorretor: true,
-          loading: false
-        });
-        return;
-      }
-
-      setRoleInfo({
-        isAdmin: userData?.role === 'admin',
-        isGestor: userData?.role === 'gestor',
-        isCorretor: userData?.role === 'corretor',
-        equipeId: userData?.equipe_id,
-        loading: false
-      });
-
-    } catch (error) {
-      console.error('Error loading user role:', error);
-      // Em caso de erro, assumir como corretor para não bloquear a interface
-      setRoleInfo({
-        isAdmin: false,
-        isGestor: false,
-        isCorretor: true,
-        loading: false
-      });
-    }
-  };
 
   return roleInfo;
 }
