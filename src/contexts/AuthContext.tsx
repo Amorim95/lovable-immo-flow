@@ -1,114 +1,153 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { User, Session } from '@supabase/supabase-js';
 
-interface User {
+interface AppUser {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'corretor';
+  role: 'admin' | 'corretor' | 'gestor';
   status: 'ativo' | 'inativo' | 'pendente';
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
+  session: Session | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
+  logout: () => Promise<void>;
   loading: boolean;
-  updateProfile: (data: Partial<User>) => Promise<{ success: boolean; error?: string }>;
+  updateProfile: (data: Partial<AppUser>) => Promise<{ success: boolean; error?: string }>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar se há um usuário logado armazenado
-    const storedUser = localStorage.getItem('crm_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    // Setup auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        
+        if (session?.user) {
+          // Defer Supabase calls with setTimeout
+          setTimeout(async () => {
+            await fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setUser(null);
+          localStorage.removeItem('crm_user');
+        }
+      }
+    );
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const fetchUserProfile = async (userId: string) => {
     try {
-      // TEMPORÁRIO: Permitir login com qualquer email/senha
-      // Criar um usuário fictício com permissões de admin
-      const userData: User = {
-        id: 'temp-admin-id',
-        name: 'Usuário Teste',
-        email: email,
-        role: 'admin',
-        status: 'ativo'
-      };
-
-      setUser(userData);
-      localStorage.setItem('crm_user', JSON.stringify(userData));
-      
-      return { success: true };
-
-      /* CÓDIGO ORIGINAL COMENTADO - DESCOMENTAR QUANDO CORRIGIR A AUTENTICAÇÃO
-      // Primeiro, verificar se o usuário existe
-      const { data, error } = await supabase
+      const { data: userData, error } = await supabase
         .from('users')
         .select('*')
-        .eq('email', email.toLowerCase())
-        .eq('status', 'ativo')
+        .eq('id', userId)
         .maybeSingle();
 
       if (error) {
-        console.error('Erro ao buscar usuário:', error);
-        return { success: false, error: 'Erro interno do servidor' };
+        console.error('Erro ao buscar perfil do usuário:', error);
+        setLoading(false);
+        return;
       }
 
-      if (!data) {
-        return { success: false, error: 'Email ou senha incorretos' };
+      if (userData) {
+        const appUser: AppUser = {
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          status: userData.status
+        };
+
+        setUser(appUser);
+        localStorage.setItem('crm_user', JSON.stringify(appUser));
       }
-
-      // Verificar senha usando a função do banco
-      const { data: passwordCheck, error: passwordError } = await supabase
-        .rpc('verify_password', {
-          password: password,
-          hash: data.password_hash
-        });
-
-      if (passwordError) {
-        console.error('Erro ao verificar senha:', passwordError);
-        return { success: false, error: 'Erro interno do servidor' };
-      }
-
-      if (!passwordCheck) {
-        return { success: false, error: 'Email ou senha incorretos' };
-      }
-
-      const userData: User = {
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        role: data.role,
-        status: data.status
-      };
-
-      setUser(userData);
-      localStorage.setItem('crm_user', JSON.stringify(userData));
-      
-      return { success: true };
-      */
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.error('Erro ao carregar perfil:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        setLoading(false);
+        return { success: false, error: error.message };
+      }
+
+      if (data.user) {
+        // Buscar dados do usuário na tabela public.users
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (userError || !userData) {
+          setLoading(false);
+          return { success: false, error: 'Erro ao carregar dados do usuário' };
+        }
+
+        const appUser: AppUser = {
+          id: userData.id,
+          name: userData.name,
+          email: userData.email,
+          role: userData.role,
+          status: userData.status
+        };
+
+        setUser(appUser);
+        localStorage.setItem('crm_user', JSON.stringify(appUser));
+        
+        setLoading(false);
+        return { success: true };
+      }
+
+      setLoading(false);
+      return { success: false, error: 'Erro durante autenticação' };
+    } catch (error) {
+      setLoading(false);
       return { success: false, error: 'Erro interno do servidor' };
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
+    setSession(null);
     localStorage.removeItem('crm_user');
   };
 
-  const updateProfile = async (data: Partial<User>) => {
+  const updateProfile = async (data: Partial<AppUser>) => {
     if (!user) return { success: false, error: 'Usuário não logado' };
 
     try {
@@ -124,7 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: false, error: 'Erro ao atualizar perfil' };
       }
 
-      const updatedUser = { ...user, ...data };
+      const updatedUser = { ...user, ...data } as AppUser;
       setUser(updatedUser);
       localStorage.setItem('crm_user', JSON.stringify(updatedUser));
 
@@ -186,6 +225,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user,
+      session,
       login,
       logout,
       loading,
