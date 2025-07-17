@@ -82,133 +82,44 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
     }
 
     setIsLoading(true);
-    
+
     try {
-      // Verificar se o email já existe
-      const { data: existingUser, error: checkError } = await supabase
-        .from('users')
-        .select('email')
-        .eq('email', formData.email)
-        .single();
-
-      if (existingUser) {
-        toast.error('Este email já está cadastrado no sistema');
-        setIsLoading(false);
-        return;
-      }
-
-      // Gerar senha temporária
-      const tempPassword = Math.random().toString(36).slice(-8);
-      const userId = crypto.randomUUID();
-      
-      // Criar usuário no auth.users primeiro
-      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: tempPassword,
-        email_confirm: true,
-        user_metadata: {
-          name: formData.nome,
-          role: formData.role
-        }
-      });
-
-      if (authError) {
-        console.error('Error creating auth user:', authError);
-        toast.error('Erro ao criar usuário de autenticação: ' + authError.message);
-        return;
-      }
-
-      // Criar registro na tabela users
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .insert({
-          id: authUser.user!.id,
+      // Chamar edge function para criar usuário
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
           email: formData.email,
           name: formData.nome,
           telefone: formData.telefone,
           role: formData.role,
-          equipe_id: formData.equipeId && formData.equipeId !== 'no-team' ? formData.equipeId : null,
-          status: 'pendente',
-          password_hash: 'temp' // Temporary placeholder - auth handles real password
-        })
-        .select()
-        .single();
-
-      if (userError) {
-        console.error('Error creating user record:', userError);
-        // Se falhar, remover o usuário do auth
-        await supabase.auth.admin.deleteUser(authUser.user!.id);
-        toast.error('Erro ao criar corretor: ' + userError.message);
-        return;
-      }
-
-      // Criar permissões baseadas no role
-      const permissions = {
-        admin: {
-          can_view_all_leads: true,
-          can_invite_users: true,
-          can_manage_leads: true,
-          can_view_reports: true,
-          can_access_configurations: true,
-          can_manage_teams: true,
-          can_manage_properties: true
-        },
-        gestor: {
-          can_view_all_leads: true,
-          can_invite_users: true,
-          can_manage_leads: true,
-          can_view_reports: true,
-          can_access_configurations: false,
-          can_manage_teams: true,
-          can_manage_properties: true
-        },
-        corretor: {
-          can_view_all_leads: false,
-          can_invite_users: false,
-          can_manage_leads: true,
-          can_view_reports: false,
-          can_access_configurations: false,
-          can_manage_teams: false,
-          can_manage_properties: false
+          equipeId: formData.equipeId
         }
-      };
+      });
 
-      const { error: permissionsError } = await supabase
-        .from('permissions')
-        .insert({
-          user_id: authUser.user!.id,
-          ...permissions[formData.role]
-        });
-
-      if (permissionsError) {
-        console.error('Error creating permissions:', permissionsError);
-        // Se falhar, remover o usuário do auth
-        await supabase.auth.admin.deleteUser(authUser.user!.id);
-        toast.error('Erro ao criar permissões do usuário');
+      if (error || data.error) {
+        console.error('Error creating user:', error || data.error);
+        toast.error(data?.error || 'Erro ao criar usuário');
         return;
       }
 
-      toast.success(`Corretor criado com sucesso! Um email foi enviado para ${formData.email} com as credenciais de acesso.`);
-      
-      // Mostrar preview com status "aguardando confirmação"
+      // Criar objeto corretor para atualizar a interface
       const newCorretor: Partial<Corretor> = {
-        id: authUser.user!.id,
-        nome: formData.nome,
-        email: formData.email,
-        telefone: formData.telefone,
-        status: 'pendente',
-        permissoes: [],
-        leads: [],
-        equipeId: formData.equipeId === 'no-team' ? undefined : (formData.equipeId || undefined),
-        equipeNome: equipesFromDB.find(e => e.id === formData.equipeId)?.nome
+        id: data.user.id,
+        nome: data.user.name,
+        email: data.user.email,
+        telefone: data.user.telefone,
+        role: data.user.role as any,
+        equipeId: data.user.equipe_id,
+        equipeNome: equipesFromDB.find(e => e.id === data.user.equipe_id)?.nome || 'Sem equipe',
+        status: data.user.status as any,
+        permissoes: []
       };
 
       onCreateCorretor(newCorretor);
+      toast.success(`${formData.role === 'corretor' ? 'Corretor' : 'Usuário'} criado com sucesso! Senha temporária: ${data.tempPassword}`);
       handleClose();
-      
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating corretor:', error);
-      toast.error('Erro ao criar corretor');
+      toast.error('Erro ao criar usuário');
     } finally {
       setIsLoading(false);
     }

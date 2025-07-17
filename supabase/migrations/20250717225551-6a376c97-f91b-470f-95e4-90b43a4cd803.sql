@@ -1,0 +1,44 @@
+-- Corrigir função distribute_lead_to_queue com referência ambígua user_id
+CREATE OR REPLACE FUNCTION public.distribute_lead_to_queue()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  next_corretor uuid;
+BEGIN
+  -- Obter próximo corretor na fila
+  SELECT public.get_next_corretor_in_queue() INTO next_corretor;
+  
+  -- Se encontrou um corretor, atribuir o lead
+  IF next_corretor IS NOT NULL THEN
+    INSERT INTO public.lead_queue (lead_id, assigned_to, status, assigned_at)
+    VALUES (NEW.id, next_corretor, 'assigned', now());
+    
+    -- Atualizar o lead com o corretor atribuído (corrigindo referência ambígua)
+    UPDATE public.leads 
+    SET user_id = next_corretor
+    WHERE public.leads.id = NEW.id;
+  ELSE
+    -- Se não há corretores ativos, colocar na fila sem atribuição
+    INSERT INTO public.lead_queue (lead_id, status)
+    VALUES (NEW.id, 'pending');
+  END IF;
+  
+  RETURN NEW;
+END;
+$$;
+
+-- Recriar o trigger para distribuição automática de leads
+DROP TRIGGER IF EXISTS auto_distribute_leads ON public.leads;
+CREATE TRIGGER auto_distribute_leads
+  AFTER INSERT ON public.leads
+  FOR EACH ROW
+  EXECUTE FUNCTION public.distribute_lead_to_queue();
+
+-- Corrigir as políticas de service role para admin operations
+CREATE POLICY "Service role pode gerenciar auth users" 
+ON auth.users 
+FOR ALL 
+USING (true) 
+WITH CHECK (true);
