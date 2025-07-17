@@ -175,11 +175,28 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Enviar email de convite
+    try {
+      const inviteResponse = await supabaseClient.functions.invoke('send-user-invitation', {
+        body: {
+          email: userData.email,
+          name: userData.name,
+          tempPassword
+        }
+      });
+      
+      console.log('📧 Resultado do envio de email:', inviteResponse);
+    } catch (emailError) {
+      console.warn('⚠️ Erro ao enviar email de convite:', emailError);
+      // Não falhar a criação do usuário se o email falhar
+    }
+
     return new Response(
       JSON.stringify({ 
+        success: true,
         user: userData,
         tempPassword,
-        message: 'Usuário criado com sucesso' 
+        message: 'Usuário criado com sucesso! Email de convite enviado.' 
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
