@@ -46,7 +46,9 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
     setIsLoading(true);
 
     try {
-      // Inserir lead na tabela public.leads (user_id será atribuído automaticamente pelo trigger)
+      console.log('🚀 Criando lead:', formData);
+      
+      // Inserir lead diretamente (trigger simples vai definir user_id)
       const { data, error } = await supabase
         .from('leads')
         .insert({
@@ -54,16 +56,18 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
           telefone: formData.telefone,
           dados_adicionais: formData.dadosAdicionais || null,
           etapa: 'aguardando-atendimento'
-          // user_id será definido automaticamente pelo trigger distribute_lead_to_queue
+          // user_id será definido automaticamente pelo trigger
         })
-        .select('*, user_id')
+        .select('*')
         .single();
 
       if (error) {
-        console.error('Error creating lead:', error);
-        toast.error('Erro ao criar lead');
+        console.error('❌ Erro ao criar lead:', error);
+        toast.error(`Erro ao criar lead: ${error.message}`);
         return;
       }
+
+      console.log('✅ Lead criado com sucesso:', data);
 
       // Criar objeto lead para atualizar a interface
       const newLead: Partial<Lead> = {
@@ -74,7 +78,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
         dataCriacao: new Date(data.created_at),
         etapa: data.etapa as any,
         etiquetas: [],
-        corretor: 'Atribuído automaticamente', // O corretor será atribuído pelo sistema
+        corretor: 'Sistema',
         atividades: [],
         status: 'ativo'
       };
@@ -83,7 +87,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
       toast.success('Lead criado com sucesso!');
       handleClose();
     } catch (error) {
-      console.error('Error creating lead:', error);
+      console.error('💥 Erro geral:', error);
       toast.error('Erro ao criar lead');
     } finally {
       setIsLoading(false);

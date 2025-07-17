@@ -32,7 +32,26 @@ Deno.serve(async (req) => {
 
     const { email, name, telefone, role, equipeId }: CreateUserRequest = await req.json()
 
-    // Verificar se email já existe
+    // Verificar se email já existe no auth.users
+    const { data: authUsers, error: listError } = await supabaseClient.auth.admin.listUsers()
+    
+    if (!listError && authUsers?.users) {
+      const existingAuthUser = authUsers.users.find(user => user.email === email)
+      if (existingAuthUser) {
+        console.log(`Email ${email} já existe no auth.users`)
+        return new Response(
+          JSON.stringify({ 
+            error: `O email ${email} já está registrado no sistema. Por favor, use um email diferente.` 
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        )
+      }
+    }
+
+    // Verificar se email já existe na tabela users
     const { data: existingUser } = await supabaseClient
       .from('users')
       .select('email')
@@ -40,31 +59,16 @@ Deno.serve(async (req) => {
       .maybeSingle()
 
     if (existingUser) {
+      console.log(`Email ${email} já existe na tabela users`)
       return new Response(
-        JSON.stringify({ error: `Email ${email} já está em uso` }),
+        JSON.stringify({ 
+          error: `O email ${email} já está cadastrado. Por favor, use um email diferente.` 
+        }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       )
-    }
-
-    // Verificar se já existe no auth.users também
-    const { data: authUsers, error: listError } = await supabaseClient.auth.admin.listUsers()
-    
-    if (listError) {
-      console.error('Erro ao listar usuários:', listError)
-    } else {
-      const existingAuthUser = authUsers.users.find(user => user.email === email)
-      if (existingAuthUser) {
-        return new Response(
-          JSON.stringify({ error: `Email ${email} já está registrado no sistema de autenticação` }),
-          {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          }
-        )
-      }
     }
 
     // Gerar senha temporária
