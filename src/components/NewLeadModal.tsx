@@ -54,8 +54,9 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
           telefone: formData.telefone,
           dados_adicionais: formData.dadosAdicionais || null,
           etapa: 'aguardando-atendimento'
+          // user_id será definido automaticamente pelo trigger distribute_lead_to_queue
         })
-        .select()
+        .select('*, user_id')
         .single();
 
       if (error) {

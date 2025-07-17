@@ -37,16 +37,34 @@ Deno.serve(async (req) => {
       .from('users')
       .select('email')
       .eq('email', email)
-      .single()
+      .maybeSingle()
 
     if (existingUser) {
       return new Response(
-        JSON.stringify({ error: 'Email já está em uso' }),
+        JSON.stringify({ error: `Email ${email} já está em uso` }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       )
+    }
+
+    // Verificar se já existe no auth.users também
+    const { data: authUsers, error: listError } = await supabaseClient.auth.admin.listUsers()
+    
+    if (listError) {
+      console.error('Erro ao listar usuários:', listError)
+    } else {
+      const existingAuthUser = authUsers.users.find(user => user.email === email)
+      if (existingAuthUser) {
+        return new Response(
+          JSON.stringify({ error: `Email ${email} já está registrado no sistema de autenticação` }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        )
+      }
     }
 
     // Gerar senha temporária
