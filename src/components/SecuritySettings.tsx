@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { CorretorManagement } from '@/components/CorretorManagement';
 import { Shield, User, Mail, Phone, Lock, Save } from 'lucide-react';
 
 export function SecuritySettings() {
@@ -245,11 +244,6 @@ export function SecuritySettings() {
           </CardContent>
         </Card>
       </div>
-
-      <Separator />
-
-      {/* Gerenciamento de Corretores (apenas para admins) */}
-      <CorretorManagement />
 
       <Separator />
 

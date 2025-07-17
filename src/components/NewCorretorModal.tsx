@@ -84,36 +84,60 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
     setIsLoading(true);
     
     try {
-      // Criar usuário diretamente na tabela users (sem usar auth.admin)
-      const userId = crypto.randomUUID();
-      
-      // Criptografar senha primeiro
-      const { data: hashedPassword, error: hashError } = await supabase.rpc('crypt_password', { password: 'mudar123' });
-      
-      if (hashError || !hashedPassword) {
-        console.error('Error hashing password:', hashError);
-        toast.error('Erro ao processar senha');
+      // Verificar se o email já existe
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users')
+        .select('email')
+        .eq('email', formData.email)
+        .single();
+
+      if (existingUser) {
+        toast.error('Este email já está cadastrado no sistema');
+        setIsLoading(false);
         return;
       }
+
+      // Gerar senha temporária
+      const tempPassword = Math.random().toString(36).slice(-8);
+      const userId = crypto.randomUUID();
       
+      // Criar usuário no auth.users primeiro
+      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+        email: formData.email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          name: formData.nome,
+          role: formData.role
+        }
+      });
+
+      if (authError) {
+        console.error('Error creating auth user:', authError);
+        toast.error('Erro ao criar usuário de autenticação: ' + authError.message);
+        return;
+      }
+
       // Criar registro na tabela users
       const { data: userData, error: userError } = await supabase
         .from('users')
         .insert({
-          id: userId,
+          id: authUser.user!.id,
           email: formData.email,
           name: formData.nome,
           telefone: formData.telefone,
           role: formData.role,
           equipe_id: formData.equipeId && formData.equipeId !== 'no-team' ? formData.equipeId : null,
-          status: 'ativo',
-          password_hash: hashedPassword
+          status: 'pendente',
+          password_hash: 'temp' // Temporary placeholder - auth handles real password
         })
         .select()
         .single();
 
       if (userError) {
         console.error('Error creating user record:', userError);
+        // Se falhar, remover o usuário do auth
+        await supabase.auth.admin.deleteUser(authUser.user!.id);
         toast.error('Erro ao criar corretor: ' + userError.message);
         return;
       }
@@ -152,25 +176,27 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
       const { error: permissionsError } = await supabase
         .from('permissions')
         .insert({
-          user_id: userId,
+          user_id: authUser.user!.id,
           ...permissions[formData.role]
         });
 
       if (permissionsError) {
         console.error('Error creating permissions:', permissionsError);
+        // Se falhar, remover o usuário do auth
+        await supabase.auth.admin.deleteUser(authUser.user!.id);
         toast.error('Erro ao criar permissões do usuário');
         return;
       }
 
-      toast.success('Corretor criado com sucesso! O usuário pode fazer login com a senha padrão "mudar123".');
+      toast.success(`Corretor criado com sucesso! Um email foi enviado para ${formData.email} com as credenciais de acesso.`);
       
-      // Criar objeto corretor para atualizar a interface
+      // Mostrar preview com status "aguardando confirmação"
       const newCorretor: Partial<Corretor> = {
-        id: userId,
+        id: authUser.user!.id,
         nome: formData.nome,
         email: formData.email,
         telefone: formData.telefone,
-        status: 'ativo',
+        status: 'pendente',
         permissoes: [],
         leads: [],
         equipeId: formData.equipeId === 'no-team' ? undefined : (formData.equipeId || undefined),
