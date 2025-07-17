@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Edit, Trash2 } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface EditTeamModalProps {
   equipe: Equipe | null;
@@ -37,6 +39,7 @@ export function EditTeamModal({
     corretoresSelecionados: [] as string[]
   });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (equipe) {
@@ -48,24 +51,64 @@ export function EditTeamModal({
     }
   }, [equipe]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!equipe || !formData.nome.trim() || !formData.responsavelId) {
-      alert('Nome da equipe e responsável são obrigatórios');
+      toast.error('Nome da equipe e responsável são obrigatórios');
       return;
     }
 
-    const responsavel = corretores.find(c => c.id === formData.responsavelId);
-    
-    onUpdateTeam(equipe.id, {
-      nome: formData.nome,
-      responsavelId: formData.responsavelId,
-      responsavelNome: responsavel?.nome || '',
-      corretores: formData.corretoresSelecionados
-    });
-    
-    onClose();
+    setIsLoading(true);
+
+    try {
+      const responsavel = corretores.find(c => c.id === formData.responsavelId);
+      
+      // Atualizar equipe na tabela equipes
+      const { error } = await supabase
+        .from('equipes')
+        .update({
+          nome: formData.nome,
+          responsavel_id: formData.responsavelId,
+          responsavel_nome: responsavel?.nome || ''
+        })
+        .eq('id', equipe.id);
+
+      if (error) {
+        console.error('Error updating team:', error);
+        toast.error('Erro ao atualizar equipe');
+        return;
+      }
+
+      // Atualizar usuários para remover da equipe anterior
+      await supabase
+        .from('users')
+        .update({ equipe_id: null })
+        .eq('equipe_id', equipe.id);
+
+      // Atualizar usuários selecionados para esta equipe
+      if (formData.corretoresSelecionados.length > 0) {
+        await supabase
+          .from('users')
+          .update({ equipe_id: equipe.id })
+          .in('id', formData.corretoresSelecionados);
+      }
+      
+      onUpdateTeam(equipe.id, {
+        nome: formData.nome,
+        responsavelId: formData.responsavelId,
+        responsavelNome: responsavel?.nome || '',
+        corretores: formData.corretoresSelecionados
+      });
+      
+      toast.success('Equipe atualizada com sucesso!');
+      onClose();
+    } catch (error) {
+      console.error('Error updating team:', error);
+      toast.error('Erro ao atualizar equipe');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDelete = () => {
@@ -184,8 +227,8 @@ export function EditTeamModal({
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancelar
               </Button>
-              <Button type="submit">
-                Salvar Alterações
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Salvando...' : 'Salvar Alterações'}
               </Button>
             </div>
           </div>

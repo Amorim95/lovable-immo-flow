@@ -177,43 +177,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return { success: false, error: 'Usuário não logado' };
 
     try {
-      // Verificar senha atual
-      const { data: currentUser } = await supabase
-        .from('users')
-        .select('password_hash')
-        .eq('id', user.id)
-        .single();
-
-      if (!currentUser) {
-        return { success: false, error: 'Usuário não encontrado' };
-      }
-
-      const { data: passwordCheck } = await supabase
-        .rpc('verify_password', {
-          password: currentPassword,
-          hash: currentUser.password_hash
-        });
-
-      if (!passwordCheck) {
-        return { success: false, error: 'Senha atual incorreta' };
-      }
-
-      // Gerar hash da nova senha
-      const { data: newHash } = await supabase
-        .rpc('crypt_password', { password: newPassword });
-
-      if (!newHash) {
-        return { success: false, error: 'Erro ao processar nova senha' };
-      }
-
-      // Atualizar senha
-      const { error } = await supabase
-        .from('users')
-        .update({ password_hash: newHash })
-        .eq('id', user.id);
+      // Usar a API nativa do Supabase Auth para alterar senha
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
 
       if (error) {
-        return { success: false, error: 'Erro ao atualizar senha' };
+        return { success: false, error: error.message };
       }
 
       return { success: true };

@@ -84,18 +84,16 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
     setIsLoading(true);
     
     try {
-      // Usar o signup nativo do Supabase com confirmação por email
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Usar admin.createUser para criar usuário diretamente com senha padrão
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: formData.email,
-        password: 'temp123456', // Senha temporária - usuário definirá própria senha via email
-        options: {
-          emailRedirectTo: `${window.location.origin}/login`,
-          data: {
-            name: formData.nome,
-            telefone: formData.telefone,
-            role: formData.role,
-            equipe_id: formData.equipeId && formData.equipeId !== 'no-team' ? formData.equipeId : null
-          }
+        password: 'mudar123',
+        email_confirm: true, // Confirma email automaticamente
+        user_metadata: {
+          name: formData.nome,
+          telefone: formData.telefone,
+          role: formData.role,
+          equipe_id: formData.equipeId && formData.equipeId !== 'no-team' ? formData.equipeId : null
         }
       });
 
@@ -174,7 +172,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
         return;
       }
 
-      toast.success('Corretor criado com sucesso! Um email de confirmação foi enviado para o endereço informado.');
+      toast.success('Corretor criado com sucesso! O usuário pode fazer login com a senha padrão "mudar123".');
       
       // Criar objeto corretor para atualizar a interface
       const newCorretor: Partial<Corretor> = {

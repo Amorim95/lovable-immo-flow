@@ -11,6 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface NewLeadModalProps {
   isOpen: boolean;
@@ -24,30 +27,67 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
     telefone: '',
     dadosAdicionais: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.nome.trim() || !formData.telefone.trim()) {
-      alert('Nome e Telefone são obrigatórios');
+      toast.error('Nome e Telefone são obrigatórios');
       return;
     }
 
-    const newLead: Partial<Lead> = {
-      id: Date.now().toString(),
-      nome: formData.nome,
-      telefone: formData.telefone,
-      dadosAdicionais: formData.dadosAdicionais || undefined,
-      dataCriacao: new Date(),
-      etapa: 'aguardando-atendimento',
-      etiquetas: [],
-      corretor: 'Sistema',
-      atividades: [],
-      status: 'ativo'
-    };
+    if (!user) {
+      toast.error('Usuário não autenticado');
+      return;
+    }
 
-    onCreateLead(newLead);
-    handleClose();
+    setIsLoading(true);
+
+    try {
+      // Inserir lead na tabela public.leads
+      const { data, error } = await supabase
+        .from('leads')
+        .insert({
+          nome: formData.nome,
+          telefone: formData.telefone,
+          dados_adicionais: formData.dadosAdicionais || null,
+          etapa: 'aguardando-atendimento',
+          user_id: user.id
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating lead:', error);
+        toast.error('Erro ao criar lead');
+        return;
+      }
+
+      // Criar objeto lead para atualizar a interface
+      const newLead: Partial<Lead> = {
+        id: data.id,
+        nome: data.nome,
+        telefone: data.telefone,
+        dadosAdicionais: data.dados_adicionais,
+        dataCriacao: new Date(data.created_at),
+        etapa: data.etapa as any,
+        etiquetas: [],
+        corretor: user.name,
+        atividades: [],
+        status: 'ativo'
+      };
+
+      onCreateLead(newLead);
+      toast.success('Lead criado com sucesso!');
+      handleClose();
+    } catch (error) {
+      console.error('Error creating lead:', error);
+      toast.error('Erro ao criar lead');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
@@ -108,8 +148,8 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancelar
             </Button>
-            <Button type="submit">
-              Criar Lead
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Criando...' : 'Criar Lead'}
             </Button>
           </div>
         </form>

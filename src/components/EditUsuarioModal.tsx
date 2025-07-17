@@ -6,11 +6,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface EditUsuarioModalProps {
   corretor: Corretor | null;
@@ -31,9 +35,12 @@ export function EditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorretor, 
     nome: '',
     email: '',
     telefone: '',
-    role: 'corretor',
+    role: 'corretor' as 'admin' | 'gestor' | 'corretor',
     equipeId: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (corretor) {
@@ -42,32 +49,100 @@ export function EditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorretor, 
         email: corretor.email || '',
         telefone: corretor.telefone || '',
         role: corretor.role || 'corretor',
-        equipeId: corretor.equipeId || 'no-team'
+        equipeId: corretor.equipeId || ''
       });
     }
   }, [corretor]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!corretor || !formData.nome.trim() || !formData.email.trim()) {
-      alert('Nome e Email são obrigatórios');
+      toast.error('Nome e Email são obrigatórios');
       return;
     }
 
-    const equipeSelecionada = formData.equipeId !== 'no-team' ? equipes.find(e => e.id === formData.equipeId) : null;
-    
-    onUpdateCorretor(corretor.id, {
-      nome: formData.nome,
-      email: formData.email,
-      telefone: formData.telefone,
-      role: formData.role as 'admin' | 'gestor' | 'corretor',
-      equipeId: formData.equipeId === 'no-team' ? undefined : formData.equipeId,
-      equipeNome: equipeSelecionada?.nome || undefined
-    });
-    
-    onClose();
+    setIsLoading(true);
+
+    try {
+      // Atualizar dados na tabela users
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name: formData.nome,
+          email: formData.email,
+          telefone: formData.telefone,
+          role: formData.role,
+          equipe_id: formData.equipeId === 'no-team' ? null : (formData.equipeId || null)
+        })
+        .eq('id', corretor.id);
+
+      if (error) {
+        console.error('Error updating user:', error);
+        toast.error('Erro ao atualizar usuário');
+        return;
+      }
+
+      onUpdateCorretor(corretor.id, {
+        nome: formData.nome,
+        email: formData.email,
+        telefone: formData.telefone,
+        role: formData.role,
+        equipeId: formData.equipeId === 'no-team' ? undefined : formData.equipeId,
+        equipeNome: equipes.find(e => e.id === formData.equipeId)?.nome
+      });
+      
+      toast.success('Usuário atualizado com sucesso!');
+      onClose();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast.error('Erro ao atualizar usuário');
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleDelete = async () => {
+    if (!corretor) return;
+
+    setIsLoading(true);
+    
+    try {
+      // Deletar do auth.users usando admin
+      const { error: authError } = await supabase.auth.admin.deleteUser(corretor.id);
+      
+      if (authError) {
+        console.error('Error deleting from auth:', authError);
+        toast.error('Erro ao deletar usuário da autenticação');
+        return;
+      }
+
+      // Deletar da tabela public.users
+      const { error: userError } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', corretor.id);
+
+      if (userError) {
+        console.error('Error deleting from users table:', userError);
+        toast.error('Erro ao deletar usuário');
+        return;
+      }
+
+      toast.success('Usuário excluído com sucesso!');
+      setShowDeleteDialog(false);
+      onClose();
+      // Recarregar a página para atualizar a lista
+      window.location.reload();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error('Erro ao excluir usuário');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const canDeleteUser = user && (user.role === 'admin' || user.role === 'gestor');
 
   if (!corretor) return null;
 
@@ -117,7 +192,7 @@ export function EditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorretor, 
 
           <div>
             <Label htmlFor="role">Cargo</Label>
-            <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+            <Select value={formData.role} onValueChange={(value: 'admin' | 'gestor' | 'corretor') => setFormData({ ...formData, role: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um cargo" />
               </SelectTrigger>
@@ -148,13 +223,41 @@ export function EditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorretor, 
             </Select>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit">
-              Salvar Alterações
-            </Button>
+          <div className="flex justify-between items-center pt-4 border-t">
+            {canDeleteUser && (
+              <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="destructive" size="sm">
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Excluir Usuário
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tem certeza que deseja excluir o usuário "{corretor?.nome}"? 
+                      Esta ação não pode ser desfeita e removerá o usuário permanentemente do sistema.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Excluir
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
