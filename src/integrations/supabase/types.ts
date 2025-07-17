@@ -372,11 +372,11 @@ export type Database = {
     }
     Functions: {
       can_invite_users: {
-        Args: { user_id: string }
+        Args: { _user_id: string }
         Returns: boolean
       }
       can_view_all_leads: {
-        Args: { user_id: string }
+        Args: { _user_id: string }
         Returns: boolean
       }
       crypt_password: {
@@ -384,7 +384,7 @@ export type Database = {
         Returns: string
       }
       is_admin: {
-        Args: { user_id: string }
+        Args: { _user_id: string }
         Returns: boolean
       }
       validate_email: {
