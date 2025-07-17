@@ -37,18 +37,22 @@ Deno.serve(async (req) => {
 
     console.log('Deleting user:', user_id)
 
-    // First, delete from auth.users using admin privileges
+    // Try to delete from auth.users, but continue even if user doesn't exist there
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(user_id)
     
-    if (authError) {
+    if (authError && authError.message !== 'User not found') {
       console.error('Error deleting from auth:', authError)
       return new Response(
-        JSON.stringify({ error: 'Failed to delete user from authentication' }),
+        JSON.stringify({ error: 'Failed to delete user from authentication: ' + authError.message }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
+    }
+    
+    if (authError && authError.message === 'User not found') {
+      console.log('User not found in auth.users, continuing with database deletion')
     }
 
     // Then delete from public.users table

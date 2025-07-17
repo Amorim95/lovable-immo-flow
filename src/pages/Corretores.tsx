@@ -382,7 +382,7 @@ const Corretores = () => {
                   </Badge>
                 </div>
                 <div className="mt-2">
-                  <UserRoleBadge />
+                  <UserRoleBadge role={corretor.role} />
                 </div>
               </CardHeader>
               <CardContent>
