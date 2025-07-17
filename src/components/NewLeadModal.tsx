@@ -46,15 +46,14 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
     setIsLoading(true);
 
     try {
-      // Inserir lead na tabela public.leads
+      // Inserir lead na tabela public.leads (sem user_id, deixar o trigger cuidar disso)
       const { data, error } = await supabase
         .from('leads')
         .insert({
           nome: formData.nome,
           telefone: formData.telefone,
           dados_adicionais: formData.dadosAdicionais || null,
-          etapa: 'aguardando-atendimento',
-          user_id: user.id
+          etapa: 'aguardando-atendimento'
         })
         .select()
         .single();

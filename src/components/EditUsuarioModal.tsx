@@ -108,24 +108,14 @@ export function EditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorretor, 
     setIsLoading(true);
     
     try {
-      // Deletar do auth.users usando admin
-      const { error: authError } = await supabase.auth.admin.deleteUser(corretor.id);
-      
-      if (authError) {
-        console.error('Error deleting from auth:', authError);
-        toast.error('Erro ao deletar usuário da autenticação');
-        return;
-      }
+      // Chamar a Edge Function para deletar o usuário
+      const { error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: corretor.id }
+      });
 
-      // Deletar da tabela public.users
-      const { error: userError } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', corretor.id);
-
-      if (userError) {
-        console.error('Error deleting from users table:', userError);
-        toast.error('Erro ao deletar usuário');
+      if (error) {
+        console.error('Error calling delete-user function:', error);
+        toast.error('Erro ao deletar usuário: ' + error.message);
         return;
       }
 
