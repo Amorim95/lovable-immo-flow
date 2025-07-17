@@ -25,14 +25,6 @@ Deno.serve(async (req) => {
 
     console.log('Creating admin user in auth.users...')
 
-    // Primeiro, verificar se o usuário já existe
-    const { data: existingAuthUser } = await supabaseAdmin.auth.admin.getUserByEmail('rhenan644@gmail.com')
-    
-    if (existingAuthUser.user) {
-      console.log('User already exists in auth.users, deleting first...')
-      await supabaseAdmin.auth.admin.deleteUser(existingAuthUser.user.id)
-    }
-
     // Buscar o usuário na tabela public.users
     const { data: publicUser, error: publicUserError } = await supabaseAdmin
       .from('users')
@@ -41,13 +33,24 @@ Deno.serve(async (req) => {
       .single()
 
     if (publicUserError || !publicUser) {
+      console.log('User not found in public.users table:', publicUserError)
       return new Response(
-        JSON.stringify({ error: 'User not found in public.users table' }),
+        JSON.stringify({ error: 'User not found in public.users table: ' + publicUserError?.message }),
         { 
           status: 404, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       )
+    }
+
+    console.log('Found user in public.users:', publicUser.id)
+
+    // Verificar se o usuário já existe no auth.users
+    const { data: existingAuthUser } = await supabaseAdmin.auth.admin.getUserByEmail('rhenan644@gmail.com')
+    
+    if (existingAuthUser.user) {
+      console.log('User already exists in auth.users, deleting first...')
+      await supabaseAdmin.auth.admin.deleteUser(existingAuthUser.user.id)
     }
 
     // Criar o usuário no auth.users usando o mesmo ID
@@ -89,7 +92,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error in create-admin-user function:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error: ' + error.message }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
