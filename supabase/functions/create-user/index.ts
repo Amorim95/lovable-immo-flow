@@ -74,11 +74,11 @@ Deno.serve(async (req) => {
     // Gerar senha temporária
     const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8)
 
-    // Criar usuário no auth
+    // Criar usuário no auth com email_confirm: false para enviar email de confirmação
     const { data: authUser, error: authError } = await supabaseClient.auth.admin.createUser({
       email,
       password: tempPassword,
-      email_confirm: true,
+      email_confirm: false, // Isso fará o Supabase enviar email de confirmação
       user_metadata: { name, role }
     })
 
@@ -175,28 +175,14 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Enviar email de convite
-    try {
-      const inviteResponse = await supabaseClient.functions.invoke('send-user-invitation', {
-        body: {
-          email: userData.email,
-          name: userData.name,
-          tempPassword
-        }
-      });
-      
-      console.log('📧 Resultado do envio de email:', inviteResponse);
-    } catch (emailError) {
-      console.warn('⚠️ Erro ao enviar email de convite:', emailError);
-      // Não falhar a criação do usuário se o email falhar
-    }
+    console.log('✅ Usuário criado com sucesso. Email de confirmação enviado pelo Supabase para:', email);
 
     return new Response(
       JSON.stringify({ 
         success: true,
         user: userData,
         tempPassword,
-        message: 'Usuário criado com sucesso! Email de convite enviado.' 
+        message: 'Usuário criado com sucesso! Email de confirmação enviado.' 
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
