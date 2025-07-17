@@ -1,9 +1,12 @@
+
 import { useState } from "react";
 import { Lead } from "@/types/crm";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { ListView } from "@/components/ListView";
 import { LeadModal } from "@/components/LeadModal";
 import { NewLeadModal } from "@/components/NewLeadModal";
+import { AccessControlWrapper } from "@/components/AccessControlWrapper";
+import { useLeadsAccess } from "@/hooks/useLeadsAccess";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
@@ -14,150 +17,8 @@ import {
   Calendar
 } from "lucide-react";
 
-// Dados mock para demonstração
-const mockLeads: Lead[] = [
-  {
-    id: '1',
-    nome: 'João Silva',
-    telefone: '(11) 99999-9999',
-    dadosAdicionais: 'Interessado em apartamento de 2 quartos no centro. Possui FGTS disponível. Renda familiar de R$ 5.000. Possui entrada de R$ 50.000.',
-    campanha: 'Facebook Ads - Apartamentos Centro',
-    conjunto: 'Interesse Apartamentos',
-    anuncio: 'Apartamento 2Q Centro',
-    dataCriacao: new Date('2024-06-28T14:30:00'),
-    etapa: 'aguardando-atendimento',
-    etiquetas: ['tentando-financiamento'],
-    corretor: 'Maria Santos',
-    atividades: [
-      {
-        id: '1',
-        tipo: 'ligacao',
-        descricao: 'Primeira tentativa de contato - não atendeu',
-        data: new Date('2024-06-28T15:00:00'),
-        corretor: 'Maria Santos'
-      }
-    ],
-    status: 'ativo'
-  },
-  {
-    id: '2',
-    nome: 'Ana Costa',
-    telefone: '(11) 77777-7777',
-    dadosAdicionais: 'Procura casa de 3 quartos na Zona Leste. Não tem FGTS. Renda familiar de R$ 8.000. Não possui entrada ainda.',
-    campanha: 'Google Ads - Casas Zone Leste',
-    conjunto: 'Casas Zona Leste',
-    anuncio: 'Casa 3Q Vila Prudente',
-    dataCriacao: new Date('2024-06-27T10:15:00'),
-    etapa: 'tentativas-contato',
-    etiquetas: ['parou-responder'],
-    corretor: 'Pedro Oliveira',
-    atividades: [
-      {
-        id: '2',
-        tipo: 'whatsapp',
-        descricao: 'Enviou mensagem via WhatsApp - visualizou mas não respondeu',
-        data: new Date('2024-06-27T16:00:00'),
-        corretor: 'Pedro Oliveira'
-      }
-    ],
-    status: 'ativo'
-  },
-  {
-    id: '3',
-    nome: 'Carlos Rodrigues',
-    telefone: '(11) 66666-6666',
-    dadosAdicionais: 'Apartamento compacto na Mooca. Tem FGTS. Renda de R$ 3.500. Entrada de R$ 30.000 disponível.',
-    campanha: 'Instagram Ads - Apartamentos Compactos',
-    conjunto: 'Apartamentos 1Q',
-    anuncio: 'Apt 1Q Mooca',
-    dataCriacao: new Date('2024-06-26T09:30:00'),
-    etapa: 'atendeu',
-    etiquetas: [],
-    corretor: 'Maria Santos',
-    atividades: [
-      {
-        id: '3',
-        tipo: 'ligacao',
-        descricao: 'Ligação realizada - cliente interessado, vai pensar',
-        data: new Date('2024-06-26T14:30:00'),
-        corretor: 'Maria Santos'
-      }
-    ],
-    status: 'ativo'
-  },
-  {
-    id: '4',
-    nome: 'Fernanda Lima',
-    telefone: '(11) 55555-5555',
-    dadosAdicionais: 'Casa de alto padrão no Tatuapé. Tem FGTS. Renda familiar de R$ 12.000. Entrada substancial disponível.',
-    campanha: 'Facebook Ads - Casas Luxo',
-    conjunto: 'Casas Premium',
-    anuncio: 'Casa 4Q Tatuapé',
-    dataCriacao: new Date('2024-06-25T11:00:00'),
-    etapa: 'visita',
-    etiquetas: [],
-    corretor: 'Pedro Oliveira',
-    atividades: [
-      {
-        id: '4',
-        tipo: 'visita',
-        descricao: 'Visita agendada para amanhã às 15h',
-        data: new Date('2024-06-25T17:00:00'),
-        corretor: 'Pedro Oliveira'
-      }
-    ],
-    status: 'ativo'
-  },
-  {
-    id: '5',
-    nome: 'Roberto Santos',
-    telefone: '(11) 44444-4444',
-    dadosAdicionais: 'Apartamento familiar no Ipiranga. Não tem FGTS. Renda de R$ 7.500. Possui entrada.',
-    campanha: 'Google Ads - Apartamentos Familiares',
-    conjunto: 'Apartamentos 3Q',
-    anuncio: 'Apt 3Q Ipiranga',
-    dataCriacao: new Date('2024-06-24T16:45:00'),
-    etapa: 'vendas-fechadas',
-    etiquetas: [],
-    corretor: 'Maria Santos',
-    atividades: [
-      {
-        id: '5',
-        tipo: 'proposta',
-        descricao: 'Proposta aceita - contrato assinado',
-        data: new Date('2024-06-29T10:00:00'),
-        corretor: 'Maria Santos'
-      }
-    ],
-    status: 'ativo'
-  },
-  {
-    id: '6',
-    nome: 'Patricia Alves',
-    telefone: '(11) 33333-3333',
-    dadosAdicionais: 'Primeira casa própria na Penha. Tem FGTS. Renda de R$ 4.200. Não possui entrada ainda. CPF com restrição.',
-    campanha: 'Facebook Ads - Primeira Casa',
-    conjunto: 'Casas Primeira Compra',
-    anuncio: 'Casa 2Q Penha',
-    dataCriacao: new Date('2024-06-23T13:20:00'),
-    etapa: 'em-pausa',
-    etiquetas: ['cpf-restricao'],
-    corretor: 'Pedro Oliveira',
-    atividades: [
-      {
-        id: '6',
-        tipo: 'observacao',
-        descricao: 'Cliente com restrição no CPF - aguardando regularização',
-        data: new Date('2024-06-23T15:30:00'),
-        corretor: 'Pedro Oliveira'
-      }
-    ],
-    status: 'ativo'
-  }
-];
-
 const Index = () => {
-  const [leads, setLeads] = useState<Lead[]>(mockLeads);
+  const { leads, loading, error, refreshLeads, canCreateLeads } = useLeadsAccess();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -167,15 +28,8 @@ const Index = () => {
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
 
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
-    setLeads(prevLeads => prevLeads.map(lead => 
-      lead.id === leadId 
-        ? { ...lead, ...updates }
-        : lead
-    ));
-    // Force re-render by updating the selected lead if it's the one being updated
-    if (selectedLead && selectedLead.id === leadId) {
-      setSelectedLead(prev => prev ? { ...prev, ...updates } : null);
-    }
+    // Atualizar lead localmente e depois sincronizar com o banco
+    refreshLeads();
   };
 
   const handleLeadClick = (lead: Lead) => {
@@ -184,8 +38,8 @@ const Index = () => {
   };
 
   const handleCreateLead = (leadData: Partial<Lead>) => {
-    const newLead = leadData as Lead;
-    setLeads([...leads, newLead]);
+    // Após criar lead, recarregar dados
+    refreshLeads();
   };
 
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
@@ -195,13 +49,28 @@ const Index = () => {
     }
   };
 
-  const filteredLeads = leads.filter(lead => {
-    // Filtro de busca
+  // Converter dados do Supabase para formato da interface
+  const convertedLeads: Lead[] = leads.map(lead => ({
+    id: lead.id,
+    nome: lead.nome,
+    telefone: lead.telefone,
+    dadosAdicionais: lead.dados_adicionais || '',
+    campanha: 'Não especificada',
+    conjunto: 'Não especificado',
+    anuncio: 'Não especificado',
+    dataCriacao: new Date(lead.created_at),
+    etapa: lead.etapa as Lead['etapa'],
+    etiquetas: [],
+    corretor: lead.user?.name || 'Não atribuído',
+    atividades: [],
+    status: 'ativo'
+  }));
+
+  const filteredLeads = convertedLeads.filter(lead => {
     const matchesSearch = lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) ||
       lead.corretor.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Filtro de data
     const dateRange = getDateRangeFromFilter(dateFilter, customDateRange);
     const matchesDate = !dateRange || (
       lead.dataCriacao >= dateRange.from && lead.dataCriacao <= dateRange.to
@@ -210,8 +79,32 @@ const Index = () => {
     return matchesSearch && matchesDate;
   });
 
-  const totalLeads = leads.length;
-  const leadsHoje = leads.filter(lead => {
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+        <div className="h-96 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Gestão de Leads</h1>
+          <p className="text-red-600 mt-1">{error}</p>
+        </div>
+        <Button onClick={refreshLeads}>Tentar Novamente</Button>
+      </div>
+    );
+  }
+
+  const totalLeads = convertedLeads.length;
+  const leadsHoje = convertedLeads.filter(lead => {
     const hoje = new Date();
     const leadDate = new Date(lead.dataCriacao);
     return leadDate.toDateString() === hoje.toDateString();
@@ -224,18 +117,21 @@ const Index = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gestão de Leads</h1>
           <p className="text-gray-600 mt-1">
-            Gerencie seus leads aqui
+            Gerencie seus leads aqui ({totalLeads} leads total, {leadsHoje} hoje)
           </p>
         </div>
         
         <div className="flex items-center gap-3">
-          <Button 
-            className="bg-primary hover:bg-primary/90"
-            onClick={() => setIsNewLeadModalOpen(true)}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Novo Lead
-          </Button>
+          {canCreateLeads && (
+            <Button 
+              className="bg-primary hover:bg-primary/90"
+              onClick={() => setIsNewLeadModalOpen(true)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Lead
+            </Button>
+          )}
+          
           <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
             <Button
               variant={viewMode === 'kanban' ? 'default' : 'ghost'}
@@ -306,11 +202,13 @@ const Index = () => {
         onUpdate={handleLeadUpdate}
       />
 
-      <NewLeadModal
-        isOpen={isNewLeadModalOpen}
-        onClose={() => setIsNewLeadModalOpen(false)}
-        onCreateLead={handleCreateLead}
-      />
+      <AccessControlWrapper allowCorretor={canCreateLeads}>
+        <NewLeadModal
+          isOpen={isNewLeadModalOpen}
+          onClose={() => setIsNewLeadModalOpen(false)}
+          onCreateLead={handleCreateLead}
+        />
+      </AccessControlWrapper>
     </div>
   );
 };

@@ -206,7 +206,7 @@ export type Database = {
           nome: string
           telefone: string
           updated_at?: string
-          user_id: string
+          user_id?: string
         }
         Update: {
           created_at?: string

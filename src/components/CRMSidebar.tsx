@@ -14,13 +14,16 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useCompany } from "@/contexts/CompanyContext";
+import { AccessControlWrapper } from "@/components/AccessControlWrapper";
+import { UserRoleBadge } from "@/components/UserRoleBadge";
 import { 
   LayoutList, 
   Calendar,
   Users,
   Phone,
   Edit,
-  User
+  User,
+  Settings
 } from "lucide-react";
 
 const menuItems = [
@@ -28,25 +31,29 @@ const menuItems = [
     title: "Leads", 
     url: "/", 
     icon: LayoutList,
-    description: "Gestão de leads"
+    description: "Gestão de leads",
+    allowAll: true
   },
   { 
     title: "Dashboards", 
     url: "/dashboards", 
     icon: Calendar,
-    description: "Análises e relatórios"
+    description: "Análises e relatórios",
+    allowAll: true
   },
   { 
     title: "Corretores", 
     url: "/corretores", 
     icon: Users,
-    description: "Gestão de equipe"
+    description: "Gestão de usuários",
+    allowCorretor: false
   },
   { 
     title: "Configurações", 
     url: "/configuracoes", 
-    icon: User,
-    description: "Configurações do sistema"
+    icon: Settings,
+    description: "Configurações do sistema",
+    requireAdmin: true
   }
 ];
 
@@ -86,6 +93,9 @@ export function CRMSidebar() {
             <div>
               <h1 className="text-lg font-bold text-foreground">{settings.name}</h1>
               <p className="text-xs text-muted-foreground">Feito Por: Monumental Marketing</p>
+              <div className="mt-2">
+                <UserRoleBadge showIcon={false} variant="outline" />
+              </div>
             </div>
           )}
         </div>
@@ -98,25 +108,43 @@ export function CRMSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild size="lg">
-                    <NavLink 
-                      to={item.url} 
-                      className={getNavClassName(item.url)}
-                      title={collapsed ? item.title : ""}
-                    >
-                      <item.icon className={`${collapsed ? "w-6 h-6" : "w-5 h-5"} flex-shrink-0`} />
-                      {!collapsed && (
-                        <div className="flex flex-col gap-1">
-                          <span className="text-base font-medium leading-tight">{item.title}</span>
-                          <span className="text-sm opacity-70 leading-tight">{item.description}</span>
-                        </div>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {menuItems.map((item) => {
+                const accessProps: any = {};
+                
+                if (item.allowAll) {
+                  // Permitir para todos os usuários
+                } else if (item.requireAdmin) {
+                  accessProps.requireAdmin = true;
+                } else if (item.allowCorretor === false) {
+                  accessProps.allowCorretor = false;
+                }
+
+                return (
+                  <AccessControlWrapper 
+                    key={item.title}
+                    {...accessProps}
+                    fallback={null}
+                  >
+                    <SidebarMenuItem>
+                      <SidebarMenuButton asChild size="lg">
+                        <NavLink 
+                          to={item.url} 
+                          className={getNavClassName(item.url)}
+                          title={collapsed ? item.title : ""}
+                        >
+                          <item.icon className={`${collapsed ? "w-6 h-6" : "w-5 h-5"} flex-shrink-0`} />
+                          {!collapsed && (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-base font-medium leading-tight">{item.title}</span>
+                              <span className="text-sm opacity-70 leading-tight">{item.description}</span>
+                            </div>
+                          )}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </AccessControlWrapper>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

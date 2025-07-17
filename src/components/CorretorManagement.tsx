@@ -1,25 +1,31 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
+import { AccessControlWrapper } from '@/components/AccessControlWrapper';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { UserPlus, Mail, Send } from 'lucide-react';
 
-interface InviteCorretorModalProps {
+interface InviteUserModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function InviteCorretorModal({ isOpen, onClose }: InviteCorretorModalProps) {
+export function InviteUserModal({ isOpen, onClose }: InviteUserModalProps) {
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
-    email: ''
+    email: '',
+    role: 'corretor' as 'admin' | 'gestor' | 'corretor'
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,10 +41,10 @@ export function InviteCorretorModal({ isOpen, onClose }: InviteCorretorModalProp
       return;
     }
 
-    if (user?.role !== 'admin') {
+    if (!isAdmin) {
       toast({
         title: "Sem permissão",
-        description: "Apenas administradores podem convidar corretores.",
+        description: "Apenas administradores podem convidar usuários.",
         variant: "destructive"
       });
       return;
@@ -64,14 +70,11 @@ export function InviteCorretorModal({ isOpen, onClose }: InviteCorretorModalProp
         return;
       }
 
-      // Gerar token único para o convite
-      const inviteToken = crypto.randomUUID();
-      
-      // Criar o usuário com senha padrão
-      const defaultPasswordHash = await supabase
+      // Gerar hash de senha padrão
+      const { data: passwordHash } = await supabase
         .rpc('crypt_password', { password: 'Mudar123' });
 
-      if (!defaultPasswordHash.data) {
+      if (!passwordHash) {
         toast({
           title: "Erro interno",
           description: "Erro ao processar senha padrão.",
@@ -87,8 +90,8 @@ export function InviteCorretorModal({ isOpen, onClose }: InviteCorretorModalProp
         .insert({
           name: formData.name,
           email: formData.email.toLowerCase(),
-          password_hash: defaultPasswordHash.data,
-          role: 'corretor',
+          password_hash: passwordHash,
+          role: formData.role,
           status: 'pendente'
         })
         .select()
@@ -104,43 +107,39 @@ export function InviteCorretorModal({ isOpen, onClose }: InviteCorretorModalProp
         return;
       }
 
-      // Criar permissões padrão para o corretor
+      // Criar permissões padrão
+      const defaultPermissions = {
+        can_invite_users: formData.role === 'admin',
+        can_view_all_leads: formData.role === 'admin' || formData.role === 'gestor',
+        can_manage_leads: true,
+        can_view_reports: true,
+        can_manage_properties: formData.role === 'admin',
+        can_manage_teams: formData.role === 'admin',
+        can_access_configurations: formData.role === 'admin'
+      };
+
       const { error: permissionsError } = await supabase
         .from('permissions')
         .insert({
           user_id: newUser.id,
-          can_invite_users: false,
-          can_view_all_leads: false
+          ...defaultPermissions
         });
 
       if (permissionsError) {
         console.error('Erro ao criar permissões:', permissionsError);
       }
 
-      // Criar convite
-      const { error: inviteError } = await supabase
-        .from('invitations')
-        .insert({
-          email: formData.email.toLowerCase(),
-          token: inviteToken,
-          status: 'pendente'
-        });
-
-      if (inviteError) {
-        console.error('Erro ao criar convite:', inviteError);
-      }
-
       toast({
-        title: "Convite enviado",
-        description: `Convite enviado para ${formData.email}. Senha padrão: Mudar123`,
+        title: "Usuário criado",
+        description: `Usuário ${formData.name} criado com sucesso. Senha padrão: Mudar123`,
       });
 
       // Limpar formulário e fechar modal
-      setFormData({ name: '', email: '' });
+      setFormData({ name: '', email: '', role: 'corretor' });
       onClose();
 
     } catch (error) {
-      console.error('Erro ao enviar convite:', error);
+      console.error('Erro ao criar usuário:', error);
       toast({
         title: "Erro",
         description: "Erro interno do servidor",
@@ -152,7 +151,7 @@ export function InviteCorretorModal({ isOpen, onClose }: InviteCorretorModalProp
   };
 
   const handleClose = () => {
-    setFormData({ name: '', email: '' });
+    setFormData({ name: '', email: '', role: 'corretor' });
     onClose();
   };
 
@@ -162,7 +161,7 @@ export function InviteCorretorModal({ isOpen, onClose }: InviteCorretorModalProp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="w-5 h-5" />
-            Convidar Novo Corretor
+            Criar Novo Usuário
           </DialogTitle>
         </DialogHeader>
 
@@ -173,7 +172,7 @@ export function InviteCorretorModal({ isOpen, onClose }: InviteCorretorModalProp
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Nome do corretor"
+              placeholder="Nome do usuário"
               required
             />
           </div>
@@ -194,9 +193,23 @@ export function InviteCorretorModal({ isOpen, onClose }: InviteCorretorModalProp
             </div>
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="role">Função</Label>
+            <Select value={formData.role} onValueChange={(value: 'admin' | 'gestor' | 'corretor') => setFormData({ ...formData, role: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione a função" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="corretor">Corretor</SelectItem>
+                <SelectItem value="gestor">Gestor</SelectItem>
+                <SelectItem value="admin">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="bg-blue-50 p-3 rounded-lg">
             <p className="text-sm text-blue-800">
-              O corretor receberá um convite por email com a senha padrão: <strong>Mudar123</strong>
+              O usuário será criado com a senha padrão: <strong>Mudar123</strong>
             </p>
           </div>
 
@@ -206,7 +219,7 @@ export function InviteCorretorModal({ isOpen, onClose }: InviteCorretorModalProp
             </Button>
             <Button type="submit" disabled={isLoading}>
               <Send className="w-4 h-4 mr-2" />
-              {isLoading ? 'Enviando...' : 'Enviar Convite'}
+              {isLoading ? 'Criando...' : 'Criar Usuário'}
             </Button>
           </div>
         </form>
@@ -216,33 +229,20 @@ export function InviteCorretorModal({ isOpen, onClose }: InviteCorretorModalProp
 }
 
 export function CorretorManagement() {
-  const { user } = useAuth();
   const [showInviteModal, setShowInviteModal] = useState(false);
 
-  if (user?.role !== 'admin') {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-gray-600 text-center">
-            Apenas administradores podem gerenciar corretores.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <>
+    <AccessControlWrapper requireAdmin>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UserPlus className="w-5 h-5" />
-            Gerenciar Corretores
+            Gerenciar Usuários
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-gray-600">
-            Como administrador, você pode convidar novos corretores para o sistema.
+            Como administrador, você pode criar novos usuários no sistema.
           </p>
           
           <Button 
@@ -250,15 +250,15 @@ export function CorretorManagement() {
             className="w-full"
           >
             <UserPlus className="w-4 h-4 mr-2" />
-            Convidar Novo Corretor
+            Criar Novo Usuário
           </Button>
         </CardContent>
       </Card>
 
-      <InviteCorretorModal 
+      <InviteUserModal 
         isOpen={showInviteModal}
         onClose={() => setShowInviteModal(false)}
       />
-    </>
+    </AccessControlWrapper>
   );
 }
