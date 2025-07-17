@@ -71,14 +71,14 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Gerar senha temporária
-    const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8)
+    // Usar senha fixa para acesso imediato
+    const tempPassword = 'mudar123'
 
-    // Criar usuário no auth com email_confirm: false para enviar email de confirmação
+    // Criar usuário no auth já confirmado para acesso imediato
     const { data: authUser, error: authError } = await supabaseClient.auth.admin.createUser({
       email,
       password: tempPassword,
-      email_confirm: false, // Isso fará o Supabase enviar email de confirmação
+      email_confirm: true, // Conta já confirmada para acesso imediato
       user_metadata: { name, role }
     })
 
@@ -103,7 +103,7 @@ Deno.serve(async (req) => {
         telefone: telefone || null,
         role,
         equipe_id: equipeId && equipeId !== 'no-team' ? equipeId : null,
-        status: 'pendente',
+        status: 'ativo', // Conta já ativa para acesso imediato
         password_hash: 'managed_by_auth'
       })
       .select()
@@ -175,14 +175,14 @@ Deno.serve(async (req) => {
       )
     }
 
-    console.log('✅ Usuário criado com sucesso. Email de confirmação enviado pelo Supabase para:', email);
+    console.log('✅ Usuário criado com sucesso e já ativo para:', email);
 
     return new Response(
       JSON.stringify({ 
         success: true,
         user: userData,
         tempPassword,
-        message: 'Usuário criado com sucesso! Email de confirmação enviado.' 
+        message: `Usuário criado com sucesso! Login: ${email} | Senha: ${tempPassword}` 
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
