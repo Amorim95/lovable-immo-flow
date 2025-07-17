@@ -46,15 +46,14 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
     setIsLoading(true);
 
     try {
-      // Inserir lead na tabela public.leads com user_id
+      // Inserir lead na tabela public.leads (user_id será atribuído automaticamente pelo trigger)
       const { data, error } = await supabase
         .from('leads')
         .insert({
           nome: formData.nome,
           telefone: formData.telefone,
           dados_adicionais: formData.dadosAdicionais || null,
-          etapa: 'aguardando-atendimento',
-          user_id: user.id
+          etapa: 'aguardando-atendimento'
         })
         .select()
         .single();
@@ -74,7 +73,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
         dataCriacao: new Date(data.created_at),
         etapa: data.etapa as any,
         etiquetas: [],
-        corretor: user.name,
+        corretor: 'Atribuído automaticamente', // O corretor será atribuído pelo sistema
         atividades: [],
         status: 'ativo'
       };
