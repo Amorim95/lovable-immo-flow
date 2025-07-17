@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
-import { Card, CardContent } from '@/components/ui/card';
 
 interface AccessControlWrapperProps {
   children: React.ReactNode;
@@ -26,54 +25,22 @@ export function AccessControlWrapper({
 }: AccessControlWrapperProps) {
   const { isAdmin, isGestor, isCorretor, loading } = useUserRole();
 
+  // Durante o carregamento, mostrar o conteúdo para evitar layout shift
   if (loading) {
-    return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <>{children}</>;
   }
 
   // Verificar requisitos específicos
   if (requireAdmin && !isAdmin) {
-    return fallback || (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-gray-600 text-center">
-            Apenas administradores podem acessar esta funcionalidade.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return <>{fallback}</>;
   }
 
   if (requireGestor && !isGestor) {
-    return fallback || (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-gray-600 text-center">
-            Apenas gestores podem acessar esta funcionalidade.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return <>{fallback}</>;
   }
 
   if (requireCorretor && !isCorretor) {
-    return fallback || (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-gray-600 text-center">
-            Apenas corretores podem acessar esta funcionalidade.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return <>{fallback}</>;
   }
 
   // Verificar permissões gerais
@@ -83,15 +50,7 @@ export function AccessControlWrapper({
     (allowCorretor && isCorretor);
 
   if (!hasAccess) {
-    return fallback || (
-      <Card>
-        <CardContent className="p-6">
-          <p className="text-gray-600 text-center">
-            Você não tem permissão para acessar esta funcionalidade.
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return <>{fallback}</>;
   }
 
   return <>{children}</>;

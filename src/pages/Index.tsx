@@ -5,20 +5,20 @@ import { KanbanBoard } from "@/components/KanbanBoard";
 import { ListView } from "@/components/ListView";
 import { LeadModal } from "@/components/LeadModal";
 import { NewLeadModal } from "@/components/NewLeadModal";
-import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { useLeadsAccess } from "@/hooks/useLeadsAccess";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { 
   LayoutList, 
   LayoutGrid,
-  Plus,
-  Calendar
+  Plus
 } from "lucide-react";
 
 const Index = () => {
-  const { leads, loading, error, refreshLeads, canCreateLeads } = useLeadsAccess();
+  const { leads, loading, error, refreshLeads } = useLeadsAccess();
+  const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,8 +27,10 @@ const Index = () => {
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
 
+  // Permitir criação de leads para todos os usuários autenticados
+  const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
+
   const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
-    // Atualizar lead localmente e depois sincronizar com o banco
     refreshLeads();
   };
 
@@ -38,7 +40,6 @@ const Index = () => {
   };
 
   const handleCreateLead = (leadData: Partial<Lead>) => {
-    // Após criar lead, recarregar dados
     refreshLeads();
   };
 
@@ -79,7 +80,7 @@ const Index = () => {
     return matchesSearch && matchesDate;
   });
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
@@ -202,13 +203,13 @@ const Index = () => {
         onUpdate={handleLeadUpdate}
       />
 
-      <AccessControlWrapper allowCorretor={canCreateLeads}>
+      {canCreateLeads && (
         <NewLeadModal
           isOpen={isNewLeadModalOpen}
           onClose={() => setIsNewLeadModalOpen(false)}
           onCreateLead={handleCreateLead}
         />
-      </AccessControlWrapper>
+      )}
     </div>
   );
 };

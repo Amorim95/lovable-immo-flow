@@ -16,13 +16,11 @@ import {
 import { useCompany } from "@/contexts/CompanyContext";
 import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { UserRoleBadge } from "@/components/UserRoleBadge";
+import { useUserRole } from "@/hooks/useUserRole";
 import { 
   LayoutList, 
   Calendar,
   Users,
-  Phone,
-  Edit,
-  User,
   Settings
 } from "lucide-react";
 
@@ -32,21 +30,21 @@ const menuItems = [
     url: "/", 
     icon: LayoutList,
     description: "Gestão de leads",
-    allowAll: true
+    showForAll: true
   },
   { 
     title: "Dashboards", 
     url: "/dashboards", 
     icon: Calendar,
     description: "Análises e relatórios",
-    allowAll: true
+    showForAll: true
   },
   { 
     title: "Corretores", 
     url: "/corretores", 
     icon: Users,
     description: "Gestão de usuários",
-    allowCorretor: false
+    requireAdminOrGestor: true
   },
   { 
     title: "Configurações", 
@@ -60,6 +58,7 @@ const menuItems = [
 export function CRMSidebar() {
   const { state } = useSidebar();
   const { settings } = useCompany();
+  const { isAdmin, isGestor, isCorretor, loading } = useUserRole();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
@@ -77,6 +76,17 @@ export function CRMSidebar() {
     }
     return `${baseClass} text-muted-foreground hover:bg-accent hover:text-accent-foreground`;
   };
+
+  // Filtrar itens do menu baseado nas permissões
+  const filteredMenuItems = menuItems.filter(item => {
+    if (loading) return true; // Mostrar todos durante carregamento
+    
+    if (item.showForAll) return true;
+    if (item.requireAdmin && !isAdmin) return false;
+    if (item.requireAdminOrGestor && !isAdmin && !isGestor) return false;
+    
+    return true;
+  });
 
   return (
     <Sidebar className={`${collapsed ? "w-20" : "w-72"} border-r bg-card`} collapsible="icon">
@@ -108,43 +118,25 @@ export function CRMSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-2">
-              {menuItems.map((item) => {
-                const accessProps: any = {};
-                
-                if (item.allowAll) {
-                  // Permitir para todos os usuários
-                } else if (item.requireAdmin) {
-                  accessProps.requireAdmin = true;
-                } else if (item.allowCorretor === false) {
-                  accessProps.allowCorretor = false;
-                }
-
-                return (
-                  <AccessControlWrapper 
-                    key={item.title}
-                    {...accessProps}
-                    fallback={null}
-                  >
-                    <SidebarMenuItem>
-                      <SidebarMenuButton asChild size="lg">
-                        <NavLink 
-                          to={item.url} 
-                          className={getNavClassName(item.url)}
-                          title={collapsed ? item.title : ""}
-                        >
-                          <item.icon className={`${collapsed ? "w-6 h-6" : "w-5 h-5"} flex-shrink-0`} />
-                          {!collapsed && (
-                            <div className="flex flex-col gap-1">
-                              <span className="text-base font-medium leading-tight">{item.title}</span>
-                              <span className="text-sm opacity-70 leading-tight">{item.description}</span>
-                            </div>
-                          )}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  </AccessControlWrapper>
-                );
-              })}
+              {filteredMenuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild size="lg">
+                    <NavLink 
+                      to={item.url} 
+                      className={getNavClassName(item.url)}
+                      title={collapsed ? item.title : ""}
+                    >
+                      <item.icon className={`${collapsed ? "w-6 h-6" : "w-5 h-5"} flex-shrink-0`} />
+                      {!collapsed && (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-base font-medium leading-tight">{item.title}</span>
+                          <span className="text-sm opacity-70 leading-tight">{item.description}</span>
+                        </div>
+                      )}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

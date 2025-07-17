@@ -14,8 +14,8 @@ export function UserRoleBadge({ showIcon = true, variant = 'default' }: UserRole
 
   if (loading) {
     return (
-      <Badge variant="outline" className="animate-pulse">
-        <div className="h-3 w-12 bg-gray-200 rounded"></div>
+      <Badge variant="outline">
+        <span>Carregando...</span>
       </Badge>
     );
   }
@@ -37,7 +37,7 @@ export function UserRoleBadge({ showIcon = true, variant = 'default' }: UserRole
     roleIcon = <User className="w-3 h-3" />;
     badgeClass = 'bg-green-100 text-green-800 border-green-200';
   } else {
-    roleText = 'Sem função';
+    roleText = 'Usuário';
     roleIcon = <User className="w-3 h-3" />;
     badgeClass = 'bg-gray-100 text-gray-800 border-gray-200';
   }
