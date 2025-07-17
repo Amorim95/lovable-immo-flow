@@ -28,6 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Limpar qualquer cache local ao inicializar
+    localStorage.removeItem('crm_user');
+    sessionStorage.clear();
+    
     // Setup auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -45,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Then check for existing session
+    // Then check for existing session - sempre buscar dados atualizados do servidor
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
