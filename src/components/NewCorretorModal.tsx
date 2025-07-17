@@ -87,6 +87,15 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
       // Criar usuário diretamente na tabela users (sem usar auth.admin)
       const userId = crypto.randomUUID();
       
+      // Criptografar senha primeiro
+      const { data: hashedPassword, error: hashError } = await supabase.rpc('crypt_password', { password: 'mudar123' });
+      
+      if (hashError || !hashedPassword) {
+        console.error('Error hashing password:', hashError);
+        toast.error('Erro ao processar senha');
+        return;
+      }
+      
       // Criar registro na tabela users
       const { data: userData, error: userError } = await supabase
         .from('users')
@@ -98,7 +107,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
           role: formData.role,
           equipe_id: formData.equipeId && formData.equipeId !== 'no-team' ? formData.equipeId : null,
           status: 'ativo',
-          password_hash: await supabase.rpc('crypt_password', { password: 'mudar123' })
+          password_hash: hashedPassword
         })
         .select()
         .single();
