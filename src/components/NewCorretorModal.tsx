@@ -162,34 +162,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
         return;
       }
 
-      // Criar usuário no auth.users para permitir login
-      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: 'mudar123',
-        email_confirm: true,
-        user_metadata: {
-          name: formData.nome
-        }
-      });
-
-      if (authError) {
-        console.error('Error creating auth user:', authError);
-        toast.error('Usuário criado mas não pode fazer login. Configure manualmente.');
-      } else {
-        // Atualizar o ID do usuário na tabela users para corresponder ao auth.users
-        await supabase
-          .from('users')
-          .update({ id: authUser.user.id })
-          .eq('id', userId);
-
-        // Atualizar também as permissões
-        await supabase
-          .from('permissions')
-          .update({ user_id: authUser.user.id })
-          .eq('user_id', userId);
-      }
-
-      toast.success('Corretor criado com sucesso! Credenciais de login enviadas por email.');
+      toast.success('Corretor criado com sucesso! O usuário pode fazer login com a senha padrão "mudar123".');
       
       // Criar objeto corretor para atualizar a interface
       const newCorretor: Partial<Corretor> = {

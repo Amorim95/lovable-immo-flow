@@ -74,7 +74,7 @@ const Configuracoes = () => {
           </TabsTrigger>
           <TabsTrigger value="seguranca" className="flex items-center gap-2">
             <Shield className="w-4 h-4" />
-            Segurança
+            Acessos e Segurança
           </TabsTrigger>
         </TabsList>
 
@@ -134,22 +134,7 @@ const Configuracoes = () => {
 
 
         <TabsContent value="seguranca" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="w-5 h-5" />
-                Configurações de Segurança
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                As configurações de segurança e criação de usuários foram movidas para a página de Corretores.
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Acesse "Corretores" no menu lateral para gerenciar usuários e permissões.
-              </p>
-            </CardContent>
-          </Card>
+          <SecuritySettings />
         </TabsContent>
       </Tabs>
 
