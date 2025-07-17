@@ -383,10 +383,6 @@ export type Database = {
         Args: { password: string }
         Returns: string
       }
-      get_next_corretor_in_queue: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
       is_admin: {
         Args: { user_id: string }
         Returns: boolean
