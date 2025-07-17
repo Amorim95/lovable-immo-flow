@@ -23,6 +23,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+console.log('EditUsuarioModal imported:', EditUsuarioModal);
+
 const Corretores = () => {
   const { user } = useAuth();
   const { isAdmin, isGestor } = useUserRole();
