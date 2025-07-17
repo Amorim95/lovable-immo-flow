@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Corretor, Equipe } from "@/types/crm";
 import {
@@ -10,11 +9,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit } from "lucide-react";
 
-interface EditCorretorModalProps {
+interface EditUsuarioModalProps {
   corretor: Corretor | null;
   isOpen: boolean;
   onClose: () => void;
@@ -22,19 +20,18 @@ interface EditCorretorModalProps {
   equipes?: Equipe[];
 }
 
-const availablePermissions = [
-  { id: 'leads', label: 'Gerenciar Leads' },
-  { id: 'dashboards', label: 'Visualizar Dashboards' },
-  { id: 'corretores', label: 'Gerenciar Corretores' },
-  { id: 'configuracoes', label: 'Configurações Gerais' }
+const availableRoles = [
+  { value: 'admin', label: 'Administrador' },
+  { value: 'gestor', label: 'Gestor' },
+  { value: 'corretor', label: 'Corretor' }
 ];
 
-export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor, equipes = [] }: EditCorretorModalProps) {
+export function EditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorretor, equipes = [] }: EditUsuarioModalProps) {
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
     telefone: '',
-    permissoes: [] as string[],
+    role: 'corretor',
     equipeId: ''
   });
 
@@ -44,7 +41,7 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor,
         nome: corretor.nome || '',
         email: corretor.email || '',
         telefone: corretor.telefone || '',
-        permissoes: corretor.permissoes || [],
+        role: corretor.role || 'corretor',
         equipeId: corretor.equipeId || 'no-team'
       });
     }
@@ -64,26 +61,12 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor,
       nome: formData.nome,
       email: formData.email,
       telefone: formData.telefone,
-      permissoes: formData.permissoes,
+      role: formData.role as 'admin' | 'gestor' | 'corretor',
       equipeId: formData.equipeId === 'no-team' ? undefined : formData.equipeId,
       equipeNome: equipeSelecionada?.nome || undefined
     });
     
     onClose();
-  };
-
-  const handlePermissionChange = (permission: string, checked: boolean) => {
-    if (checked) {
-      setFormData(prev => ({
-        ...prev,
-        permissoes: [...prev.permissoes, permission]
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        permissoes: prev.permissoes.filter(p => p !== permission)
-      }));
-    }
   };
 
   if (!corretor) return null;
@@ -94,7 +77,7 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor,
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Edit className="w-5 h-5" />
-            Editar Corretor
+            Editar Usuário
           </DialogTitle>
         </DialogHeader>
 
@@ -133,6 +116,22 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor,
           </div>
 
           <div>
+            <Label htmlFor="role">Cargo</Label>
+            <Select value={formData.role} onValueChange={(value) => setFormData({ ...formData, role: value })}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um cargo" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableRoles.map((role) => (
+                  <SelectItem key={role.value} value={role.value}>
+                    {role.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
             <Label htmlFor="equipe">Equipe</Label>
             <Select value={formData.equipeId} onValueChange={(value) => setFormData({ ...formData, equipeId: value })}>
               <SelectTrigger>
@@ -147,29 +146,6 @@ export function EditCorretorModal({ corretor, isOpen, onClose, onUpdateCorretor,
                 ))}
               </SelectContent>
             </Select>
-          </div>
-
-          <div>
-            <Label>Permissões e Acessos</Label>
-            <div className="space-y-2 mt-2">
-              {availablePermissions.map((permission) => (
-                <div key={permission.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={permission.id}
-                    checked={formData.permissoes.includes(permission.id)}
-                    onCheckedChange={(checked) =>
-                      handlePermissionChange(permission.id, checked as boolean)
-                    }
-                  />
-                  <label
-                    htmlFor={permission.id}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {permission.label}
-                  </label>
-                </div>
-              ))}
-            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">

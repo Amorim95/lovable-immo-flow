@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NewCorretorModal } from "@/components/NewCorretorModal";
-import { EditCorretorModal } from "@/components/EditCorretorModal";
+import { EditUsuarioModal } from "@/components/EditUsuarioModal";
 import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { UserRoleBadge } from "@/components/UserRoleBadge";
 import { 
@@ -462,7 +462,7 @@ const Corretores = () => {
         </AccessControlWrapper>
 
         <AccessControlWrapper allowCorretor={false}>
-          <EditCorretorModal
+          <EditUsuarioModal
             corretor={selectedCorretor}
             isOpen={showEditModal}
             onClose={() => {
