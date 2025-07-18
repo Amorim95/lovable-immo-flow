@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Lead, LeadTag, Atividade } from "@/types/crm";
+import { Lead, Atividade } from "@/types/crm";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TagSelector } from "@/components/TagSelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Phone, 
@@ -85,12 +84,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
     onUpdate(lead.id, {
       atividades: [...lead.atividades, activity]
     });
-  };
-
-  const handleTagsChange = (newTags: LeadTag[]) => {
-    console.log('handleTagsChange chamado com:', newTags);
-    console.log('Lead atual:', lead.id);
-    onUpdate(lead.id, { etiquetas: newTags });
   };
 
   const formatDate = (date: Date) => {
@@ -167,15 +160,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                       <SelectItem value="em-pausa">Em Pausa</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-
-                {/* Etiquetas */}
-                <div className="space-y-4">
-                  <h4 className="font-medium text-gray-700">Etiquetas</h4>
-                  <TagSelector
-                    selectedTags={lead.etiquetas}
-                    onTagsChange={handleTagsChange}
-                  />
                 </div>
 
                 <Separator />
