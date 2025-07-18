@@ -49,15 +49,15 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead, initialStage = 'ag
     try {
       console.log('🚀 Criando lead:', formData);
       
-      // Inserir lead diretamente (trigger simples vai definir user_id)
+      // Inserir lead com user_id do usuário logado
       const { data, error } = await supabase
         .from('leads')
         .insert({
           nome: formData.nome,
           telefone: formData.telefone,
           dados_adicionais: formData.dadosAdicionais || null,
-          etapa: initialStage // Usar a etapa definida pela prop
-          // user_id será definido automaticamente pelo trigger
+          etapa: initialStage,
+          user_id: user.id // Explicitamente definir o user_id
         })
         .select('*')
         .single();
