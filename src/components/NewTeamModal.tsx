@@ -93,7 +93,7 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
@@ -151,11 +151,11 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
                 onChange={(e) => setSearchCorretores(e.target.value)}
                 className="w-full"
               />
-              <div className="max-h-60 overflow-y-auto border rounded-md p-3 bg-gray-50">
+              <div className="max-h-40 overflow-y-auto border rounded-md p-3 bg-gray-50">
                 {corretoresFiltrados.length > 0 ? (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {corretoresFiltrados.map((corretor) => (
-                      <div key={corretor.id} className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                      <div key={corretor.id} className="flex items-center space-x-2 p-1 hover:bg-white rounded-md transition-colors">
                         <Checkbox
                           id={corretor.id}
                           checked={formData.corretoresSelecionados.includes(corretor.id)}
@@ -168,28 +168,27 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
                           className="flex-1 cursor-pointer"
                         >
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium">{corretor.nome}</span>
+                            <span className="text-xs font-medium">{corretor.nome}</span>
                             <span className="text-xs text-gray-500">{corretor.email}</span>
-                            <span className="text-xs text-gray-400 capitalize">{corretor.role}</span>
                           </div>
                         </label>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    <p className="text-sm">Nenhum corretor encontrado</p>
+                  <div className="text-center py-2 text-gray-500">
+                    <p className="text-xs">Nenhum corretor encontrado</p>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={handleClose}>
+          <div className="flex gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={handleClose} className="flex-1">
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="flex-1">
               Criar Equipe
             </Button>
           </div>

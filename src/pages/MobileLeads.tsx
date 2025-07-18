@@ -6,11 +6,12 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, MessageCircle, Calendar, User } from "lucide-react";
+import { Plus, Search, MessageCircle, Calendar, User, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { NewLeadModal } from "@/components/NewLeadModal";
-import { DateFilter, DateFilterOption } from "@/components/DateFilter";
+import { DateFilter, DateFilterOption, getDateRangeFromFilter } from "@/components/DateFilter";
 import { UserFilter } from "@/components/UserFilter";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const stageColors = {
   'aguardando-atendimento': 'bg-slate-100 text-slate-800',
@@ -32,12 +33,13 @@ const stageLabels = {
 
 export default function MobileLeads() {
   const navigate = useNavigate();
-  const { leads, loading, error, refreshLeads } = useLeadsOptimized();
+  const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
   
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
 
@@ -58,11 +60,28 @@ export default function MobileLeads() {
     status: 'ativo'
   }));
 
-  const filteredLeads = convertedLeads.filter(lead =>
-    lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    lead.corretor.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Aplicar filtros
+  const filteredLeads = convertedLeads.filter(lead => {
+    // Filtro de texto
+    const matchesSearch = lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      lead.corretor.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Filtro de usuário
+    const matchesUser = !selectedUserId || leads.find(l => l.id === lead.id)?.user_id === selectedUserId;
+
+    // Filtro de data
+    let matchesDate = true;
+    if (dateFilter !== 'periodo-total') {
+      const dateRange = getDateRangeFromFilter(dateFilter, customDateRange);
+      if (dateRange) {
+        const leadDate = lead.dataCriacao;
+        matchesDate = leadDate >= dateRange.from && leadDate <= dateRange.to;
+      }
+    }
+
+    return matchesSearch && matchesUser && matchesDate;
+  });
 
   const handleLeadClick = (lead: Lead) => {
     navigate(`/lead/${lead.id}`);
@@ -81,6 +100,10 @@ export default function MobileLeads() {
 
   const handleCreateLead = () => {
     refreshLeads();
+  };
+
+  const handleStageChange = async (leadId: string, newStage: Lead['etapa']) => {
+    await updateLeadOptimistic(leadId, { etapa: newStage });
   };
 
   if (loading || roleLoading) {
@@ -156,7 +179,13 @@ export default function MobileLeads() {
           
           <DateFilter
             value={dateFilter}
-            onValueChange={(option, customRange) => setDateFilter(option)}
+            onValueChange={(option, customRange) => {
+              setDateFilter(option);
+              if (customRange) {
+                setCustomDateRange(customRange);
+              }
+            }}
+            customRange={customDateRange}
             className="w-full"
           />
           
@@ -200,9 +229,29 @@ export default function MobileLeads() {
                   <h3 className="font-medium text-gray-900 truncate">{lead.nome}</h3>
                   <p className="text-sm text-gray-500 truncate">{lead.telefone}</p>
                 </div>
-                <Badge className={`ml-2 ${stageColors[lead.etapa]} text-xs`}>
-                  {stageLabels[lead.etapa]}
-                </Badge>
+                <div className="relative">
+                  <Select
+                    value={lead.etapa}
+                    onValueChange={(value) => {
+                      handleStageChange(lead.id, value as Lead['etapa']);
+                    }}
+                  >
+                    <SelectTrigger 
+                      className={`ml-2 h-auto p-1 text-xs border-none shadow-none ${stageColors[lead.etapa]}`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SelectValue />
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(stageLabels).map(([value, label]) => (
+                        <SelectItem key={value} value={value} className="text-xs">
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
               {lead.dadosAdicionais && (

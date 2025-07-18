@@ -115,26 +115,8 @@ export default function MobileProfile() {
       <MobileHeader title="Informações Pessoais" />
 
       <div className="p-4 space-y-4">
-        {/* Opções */}
+        {/* Opção de Alterar Senha */}
         <div className="space-y-3">
-          <div
-            onClick={() => setActiveTab('info')}
-            className="bg-white rounded-lg p-4 shadow-sm border active:bg-gray-50 transition-colors cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <User className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-gray-900">Informações Pessoais</h3>
-                  <p className="text-sm text-gray-500">Editar nome, email e telefone</p>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </div>
-          </div>
-
           <div
             onClick={() => setActiveTab('password')}
             className="bg-white rounded-lg p-4 shadow-sm border active:bg-gray-50 transition-colors cursor-pointer"

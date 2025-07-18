@@ -18,6 +18,7 @@ import MobileCorretores from "./pages/MobileCorretores";
 import MobileConfiguracoes from "./pages/MobileConfiguracoes";
 import MobileProfile from "./pages/MobileProfile";
 import MobileEquipes from "./pages/MobileEquipes";
+import MobileCompanySettings from "./pages/MobileCompanySettings";
 import Dashboards from "./pages/Dashboards";
 import PerformancePorCorretor from "./pages/PerformancePorCorretor";
 import PerformanceDaEquipe from "./pages/PerformanceDaEquipe";
@@ -73,6 +74,7 @@ function AppContent() {
                 <Route path="/equipes" element={<MobileEquipes />} />
                 <Route path="/configuracoes" element={<MobileConfiguracoes />} />
                 <Route path="/profile" element={<MobileProfile />} />
+                <Route path="/company-settings" element={<MobileCompanySettings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <MobileTabBar />

@@ -37,7 +37,7 @@ export default function MobileConfiguracoes() {
       title: 'Dados da Empresa',
       description: 'Informações e configurações da empresa',
       icon: Building2,
-      action: () => {/* Navigate to company settings */},
+      action: () => navigate('/company-settings'),
       show: canManageUsers
     },
     {

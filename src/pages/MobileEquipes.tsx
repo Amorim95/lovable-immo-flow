@@ -30,28 +30,39 @@ export default function MobileEquipes() {
 
   const canManageTeams = isAdmin || isGestor;
 
-  // Buscar equipes
+  // Buscar equipes com membros
   const { data: equipes = [], isLoading, refetch } = useQuery({
-    queryKey: ['mobile-equipes'],
+    queryKey: ['mobile-equipes-with-members'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Buscar equipes
+      const { data: equipesData, error: equipesError } = await supabase
         .from('equipes')
-        .select(`
-          *,
-          users!equipes_responsavel_id_fkey(name)
-        `)
+        .select('*')
         .order('nome');
 
-      if (error) throw error;
+      if (equipesError) throw equipesError;
 
-      return data.map(equipe => ({
-        id: equipe.id,
-        nome: equipe.nome,
-        responsavel_id: equipe.responsavel_id,
-        responsavel_nome: equipe.responsavel_nome || equipe.users?.name || 'Não definido',
-        created_at: equipe.created_at,
-        membros: 0 // TODO: calcular membros
-      }));
+      // Para cada equipe, contar membros
+      const equipesComMembros = await Promise.all(
+        equipesData.map(async (equipe) => {
+          const { count } = await supabase
+            .from('users')
+            .select('*', { count: 'exact', head: true })
+            .eq('equipe_id', equipe.id)
+            .eq('status', 'ativo');
+
+          return {
+            id: equipe.id,
+            nome: equipe.nome,
+            responsavel_id: equipe.responsavel_id,
+            responsavel_nome: equipe.responsavel_nome || 'Não definido',
+            created_at: equipe.created_at,
+            membros: count || 0
+          };
+        })
+      );
+
+      return equipesComMembros;
     },
     enabled: canManageTeams
   });
@@ -69,6 +80,32 @@ export default function MobileEquipes() {
 
       if (error) throw error;
       return data;
+    },
+    enabled: canManageTeams
+  });
+
+  // Buscar todos os corretores para os modais
+  const { data: corretores = [] } = useQuery({
+    queryKey: ['corretores-for-teams'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, email, role, status, equipe_id')
+        .eq('status', 'ativo')
+        .order('name');
+
+      if (error) throw error;
+      return data.map(user => ({
+        id: user.id,
+        nome: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        telefone: '',
+        equipeId: user.equipe_id,
+        permissoes: [],
+        leads: []
+      }));
     },
     enabled: canManageTeams
   });
@@ -239,7 +276,7 @@ export default function MobileEquipes() {
         isOpen={isNewTeamModalOpen}
         onClose={() => setIsNewTeamModalOpen(false)}
         onCreateTeam={handleCreateTeam}
-        corretores={[]}
+        corretores={corretores}
       />
 
       {selectedTeam && (
@@ -252,7 +289,7 @@ export default function MobileEquipes() {
           }}
           onUpdateTeam={handleUpdateTeam}
           onDeleteTeam={() => {}}
-          corretores={[]}
+          corretores={corretores}
         />
       )}
     </div>
