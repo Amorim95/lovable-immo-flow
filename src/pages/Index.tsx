@@ -5,7 +5,7 @@ import { KanbanBoard } from "@/components/KanbanBoard";
 import { ListView } from "@/components/ListView";
 import { LeadModal } from "@/components/LeadModal";
 import { NewLeadModal } from "@/components/NewLeadModal";
-import { useLeadsAccess } from "@/hooks/useLeadsAccess";
+import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 const Index = () => {
-  const { leads, loading, error, refreshLeads } = useLeadsAccess();
+  const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -32,82 +32,14 @@ const Index = () => {
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
 
   const handleLeadUpdate = async (leadId: string, updates: Partial<Lead>) => {
-    try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      
-      // Preparar dados para o Supabase (mapear campos da interface para o banco)
-      const supabaseUpdates: any = {};
-      
-      if (updates.nome !== undefined) supabaseUpdates.nome = updates.nome;
-      if (updates.telefone !== undefined) supabaseUpdates.telefone = updates.telefone;
-      if (updates.dadosAdicionais !== undefined) supabaseUpdates.dados_adicionais = updates.dadosAdicionais;
-      if (updates.etapa !== undefined) supabaseUpdates.etapa = updates.etapa;
-      
-      // Atualizar no banco se há mudanças nos campos persistidos
-      if (Object.keys(supabaseUpdates).length > 0) {
-        const { error } = await supabase
-          .from('leads')
-          .update(supabaseUpdates)
-          .eq('id', leadId);
-          
-        if (error) {
-          console.error('Erro ao atualizar lead:', error);
-          return;
-        }
-      }
-      
-      // Gerenciar tags se elas foram atualizadas
-      if (updates.etiquetas !== undefined) {
-        // Primeiro, deletar todas as tags existentes do lead
-        await supabase
-          .from('lead_tag_relations')
-          .delete()
-          .eq('lead_id', leadId);
-          
-        // Se há novas tags, inserir elas
-        if (updates.etiquetas.length > 0) {
-          // Buscar os IDs das tags pelo nome
-          const { data: tagIds, error: tagError } = await supabase
-            .from('lead_tags')
-            .select('id, nome')
-            .in('nome', updates.etiquetas);
-            
-          if (tagError) {
-            console.error('Erro ao buscar tags:', tagError);
-            return;
-          }
-          
-          // Criar as relações
-          const relations = tagIds?.map(tag => ({
-            lead_id: leadId,
-            tag_id: tag.id
-          })) || [];
-          
-          if (relations.length > 0) {
-            const { error: relationError } = await supabase
-              .from('lead_tag_relations')
-              .insert(relations);
-              
-            if (relationError) {
-              console.error('Erro ao inserir relações de tags:', relationError);
-              return;
-            }
-          }
-        }
-      }
-      
-      // Atualizar o lead local se estiver selecionado (para atividades)
-      if (selectedLead && selectedLead.id === leadId) {
-        setSelectedLead({
-          ...selectedLead,
-          ...updates
-        });
-      }
-      
-      // Refresh da lista
-      refreshLeads();
-    } catch (error) {
-      console.error('Erro ao processar atualização:', error);
+    const success = await updateLeadOptimistic(leadId, updates);
+    
+    // Atualizar o lead local se estiver selecionado (para atividades)
+    if (success && selectedLead && selectedLead.id === leadId) {
+      setSelectedLead({
+        ...selectedLead,
+        ...updates
+      });
     }
   };
 
@@ -276,20 +208,24 @@ const Index = () => {
       </div>
 
       {/* Content */}
-      <div className="min-h-[600px]">
+      <div className="min-h-[600px] transition-all duration-300 ease-in-out">
         {viewMode === 'kanban' ? (
-          <KanbanBoard
-            leads={filteredLeads}
-            onLeadUpdate={handleLeadUpdate}
-            onLeadClick={handleLeadClick}
-            onCreateLead={handleCreateLeadInStage}
-          />
+          <div className="animate-fade-in">
+            <KanbanBoard
+              leads={filteredLeads}
+              onLeadUpdate={handleLeadUpdate}
+              onLeadClick={handleLeadClick}
+              onCreateLead={handleCreateLeadInStage}
+            />
+          </div>
         ) : (
-          <ListView
-            leads={filteredLeads}
-            onLeadClick={handleLeadClick}
-            onLeadUpdate={handleLeadUpdate}
-          />
+          <div className="animate-fade-in">
+            <ListView
+              leads={filteredLeads}
+              onLeadClick={handleLeadClick}
+              onLeadUpdate={handleLeadUpdate}
+            />
+          </div>
         )}
       </div>
 
