@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useToast } from "@/hooks/use-toast";
 import { SecuritySettings } from "@/components/SecuritySettings";
+import { supabase } from "@/integrations/supabase/client";
 import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun, Shield } from "lucide-react";
 
 const Configuracoes = () => {
@@ -39,15 +40,45 @@ const Configuracoes = () => {
     }
   };
 
-  const handleSaveCompany = () => {
-    updateSettings({
-      name: companyName,
-      logo: companyLogo
-    });
-    toast({
-      title: "Configurações salvas",
-      description: "As configurações da empresa foram atualizadas com sucesso.",
-    });
+  const handleSaveCompany = async () => {
+    if (!companyName.trim()) {
+      toast({
+        title: "Erro",
+        description: "Nome da empresa é obrigatório.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('company_settings')
+        .upsert({
+          name: companyName,
+          logo: companyLogo
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      updateSettings({
+        name: companyName,
+        logo: companyLogo
+      });
+      
+      toast({
+        title: "Configurações salvas",
+        description: "As configurações da empresa foram atualizadas com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao salvar configurações:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar as configurações da empresa.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSaveTheme = () => {
