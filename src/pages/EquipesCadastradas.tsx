@@ -43,11 +43,12 @@ const EquipesCadastradas = () => {
         return;
       }
 
-      // Carregar corretores
+      // Carregar todos os usuários ativos
       const { data: corretoresData, error: corretoresError } = await supabase
         .from('users')
         .select('*')
-        .eq('role', 'corretor');
+        .eq('status', 'ativo')
+        .order('name');
 
       if (corretoresError) {
         console.error('Error loading corretores:', corretoresError);

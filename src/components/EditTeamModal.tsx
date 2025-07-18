@@ -133,7 +133,9 @@ export function EditTeamModal({
     }
   };
 
-  const corretoresDisponiveis = corretores.filter(c => c.status === 'ativo');
+  const corretoresDisponiveis = corretores.filter(corretor => 
+    corretor.status === 'ativo'
+  );
 
   if (!equipe) return null;
 
@@ -165,10 +167,14 @@ export function EditTeamModal({
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o responsável" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-60">
                 {corretoresDisponiveis.map((corretor) => (
                   <SelectItem key={corretor.id} value={corretor.id}>
-                    {corretor.nome}
+                    <div className="flex flex-col text-left">
+                      <span className="font-medium">{corretor.nome}</span>
+                      <span className="text-sm text-muted-foreground">{corretor.email}</span>
+                      <span className="text-xs text-muted-foreground capitalize">{corretor.role}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -177,9 +183,9 @@ export function EditTeamModal({
 
           <div>
             <Label>Corretores da Equipe</Label>
-            <div className="space-y-2 mt-2 max-h-32 overflow-y-auto">
+            <div className="space-y-3 mt-2 max-h-60 overflow-y-auto border rounded-md p-3 bg-gray-50">
               {corretoresDisponiveis.map((corretor) => (
-                <div key={corretor.id} className="flex items-center space-x-2">
+                <div key={corretor.id} className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
                   <Checkbox
                     id={corretor.id}
                     checked={formData.corretoresSelecionados.includes(corretor.id)}
@@ -189,9 +195,13 @@ export function EditTeamModal({
                   />
                   <label
                     htmlFor={corretor.id}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="flex-1 cursor-pointer"
                   >
-                    {corretor.nome}
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">{corretor.nome}</span>
+                      <span className="text-xs text-gray-500">{corretor.email}</span>
+                      <span className="text-xs text-gray-400 capitalize">{corretor.role}</span>
+                    </div>
                   </label>
                 </div>
               ))}
