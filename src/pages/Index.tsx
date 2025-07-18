@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Lead } from "@/types/crm";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { ListView } from "@/components/ListView";
@@ -8,6 +9,7 @@ import { NewLeadModal } from "@/components/NewLeadModal";
 import { UserFilter } from "@/components/UserFilter";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
@@ -18,6 +20,8 @@ import {
 } from "lucide-react";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
@@ -46,23 +50,27 @@ const Index = () => {
   };
 
   const handleLeadClick = (lead: Lead) => {
-    // Adicionar atividade de visualização antes de abrir o modal
-    const viewActivity = {
-      id: Date.now().toString(),
-      tipo: 'observacao' as const,
-      descricao: `Lead Visualizado Por: ${lead.corretor} às ${new Date().toLocaleString('pt-BR')}`,
-      data: new Date(),
-      corretor: lead.corretor
-    };
+    if (isMobile) {
+      // No mobile, navegar para a tela de detalhes
+      navigate(`/lead/${lead.id}`);
+    } else {
+      // No desktop, abrir modal
+      const viewActivity = {
+        id: Date.now().toString(),
+        tipo: 'observacao' as const,
+        descricao: `Lead Visualizado Por: ${lead.corretor} às ${new Date().toLocaleString('pt-BR')}`,
+        data: new Date(),
+        corretor: lead.corretor
+      };
 
-    // Atualizar o lead com a nova atividade
-    const updatedLead = {
-      ...lead,
-      atividades: [...lead.atividades, viewActivity]
-    };
+      const updatedLead = {
+        ...lead,
+        atividades: [...lead.atividades, viewActivity]
+      };
 
-    setSelectedLead(updatedLead);
-    setIsModalOpen(true);
+      setSelectedLead(updatedLead);
+      setIsModalOpen(true);
+    }
   };
 
   const handleCreateLead = (leadData: Partial<Lead>) => {
@@ -174,26 +182,28 @@ const Index = () => {
             </Button>
           )}
           
-          <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-            <Button
-              variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('kanban')}
-              className="px-3"
-            >
-              <LayoutGrid className="w-4 h-4 mr-2" />
-              Padrão
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="px-3"
-            >
-              <LayoutList className="w-4 h-4 mr-2" />
-              Lista
-            </Button>
-          </div>
+          {!isMobile && (
+            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+              <Button
+                variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('kanban')}
+                className="px-3"
+              >
+                <LayoutGrid className="w-4 h-4 mr-2" />
+                Padrão
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="px-3"
+              >
+                <LayoutList className="w-4 h-4 mr-2" />
+                Lista
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -225,21 +235,21 @@ const Index = () => {
 
       {/* Content */}
       <div className="min-h-[600px] transition-all duration-300 ease-in-out">
-        {viewMode === 'kanban' ? (
+        {isMobile || viewMode === 'list' ? (
+          <div className="animate-fade-in">
+            <ListView
+              leads={filteredLeads}
+              onLeadClick={handleLeadClick}
+              onLeadUpdate={handleLeadUpdate}
+            />
+          </div>
+        ) : (
           <div className="animate-fade-in">
             <KanbanBoard
               leads={filteredLeads}
               onLeadUpdate={handleLeadUpdate}
               onLeadClick={handleLeadClick}
               onCreateLead={handleCreateLeadInStage}
-            />
-          </div>
-        ) : (
-          <div className="animate-fade-in">
-            <ListView
-              leads={filteredLeads}
-              onLeadClick={handleLeadClick}
-              onLeadUpdate={handleLeadUpdate}
             />
           </div>
         )}
