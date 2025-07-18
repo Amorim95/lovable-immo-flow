@@ -86,24 +86,36 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
   const handleTransferLead = async (newUserId: string, newUserName: string) => {
     if (!selectedLeadForTransfer) return;
 
+    console.log('ListView - Iniciando transferência:', { 
+      leadId: selectedLeadForTransfer.id, 
+      currentCorretor: selectedLeadForTransfer.corretor, 
+      newUserId, 
+      newUserName 
+    });
+
     try {
       // Atualizar o lead no banco de dados
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('leads')
         .update({ user_id: newUserId })
-        .eq('id', selectedLeadForTransfer.id);
+        .eq('id', selectedLeadForTransfer.id)
+        .select();
+
+      console.log('ListView - Resultado da atualização:', { data, error });
 
       if (error) throw error;
 
       // Atualizar o lead localmente
       onLeadUpdate(selectedLeadForTransfer.id, { corretor: newUserName });
 
+      console.log('ListView - Lead atualizado localmente');
+
       toast({
         title: "Transferência realizada",
         description: `Lead transferido com sucesso para ${newUserName}`,
       });
     } catch (error) {
-      console.error('Erro ao transferir lead:', error);
+      console.error('ListView - Erro completo:', error);
       toast({
         title: "Erro",
         description: "Não foi possível transferir o lead. Tente novamente.",

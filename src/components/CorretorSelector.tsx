@@ -70,6 +70,7 @@ export function CorretorSelector({ isOpen, onClose, onSelect, currentCorretorNam
   );
 
   const handleSelect = (usuario: Usuario) => {
+    console.log('Selecionando usuário para transferência:', usuario);
     onSelect(usuario.id, usuario.name);
     onClose();
     setSearchTerm("");

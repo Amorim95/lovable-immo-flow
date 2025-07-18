@@ -118,12 +118,22 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const handleTransferLead = async (newUserId: string, newUserName: string) => {
     if (!lead) return;
 
+    console.log('Iniciando transferência do lead:', { 
+      leadId: lead.id, 
+      currentCorretor: lead.corretor, 
+      newUserId, 
+      newUserName 
+    });
+
     try {
       // Atualizar o lead no banco de dados
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('leads')
         .update({ user_id: newUserId })
-        .eq('id', lead.id);
+        .eq('id', lead.id)
+        .select();
+
+      console.log('Resultado da atualização no banco:', { data, error });
 
       if (error) throw error;
 
@@ -142,12 +152,14 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
         atividades: [...lead.atividades, transferActivity]
       });
 
+      console.log('Lead atualizado localmente com sucesso');
+
       toast({
         title: "Transferência realizada",
         description: `Lead transferido com sucesso para ${newUserName}`,
       });
     } catch (error) {
-      console.error('Erro ao transferir lead:', error);
+      console.error('Erro completo ao transferir lead:', error);
       toast({
         title: "Erro",
         description: "Não foi possível transferir o lead. Tente novamente.",

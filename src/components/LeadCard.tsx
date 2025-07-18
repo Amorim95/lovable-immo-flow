@@ -68,24 +68,36 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
   };
 
   const handleTransferLead = async (newUserId: string, newUserName: string) => {
+    console.log('LeadCard - Iniciando transferência:', { 
+      leadId: lead.id, 
+      currentCorretor: lead.corretor, 
+      newUserId, 
+      newUserName 
+    });
+
     try {
       // Atualizar o lead no banco de dados
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('leads')
         .update({ user_id: newUserId })
-        .eq('id', lead.id);
+        .eq('id', lead.id)
+        .select();
+
+      console.log('LeadCard - Resultado da atualização:', { data, error });
 
       if (error) throw error;
 
       // Atualizar o lead localmente
       onUpdate({ corretor: newUserName });
 
+      console.log('LeadCard - Lead atualizado localmente');
+
       toast({
         title: "Transferência realizada",
         description: `Lead transferido com sucesso para ${newUserName}`,
       });
     } catch (error) {
-      console.error('Erro ao transferir lead:', error);
+      console.error('LeadCard - Erro completo:', error);
       toast({
         title: "Erro",
         description: "Não foi possível transferir o lead. Tente novamente.",
