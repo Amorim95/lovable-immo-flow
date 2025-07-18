@@ -100,7 +100,7 @@ const Index = () => {
     anuncio: 'Não especificado',
     dataCriacao: new Date(lead.created_at),
     etapa: lead.etapa as Lead['etapa'],
-    etiquetas: lead.lead_tag_relations?.map(rel => rel.lead_tags.nome as Lead['etiquetas'][0]) || [],
+    etiquetas: lead.lead_tag_relations?.map(rel => rel.lead_tags?.nome as Lead['etiquetas'][0]).filter(Boolean) || [],
     corretor: lead.user?.name || 'Não atribuído',
     atividades: [],
     status: 'ativo'
