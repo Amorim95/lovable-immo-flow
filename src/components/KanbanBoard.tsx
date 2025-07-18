@@ -48,8 +48,9 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead }: 
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
 
   const handleDragStart = (e: React.DragEvent, lead: Lead) => {
-    setDraggedLead(lead);
+    e.dataTransfer.setData('application/json', JSON.stringify(lead));
     e.dataTransfer.effectAllowed = 'move';
+    setDraggedLead(lead);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -59,9 +60,16 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead }: 
 
   const handleDrop = (e: React.DragEvent, targetStage: LeadStage) => {
     e.preventDefault();
-    if (draggedLead && draggedLead.etapa !== targetStage) {
-      onLeadUpdate(draggedLead.id, { etapa: targetStage });
+    
+    try {
+      const leadData = JSON.parse(e.dataTransfer.getData('application/json'));
+      if (leadData && leadData.etapa !== targetStage) {
+        onLeadUpdate(leadData.id, { etapa: targetStage });
+      }
+    } catch (error) {
+      console.error('Erro no drag and drop:', error);
     }
+    
     setDraggedLead(null);
   };
 

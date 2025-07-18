@@ -48,19 +48,23 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
   return (
     <div className="space-y-2">
       {/* Etiquetas selecionadas */}
-      {selectedTags.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {selectedTags.map((tag) => (
+      <div className="flex flex-wrap gap-1 min-h-[32px] p-2 border rounded-md bg-gray-50">
+        {selectedTags.length > 0 ? (
+          selectedTags.map((tag) => (
             <Badge
               key={tag}
               variant="secondary"
-              className={`text-xs ${availableTags[tag].color}`}
+              className={`text-xs ${availableTags[tag].color} cursor-pointer hover:opacity-80`}
+              onClick={() => handleTagToggle(tag)}
             >
               {availableTags[tag].label}
+              <span className="ml-1 text-xs">✕</span>
             </Badge>
-          ))}
-        </div>
-      )}
+          ))
+        ) : (
+          <span className="text-gray-400 text-sm">Nenhuma etiqueta selecionada</span>
+        )}
+      </div>
 
       {/* Botão para editar etiquetas */}
       <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -68,10 +72,10 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
           <Button
             variant="outline"
             size={isCompact ? "sm" : "default"}
-            className={isCompact ? "h-7 px-2 text-xs" : ""}
+            className={isCompact ? "h-7 px-2 text-xs" : "w-full"}
           >
             <Tag className={`${isCompact ? "w-3 h-3" : "w-4 h-4"} mr-1`} />
-            {isCompact ? "Tags" : "Gerenciar Etiquetas"}
+            {isCompact ? "Tags" : "Adicionar/Remover Etiquetas"}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-72 p-4" align="start">
@@ -87,7 +91,8 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
                   />
                   <label
                     htmlFor={tag}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer flex-1"
+                    className="text-sm font-medium leading-none cursor-pointer flex-1"
+                    onClick={() => handleTagToggle(tag as LeadTag)}
                   >
                     <Badge
                       variant="secondary"
@@ -105,7 +110,7 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
                 onClick={() => setIsOpen(false)}
                 className="w-full"
               >
-                Confirmar
+                Fechar
               </Button>
             </div>
           </div>

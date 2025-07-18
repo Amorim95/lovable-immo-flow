@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Lead, LeadTag, Atividade } from "@/types/crm";
 import {
   Dialog,
@@ -36,28 +36,36 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const [newActivity, setNewActivity] = useState("");
   const [hasLoggedView, setHasLoggedView] = useState(false);
 
+  // Reset estados quando modal abre/fecha
+  useEffect(() => {
+    if (isOpen && lead) {
+      setEditMode(false);
+      setFormData({});
+      setNewActivity("");
+    } else {
+      setHasLoggedView(false);
+    }
+  }, [isOpen, lead?.id]);
+
+  // Log visualização apenas uma vez quando modal abrir
+  useEffect(() => {
+    if (isOpen && lead && !hasLoggedView) {
+      const activity: Atividade = {
+        id: Date.now().toString(),
+        tipo: 'observacao',
+        descricao: `Lead Visualizado Por: ${lead.corretor} às ${new Date().toLocaleString('pt-BR')}`,
+        data: new Date(),
+        corretor: lead.corretor
+      };
+
+      onUpdate(lead.id, {
+        atividades: [...lead.atividades, activity]
+      });
+      setHasLoggedView(true);
+    }
+  }, [isOpen, lead?.id, hasLoggedView]);
+
   if (!lead) return null;
-
-  // Log visualização do lead (apenas uma vez por abertura do modal)
-  if (isOpen && !hasLoggedView) {
-    const activity: Atividade = {
-      id: Date.now().toString(),
-      tipo: 'observacao',
-      descricao: `Lead Visualizado Por: ${lead.corretor} às ${new Date().toLocaleString('pt-BR')}`,
-      data: new Date(),
-      corretor: lead.corretor
-    };
-
-    onUpdate(lead.id, {
-      atividades: [...lead.atividades, activity]
-    });
-    setHasLoggedView(true);
-  }
-
-  // Reset flag quando modal fechar
-  if (!isOpen && hasLoggedView) {
-    setHasLoggedView(false);
-  }
 
   const handleSave = () => {
     onUpdate(lead.id, formData);
