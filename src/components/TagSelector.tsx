@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { LeadTag } from "@/types/crm";
+import { useAvailableTags } from "@/hooks/useAvailableTags";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,23 +18,26 @@ interface TagSelectorProps {
   variant?: 'default' | 'compact';
 }
 
-const availableTags: Record<LeadTag, { label: string; color: string }> = {
-  'tentando-financiamento': {
-    label: 'Tentando Financiamento',
-    color: 'bg-blue-100 text-blue-800 border-blue-200'
-  },
-  'parou-responder': {
-    label: 'Parou de Responder',
-    color: 'bg-red-100 text-red-800 border-red-200'
-  },
-  'cpf-restricao': {
-    label: 'CPF Restrição',
-    color: 'bg-orange-100 text-orange-800 border-orange-200'
+// Mapeamento de cores padrão para compatibilidade
+const getTagColor = (nome: string, dbColor?: string) => {
+  if (dbColor) {
+    // Se temos cor do banco, usar ela (assumindo formato hex)
+    return `border-2 text-white`;
   }
+  
+  // Fallback para cores hardcoded
+  const colorMap: Record<string, string> = {
+    'tentando-financiamento': 'bg-blue-100 text-blue-800 border-blue-200',
+    'parou-responder': 'bg-red-100 text-red-800 border-red-200',
+    'cpf-restricao': 'bg-orange-100 text-orange-800 border-orange-200'
+  };
+  
+  return colorMap[nome] || 'bg-gray-100 text-gray-800 border-gray-200';
 };
 
 export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }: TagSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const { tags: availableTags, loading } = useAvailableTags();
 
   const handleTagToggle = (tag: LeadTag) => {
     const newTags = selectedTags.includes(tag)
@@ -45,6 +49,15 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
 
   const isCompact = variant === 'compact';
 
+  const getTagDisplayName = (tagName: string) => {
+    const displayNames: Record<string, string> = {
+      'tentando-financiamento': 'Tentando Financiamento',
+      'parou-responder': 'Parou de Responder',
+      'cpf-restricao': 'CPF Restrição'
+    };
+    return displayNames[tagName] || tagName;
+  };
+
   return (
     <div className="space-y-2">
       {/* Etiquetas selecionadas */}
@@ -54,10 +67,10 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
             <Badge
               key={tag}
               variant="secondary"
-              className={`text-xs ${availableTags[tag].color} cursor-pointer hover:opacity-80`}
+              className={`text-xs ${getTagColor(tag)} cursor-pointer hover:opacity-80`}
               onClick={() => handleTagToggle(tag)}
             >
-              {availableTags[tag].label}
+              {getTagDisplayName(tag)}
               <span className="ml-1 text-xs">✕</span>
             </Badge>
           ))
@@ -73,6 +86,7 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
             variant="outline"
             size={isCompact ? "sm" : "default"}
             className={isCompact ? "h-7 px-2 text-xs" : "w-full"}
+            disabled={loading}
           >
             <Tag className={`${isCompact ? "w-3 h-3" : "w-4 h-4"} mr-1`} />
             {isCompact ? "Tags" : "Adicionar/Remover Etiquetas"}
@@ -82,27 +96,32 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
           <div className="space-y-3">
             <h4 className="font-medium text-sm">Selecionar Etiquetas</h4>
             <div className="space-y-2">
-              {Object.entries(availableTags).map(([tag, config]) => (
-                <div key={tag} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={tag}
-                    checked={selectedTags.includes(tag as LeadTag)}
-                    onCheckedChange={() => handleTagToggle(tag as LeadTag)}
-                  />
-                  <label
-                    htmlFor={tag}
-                    className="text-sm font-medium leading-none cursor-pointer flex-1"
-                    onClick={() => handleTagToggle(tag as LeadTag)}
-                  >
-                    <Badge
-                      variant="secondary"
-                      className={`text-xs ${config.color}`}
+              {loading ? (
+                <div className="text-sm text-gray-500">Carregando tags...</div>
+              ) : (
+                availableTags.map((tag) => (
+                  <div key={tag.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={tag.nome}
+                      checked={selectedTags.includes(tag.nome as LeadTag)}
+                      onCheckedChange={() => handleTagToggle(tag.nome as LeadTag)}
+                    />
+                    <label
+                      htmlFor={tag.nome}
+                      className="text-sm font-medium leading-none cursor-pointer flex-1"
+                      onClick={() => handleTagToggle(tag.nome as LeadTag)}
                     >
-                      {config.label}
-                    </Badge>
-                  </label>
-                </div>
-              ))}
+                      <Badge
+                        variant="secondary"
+                        className={`text-xs ${getTagColor(tag.nome, tag.cor)}`}
+                        style={{ backgroundColor: tag.cor }}
+                      >
+                        {getTagDisplayName(tag.nome)}
+                      </Badge>
+                    </label>
+                  </div>
+                ))
+              )}
             </div>
             <div className="pt-2 border-t">
               <Button
