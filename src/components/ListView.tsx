@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Lead, LeadTag } from "@/types/crm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,11 @@ import {
 } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TagSelector } from "@/components/TagSelector";
-import { Phone } from "lucide-react";
+import { CorretorSelector } from "@/components/CorretorSelector";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Phone, ArrowRightLeft } from "lucide-react";
 
 interface ListViewProps {
   leads: Lead[];
@@ -39,6 +44,14 @@ const stageColors = {
 };
 
 export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
+  const [selectedLeadForTransfer, setSelectedLeadForTransfer] = useState<Lead | null>(null);
+  const [isCorretorSelectorOpen, setIsCorretorSelectorOpen] = useState(false);
+  const { toast } = useToast();
+  const { isAdmin, isGestor } = useUserRole();
+
+  // Pode transferir lead se for admin ou gestor
+  const canTransferLead = isAdmin || isGestor;
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -68,6 +81,46 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
 
   const handleStageChange = (leadId: string, newStage: Lead['etapa']) => {
     onLeadUpdate(leadId, { etapa: newStage });
+  };
+
+  const handleTransferLead = async (newUserId: string, newUserName: string) => {
+    if (!selectedLeadForTransfer) return;
+
+    try {
+      // Atualizar o lead no banco de dados
+      const { error } = await supabase
+        .from('leads')
+        .update({ user_id: newUserId })
+        .eq('id', selectedLeadForTransfer.id);
+
+      if (error) throw error;
+
+      // Atualizar o lead localmente
+      onLeadUpdate(selectedLeadForTransfer.id, { corretor: newUserName });
+
+      toast({
+        title: "Transferência realizada",
+        description: `Lead transferido com sucesso para ${newUserName}`,
+      });
+    } catch (error) {
+      console.error('Erro ao transferir lead:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível transferir o lead. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setSelectedLeadForTransfer(null);
+      setIsCorretorSelectorOpen(false);
+    }
+  };
+
+  const handleCorretorClick = (lead: Lead, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (canTransferLead) {
+      setSelectedLeadForTransfer(lead);
+      setIsCorretorSelectorOpen(true);
+    }
   };
 
   return (
@@ -134,7 +187,20 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
                   variant="compact"
                 />
               </TableCell>
-              <TableCell>{lead.corretor}</TableCell>
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <span 
+                    className={canTransferLead ? "cursor-pointer hover:text-blue-600 hover:underline" : ""}
+                    onClick={(e) => handleCorretorClick(lead, e)}
+                    title={canTransferLead ? "Clique para transferir o lead" : ""}
+                  >
+                    {lead.corretor}
+                  </span>
+                  {canTransferLead && (
+                    <ArrowRightLeft className="w-3 h-3 text-gray-400" />
+                  )}
+                </div>
+              </TableCell>
               <TableCell>{formatDate(lead.dataCriacao)}</TableCell>
               <TableCell>
                 <Button
@@ -149,6 +215,17 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
           ))}
         </TableBody>
       </Table>
+
+      {/* Modal de Seleção de Corretor */}
+      <CorretorSelector
+        isOpen={isCorretorSelectorOpen}
+        onClose={() => {
+          setIsCorretorSelectorOpen(false);
+          setSelectedLeadForTransfer(null);
+        }}
+        onSelect={handleTransferLead}
+        currentCorretorName={selectedLeadForTransfer?.corretor}
+      />
     </div>
   );
 }
