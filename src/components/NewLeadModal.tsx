@@ -19,9 +19,10 @@ interface NewLeadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateLead: (leadData: Partial<Lead>) => void;
+  initialStage?: Lead['etapa']; // Nova prop para definir a etapa inicial
 }
 
-export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProps) {
+export function NewLeadModal({ isOpen, onClose, onCreateLead, initialStage = 'aguardando-atendimento' }: NewLeadModalProps) {
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -55,7 +56,7 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead }: NewLeadModalProp
           nome: formData.nome,
           telefone: formData.telefone,
           dados_adicionais: formData.dadosAdicionais || null,
-          etapa: 'aguardando-atendimento'
+          etapa: initialStage // Usar a etapa definida pela prop
           // user_id será definido automaticamente pelo trigger
         })
         .select('*')

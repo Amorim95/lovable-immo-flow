@@ -41,9 +41,10 @@ interface KanbanBoardProps {
   leads: Lead[];
   onLeadUpdate: (leadId: string, updates: Partial<Lead>) => void;
   onLeadClick: (lead: Lead) => void;
+  onCreateLead?: (stage: LeadStage) => void; // Nova prop para criar lead em etapa específica
 }
 
-export function KanbanBoard({ leads, onLeadUpdate, onLeadClick }: KanbanBoardProps) {
+export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead }: KanbanBoardProps) {
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
 
   const handleDragStart = (e: React.DragEvent, lead: Lead) => {
@@ -88,7 +89,13 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick }: KanbanBoardPro
                   {stageLeads.length}
                 </span>
               </div>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 w-8 p-0"
+                onClick={() => onCreateLead?.(stage as LeadStage)}
+                title={`Adicionar lead em ${config.title}`}
+              >
                 <Plus className="w-4 h-4" />
               </Button>
             </div>

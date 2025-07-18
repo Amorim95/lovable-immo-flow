@@ -23,6 +23,7 @@ const Index = () => {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
+  const [newLeadStage, setNewLeadStage] = useState<Lead['etapa']>('aguardando-atendimento'); // Estado para controlar a etapa do novo lead
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
@@ -41,6 +42,11 @@ const Index = () => {
 
   const handleCreateLead = (leadData: Partial<Lead>) => {
     refreshLeads();
+  };
+
+  const handleCreateLeadInStage = (stage: Lead['etapa']) => {
+    setNewLeadStage(stage);
+    setIsNewLeadModalOpen(true);
   };
 
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
@@ -126,7 +132,10 @@ const Index = () => {
           {canCreateLeads && (
             <Button 
               className="bg-primary hover:bg-primary/90"
-              onClick={() => setIsNewLeadModalOpen(true)}
+              onClick={() => {
+                setNewLeadStage('aguardando-atendimento');
+                setIsNewLeadModalOpen(true);
+              }}
             >
               <Plus className="w-4 h-4 mr-2" />
               Novo Lead
@@ -182,6 +191,7 @@ const Index = () => {
             leads={filteredLeads}
             onLeadUpdate={handleLeadUpdate}
             onLeadClick={handleLeadClick}
+            onCreateLead={handleCreateLeadInStage}
           />
         ) : (
           <ListView
@@ -206,8 +216,12 @@ const Index = () => {
       {canCreateLeads && (
         <NewLeadModal
           isOpen={isNewLeadModalOpen}
-          onClose={() => setIsNewLeadModalOpen(false)}
+          onClose={() => {
+            setIsNewLeadModalOpen(false);
+            setNewLeadStage('aguardando-atendimento'); // Reset para padrão
+          }}
           onCreateLead={handleCreateLead}
+          initialStage={newLeadStage}
         />
       )}
     </div>
