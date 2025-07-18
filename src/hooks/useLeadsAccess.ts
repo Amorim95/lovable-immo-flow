@@ -17,6 +17,13 @@ interface LeadsData {
     name: string;
     equipe_id?: string;
   };
+  lead_tag_relations?: {
+    lead_tags: {
+      id: string;
+      nome: string;
+      cor: string;
+    };
+  }[];
 }
 
 export function useLeadsAccess() {
@@ -49,7 +56,14 @@ export function useLeadsAccess() {
           created_at,
           updated_at,
           user_id,
-          user:users(name, equipe_id)
+          user:users(name, equipe_id),
+          lead_tag_relations(
+            lead_tags(
+              id,
+              nome,
+              cor
+            )
+          )
         `)
         .order('created_at', { ascending: false });
 

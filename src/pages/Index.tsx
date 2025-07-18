@@ -33,6 +33,8 @@ const Index = () => {
 
   const handleLeadUpdate = async (leadId: string, updates: Partial<Lead>) => {
     try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
       // Preparar dados para o Supabase (mapear campos da interface para o banco)
       const supabaseUpdates: any = {};
       
@@ -43,7 +45,6 @@ const Index = () => {
       
       // Atualizar no banco se há mudanças nos campos persistidos
       if (Object.keys(supabaseUpdates).length > 0) {
-        const { supabase } = await import('@/integrations/supabase/client');
         const { error } = await supabase
           .from('leads')
           .update(supabaseUpdates)
@@ -55,7 +56,47 @@ const Index = () => {
         }
       }
       
-      // Atualizar o lead local se estiver selecionado (para etiquetas e atividades)
+      // Gerenciar tags se elas foram atualizadas
+      if (updates.etiquetas !== undefined) {
+        // Primeiro, deletar todas as tags existentes do lead
+        await supabase
+          .from('lead_tag_relations')
+          .delete()
+          .eq('lead_id', leadId);
+          
+        // Se há novas tags, inserir elas
+        if (updates.etiquetas.length > 0) {
+          // Buscar os IDs das tags pelo nome
+          const { data: tagIds, error: tagError } = await supabase
+            .from('lead_tags')
+            .select('id, nome')
+            .in('nome', updates.etiquetas);
+            
+          if (tagError) {
+            console.error('Erro ao buscar tags:', tagError);
+            return;
+          }
+          
+          // Criar as relações
+          const relations = tagIds?.map(tag => ({
+            lead_id: leadId,
+            tag_id: tag.id
+          })) || [];
+          
+          if (relations.length > 0) {
+            const { error: relationError } = await supabase
+              .from('lead_tag_relations')
+              .insert(relations);
+              
+            if (relationError) {
+              console.error('Erro ao inserir relações de tags:', relationError);
+              return;
+            }
+          }
+        }
+      }
+      
+      // Atualizar o lead local se estiver selecionado (para atividades)
       if (selectedLead && selectedLead.id === leadId) {
         setSelectedLead({
           ...selectedLead,
@@ -117,7 +158,7 @@ const Index = () => {
     anuncio: 'Não especificado',
     dataCriacao: new Date(lead.created_at),
     etapa: lead.etapa as Lead['etapa'],
-    etiquetas: [],
+    etiquetas: lead.lead_tag_relations?.map(rel => rel.lead_tags.nome as Lead['etiquetas'][0]) || [],
     corretor: lead.user?.name || 'Não atribuído',
     atividades: [],
     status: 'ativo'

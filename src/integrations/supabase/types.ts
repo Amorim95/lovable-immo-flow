@@ -187,6 +187,66 @@ export type Database = {
           },
         ]
       }
+      lead_tag_relations: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_tag_relations_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_tag_relations_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "lead_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_tags: {
+        Row: {
+          cor: string | null
+          created_at: string
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          cor?: string | null
+          created_at?: string
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          cor?: string | null
+          created_at?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           created_at: string
