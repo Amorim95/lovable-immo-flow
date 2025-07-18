@@ -38,6 +38,8 @@ export function EditTeamModal({
     responsavelId: '',
     corretoresSelecionados: [] as string[]
   });
+  const [searchResponsavel, setSearchResponsavel] = useState('');
+  const [searchCorretores, setSearchCorretores] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -137,6 +139,16 @@ export function EditTeamModal({
     corretor.status === 'ativo'
   );
 
+  const responsaveisFiltrados = corretoresDisponiveis.filter(corretor =>
+    corretor.nome.toLowerCase().includes(searchResponsavel.toLowerCase()) ||
+    corretor.email.toLowerCase().includes(searchResponsavel.toLowerCase())
+  );
+
+  const corretoresFiltrados = corretoresDisponiveis.filter(corretor =>
+    corretor.nome.toLowerCase().includes(searchCorretores.toLowerCase()) ||
+    corretor.email.toLowerCase().includes(searchCorretores.toLowerCase())
+  );
+
   if (!equipe) return null;
 
   return (
@@ -163,48 +175,72 @@ export function EditTeamModal({
 
           <div>
             <Label htmlFor="responsavel">Responsável pela Equipe *</Label>
-            <Select value={formData.responsavelId} onValueChange={(value) => setFormData({ ...formData, responsavelId: value })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione o responsável" />
-              </SelectTrigger>
-              <SelectContent className="max-h-60">
-                {corretoresDisponiveis.map((corretor) => (
-                  <SelectItem key={corretor.id} value={corretor.id}>
-                    <div className="flex flex-col text-left">
-                      <span className="font-medium">{corretor.nome}</span>
-                      <span className="text-sm text-muted-foreground">{corretor.email}</span>
-                      <span className="text-xs text-muted-foreground capitalize">{corretor.role}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Input
+                placeholder="Buscar responsável..."
+                value={searchResponsavel}
+                onChange={(e) => setSearchResponsavel(e.target.value)}
+                className="w-full"
+              />
+              <Select value={formData.responsavelId} onValueChange={(value) => setFormData({ ...formData, responsavelId: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o responsável" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {responsaveisFiltrados.map((corretor) => (
+                    <SelectItem key={corretor.id} value={corretor.id}>
+                      <div className="flex flex-col text-left">
+                        <span className="font-medium">{corretor.nome}</span>
+                        <span className="text-sm text-muted-foreground">{corretor.email}</span>
+                        <span className="text-xs text-muted-foreground capitalize">{corretor.role}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div>
             <Label>Corretores da Equipe</Label>
-            <div className="space-y-3 mt-2 max-h-60 overflow-y-auto border rounded-md p-3 bg-gray-50">
-              {corretoresDisponiveis.map((corretor) => (
-                <div key={corretor.id} className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
-                  <Checkbox
-                    id={corretor.id}
-                    checked={formData.corretoresSelecionados.includes(corretor.id)}
-                    onCheckedChange={(checked) =>
-                      handleCorretorChange(corretor.id, checked as boolean)
-                    }
-                  />
-                  <label
-                    htmlFor={corretor.id}
-                    className="flex-1 cursor-pointer"
-                  >
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">{corretor.nome}</span>
-                      <span className="text-xs text-gray-500">{corretor.email}</span>
-                      <span className="text-xs text-gray-400 capitalize">{corretor.role}</span>
-                    </div>
-                  </label>
-                </div>
-              ))}
+            <div className="space-y-3 mt-2">
+              <Input
+                placeholder="Buscar corretores..."
+                value={searchCorretores}
+                onChange={(e) => setSearchCorretores(e.target.value)}
+                className="w-full"
+              />
+              <div className="max-h-60 overflow-y-auto border rounded-md p-3 bg-gray-50">
+                {corretoresFiltrados.length > 0 ? (
+                  <div className="space-y-3">
+                    {corretoresFiltrados.map((corretor) => (
+                      <div key={corretor.id} className="flex items-center space-x-3 p-2 hover:bg-white rounded-md transition-colors">
+                        <Checkbox
+                          id={corretor.id}
+                          checked={formData.corretoresSelecionados.includes(corretor.id)}
+                          onCheckedChange={(checked) =>
+                            handleCorretorChange(corretor.id, checked as boolean)
+                          }
+                        />
+                        <label
+                          htmlFor={corretor.id}
+                          className="flex-1 cursor-pointer"
+                        >
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">{corretor.nome}</span>
+                            <span className="text-xs text-gray-500">{corretor.email}</span>
+                            <span className="text-xs text-gray-400 capitalize">{corretor.role}</span>
+                          </div>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    <p className="text-sm">Nenhum corretor encontrado</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
