@@ -36,7 +36,22 @@ const Index = () => {
   };
 
   const handleLeadClick = (lead: Lead) => {
-    setSelectedLead(lead);
+    // Adicionar atividade de visualização antes de abrir o modal
+    const viewActivity = {
+      id: Date.now().toString(),
+      tipo: 'observacao' as const,
+      descricao: `Lead Visualizado Por: ${lead.corretor} às ${new Date().toLocaleString('pt-BR')}`,
+      data: new Date(),
+      corretor: lead.corretor
+    };
+
+    // Atualizar o lead com a nova atividade
+    const updatedLead = {
+      ...lead,
+      atividades: [...lead.atividades, viewActivity]
+    };
+
+    setSelectedLead(updatedLead);
     setIsModalOpen(true);
   };
 

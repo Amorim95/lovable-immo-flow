@@ -34,36 +34,14 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Partial<Lead>>({});
   const [newActivity, setNewActivity] = useState("");
-  const [hasLoggedView, setHasLoggedView] = useState(false);
-
   // Reset estados quando modal abre/fecha
   useEffect(() => {
     if (isOpen && lead) {
       setEditMode(false);
       setFormData({});
       setNewActivity("");
-    } else {
-      setHasLoggedView(false);
     }
   }, [isOpen, lead?.id]);
-
-  // Log visualização apenas uma vez quando modal abrir
-  useEffect(() => {
-    if (isOpen && lead && !hasLoggedView) {
-      const activity: Atividade = {
-        id: Date.now().toString(),
-        tipo: 'observacao',
-        descricao: `Lead Visualizado Por: ${lead.corretor} às ${new Date().toLocaleString('pt-BR')}`,
-        data: new Date(),
-        corretor: lead.corretor
-      };
-
-      onUpdate(lead.id, {
-        atividades: [...lead.atividades, activity]
-      });
-      setHasLoggedView(true);
-    }
-  }, [isOpen, lead?.id, hasLoggedView]);
 
   if (!lead) return null;
 
