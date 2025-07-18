@@ -5,6 +5,7 @@ import { KanbanBoard } from "@/components/KanbanBoard";
 import { ListView } from "@/components/ListView";
 import { LeadModal } from "@/components/LeadModal";
 import { NewLeadModal } from "@/components/NewLeadModal";
+import { TeamUserFilters } from "@/components/TeamUserFilters";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,8 @@ const Index = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   // Permitir criação de leads para todos os usuários autenticados
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
@@ -106,7 +109,19 @@ const Index = () => {
       lead.dataCriacao >= dateRange.from && lead.dataCriacao <= dateRange.to
     );
 
-    return matchesSearch && matchesDate;
+    // Filtros por equipe e usuário (apenas para admin e gestor)
+    let matchesTeamUser = true;
+    if ((isAdmin || isGestor) && (selectedTeamId || selectedUserId)) {
+      const originalLead = leads.find(l => l.id === lead.id);
+      
+      if (selectedUserId) {
+        matchesTeamUser = originalLead?.user_id === selectedUserId;
+      } else if (selectedTeamId) {
+        matchesTeamUser = originalLead?.user?.equipe_id === selectedTeamId;
+      }
+    }
+
+    return matchesSearch && matchesDate && matchesTeamUser;
   });
 
   if (loading || roleLoading) {
@@ -190,20 +205,34 @@ const Index = () => {
 
       {/* Filtros */}
       <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Input
-              placeholder="Buscar leads..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64"
-            />
-            <DateFilter
-              value={dateFilter}
-              customRange={customDateRange}
-              onValueChange={handleDateFilterChange}
-            />
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Input
+                placeholder="Buscar leads..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-64"
+              />
+              <DateFilter
+                value={dateFilter}
+                customRange={customDateRange}
+                onValueChange={handleDateFilterChange}
+              />
+            </div>
           </div>
+          
+          {/* Filtros de Equipe e Usuário - Apenas para Admin e Gestor */}
+          {(isAdmin || isGestor) && (
+            <div className="border-t pt-4">
+              <TeamUserFilters
+                onTeamChange={setSelectedTeamId}
+                onUserChange={setSelectedUserId}
+                selectedTeamId={selectedTeamId}
+                selectedUserId={selectedUserId}
+              />
+            </div>
+          )}
         </div>
       </div>
 
