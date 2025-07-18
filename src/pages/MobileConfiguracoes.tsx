@@ -4,10 +4,9 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { 
-  Shield, 
+  Building2, 
   LogOut, 
   Users, 
-  Settings,
   ChevronRight,
   User
 } from "lucide-react";
@@ -28,17 +27,17 @@ export default function MobileConfiguracoes() {
     {
       id: 'profile',
       title: 'Informações Pessoais',
-      description: 'Gerencie suas informações de perfil',
+      description: 'Gerencie suas informações de perfil e senha',
       icon: User,
-      action: () => {/* Navigate to profile */},
+      action: () => navigate('/profile'),
       show: true
     },
     {
-      id: 'security',
-      title: 'Acessos e Segurança',
-      description: 'Configurações de segurança e permissões',
-      icon: Shield,
-      action: () => {/* Navigate to security */},
+      id: 'company',
+      title: 'Dados da Empresa',
+      description: 'Informações e configurações da empresa',
+      icon: Building2,
+      action: () => {/* Navigate to company settings */},
       show: canManageUsers
     },
     {
@@ -48,14 +47,6 @@ export default function MobileConfiguracoes() {
       icon: Users,
       action: () => navigate('/corretores'),
       show: canManageUsers
-    },
-    {
-      id: 'general',
-      title: 'Configurações Gerais',
-      description: 'Configurações da empresa e sistema',
-      icon: Settings,
-      action: () => {/* Navigate to general settings */},
-      show: isAdmin
     }
   ];
 

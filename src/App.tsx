@@ -16,6 +16,8 @@ import LeadDetails from "./pages/LeadDetails";
 import MobileDashboards from "./pages/MobileDashboards";
 import MobileCorretores from "./pages/MobileCorretores";
 import MobileConfiguracoes from "./pages/MobileConfiguracoes";
+import MobileProfile from "./pages/MobileProfile";
+import MobileEquipes from "./pages/MobileEquipes";
 import Dashboards from "./pages/Dashboards";
 import PerformancePorCorretor from "./pages/PerformancePorCorretor";
 import PerformanceDaEquipe from "./pages/PerformanceDaEquipe";
@@ -68,7 +70,9 @@ function AppContent() {
                 <Route path="/dashboards/performance-equipe" element={<PerformanceDaEquipe />} />
                 <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
                 <Route path="/corretores" element={<MobileCorretores />} />
+                <Route path="/equipes" element={<MobileEquipes />} />
                 <Route path="/configuracoes" element={<MobileConfiguracoes />} />
+                <Route path="/profile" element={<MobileProfile />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <MobileTabBar />

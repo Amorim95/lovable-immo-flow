@@ -6,9 +6,11 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Phone, MessageCircle } from "lucide-react";
+import { Plus, Search, MessageCircle, Calendar, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { NewLeadModal } from "@/components/NewLeadModal";
+import { DateFilter, DateFilterOption } from "@/components/DateFilter";
+import { UserFilter } from "@/components/UserFilter";
 
 const stageColors = {
   'aguardando-atendimento': 'bg-slate-100 text-slate-800',
@@ -34,6 +36,8 @@ export default function MobileLeads() {
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
 
@@ -114,7 +118,8 @@ export default function MobileLeads() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <MobileHeader
-        title="Gestão de Leads"
+        title=""
+        logoOnly={true}
         rightElement={
           canCreateLeads && (
             <Button
@@ -137,6 +142,32 @@ export default function MobileLeads() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
+          />
+        </div>
+      </div>
+
+      {/* Filtros */}
+      <div className="px-4 pb-4">
+        <div className="bg-white rounded-lg p-4 space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Períodos</span>
+          </div>
+          
+          <DateFilter
+            value={dateFilter}
+            onValueChange={(option, customRange) => setDateFilter(option)}
+            className="w-full"
+          />
+          
+          <div className="flex items-center gap-2 mb-2">
+            <User className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Filtrar por Usuário</span>
+          </div>
+          
+          <UserFilter
+            selectedUserId={selectedUserId}
+            onUserChange={setSelectedUserId}
           />
         </div>
       </div>
@@ -188,14 +219,6 @@ export default function MobileLeads() {
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => handleCall(lead.telefone, e)}
-                    className="p-2"
-                  >
-                    <Phone className="w-4 h-4" />
-                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"

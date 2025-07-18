@@ -7,9 +7,10 @@ interface MobileHeaderProps {
   showBackButton?: boolean;
   onBack?: () => void;
   rightElement?: React.ReactNode;
+  logoOnly?: boolean;
 }
 
-export function MobileHeader({ title, showBackButton, onBack, rightElement }: MobileHeaderProps) {
+export function MobileHeader({ title, showBackButton, onBack, rightElement, logoOnly = false }: MobileHeaderProps) {
   const { settings } = useCompany();
   
   return (
@@ -25,17 +26,29 @@ export function MobileHeader({ title, showBackButton, onBack, rightElement }: Mo
             <ArrowLeft className="w-5 h-5" />
           </Button>
         )}
-        {!showBackButton && settings.logo && (
-          <img 
-            src={settings.logo} 
-            alt={settings.name} 
-            className="h-8 w-auto"
-          />
-        )}
-        {title && (
-          <h1 className="text-lg font-semibold text-gray-900 truncate">
-            {title}
-          </h1>
+        {logoOnly ? (
+          <div className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png" 
+              alt="Logo" 
+              className="h-8 w-auto"
+            />
+          </div>
+        ) : (
+          <>
+            {!showBackButton && settings.logo && (
+              <img 
+                src={settings.logo} 
+                alt={settings.name} 
+                className="h-8 w-auto"
+              />
+            )}
+            {title && (
+              <h1 className="text-lg font-semibold text-gray-900 truncate">
+                {title}
+              </h1>
+            )}
+          </>
         )}
       </div>
       

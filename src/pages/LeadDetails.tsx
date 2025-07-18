@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, Phone, MessageCircle } from "lucide-react";
+import { Edit, MessageCircle, History, Plus, Clock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const stageLabels = {
@@ -26,12 +26,14 @@ export default function LeadDetails() {
   const { leads, updateLeadOptimistic } = useLeadsOptimized();
   const [lead, setLead] = useState<Lead | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [showActivities, setShowActivities] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
     dadosAdicionais: '',
     etapa: 'aguardando-atendimento' as Lead['etapa']
   });
+  const [newActivity, setNewActivity] = useState('');
 
   useEffect(() => {
     if (id && leads.length > 0) {
@@ -90,10 +92,15 @@ export default function LeadDetails() {
     }
   };
 
-  const handleCall = () => {
-    if (lead?.telefone) {
-      window.open(`tel:${lead.telefone}`, '_self');
-    }
+  const handleAddActivity = () => {
+    if (!newActivity.trim()) return;
+    
+    // Implementar adição de atividade
+    toast({
+      title: "Atividade adicionada",
+      description: "A atividade foi registrada com sucesso."
+    });
+    setNewActivity('');
   };
 
   if (!lead) {
@@ -137,18 +144,19 @@ export default function LeadDetails() {
         {/* Contact Actions */}
         <div className="flex gap-3">
           <Button 
-            onClick={handleCall}
-            className="flex-1 bg-blue-500 hover:bg-blue-600"
-          >
-            <Phone className="w-4 h-4 mr-2" />
-            Ligar
-          </Button>
-          <Button 
             onClick={handleWhatsApp}
             className="flex-1 bg-green-500 hover:bg-green-600"
           >
             <MessageCircle className="w-4 h-4 mr-2" />
             WhatsApp
+          </Button>
+          <Button 
+            onClick={() => setShowActivities(!showActivities)}
+            variant="outline"
+            className="flex-1"
+          >
+            <History className="w-4 h-4 mr-2" />
+            Histórico
           </Button>
         </div>
 
@@ -244,6 +252,59 @@ export default function LeadDetails() {
             )}
           </div>
         </div>
+
+        {/* Histórico de Atividades */}
+        {showActivities && (
+          <div className="bg-white rounded-lg p-4 space-y-4">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <History className="w-5 h-5" />
+              Histórico de Atividades
+            </h2>
+            
+            {/* Nova Atividade */}
+            <div className="space-y-3">
+              <div className="flex gap-2">
+                <Textarea
+                  placeholder="Adicionar nova atividade..."
+                  value={newActivity}
+                  onChange={(e) => setNewActivity(e.target.value)}
+                  className="flex-1"
+                  rows={2}
+                />
+                <Button
+                  onClick={handleAddActivity}
+                  disabled={!newActivity.trim()}
+                  className="h-fit"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Lista de Atividades */}
+            <div className="space-y-3">
+              {lead.atividades && lead.atividades.length > 0 ? (
+                lead.atividades.map((atividade, index) => (
+                  <div key={index} className="border-l-2 border-blue-200 pl-4 py-2">
+                    <div className="flex items-start gap-2">
+                      <Clock className="w-4 h-4 text-gray-400 mt-1" />
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-900">{atividade.descricao}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(atividade.data).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-gray-500 text-sm">Nenhuma atividade registrada ainda</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -71,9 +71,9 @@ export function DateFilter({ value, customRange, onValueChange, className }: Dat
   };
 
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex flex-col gap-2", className)}>
       <Select value={value} onValueChange={handleSelectChange}>
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger className="w-full">
           <SelectValue placeholder="Filtrar por data" />
         </SelectTrigger>
         <SelectContent>

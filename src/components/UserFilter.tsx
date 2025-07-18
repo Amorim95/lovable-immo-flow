@@ -71,12 +71,8 @@ export function UserFilter({
 
   return (
     <div className="flex flex-col gap-2">
-      <Label className="text-sm font-medium flex items-center gap-1">
-        <User className="w-4 h-4" />
-        Filtrar por Usuário
-      </Label>
       <Select value={selectedUserId || 'all'} onValueChange={handleUserChange}>
-        <SelectTrigger className="w-48">
+        <SelectTrigger className="w-full">
           <SelectValue placeholder="Todos os usuários" />
         </SelectTrigger>
         <SelectContent className="max-h-60">

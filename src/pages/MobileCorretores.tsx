@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ interface EquipeSimple {
 }
 
 export default function MobileCorretores() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewCorretorModalOpen, setIsNewCorretorModalOpen] = useState(false);
   const [selectedCorretor, setSelectedCorretor] = useState<Corretor | null>(null);
@@ -146,7 +148,7 @@ export default function MobileCorretores() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {/* Navigate to teams */}}
+              onClick={() => navigate('/equipes')}
             >
               <Users className="w-4 h-4" />
             </Button>
