@@ -146,14 +146,67 @@ const EquipesCadastradas = () => {
     }
   };
 
-  const handleUpdateTeam = (equipeId: string, updates: Partial<Equipe>) => {
-    setEquipes(equipes.map(equipe =>
-      equipe.id === equipeId ? { ...equipe, ...updates } : equipe
-    ));
+  const handleUpdateTeam = async (equipeId: string, updates: Partial<Equipe>) => {
+    try {
+      // Atualizar a equipe no banco de dados
+      const { error } = await supabase
+        .from('equipes')
+        .update({
+          nome: updates.nome,
+          responsavel_id: updates.responsavelId,
+          responsavel_nome: updates.responsavelNome
+        })
+        .eq('id', equipeId);
+
+      if (error) {
+        console.error('Error updating team:', error);
+        toast.error('Erro ao atualizar equipe');
+        return;
+      }
+
+      // Atualizar o estado local
+      setEquipes(equipes.map(equipe =>
+        equipe.id === equipeId ? { ...equipe, ...updates } : equipe
+      ));
+
+      // Recarregar os dados para refletir as mudanças
+      loadData();
+    } catch (error) {
+      console.error('Error updating team:', error);
+      toast.error('Erro ao atualizar equipe');
+    }
   };
 
-  const handleDeleteTeam = (equipeId: string) => {
-    setEquipes(equipes.filter(equipe => equipe.id !== equipeId));
+  const handleDeleteTeam = async (equipeId: string) => {
+    try {
+      // Remover usuários da equipe
+      await supabase
+        .from('users')
+        .update({ equipe_id: null })
+        .eq('equipe_id', equipeId);
+
+      // Deletar a equipe do banco de dados
+      const { error } = await supabase
+        .from('equipes')
+        .delete()
+        .eq('id', equipeId);
+
+      if (error) {
+        console.error('Error deleting team:', error);
+        toast.error('Erro ao deletar equipe');
+        return;
+      }
+
+      // Atualizar o estado local
+      setEquipes(equipes.filter(equipe => equipe.id !== equipeId));
+      toast.success('Equipe deletada com sucesso!');
+
+      // Recarregar os dados para refletir as mudanças
+      loadData();
+    } catch (error) {
+      console.error('Error deleting team:', error);
+      toast.error('Erro ao deletar equipe');
+    }
   };
 
   const handleEditTeamClick = (equipe: Equipe) => {
