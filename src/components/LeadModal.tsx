@@ -15,16 +15,11 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CorretorSelector } from "@/components/CorretorSelector";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useUserRole } from "@/hooks/useUserRole";
 import { 
   Phone, 
   User, 
   Edit,
-  Calendar,
-  ArrowRightLeft
+  Calendar 
 } from "lucide-react";
 
 interface LeadModalProps {
@@ -38,13 +33,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Partial<Lead>>({});
   const [newActivity, setNewActivity] = useState("");
-  const [isCorretorSelectorOpen, setIsCorretorSelectorOpen] = useState(false);
-  const { toast } = useToast();
-  const { isAdmin, isGestor } = useUserRole();
-
-  // Pode transferir lead se for admin ou gestor
-  const canTransferLead = isAdmin || isGestor;
-  
   // Reset estados quando modal abre/fecha
   useEffect(() => {
     if (isOpen && lead) {
@@ -113,59 +101,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
       style: 'currency',
       currency: 'BRL'
     });
-  };
-
-  const handleTransferLead = async (newUserId: string, newUserName: string) => {
-    if (!lead) return;
-
-    console.log('Iniciando transferência do lead:', { 
-      leadId: lead.id, 
-      currentCorretor: lead.corretor, 
-      newUserId, 
-      newUserName 
-    });
-
-    try {
-      // Atualizar o lead no banco de dados
-      const { data, error } = await supabase
-        .from('leads')
-        .update({ user_id: newUserId })
-        .eq('id', lead.id)
-        .select();
-
-      console.log('Resultado da atualização no banco:', { data, error });
-
-      if (error) throw error;
-
-      // Adicionar atividade de transferência
-      const transferActivity: Atividade = {
-        id: Date.now().toString(),
-        tipo: 'observacao',
-        descricao: `Lead transferido de ${lead.corretor} para ${newUserName}`,
-        data: new Date(),
-        corretor: newUserName
-      };
-
-      // Atualizar o lead localmente
-      onUpdate(lead.id, {
-        corretor: newUserName,
-        atividades: [...lead.atividades, transferActivity]
-      });
-
-      console.log('Lead atualizado localmente com sucesso');
-
-      toast({
-        title: "Transferência realizada",
-        description: `Lead transferido com sucesso para ${newUserName}`,
-      });
-    } catch (error) {
-      console.error('Erro completo ao transferir lead:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível transferir o lead. Tente novamente.",
-        variant: "destructive",
-      });
-    }
   };
 
   return (
@@ -260,23 +195,10 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                     </div>
                     <div>
                       <Label>Corretor</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={lead.corretor}
-                          disabled
-                          className="flex-1"
-                        />
-                        {canTransferLead && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsCorretorSelectorOpen(true)}
-                            title="Transferir lead para outro corretor"
-                          >
-                            <ArrowRightLeft className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
+                      <Input
+                        value={lead.corretor}
+                        disabled
+                      />
                     </div>
                     <div>
                       <Label>Data de Criação</Label>
@@ -361,14 +283,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
             </div>
           </div>
         </div>
-
-        {/* Modal de Seleção de Corretor */}
-        <CorretorSelector
-          isOpen={isCorretorSelectorOpen}
-          onClose={() => setIsCorretorSelectorOpen(false)}
-          onSelect={handleTransferLead}
-          currentCorretorName={lead?.corretor}
-        />
       </DialogContent>
     </Dialog>
   );

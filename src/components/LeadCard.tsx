@@ -1,15 +1,10 @@
 
-import { useState } from "react";
 import { Lead, LeadTag } from "@/types/crm";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TagSelector } from "@/components/TagSelector";
-import { CorretorSelector } from "@/components/CorretorSelector";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useUserRole } from "@/hooks/useUserRole";
-import { Phone, User, Calendar, ArrowRightLeft } from "lucide-react";
+import { Phone, User, Calendar } from "lucide-react";
 
 interface LeadCardProps {
   lead: Lead;
@@ -33,13 +28,6 @@ const tagConfig: Record<LeadTag, { label: string; className: string }> = {
 };
 
 export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
-  const [isCorretorSelectorOpen, setIsCorretorSelectorOpen] = useState(false);
-  const { toast } = useToast();
-  const { isAdmin, isGestor } = useUserRole();
-
-  // Pode transferir lead se for admin ou gestor
-  const canTransferLead = isAdmin || isGestor;
-
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -65,52 +53,6 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
 
   const handleTagsChange = (newTags: LeadTag[]) => {
     onUpdate({ etiquetas: newTags });
-  };
-
-  const handleTransferLead = async (newUserId: string, newUserName: string) => {
-    console.log('LeadCard - Iniciando transferência:', { 
-      leadId: lead.id, 
-      currentCorretor: lead.corretor, 
-      newUserId, 
-      newUserName 
-    });
-
-    try {
-      // Atualizar o lead no banco de dados
-      const { data, error } = await supabase
-        .from('leads')
-        .update({ user_id: newUserId })
-        .eq('id', lead.id)
-        .select();
-
-      console.log('LeadCard - Resultado da atualização:', { data, error });
-
-      if (error) throw error;
-
-      // Atualizar o lead localmente
-      onUpdate({ corretor: newUserName });
-
-      console.log('LeadCard - Lead atualizado localmente');
-
-      toast({
-        title: "Transferência realizada",
-        description: `Lead transferido com sucesso para ${newUserName}`,
-      });
-    } catch (error) {
-      console.error('LeadCard - Erro completo:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível transferir o lead. Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleCorretorClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (canTransferLead) {
-      setIsCorretorSelectorOpen(true);
-    }
   };
 
   return (
@@ -154,18 +96,8 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
         {/* Corretor */}
         <div className="flex justify-between items-center mb-3">
           <span className="text-xs text-gray-500">Corretor:</span>
-          <Badge 
-            variant="outline" 
-            className={`text-xs ${canTransferLead ? "cursor-pointer hover:bg-blue-50 hover:border-blue-300" : ""}`}
-            onClick={handleCorretorClick}
-            title={canTransferLead ? "Clique para transferir o lead" : ""}
-          >
-            <span className="flex items-center gap-1">
-              {lead.corretor}
-              {canTransferLead && (
-                <ArrowRightLeft className="w-3 h-3" />
-              )}
-            </span>
+          <Badge variant="outline" className="text-xs">
+            {lead.corretor}
           </Badge>
         </div>
 
@@ -182,14 +114,6 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
           </Button>
         </div>
       </CardContent>
-
-      {/* Modal de Seleção de Corretor */}
-      <CorretorSelector
-        isOpen={isCorretorSelectorOpen}
-        onClose={() => setIsCorretorSelectorOpen(false)}
-        onSelect={handleTransferLead}
-        currentCorretorName={lead.corretor}
-      />
     </Card>
   );
 }
