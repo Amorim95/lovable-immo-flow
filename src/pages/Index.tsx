@@ -31,8 +31,43 @@ const Index = () => {
   // Permitir criação de leads para todos os usuários autenticados
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
 
-  const handleLeadUpdate = (leadId: string, updates: Partial<Lead>) => {
-    refreshLeads();
+  const handleLeadUpdate = async (leadId: string, updates: Partial<Lead>) => {
+    try {
+      // Preparar dados para o Supabase (mapear campos da interface para o banco)
+      const supabaseUpdates: any = {};
+      
+      if (updates.nome !== undefined) supabaseUpdates.nome = updates.nome;
+      if (updates.telefone !== undefined) supabaseUpdates.telefone = updates.telefone;
+      if (updates.dadosAdicionais !== undefined) supabaseUpdates.dados_adicionais = updates.dadosAdicionais;
+      if (updates.etapa !== undefined) supabaseUpdates.etapa = updates.etapa;
+      
+      // Atualizar no banco se há mudanças nos campos persistidos
+      if (Object.keys(supabaseUpdates).length > 0) {
+        const { supabase } = await import('@/integrations/supabase/client');
+        const { error } = await supabase
+          .from('leads')
+          .update(supabaseUpdates)
+          .eq('id', leadId);
+          
+        if (error) {
+          console.error('Erro ao atualizar lead:', error);
+          return;
+        }
+      }
+      
+      // Atualizar o lead local se estiver selecionado (para etiquetas e atividades)
+      if (selectedLead && selectedLead.id === leadId) {
+        setSelectedLead({
+          ...selectedLead,
+          ...updates
+        });
+      }
+      
+      // Refresh da lista
+      refreshLeads();
+    } catch (error) {
+      console.error('Erro ao processar atualização:', error);
+    }
   };
 
   const handleLeadClick = (lead: Lead) => {
