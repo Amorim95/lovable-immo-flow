@@ -10,7 +10,7 @@ interface CompanySettings {
 
 interface CompanyContextType {
   settings: CompanySettings;
-  updateSettings: (newSettings: Partial<CompanySettings>) => void;
+  updateSettings: (newSettings: Partial<CompanySettings>) => Promise<void>;
   refreshSettings: () => void;
 }
 
@@ -48,8 +48,38 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const updateSettings = (newSettings: Partial<CompanySettings>) => {
+  const updateSettings = async (newSettings: Partial<CompanySettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
+    
+    // Se foi atualizada a logo ou nome, também atualizar no banco
+    if (newSettings.logo !== undefined || newSettings.name !== undefined) {
+      try {
+        const { data: existingData } = await supabase
+          .from('company_settings')
+          .select('*')
+          .limit(1)
+          .maybeSingle();
+
+        if (existingData) {
+          await supabase
+            .from('company_settings')
+            .update({
+              name: newSettings.name || existingData.name,
+              logo: newSettings.logo || existingData.logo
+            })
+            .eq('id', existingData.id);
+        } else {
+          await supabase
+            .from('company_settings')
+            .insert({
+              name: newSettings.name || 'Click Imóveis',
+              logo: newSettings.logo || null
+            });
+        }
+      } catch (error) {
+        console.error('Erro ao atualizar configurações da empresa:', error);
+      }
+    }
   };
 
   const refreshSettings = () => {

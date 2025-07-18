@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useCompany } from "@/contexts/CompanyContext";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   Upload
@@ -12,6 +13,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function MobileCompanySettings() {
   const { isAdmin, isGestor } = useUserRole();
+  const { settings, updateSettings, refreshSettings } = useCompany();
   const [companyName, setCompanyName] = useState('');
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +25,13 @@ export default function MobileCompanySettings() {
       loadCompanySettings();
     }
   }, [canManageCompany]);
+
+  useEffect(() => {
+    // Sincronizar com o contexto
+    setCompanyName(settings.name);
+    setCompanyLogo(settings.logo);
+    setLoading(false);
+  }, [settings]);
 
   const loadCompanySettings = async () => {
     try {
@@ -80,6 +89,12 @@ export default function MobileCompanySettings() {
       if (error) {
         throw error;
       }
+
+      // Atualizar o contexto para refletir na tela de login
+      await updateSettings({
+        name: companyName,
+        logo: companyLogo
+      });
 
       toast({
         title: "Dados salvos",

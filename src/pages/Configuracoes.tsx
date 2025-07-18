@@ -62,7 +62,7 @@ const Configuracoes = () => {
         throw error;
       }
 
-      updateSettings({
+      await updateSettings({
         name: companyName,
         logo: companyLogo
       });
