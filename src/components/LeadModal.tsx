@@ -88,6 +88,8 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   };
 
   const handleTagsChange = (newTags: LeadTag[]) => {
+    console.log('handleTagsChange chamado com:', newTags);
+    console.log('Lead atual:', lead.id);
     onUpdate(lead.id, { etiquetas: newTags });
   };
 

@@ -32,6 +32,7 @@ const Index = () => {
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
 
   const handleLeadUpdate = async (leadId: string, updates: Partial<Lead>) => {
+    console.log('handleLeadUpdate chamado com:', { leadId, updates });
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       
