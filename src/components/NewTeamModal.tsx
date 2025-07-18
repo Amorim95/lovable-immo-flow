@@ -42,7 +42,6 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
       : null;
     
     const newTeam: Partial<Equipe> = {
-      id: Date.now().toString(),
       nome: formData.nome,
       responsavelId: formData.responsavelId === 'none' ? null : formData.responsavelId || null,
       responsavelNome: responsavel?.nome || null,

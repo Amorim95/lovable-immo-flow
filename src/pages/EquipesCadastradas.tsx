@@ -97,9 +97,53 @@ const EquipesCadastradas = () => {
     equipe.responsavelNome.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleCreateTeam = (teamData: Partial<Equipe>) => {
-    const newTeam = teamData as Equipe;
-    setEquipes([...equipes, newTeam]);
+  const handleCreateTeam = async (teamData: Partial<Equipe>) => {
+    try {
+      // Inserir a equipe no banco de dados
+      const { data, error } = await supabase
+        .from('equipes')
+        .insert({
+          nome: teamData.nome,
+          responsavel_id: teamData.responsavelId,
+          responsavel_nome: teamData.responsavelNome
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating team:', error);
+        toast.error('Erro ao criar equipe');
+        return;
+      }
+
+      // Atualizar os usuários selecionados para esta equipe
+      if (teamData.corretores && teamData.corretores.length > 0) {
+        const { error: userError } = await supabase
+          .from('users')
+          .update({ equipe_id: data.id })
+          .in('id', teamData.corretores);
+
+        if (userError) {
+          console.error('Error updating users team:', userError);
+          toast.error('Equipe criada, mas erro ao associar usuários');
+        }
+      }
+
+      // Atualizar o estado local com a nova equipe
+      const newTeam: Equipe = {
+        id: data.id,
+        nome: data.nome,
+        responsavelId: data.responsavel_id,
+        responsavelNome: data.responsavel_nome,
+        corretores: teamData.corretores || []
+      };
+
+      setEquipes([...equipes, newTeam]);
+      toast.success('Equipe criada com sucesso!');
+    } catch (error) {
+      console.error('Error creating team:', error);
+      toast.error('Erro interno ao criar equipe');
+    }
   };
 
   const handleUpdateTeam = (equipeId: string, updates: Partial<Equipe>) => {
