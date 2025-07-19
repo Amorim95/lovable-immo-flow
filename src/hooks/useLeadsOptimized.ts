@@ -102,6 +102,17 @@ export function useLeadsOptimized() {
             if (updates.dadosAdicionais !== undefined) updatedLead.dados_adicionais = updates.dadosAdicionais;
             if (updates.etapa !== undefined) updatedLead.etapa = updates.etapa;
             
+            // Atualizar atividades
+            if (updates.atividades !== undefined) {
+              updatedLead.atividades = updates.atividades.map(atividade => ({
+                id: atividade.id,
+                tipo: atividade.tipo,
+                descricao: atividade.descricao,
+                data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
+                corretor: atividade.corretor
+              }));
+            }
+            
             // Para tags, vamos simular a estrutura
             if (updates.etiquetas !== undefined) {
               updatedLead.lead_tag_relations = updates.etiquetas.map(tagName => ({
@@ -126,6 +137,17 @@ export function useLeadsOptimized() {
       if (updates.telefone !== undefined) supabaseUpdates.telefone = updates.telefone;
       if (updates.dadosAdicionais !== undefined) supabaseUpdates.dados_adicionais = updates.dadosAdicionais;
       if (updates.etapa !== undefined) supabaseUpdates.etapa = updates.etapa;
+      
+      // Atualizar atividades no banco se foram modificadas
+      if (updates.atividades !== undefined) {
+        supabaseUpdates.atividades = updates.atividades.map(atividade => ({
+          id: atividade.id,
+          tipo: atividade.tipo,
+          descricao: atividade.descricao,
+          data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
+          corretor: atividade.corretor
+        }));
+      }
       
       // Atualizar campos básicos no banco se necessário
       if (Object.keys(supabaseUpdates).length > 0) {
