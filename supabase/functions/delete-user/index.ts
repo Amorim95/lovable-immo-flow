@@ -37,6 +37,48 @@ Deno.serve(async (req) => {
 
     console.log('Deleting user:', user_id)
 
+    // First, handle related data to avoid foreign key constraints
+    
+    // 1. Delete user permissions
+    const { error: permissionsError } = await supabaseAdmin
+      .from('permissions')
+      .delete()
+      .eq('user_id', user_id)
+    
+    if (permissionsError) {
+      console.error('Error deleting permissions:', permissionsError)
+    }
+
+    // 2. Update leads to remove user assignment (set to null or reassign)
+    const { error: leadsError } = await supabaseAdmin
+      .from('leads')
+      .update({ user_id: null })
+      .eq('user_id', user_id)
+    
+    if (leadsError) {
+      console.error('Error updating leads:', leadsError)
+    }
+
+    // 3. Update lead_queue assignments
+    const { error: queueError } = await supabaseAdmin
+      .from('lead_queue')
+      .update({ assigned_to: null, status: 'pending' })
+      .eq('assigned_to', user_id)
+    
+    if (queueError) {
+      console.error('Error updating lead queue:', queueError)
+    }
+
+    // 4. Delete user logs (or keep them for audit trail)
+    const { error: logsError } = await supabaseAdmin
+      .from('logs')
+      .delete()
+      .eq('user_id', user_id)
+    
+    if (logsError) {
+      console.error('Error deleting logs:', logsError)
+    }
+
     // Try to delete from auth.users, but continue even if user doesn't exist there
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(user_id)
     
@@ -55,7 +97,7 @@ Deno.serve(async (req) => {
       console.log('User not found in auth.users, continuing with database deletion')
     }
 
-    // Then delete from public.users table
+    // Finally delete from public.users table
     const { error: userError } = await supabaseAdmin
       .from('users')
       .delete()
