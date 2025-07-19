@@ -11,10 +11,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Edit, Trash2 } from "lucide-react";
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { Trash2, AlertTriangle, Users, Edit } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface EditTeamModalProps {
   equipe: Equipe | null;
@@ -40,8 +49,8 @@ export function EditTeamModal({
   });
   const [searchResponsavel, setSearchResponsavel] = useState('');
   const [searchCorretores, setSearchCorretores] = useState('');
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     if (equipe) {
@@ -56,68 +65,116 @@ export function EditTeamModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!equipe || !formData.nome.trim() || !formData.responsavelId) {
-      toast.error('Nome da equipe e responsável são obrigatórios');
+    if (!formData.nome.trim()) {
+      toast.error('Nome da equipe é obrigatório');
       return;
     }
+
+    if (!equipe) return;
 
     setIsLoading(true);
 
     try {
-      const responsavel = corretores.find(c => c.id === formData.responsavelId);
-      
-      // Atualizar equipe na tabela equipes
-      const { error } = await supabase
+      const responsavel = formData.responsavelId && formData.responsavelId !== 'none' 
+        ? corretores.find(c => c.id === formData.responsavelId) 
+        : null;
+
+      // Atualizar equipe no Supabase
+      const { error: equipeError } = await supabase
         .from('equipes')
         .update({
           nome: formData.nome,
-          responsavel_id: formData.responsavelId,
-          responsavel_nome: responsavel?.nome || ''
+          responsavel_id: formData.responsavelId === 'none' ? null : formData.responsavelId || null,
+          responsavel_nome: responsavel?.nome || null
         })
         .eq('id', equipe.id);
 
-      if (error) {
-        console.error('Error updating team:', error);
+      if (equipeError) {
+        console.error('Erro ao atualizar equipe:', equipeError);
         toast.error('Erro ao atualizar equipe');
         return;
       }
 
-      // Atualizar usuários para remover da equipe anterior
-      await supabase
+      // Primeiro, remover todos os corretores da equipe atual
+      const { error: removeError } = await supabase
         .from('users')
         .update({ equipe_id: null })
         .eq('equipe_id', equipe.id);
 
-      // Atualizar usuários selecionados para esta equipe
+      if (removeError) {
+        console.error('Erro ao remover corretores:', removeError);
+      }
+
+      // Depois, adicionar os corretores selecionados
       if (formData.corretoresSelecionados.length > 0) {
-        await supabase
+        const { error: addError } = await supabase
           .from('users')
           .update({ equipe_id: equipe.id })
           .in('id', formData.corretoresSelecionados);
+
+        if (addError) {
+          console.error('Erro ao adicionar corretores:', addError);
+          toast.error('Equipe atualizada, mas erro ao associar corretores');
+        }
       }
-      
-      onUpdateTeam(equipe.id, {
+
+      const updatedTeam: Partial<Equipe> = {
         nome: formData.nome,
-        responsavelId: formData.responsavelId,
-        responsavelNome: responsavel?.nome || '',
+        responsavelId: formData.responsavelId === 'none' ? null : formData.responsavelId || null,
+        responsavelNome: responsavel?.nome || null,
         corretores: formData.corretoresSelecionados
-      });
-      
+      };
+
+      onUpdateTeam(equipe.id, updatedTeam);
       toast.success('Equipe atualizada com sucesso!');
       onClose();
     } catch (error) {
-      console.error('Error updating team:', error);
+      console.error('Erro geral:', error);
       toast.error('Erro ao atualizar equipe');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDelete = () => {
-    if (equipe) {
+  const handleDelete = async () => {
+    if (!equipe) return;
+
+    setIsLoading(true);
+
+    try {
+      // Primeiro, remover associação de usuários com a equipe
+      const { error: updateUsersError } = await supabase
+        .from('users')
+        .update({ equipe_id: null })
+        .eq('equipe_id', equipe.id);
+
+      if (updateUsersError) {
+        console.error('Erro ao remover usuários da equipe:', updateUsersError);
+        toast.error('Erro ao remover usuários da equipe');
+        return;
+      }
+
+      // Depois, deletar a equipe
+      const { error: deleteError } = await supabase
+        .from('equipes')
+        .delete()
+        .eq('id', equipe.id);
+
+      if (deleteError) {
+        console.error('Erro ao deletar equipe:', deleteError);
+        toast.error('Erro ao deletar equipe');
+        return;
+      }
+
       onDeleteTeam(equipe.id);
+      toast.success('Equipe deletada com sucesso!');
       setShowDeleteDialog(false);
       onClose();
+    } catch (error) {
+      console.error('Erro geral:', error);
+      toast.error('Erro ao deletar equipe');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -174,7 +231,7 @@ export function EditTeamModal({
           </div>
 
           <div>
-            <Label htmlFor="responsavel">Responsável pela Equipe *</Label>
+            <Label htmlFor="responsavel">Responsável pela Equipe</Label>
             <div className="space-y-2">
               <Input
                 placeholder="Buscar responsável..."
@@ -184,9 +241,10 @@ export function EditTeamModal({
               />
               <Select value={formData.responsavelId} onValueChange={(value) => setFormData({ ...formData, responsavelId: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o responsável" />
+                  <SelectValue placeholder="Selecione o responsável (opcional)" />
                 </SelectTrigger>
                 <SelectContent className="max-h-60">
+                  <SelectItem value="none">Sem responsável</SelectItem>
                   {responsaveisFiltrados.map((corretor) => (
                     <SelectItem key={corretor.id} value={corretor.id}>
                       <div className="flex flex-col text-left">
@@ -243,26 +301,33 @@ export function EditTeamModal({
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 pt-4 border-t">
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1">
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={isLoading} className="flex-1">
-                {isLoading ? 'Salvando...' : 'Salvar'}
-              </Button>
-            </div>
-            
+          <div className="flex gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
+              Cancelar
+            </Button>
+            <Button type="submit" className="flex-1" disabled={isLoading}>
+              {isLoading ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </div>
+
+          <div className="pt-2 border-t">
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-              <AlertDialogTrigger asChild>
-                <Button type="button" variant="destructive" size="sm" className="w-full">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Excluir Equipe
-                </Button>
-              </AlertDialogTrigger>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="w-full"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Excluir Equipe
+              </Button>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                  <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="w-5 h-5 text-destructive" />
+                    Confirmar Exclusão
+                  </AlertDialogTitle>
                   <AlertDialogDescription>
                     Tem certeza que deseja excluir a equipe "{equipe.nome}"? 
                     Esta ação não pode ser desfeita e os corretores da equipe ficarão sem equipe.
@@ -270,8 +335,12 @@ export function EditTeamModal({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                    Excluir
+                  <AlertDialogAction 
+                    onClick={handleDelete} 
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Excluindo...' : 'Excluir'}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

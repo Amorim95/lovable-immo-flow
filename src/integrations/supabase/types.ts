@@ -273,6 +273,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          atividades: Json | null
           created_at: string
           dados_adicionais: string | null
           etapa: Database["public"]["Enums"]["lead_stage"]
@@ -283,6 +284,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          atividades?: Json | null
           created_at?: string
           dados_adicionais?: string | null
           etapa?: Database["public"]["Enums"]["lead_stage"]
@@ -293,6 +295,7 @@ export type Database = {
           user_id?: string
         }
         Update: {
+          atividades?: Json | null
           created_at?: string
           dados_adicionais?: string | null
           etapa?: Database["public"]["Enums"]["lead_stage"]

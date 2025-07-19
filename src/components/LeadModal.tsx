@@ -21,6 +21,8 @@ import {
   Edit,
   Calendar 
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface LeadModalProps {
   lead: Lead | null;
@@ -44,13 +46,38 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
 
   if (!lead) return null;
 
-  const handleSave = () => {
-    onUpdate(lead.id, formData);
-    setEditMode(false);
-    setFormData({});
+  const handleSave = async () => {
+    try {
+      const updateData: any = {};
+      
+      // Apenas incluir campos que mudaram
+      if (formData.nome !== undefined) updateData.nome = formData.nome;
+      if (formData.telefone !== undefined) updateData.telefone = formData.telefone;
+      if (formData.dadosAdicionais !== undefined) updateData.dados_adicionais = formData.dadosAdicionais;
+      if (formData.etapa !== undefined) updateData.etapa = formData.etapa;
+
+      const { error } = await supabase
+        .from('leads')
+        .update(updateData)
+        .eq('id', lead.id);
+
+      if (error) {
+        console.error('Erro ao salvar lead:', error);
+        toast.error('Erro ao salvar alterações');
+        return;
+      }
+
+      onUpdate(lead.id, formData);
+      setEditMode(false);
+      setFormData({});
+      toast.success('Lead atualizado com sucesso!');
+    } catch (error) {
+      console.error('Erro geral:', error);
+      toast.error('Erro ao salvar alterações');
+    }
   };
 
-  const handleAddActivity = () => {
+  const handleAddActivity = async () => {
     if (!newActivity.trim()) return;
     
     const activity: Atividade = {
@@ -61,14 +88,42 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
       corretor: lead.corretor
     };
 
-    onUpdate(lead.id, {
-      atividades: [...lead.atividades, activity]
-    });
-    
-    setNewActivity("");
+    const updatedActivities = [...lead.atividades, activity];
+
+    try {
+      // Converter atividades para o formato JSON correto
+      const atividadesJson = updatedActivities.map(atividade => ({
+        id: atividade.id,
+        tipo: atividade.tipo,
+        descricao: atividade.descricao,
+        data: atividade.data.toISOString(),
+        corretor: atividade.corretor
+      }));
+
+      const { error } = await supabase
+        .from('leads')
+        .update({ atividades: atividadesJson as any })
+        .eq('id', lead.id);
+
+      if (error) {
+        console.error('Erro ao salvar atividade:', error);
+        toast.error('Erro ao salvar atividade');
+        return;
+      }
+
+      onUpdate(lead.id, {
+        atividades: updatedActivities
+      });
+      
+      setNewActivity("");
+      toast.success('Atividade adicionada com sucesso!');
+    } catch (error) {
+      console.error('Erro geral:', error);
+      toast.error('Erro ao salvar atividade');
+    }
   };
 
-  const handleWhatsAppClick = (telefone: string) => {
+  const handleWhatsAppClick = async (telefone: string) => {
     const cleanPhone = telefone.replace(/\D/g, '');
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
     
@@ -81,9 +136,36 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
       corretor: lead.corretor
     };
 
-    onUpdate(lead.id, {
-      atividades: [...lead.atividades, activity]
-    });
+    const updatedActivities = [...lead.atividades, activity];
+
+    try {
+      // Converter atividades para o formato JSON correto
+      const atividadesJson = updatedActivities.map(atividade => ({
+        id: atividade.id,
+        tipo: atividade.tipo,
+        descricao: atividade.descricao,
+        data: atividade.data.toISOString(),
+        corretor: atividade.corretor
+      }));
+
+      const { error } = await supabase
+        .from('leads')
+        .update({ atividades: atividadesJson as any })
+        .eq('id', lead.id);
+
+      if (error) {
+        console.error('Erro ao salvar atividade de contato:', error);
+        toast.error('Erro ao registrar tentativa de contato');
+        return;
+      }
+
+      onUpdate(lead.id, {
+        atividades: updatedActivities
+      });
+    } catch (error) {
+      console.error('Erro geral:', error);
+      toast.error('Erro ao registrar tentativa de contato');
+    }
   };
 
   const formatDate = (date: Date) => {

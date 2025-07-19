@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface NewTeamModalProps {
   isOpen: boolean;
@@ -28,28 +30,70 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
   });
   const [searchResponsavel, setSearchResponsavel] = useState('');
   const [searchCorretores, setSearchCorretores] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.nome.trim()) {
-      alert('Nome da equipe é obrigatório');
+      toast.error('Nome da equipe é obrigatório');
       return;
     }
 
-    const responsavel = formData.responsavelId && formData.responsavelId !== 'none' 
-      ? corretores.find(c => c.id === formData.responsavelId) 
-      : null;
-    
-    const newTeam: Partial<Equipe> = {
-      nome: formData.nome,
-      responsavelId: formData.responsavelId === 'none' ? null : formData.responsavelId || null,
-      responsavelNome: responsavel?.nome || null,
-      corretores: formData.corretoresSelecionados
-    };
+    setIsLoading(true);
 
-    onCreateTeam(newTeam);
-    handleClose();
+    try {
+      const responsavel = formData.responsavelId && formData.responsavelId !== 'none' 
+        ? corretores.find(c => c.id === formData.responsavelId) 
+        : null;
+
+      // Inserir equipe no Supabase
+      const { data: equipeData, error: equipeError } = await supabase
+        .from('equipes')
+        .insert({
+          nome: formData.nome,
+          responsavel_id: formData.responsavelId === 'none' ? null : formData.responsavelId || null,
+          responsavel_nome: responsavel?.nome || null
+        })
+        .select('*')
+        .single();
+
+      if (equipeError) {
+        console.error('Erro ao criar equipe:', equipeError);
+        toast.error('Erro ao criar equipe');
+        return;
+      }
+
+      // Atualizar equipe_id dos corretores selecionados
+      if (formData.corretoresSelecionados.length > 0) {
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ equipe_id: equipeData.id })
+          .in('id', formData.corretoresSelecionados);
+
+        if (updateError) {
+          console.error('Erro ao atualizar corretores:', updateError);
+          toast.error('Equipe criada, mas erro ao associar corretores');
+        }
+      }
+
+      const newTeam: Partial<Equipe> = {
+        id: equipeData.id,
+        nome: equipeData.nome,
+        responsavelId: equipeData.responsavel_id,
+        responsavelNome: equipeData.responsavel_nome,
+        corretores: formData.corretoresSelecionados
+      };
+
+      onCreateTeam(newTeam);
+      toast.success('Equipe criada com sucesso!');
+      handleClose();
+    } catch (error) {
+      console.error('Erro geral:', error);
+      toast.error('Erro ao criar equipe');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
@@ -188,8 +232,8 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
             <Button type="button" variant="outline" onClick={handleClose} className="flex-1">
               Cancelar
             </Button>
-            <Button type="submit" className="flex-1">
-              Criar Equipe
+            <Button type="submit" className="flex-1" disabled={isLoading}>
+              {isLoading ? 'Criando...' : 'Criar Equipe'}
             </Button>
           </div>
         </form>

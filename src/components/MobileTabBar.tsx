@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { LayoutGrid, BarChart3, Settings } from "lucide-react";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 const tabs = [
   {
@@ -24,6 +25,7 @@ const tabs = [
 
 export function MobileTabBar() {
   const location = useLocation();
+  const scrollDirection = useScrollDirection();
   
   const isActive = (path: string) => {
     if (path === "/") {
@@ -33,7 +35,9 @@ export function MobileTabBar() {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 z-50">
+    <div className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 z-50 transition-transform duration-300 ${
+      scrollDirection === 'down' ? 'translate-y-full' : 'translate-y-0'
+    }`}>
       <div className="flex justify-around items-center">
         {tabs.map((tab) => {
           const Icon = tab.icon;
