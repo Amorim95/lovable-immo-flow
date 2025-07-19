@@ -13,6 +13,7 @@ interface LeadsData {
   created_at: string;
   updated_at: string;
   user_id?: string;
+  atividades?: any;
   user?: {
     name: string;
     equipe_id?: string;
@@ -56,6 +57,7 @@ export function useLeadsOptimized() {
           created_at,
           updated_at,
           user_id,
+          atividades,
           user:users(name, equipe_id),
           lead_tag_relations(
             lead_tags(

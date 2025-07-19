@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Lead } from "@/types/crm";
+import { Lead, Atividade } from "@/types/crm";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,13 @@ export default function LeadDetails() {
           etapa: foundLead.etapa as Lead['etapa'],
           etiquetas: foundLead.lead_tag_relations?.map(rel => rel.lead_tags?.nome as Lead['etiquetas'][0]).filter(Boolean) || [],
           corretor: foundLead.user?.name || 'Não atribuído',
-          atividades: [],
+          atividades: (Array.isArray(foundLead.atividades) ? foundLead.atividades : []).map((atividade: any) => ({
+            id: atividade.id,
+            tipo: atividade.tipo as Atividade['tipo'],
+            descricao: atividade.descricao,
+            data: new Date(atividade.data),
+            corretor: atividade.corretor
+          })),
           status: 'ativo'
         };
         setLead(convertedLead);
@@ -85,22 +91,109 @@ export default function LeadDetails() {
     }
   };
 
-  const handleWhatsApp = () => {
-    if (lead?.telefone) {
-      const cleanPhone = lead.telefone.replace(/\D/g, '');
-      window.open(`https://wa.me/55${cleanPhone}`, '_blank');
+  const handleWhatsApp = async () => {
+    if (!lead?.telefone) return;
+    
+    const cleanPhone = lead.telefone.replace(/\D/g, '');
+    window.open(`https://wa.me/55${cleanPhone}`, '_blank');
+    
+    // Registrar atividade de contato
+    try {
+      const activity: Atividade = {
+        id: Date.now().toString(),
+        tipo: 'whatsapp',
+        descricao: `Tentativa de contato via WhatsApp por: ${lead.corretor}`,
+        data: new Date(),
+        corretor: lead.corretor
+      };
+
+      const updatedActivities = [...(lead.atividades || []), activity];
+      
+      // Converter atividades para formato JSON correto
+      const atividadesJson = updatedActivities.map(atividade => ({
+        id: atividade.id,
+        tipo: atividade.tipo,
+        descricao: atividade.descricao,
+        data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
+        corretor: atividade.corretor
+      }));
+
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase
+        .from('leads')
+        .update({ atividades: atividadesJson })
+        .eq('id', lead.id);
+
+      if (error) {
+        console.error('Erro ao salvar atividade de contato:', error);
+      } else {
+        // Atualizar estado local
+        setLead(prev => prev ? { 
+          ...prev, 
+          atividades: updatedActivities
+        } : null);
+      }
+    } catch (error) {
+      console.error('Erro geral:', error);
     }
   };
 
-  const handleAddActivity = () => {
-    if (!newActivity.trim()) return;
+  const handleAddActivity = async () => {
+    if (!newActivity.trim() || !lead) return;
     
-    // Implementar adição de atividade
-    toast({
-      title: "Atividade adicionada",
-      description: "A atividade foi registrada com sucesso."
-    });
-    setNewActivity('');
+    try {
+      const activity: Atividade = {
+        id: Date.now().toString(),
+        tipo: 'observacao',
+        descricao: newActivity,
+        data: new Date(),
+        corretor: lead.corretor
+      };
+
+      const updatedActivities = [...(lead.atividades || []), activity];
+      
+      // Converter atividades para formato JSON correto
+      const atividadesJson = updatedActivities.map(atividade => ({
+        id: atividade.id,
+        tipo: atividade.tipo,
+        descricao: atividade.descricao,
+        data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
+        corretor: atividade.corretor
+      }));
+
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { error } = await supabase
+        .from('leads')
+        .update({ atividades: atividadesJson })
+        .eq('id', lead.id);
+
+      if (error) {
+        console.error('Erro ao salvar atividade:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao salvar atividade."
+        });
+        return;
+      }
+
+      // Atualizar estado local
+      setLead(prev => prev ? { 
+        ...prev, 
+        atividades: updatedActivities
+      } : null);
+      
+      toast({
+        title: "Atividade adicionada",
+        description: "A atividade foi registrada com sucesso."
+      });
+      setNewActivity('');
+    } catch (error) {
+      console.error('Erro geral:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar atividade."
+      });
+    }
   };
 
   if (!lead) {
@@ -291,7 +384,7 @@ export default function LeadDetails() {
                       <div className="flex-1">
                         <p className="text-sm text-gray-900">{atividade.descricao}</p>
                         <p className="text-xs text-gray-500 mt-1">
-                          {new Date(atividade.data).toLocaleString('pt-BR')}
+                          {new Date(atividade.data).toLocaleString('pt-BR')} • {atividade.corretor}
                         </p>
                       </div>
                     </div>

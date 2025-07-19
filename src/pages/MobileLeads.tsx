@@ -56,7 +56,13 @@ export default function MobileLeads() {
     etapa: lead.etapa as Lead['etapa'],
     etiquetas: lead.lead_tag_relations?.map(rel => rel.lead_tags?.nome as Lead['etiquetas'][0]).filter(Boolean) || [],
     corretor: lead.user?.name || 'Não atribuído',
-    atividades: [],
+    atividades: (Array.isArray(lead.atividades) ? lead.atividades : []).map((atividade: any) => ({
+      id: atividade.id,
+      tipo: atividade.tipo as any,
+      descricao: atividade.descricao,
+      data: new Date(atividade.data),
+      corretor: atividade.corretor
+    })),
     status: 'ativo'
   }));
 
