@@ -49,7 +49,7 @@ export default function LeadDetails() {
           anuncio: 'Não especificado',
           dataCriacao: new Date(foundLead.created_at),
           etapa: foundLead.etapa as Lead['etapa'],
-          etiquetas: foundLead.lead_tag_relations?.map(rel => rel.lead_tags.nome as Lead['etiquetas'][0]) || [],
+          etiquetas: foundLead.lead_tag_relations?.map(rel => rel.lead_tags?.nome as Lead['etiquetas'][0]).filter(Boolean) || [],
           corretor: foundLead.user?.name || 'Não atribuído',
           atividades: [],
           status: 'ativo'
