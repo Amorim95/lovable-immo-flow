@@ -43,3 +43,6 @@ port = 54327
 
 [functions.auth-webhook]
 verify_jwt = false
+
+[functions.webhook-lead]
+verify_jwt = false
