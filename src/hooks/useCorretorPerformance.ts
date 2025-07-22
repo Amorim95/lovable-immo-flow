@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 interface CorretorPerformance {
   id: string;
   nome: string;
+  status: string;
   leadsRecebidos: number;
   vendasFechadas: number;
   tempoMedioResposta: number;
@@ -50,11 +51,10 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
       setLoading(true);
       setError(null);
 
-      // 1. Buscar todos os usuários ativos
+      // 1. Buscar todos os usuários (ativos e inativos)
       const { data: usersData, error: usersError } = await supabase
         .from('users')
-        .select('id, name, equipe_id')
-        .eq('status', 'ativo')
+        .select('id, name, equipe_id, status')
         .in('role', ['corretor', 'gestor', 'admin']);
 
       if (usersError) throw usersError;
@@ -92,6 +92,7 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
         return {
           id: user.id,
           nome: user.name,
+          status: user.status,
           leadsRecebidos,
           vendasFechadas: vendas,
           tempoMedioResposta,

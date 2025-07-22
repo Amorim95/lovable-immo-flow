@@ -33,6 +33,7 @@ const PerformancePorCorretor = () => {
   const corretor = selectedCorretor || {
     id: "",
     nome: "Nenhum corretor selecionado",
+    status: "ativo",
     leadsRecebidos: 0,
     vendasFechadas: 0,
     tempoMedioResposta: 0,
@@ -132,7 +133,7 @@ const PerformancePorCorretor = () => {
                 <SelectContent>
                   {corretores.map((corretor) => (
                     <SelectItem key={corretor.id} value={corretor.id}>
-                      {corretor.nome}
+                      {corretor.nome} {corretor.status === 'inativo' ? '(Inativo)' : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
