@@ -1,45 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
-import { Download } from "lucide-react";
+import { useEquipePerformance } from "@/hooks/useEquipePerformance";
+import { Download, Loader2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
-
-// Dados fictícios para demonstração
-const equipesFicticias = [
-  {
-    id: "1",
-    nome: "Equipe Zona Sul",
-    leadsTotais: 530,
-    visitas: 90,
-    vendas: 32,
-    tempoMedioResposta: 10,
-    conversao: 6.0,
-    aguardandoAtendimento: 45,
-    tentativasContato: 128,
-    atendeu: 187,
-    visita: 90,
-    vendasFechadas: 32,
-    pausa: 48
-  },
-  {
-    id: "2",
-    nome: "Equipe Centro",
-    leadsTotais: 420,
-    visitas: 75,
-    vendas: 28,
-    tempoMedioResposta: 15,
-    conversao: 6.7,
-    aguardandoAtendimento: 32,
-    tentativasContato: 98,
-    atendeu: 145,
-    visita: 75,
-    vendasFechadas: 28,
-    pausa: 42
-  }
-];
 
 const chartConfig = {
   aguardando: { label: "Aguardando", color: "#64748b" },
@@ -51,11 +18,33 @@ const chartConfig = {
 };
 
 const PerformanceDaEquipe = () => {
-  const [equipeSelecionada, setEquipeSelecionada] = useState("1");
+  const [equipeSelecionada, setEquipeSelecionada] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
 
-  const equipe = equipesFicticias.find(e => e.id === equipeSelecionada) || equipesFicticias[0];
+  // Calcular o range de data baseado no filtro selecionado
+  const dateRange = useMemo(() => {
+    return getDateRangeFromFilter(dateFilter, customDateRange);
+  }, [dateFilter, customDateRange]);
+
+  // Buscar dados reais do banco
+  const { equipes, selectedEquipe, rankingEquipes, loading, error } = useEquipePerformance(equipeSelecionada, dateRange);
+
+  const equipe = selectedEquipe || {
+    id: "",
+    nome: "Nenhuma equipe selecionada",
+    leadsTotais: 0,
+    visitas: 0,
+    vendas: 0,
+    tempoMedioResposta: 0,
+    conversao: 0,
+    aguardandoAtendimento: 0,
+    tentativasContato: 0,
+    atendeu: 0,
+    visita: 0,
+    vendasFechadas: 0,
+    pausa: 0
+  };
 
   const dadosStatus = [
     { name: "Aguardando", value: equipe.aguardandoAtendimento, color: chartConfig.aguardando.color },
@@ -69,7 +58,7 @@ const PerformanceDaEquipe = () => {
   const dadosComparacao = [
     { metric: "Tempo Resposta", value: equipe.tempoMedioResposta, meta: 15, unit: "min" },
     { metric: "Taxa Conversão", value: equipe.conversao, meta: 8, unit: "%" },
-    { metric: "Leads Totais", value: equipe.leadsTotais, meta: 500, unit: "" }
+    { metric: "Leads Totais", value: equipe.leadsTotais, meta: 100, unit: "" }
   ];
 
   const exportarPDF = () => {
@@ -83,11 +72,35 @@ const PerformanceDaEquipe = () => {
     }
   };
 
-  const rankingEquipes = [
-    { posicao: 1, nome: "Equipe Zona Sul", conversao: "22%", tempoResposta: "10 min", vendas: 40 },
-    { posicao: 2, nome: "Equipe Barra", conversao: "19%", tempoResposta: "12 min", vendas: 35 },
-    { posicao: 3, nome: "Equipe Centro", conversao: "17%", tempoResposta: "14 min", vendas: 31 }
+  // Dados evolutivos simulados
+  const dadosEvolutivos = [
+    { mes: "Jan", leads: Math.floor(equipe.leadsTotais * 0.08), vendas: Math.floor(equipe.vendas * 0.08) },
+    { mes: "Fev", leads: Math.floor(equipe.leadsTotais * 0.09), vendas: Math.floor(equipe.vendas * 0.09) },
+    { mes: "Mar", leads: Math.floor(equipe.leadsTotais * 0.07), vendas: Math.floor(equipe.vendas * 0.07) },
+    { mes: "Abr", leads: Math.floor(equipe.leadsTotais * 0.10), vendas: Math.floor(equipe.vendas * 0.10) },
+    { mes: "Mai", leads: Math.floor(equipe.leadsTotais * 0.09), vendas: Math.floor(equipe.vendas * 0.09) },
+    { mes: "Jun", leads: Math.floor(equipe.leadsTotais * 0.08), vendas: Math.floor(equipe.vendas * 0.08) }
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin mr-2" />
+        <span>Carregando dados de performance das equipes...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-600 text-center">
+          <p className="text-xl font-semibold">Erro ao carregar dados</p>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -110,36 +123,40 @@ const PerformanceDaEquipe = () => {
       {/* Ranking das Equipes */}
       <Card>
         <CardHeader>
-          <CardTitle>🏆 Ranking das 3 Melhores Equipes</CardTitle>
+          <CardTitle>🏆 Ranking das Melhores Equipes</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {rankingEquipes.map((equipe) => (
-              <div key={equipe.posicao} className={`p-4 rounded-lg border ${equipe.posicao === 1 ? 'border-yellow-400 bg-yellow-50' : equipe.posicao === 2 ? 'border-gray-400 bg-gray-50' : 'border-orange-400 bg-orange-50'}`}>
+            {rankingEquipes.length > 0 ? rankingEquipes.map((equipeRank) => (
+              <div key={equipeRank.id} className={`p-4 rounded-lg border ${equipeRank.ranking === 1 ? 'border-yellow-400 bg-yellow-50' : equipeRank.ranking === 2 ? 'border-gray-400 bg-gray-50' : 'border-orange-400 bg-orange-50'}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${equipe.posicao === 1 ? 'bg-yellow-400 text-white' : equipe.posicao === 2 ? 'bg-gray-400 text-white' : 'bg-orange-400 text-white'}`}>
-                      {equipe.posicao}
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${equipeRank.ranking === 1 ? 'bg-yellow-400 text-white' : equipeRank.ranking === 2 ? 'bg-gray-400 text-white' : 'bg-orange-400 text-white'}`}>
+                      {equipeRank.ranking}
                     </div>
-                    <h3 className="font-semibold">{equipe.nome}</h3>
+                    <h3 className="font-semibold">{equipeRank.nome}</h3>
                   </div>
                   <div className="flex gap-6 text-sm">
                     <div className="text-center">
-                      <div className="font-semibold text-green-600">{equipe.conversao}</div>
+                      <div className="font-semibold text-green-600">{equipeRank.conversao}%</div>
                       <div className="text-gray-500">Conversão</div>
                     </div>
                     <div className="text-center">
-                      <div className="font-semibold text-blue-600">{equipe.tempoResposta}</div>
+                      <div className="font-semibold text-blue-600">{equipeRank.tempoMedioResposta} min</div>
                       <div className="text-gray-500">Tempo Resp.</div>
                     </div>
                     <div className="text-center">
-                      <div className="font-semibold text-purple-600">{equipe.vendas}</div>
+                      <div className="font-semibold text-purple-600">{equipeRank.vendas}</div>
                       <div className="text-gray-500">Vendas</div>
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="text-center text-gray-500 py-8">
+                Nenhuma equipe encontrada
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -158,7 +175,7 @@ const PerformanceDaEquipe = () => {
                   <SelectValue placeholder="Selecione uma equipe" />
                 </SelectTrigger>
                 <SelectContent>
-                  {equipesFicticias.map((equipe) => (
+                  {equipes.map((equipe) => (
                     <SelectItem key={equipe.id} value={equipe.id}>
                       {equipe.nome}
                     </SelectItem>
@@ -196,7 +213,7 @@ const PerformanceDaEquipe = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-purple-600">{equipe.visitas}</div>
-            <p className="text-sm text-gray-500 mt-1">{((equipe.visitas / equipe.leadsTotais) * 100).toFixed(1)}% dos leads</p>
+            <p className="text-sm text-gray-500 mt-1">{equipe.leadsTotais > 0 ? ((equipe.visitas / equipe.leadsTotais) * 100).toFixed(1) : '0.0'}% dos leads</p>
           </CardContent>
         </Card>
 
@@ -274,14 +291,7 @@ const PerformanceDaEquipe = () => {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[300px]">
-            <LineChart data={[
-              { mes: "Jan", leads: 45, vendas: 3 },
-              { mes: "Fev", leads: 52, vendas: 4 },
-              { mes: "Mar", leads: 48, vendas: 2 },
-              { mes: "Abr", leads: 61, vendas: 5 },
-              { mes: "Mai", leads: 55, vendas: 4 },
-              { mes: "Jun", leads: 49, vendas: 3 }
-            ]}>
+            <LineChart data={dadosEvolutivos}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="mes" />
               <YAxis />
@@ -321,7 +331,7 @@ const PerformanceDaEquipe = () => {
                     </td>
                     <td className="text-right py-3 px-4 font-medium">{item.value}</td>
                     <td className="text-right py-3 px-4">
-                      {((item.value / equipe.leadsTotais) * 100).toFixed(1)}%
+                      {equipe.leadsTotais > 0 ? ((item.value / equipe.leadsTotais) * 100).toFixed(1) : '0.0'}%
                     </td>
                     <td className="text-right py-3 px-4 text-green-600">
                       +{(Math.random() * 10).toFixed(1)}%

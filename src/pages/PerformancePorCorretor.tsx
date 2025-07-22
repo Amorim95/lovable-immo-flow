@@ -1,43 +1,12 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
-import { CalendarIcon, Download } from "lucide-react";
+import { useCorretorPerformance } from "@/hooks/useCorretorPerformance";
+import { CalendarIcon, Download, Loader2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
-
-// Dados fictícios para demonstração
-const corretoresFicticios = [
-  {
-    id: "1",
-    nome: "João Silva",
-    leadsRecebidos: 125,
-    vendasFechadas: 18,
-    tempoMedioResposta: 12,
-    conversao: 14.4,
-    aguardandoAtendimento: 8,
-    tentativasContato: 25,
-    atendeu: 32,
-    visita: 28,
-    vendas: 18,
-    pausa: 14
-  },
-  {
-    id: "2", 
-    nome: "Maria Santos",
-    leadsRecebidos: 98,
-    vendasFechadas: 22,
-    tempoMedioResposta: 8,
-    conversao: 22.4,
-    aguardandoAtendimento: 5,
-    tentativasContato: 18,
-    atendeu: 28,
-    visita: 25,
-    vendas: 22,
-    pausa: 0
-  }
-];
 
 const chartConfig = {
   aguardando: { label: "Aguardando", color: "#64748b" },
@@ -49,11 +18,32 @@ const chartConfig = {
 };
 
 const PerformancePorCorretor = () => {
-  const [corretorSelecionado, setCorretorSelecionado] = useState("1");
+  const [corretorSelecionado, setCorretorSelecionado] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
 
-  const corretor = corretoresFicticios.find(c => c.id === corretorSelecionado) || corretoresFicticios[0];
+  // Calcular o range de data baseado no filtro selecionado
+  const dateRange = useMemo(() => {
+    return getDateRangeFromFilter(dateFilter, customDateRange);
+  }, [dateFilter, customDateRange]);
+
+  // Buscar dados reais do banco
+  const { corretores, selectedCorretor, loading, error } = useCorretorPerformance(corretorSelecionado, dateRange);
+
+  const corretor = selectedCorretor || {
+    id: "",
+    nome: "Nenhum corretor selecionado",
+    leadsRecebidos: 0,
+    vendasFechadas: 0,
+    tempoMedioResposta: 0,
+    conversao: 0,
+    aguardandoAtendimento: 0,
+    tentativasContato: 0,
+    atendeu: 0,
+    visita: 0,
+    vendas: 0,
+    pausa: 0
+  };
 
   const dadosStatus = [
     { name: "Aguardando", value: corretor.aguardandoAtendimento, color: chartConfig.aguardando.color },
@@ -71,7 +61,6 @@ const PerformancePorCorretor = () => {
   ];
 
   const exportarPDF = () => {
-    // Implementação futura do export PDF
     alert("Funcionalidade de export PDF será implementada");
   };
 
@@ -81,6 +70,33 @@ const PerformancePorCorretor = () => {
       setCustomDateRange(customRange);
     }
   };
+
+  // Atualizar corretor selecionado quando os dados carregarem
+  useState(() => {
+    if (corretores.length > 0 && !corretorSelecionado) {
+      setCorretorSelecionado(corretores[0].id);
+    }
+  });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin mr-2" />
+        <span>Carregando dados de performance...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-600 text-center">
+          <p className="text-xl font-semibold">Erro ao carregar dados</p>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -114,7 +130,7 @@ const PerformancePorCorretor = () => {
                   <SelectValue placeholder="Selecione um corretor" />
                 </SelectTrigger>
                 <SelectContent>
-                  {corretoresFicticios.map((corretor) => (
+                  {corretores.map((corretor) => (
                     <SelectItem key={corretor.id} value={corretor.id}>
                       {corretor.nome}
                     </SelectItem>
@@ -245,7 +261,7 @@ const PerformancePorCorretor = () => {
                     </td>
                     <td className="text-right py-3 px-4 font-medium">{item.value}</td>
                     <td className="text-right py-3 px-4">
-                      {((item.value / corretor.leadsRecebidos) * 100).toFixed(1)}%
+                      {corretor.leadsRecebidos > 0 ? ((item.value / corretor.leadsRecebidos) * 100).toFixed(1) : '0.0'}%
                     </td>
                   </tr>
                 ))}

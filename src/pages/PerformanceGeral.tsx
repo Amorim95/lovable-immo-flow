@@ -1,39 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
-import { Download } from "lucide-react";
+import { usePerformanceGeral } from "@/hooks/usePerformanceGeral";
+import { Download, Loader2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from "recharts";
-
-// Dados fictícios gerais da empresa
-const dadosGerais = {
-  leadsTotais: 1250,
-  tempoMedioResposta: 13,
-  tempoMedioPrimeiroContato: 18,
-  conversaoGeral: 6.8,
-  aguardandoAtendimento: 142,
-  tentativasContato: 298,
-  atendeu: 425,
-  visita: 215,
-  vendasFechadas: 85,
-  pausa: 85
-};
-
-const dadosEvolutivos = [
-  { mes: "Jan", leads: 95, vendas: 6, tempoResposta: 15 },
-  { mes: "Fev", leads: 108, vendas: 8, tempoResposta: 14 },
-  { mes: "Mar", leads: 102, vendas: 7, tempoResposta: 12 },
-  { mes: "Abr", leads: 125, vendas: 9, tempoResposta: 13 },
-  { mes: "Mai", leads: 118, vendas: 8, tempoResposta: 11 },
-  { mes: "Jun", leads: 132, vendas: 11, tempoResposta: 10 },
-  { mes: "Jul", leads: 128, vendas: 9, tempoResposta: 12 },
-  { mes: "Ago", leads: 145, vendas: 12, tempoResposta: 13 },
-  { mes: "Set", leads: 139, vendas: 10, tempoResposta: 14 },
-  { mes: "Out", leads: 148, vendas: 13, tempoResposta: 12 },
-  { mes: "Nov", leads: 155, vendas: 15, tempoResposta: 11 },
-  { mes: "Dez", leads: 162, vendas: 17, tempoResposta: 10 }
-];
 
 const chartConfig = {
   aguardando: { label: "Aguardando", color: "#64748b" },
@@ -48,13 +20,21 @@ const PerformanceGeral = () => {
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
 
+  // Calcular o range de data baseado no filtro selecionado
+  const dateRange = useMemo(() => {
+    return getDateRangeFromFilter(dateFilter, customDateRange);
+  }, [dateFilter, customDateRange]);
+
+  // Buscar dados reais do banco
+  const { performanceGeral, evolutionData, loading, error } = usePerformanceGeral(dateRange);
+
   const dadosStatus = [
-    { name: "Aguardando", value: dadosGerais.aguardandoAtendimento, color: chartConfig.aguardando.color },
-    { name: "Tentativas", value: dadosGerais.tentativasContato, color: chartConfig.tentativas.color },
-    { name: "Atendeu", value: dadosGerais.atendeu, color: chartConfig.atendeu.color },
-    { name: "Visita", value: dadosGerais.visita, color: chartConfig.visita.color },
-    { name: "Vendas", value: dadosGerais.vendasFechadas, color: chartConfig.vendas.color },
-    { name: "Pausa", value: dadosGerais.pausa, color: chartConfig.pausa.color }
+    { name: "Aguardando", value: performanceGeral.aguardandoAtendimento, color: chartConfig.aguardando.color },
+    { name: "Tentativas", value: performanceGeral.tentativasContato, color: chartConfig.tentativas.color },
+    { name: "Atendeu", value: performanceGeral.atendeu, color: chartConfig.atendeu.color },
+    { name: "Visita", value: performanceGeral.visita, color: chartConfig.visita.color },
+    { name: "Vendas", value: performanceGeral.vendasFechadas, color: chartConfig.vendas.color },
+    { name: "Pausa", value: performanceGeral.pausa, color: chartConfig.pausa.color }
   ];
 
   const exportarPDF = () => {
@@ -67,6 +47,26 @@ const PerformanceGeral = () => {
       setCustomDateRange(customRange);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin mr-2" />
+        <span>Carregando dados de performance geral...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-600 text-center">
+          <p className="text-xl font-semibold">Erro ao carregar dados</p>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -112,8 +112,10 @@ const PerformanceGeral = () => {
             <CardTitle className="text-lg">Total de Leads</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">{dadosGerais.leadsTotais}</div>
-            <p className="text-sm text-green-600 mt-1">+12.5% vs mês anterior</p>
+            <div className="text-3xl font-bold text-blue-600">{performanceGeral.leadsTotais}</div>
+            <p className="text-sm text-green-600 mt-1">
+              {performanceGeral.crescimentoMensal >= 0 ? '+' : ''}{performanceGeral.crescimentoMensal}% vs mês anterior
+            </p>
           </CardContent>
         </Card>
         
@@ -122,7 +124,7 @@ const PerformanceGeral = () => {
             <CardTitle className="text-lg">Tempo Médio Resposta</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-orange-600">{dadosGerais.tempoMedioResposta} min</div>
+            <div className="text-3xl font-bold text-orange-600">{performanceGeral.tempoMedioResposta} min</div>
             <p className="text-sm text-green-600 mt-1">-2 min vs meta</p>
           </CardContent>
         </Card>
@@ -132,7 +134,7 @@ const PerformanceGeral = () => {
             <CardTitle className="text-lg">Taxa de Conversão</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">{dadosGerais.conversaoGeral}%</div>
+            <div className="text-3xl font-bold text-green-600">{performanceGeral.conversaoGeral}%</div>
             <p className="text-sm text-green-600 mt-1">+0.8% vs mês anterior</p>
           </CardContent>
         </Card>
@@ -142,7 +144,7 @@ const PerformanceGeral = () => {
             <CardTitle className="text-lg">Tempo 1º Contato</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-600">{dadosGerais.tempoMedioPrimeiroContato} min</div>
+            <div className="text-3xl font-bold text-purple-600">{performanceGeral.tempoMedioPrimeiroContato} min</div>
             <p className="text-sm text-yellow-600 mt-1">Meta: 15 min</p>
           </CardContent>
         </Card>
@@ -181,7 +183,7 @@ const PerformanceGeral = () => {
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px]">
-              <AreaChart data={dadosEvolutivos}>
+              <AreaChart data={evolutionData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="mes" />
                 <YAxis />
@@ -217,7 +219,7 @@ const PerformanceGeral = () => {
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[300px]">
-            <LineChart data={dadosEvolutivos}>
+            <LineChart data={evolutionData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="mes" />
               <YAxis />
@@ -262,7 +264,7 @@ const PerformanceGeral = () => {
                       </td>
                       <td className="text-right py-3 px-4 font-medium">{item.value}</td>
                       <td className="text-right py-3 px-4">
-                        {((item.value / dadosGerais.leadsTotais) * 100).toFixed(1)}%
+                        {performanceGeral.leadsTotais > 0 ? ((item.value / performanceGeral.leadsTotais) * 100).toFixed(1) : '0.0'}%
                       </td>
                     </tr>
                   ))}
@@ -281,21 +283,21 @@ const PerformanceGeral = () => {
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                 <span className="font-medium">Tempo Resposta</span>
                 <div className="text-right">
-                  <div className="font-bold">{dadosGerais.tempoMedioResposta} min</div>
+                  <div className="font-bold">{performanceGeral.tempoMedioResposta} min</div>
                   <div className="text-sm text-gray-500">Meta: 15 min</div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                 <span className="font-medium">Taxa Conversão</span>
                 <div className="text-right">
-                  <div className="font-bold">{dadosGerais.conversaoGeral}%</div>
+                  <div className="font-bold">{performanceGeral.conversaoGeral}%</div>
                   <div className="text-sm text-gray-500">Meta: 8%</div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
                 <span className="font-medium">Leads Mensais</span>
                 <div className="text-right">
-                  <div className="font-bold">104</div>
+                  <div className="font-bold">{Math.floor(performanceGeral.leadsTotais / 12)}</div>
                   <div className="text-sm text-gray-500">Meta: 100</div>
                 </div>
               </div>
