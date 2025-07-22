@@ -92,7 +92,7 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
             {isCompact ? "Tags" : "Adicionar/Remover Etiquetas"}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-72 p-4" align="start">
+        <PopoverContent className="w-72 p-4 bg-white dark:bg-gray-800 border shadow-lg z-50" align="start">
           <div className="space-y-3">
             <h4 className="font-medium text-sm">Selecionar Etiquetas</h4>
             <div className="space-y-2">
