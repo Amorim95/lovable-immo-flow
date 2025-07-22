@@ -68,6 +68,42 @@ export type Database = {
         }
         Relationships: []
       }
+      consult_base: {
+        Row: {
+          "Como pretende adquirir o seu imóvel?": string
+          created_at: string
+          id: number
+          Nome: string
+          "Possui algum valor de Entrada?": string
+          "Possui FGTS?": string
+          Telefone: string
+          "Vai comprar sozinho ou vão compor renda familiar?": string
+          "Valor de RENDA aproximado?": string
+        }
+        Insert: {
+          "Como pretende adquirir o seu imóvel?": string
+          created_at?: string
+          id?: number
+          Nome: string
+          "Possui algum valor de Entrada?": string
+          "Possui FGTS?": string
+          Telefone: string
+          "Vai comprar sozinho ou vão compor renda familiar?": string
+          "Valor de RENDA aproximado?": string
+        }
+        Update: {
+          "Como pretende adquirir o seu imóvel?"?: string
+          created_at?: string
+          id?: number
+          Nome?: string
+          "Possui algum valor de Entrada?"?: string
+          "Possui FGTS?"?: string
+          Telefone?: string
+          "Vai comprar sozinho ou vão compor renda familiar?"?: string
+          "Valor de RENDA aproximado?"?: string
+        }
+        Relationships: []
+      }
       equipes: {
         Row: {
           created_at: string
