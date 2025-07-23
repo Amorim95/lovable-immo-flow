@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Lead, Atividade } from "@/types/crm";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
+import { useAuth } from "@/contexts/AuthContext";
 import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ const stageLabels = {
 export default function LeadDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { leads, updateLeadOptimistic } = useLeadsOptimized();
   const [lead, setLead] = useState<Lead | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -67,9 +69,47 @@ export default function LeadDetails() {
           dadosAdicionais: convertedLead.dadosAdicionais,
           etapa: convertedLead.etapa
         });
+        
+        // Registrar atividade de visualização no mobile
+        if (user?.name) {
+          const viewActivity: Atividade = {
+            id: Date.now().toString(),
+            tipo: 'observacao',
+            descricao: `Lead Visualizado às ${new Date().toLocaleString('pt-BR')}`,
+            data: new Date(),
+            corretor: user.name
+          };
+
+          const updatedActivities = [...(convertedLead.atividades || []), viewActivity];
+          const updatedLead = { ...convertedLead, atividades: updatedActivities };
+          setLead(updatedLead);
+
+          // Salvar no banco de dados
+          const saveViewActivity = async () => {
+            try {
+              const atividadesJson = updatedActivities.map(atividade => ({
+                id: atividade.id,
+                tipo: atividade.tipo,
+                descricao: atividade.descricao,
+                data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
+                corretor: atividade.corretor
+              }));
+
+              const { supabase } = await import('@/integrations/supabase/client');
+              await supabase
+                .from('leads')
+                .update({ atividades: atividadesJson })
+                .eq('id', foundLead.id);
+            } catch (error) {
+              console.error('Erro ao salvar atividade de visualização:', error);
+            }
+          };
+
+          saveViewActivity();
+        }
       }
     }
-  }, [id, leads]);
+  }, [id, leads, user]);
 
   const handleSave = async () => {
     if (!lead) return;
@@ -102,9 +142,9 @@ export default function LeadDetails() {
       const activity: Atividade = {
         id: Date.now().toString(),
         tipo: 'whatsapp',
-        descricao: `Tentativa de contato via WhatsApp por: ${lead.corretor}`,
+        descricao: `Tentativa de contato via WhatsApp`,
         data: new Date(),
-        corretor: lead.corretor
+        corretor: user?.name || 'Usuário não identificado'
       };
 
       const updatedActivities = [...(lead.atividades || []), activity];
@@ -147,7 +187,7 @@ export default function LeadDetails() {
         tipo: 'observacao',
         descricao: newActivity,
         data: new Date(),
-        corretor: lead.corretor
+        corretor: user?.name || 'Usuário não identificado'
       };
 
       const updatedActivities = [...(lead.atividades || []), activity];

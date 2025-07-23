@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Lead, Atividade } from "@/types/crm";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ interface LeadModalProps {
 }
 
 export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
+  const { user } = useAuth();
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Partial<Lead>>({});
   const [newActivity, setNewActivity] = useState("");
@@ -85,7 +87,7 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
       tipo: 'observacao',
       descricao: newActivity,
       data: new Date(),
-      corretor: lead.corretor
+      corretor: user?.name || 'Usuário não identificado'
     };
 
     const updatedActivities = [...lead.atividades, activity];
@@ -131,9 +133,9 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
     const activity: Atividade = {
       id: Date.now().toString(),
       tipo: 'observacao',
-      descricao: `Primeira tentativa de contato Por: ${lead.corretor}`,
+      descricao: `Primeira tentativa de contato`,
       data: new Date(),
-      corretor: lead.corretor
+      corretor: user?.name || 'Usuário não identificado'
     };
 
     const updatedActivities = [...lead.atividades, activity];

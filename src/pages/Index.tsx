@@ -10,6 +10,7 @@ import { UserFilter } from "@/components/UserFilter";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
@@ -22,6 +23,7 @@ import {
 const Index = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
@@ -58,9 +60,9 @@ const Index = () => {
       const viewActivity = {
         id: Date.now().toString(),
         tipo: 'observacao' as const,
-        descricao: `Lead Visualizado Por: ${lead.corretor} às ${new Date().toLocaleString('pt-BR')}`,
+        descricao: `Lead Visualizado às ${new Date().toLocaleString('pt-BR')}`,
         data: new Date(),
-        corretor: lead.corretor
+        corretor: user?.name || 'Usuário não identificado'
       };
 
       const updatedLead = {
