@@ -37,9 +37,6 @@ const PerformanceGeral = () => {
     { name: "Pausa", value: performanceGeral.pausa, color: chartConfig.pausa.color }
   ];
 
-  const exportarPDF = () => {
-    alert("Funcionalidade de export PDF será implementada");
-  };
 
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
     setDateFilter(option);
@@ -80,10 +77,6 @@ const PerformanceGeral = () => {
             <p className="text-gray-600 mt-1">Visão consolidada de toda a empresa</p>
           </div>
         </div>
-        <Button onClick={exportarPDF} className="flex items-center gap-2">
-          <Download className="w-4 h-4" />
-          Exportar PDF
-        </Button>
       </div>
 
       {/* Filtros */}

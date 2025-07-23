@@ -61,9 +61,6 @@ const PerformancePorCorretor = () => {
     { metric: "Leads Recebidos", value: corretor.leadsRecebidos, unit: "" }
   ];
 
-  const exportarPDF = () => {
-    alert("Funcionalidade de export PDF será implementada");
-  };
 
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
     setDateFilter(option);
@@ -111,10 +108,6 @@ const PerformancePorCorretor = () => {
             <p className="text-gray-600 mt-1">Análise detalhada de performance individual</p>
           </div>
         </div>
-        <Button onClick={exportarPDF} className="flex items-center gap-2">
-          <Download className="w-4 h-4" />
-          Exportar PDF
-        </Button>
       </div>
 
       {/* Filtros */}

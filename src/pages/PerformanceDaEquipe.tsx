@@ -61,9 +61,6 @@ const PerformanceDaEquipe = () => {
     { metric: "Leads Totais", value: equipe.leadsTotais, meta: 100, unit: "" }
   ];
 
-  const exportarPDF = () => {
-    alert("Funcionalidade de export PDF será implementada");
-  };
 
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
     setDateFilter(option);
@@ -114,10 +111,6 @@ const PerformanceDaEquipe = () => {
             <p className="text-gray-600 mt-1">Análise consolidada da performance da equipe</p>
           </div>
         </div>
-        <Button onClick={exportarPDF} className="flex items-center gap-2">
-          <Download className="w-4 h-4" />
-          Exportar PDF
-        </Button>
       </div>
 
       {/* Ranking das Equipes */}

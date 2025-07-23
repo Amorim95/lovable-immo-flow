@@ -29,9 +29,6 @@ const Dashboards = () => {
   // Buscar métricas reais do banco de dados
   const { metrics, loading, error } = useDashboardMetrics(dateRange);
 
-  const exportarPDF = () => {
-    alert("Funcionalidade de export PDF será implementada");
-  };
 
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
     setDateFilter(option);
@@ -52,13 +49,7 @@ const Dashboards = () => {
       {/* Filtros e Export */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
             <CardTitle>Métricas Gerais</CardTitle>
-            <Button onClick={exportarPDF} className="flex items-center gap-2">
-              <Download className="w-4 h-4" />
-              Exportar PDF
-            </Button>
-          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
