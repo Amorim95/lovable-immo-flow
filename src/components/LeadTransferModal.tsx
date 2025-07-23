@@ -148,7 +148,7 @@ export function LeadTransferModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md animate-scale-in">
+      <DialogContent className="sm:max-w-lg animate-scale-in">
         <DialogHeader>
           <DialogTitle>Transferir Lead</DialogTitle>
           <div className="text-sm text-muted-foreground">
@@ -171,7 +171,7 @@ export function LeadTransferModal({
           </div>
 
           {/* Lista de usuários */}
-          <div className="border rounded-lg max-h-64 overflow-y-auto">
+          <div className="border rounded-lg max-h-80 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center p-8">
                 <Loader2 className="w-6 h-6 animate-spin" />
