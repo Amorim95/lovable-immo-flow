@@ -166,7 +166,7 @@ export function LeadTransferModal({
               placeholder="Buscar usuário por nome ou email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-9"
             />
           </div>
 
