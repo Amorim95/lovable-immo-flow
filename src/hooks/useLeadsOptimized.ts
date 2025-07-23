@@ -101,6 +101,10 @@ export function useLeadsOptimized() {
             if (updates.telefone !== undefined) updatedLead.telefone = updates.telefone;
             if (updates.dadosAdicionais !== undefined) updatedLead.dados_adicionais = updates.dadosAdicionais;
             if (updates.etapa !== undefined) updatedLead.etapa = updates.etapa;
+            if (updates.userId !== undefined) {
+              updatedLead.user_id = updates.userId;
+              updatedLead.user = { name: updates.corretor || 'Novo Corretor', equipe_id: undefined };
+            }
             
             // Atualizar atividades
             if (updates.atividades !== undefined) {
@@ -137,6 +141,7 @@ export function useLeadsOptimized() {
       if (updates.telefone !== undefined) supabaseUpdates.telefone = updates.telefone;
       if (updates.dadosAdicionais !== undefined) supabaseUpdates.dados_adicionais = updates.dadosAdicionais;
       if (updates.etapa !== undefined) supabaseUpdates.etapa = updates.etapa;
+      if (updates.userId !== undefined) supabaseUpdates.user_id = updates.userId;
       
       // Atualizar atividades no banco se foram modificadas
       if (updates.atividades !== undefined) {

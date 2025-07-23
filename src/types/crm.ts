@@ -13,6 +13,7 @@ export interface Lead {
   corretor: string;
   atividades: Atividade[];
   status: 'ativo' | 'inativo';
+  userId?: string;
 }
 
 export type LeadStage = 

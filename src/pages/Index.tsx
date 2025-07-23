@@ -248,6 +248,7 @@ const Index = () => {
               leads={filteredLeads}
               onLeadClick={handleLeadClick}
               onLeadUpdate={handleLeadUpdate}
+              onOptimisticUpdate={updateLeadOptimistic}
             />
           </div>
         ) : (
@@ -257,6 +258,7 @@ const Index = () => {
               onLeadUpdate={handleLeadUpdate}
               onLeadClick={handleLeadClick}
               onCreateLead={handleCreateLeadInStage}
+              onOptimisticUpdate={updateLeadOptimistic}
             />
           </div>
         )}

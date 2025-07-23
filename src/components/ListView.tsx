@@ -21,6 +21,7 @@ interface ListViewProps {
   leads: (Lead & { userId?: string })[];
   onLeadClick: (lead: Lead) => void;
   onLeadUpdate: (leadId: string, updates: Partial<Lead>) => void;
+  onOptimisticUpdate?: (leadId: string, updates: Partial<Lead>) => void;
 }
 
 const stageLabels = {
@@ -41,7 +42,7 @@ const stageColors = {
   'em-pausa': 'bg-orange-100 text-orange-800'
 };
 
-export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
+export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate }: ListViewProps) {
   const { isAdmin, isGestor } = useUserRole();
   const [transferModalData, setTransferModalData] = useState<{
     isOpen: boolean;
@@ -97,9 +98,14 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
     }
   };
 
-  const handleTransferComplete = () => {
+  const handleTransferComplete = (newUserId?: string, newUserName?: string) => {
+    if (transferModalData && newUserId && newUserName && onOptimisticUpdate) {
+      onOptimisticUpdate(transferModalData.leadId, { 
+        userId: newUserId, 
+        corretor: newUserName 
+      });
+    }
     setTransferModalData(null);
-    // Os dados serão atualizados automaticamente pelo hook useLeadsOptimized
   };
 
   return (

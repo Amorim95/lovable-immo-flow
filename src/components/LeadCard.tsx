@@ -14,6 +14,7 @@ interface LeadCardProps {
   onClick: () => void;
   onUpdate: (updates: Partial<Lead>) => void;
   userId?: string; // ID do usuário proprietário do lead
+  onOptimisticUpdate?: (leadId: string, updates: Partial<Lead>) => void;
 }
 
 const tagConfig: Record<LeadTag, { label: string; className: string }> = {
@@ -31,7 +32,7 @@ const tagConfig: Record<LeadTag, { label: string; className: string }> = {
   }
 };
 
-export function LeadCard({ lead, onClick, onUpdate, userId }: LeadCardProps) {
+export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }: LeadCardProps) {
   const { isAdmin, isGestor } = useUserRole();
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   
@@ -71,10 +72,16 @@ export function LeadCard({ lead, onClick, onUpdate, userId }: LeadCardProps) {
     }
   };
 
-  const handleTransferComplete = () => {
-    // Fechar modal com animação suave
+  const handleTransferComplete = (newUserId?: string, newUserName?: string) => {
+    // Fechar modal
     setIsTransferModalOpen(false);
-    // Os dados serão atualizados automaticamente pelo hook useLeadsOptimized
+    // Atualizar dados localmente para exibição imediata
+    if (newUserId && newUserName && onOptimisticUpdate) {
+      onOptimisticUpdate(lead.id, { 
+        userId: newUserId, 
+        corretor: newUserName 
+      });
+    }
   };
 
   return (

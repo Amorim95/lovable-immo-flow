@@ -24,7 +24,7 @@ interface LeadTransferModalProps {
   leadName: string;
   currentOwnerId: string;
   currentOwnerName: string;
-  onTransferComplete: () => void;
+  onTransferComplete: (newUserId?: string, newUserName?: string) => void;
 }
 
 export function LeadTransferModal({
@@ -106,10 +106,12 @@ export function LeadTransferModal({
         description: `Lead "${leadName}" foi transferido com sucesso.`,
       });
 
-      // Aguardar um pouco para o usuário ver o feedback
+      // Encontrar o nome do novo usuário selecionado
+      const newUser = users.find(u => u.id === selectedUserId);
+      
+      // Aguardar um pouco para o usuário ver o feedback e fechar o modal
       setTimeout(() => {
-        onTransferComplete();
-        onClose();
+        onTransferComplete(selectedUserId, newUser?.name || 'Novo Corretor');
       }, 500);
     } catch (error) {
       console.error('Erro ao transferir lead:', error);
@@ -189,8 +191,13 @@ export function LeadTransferModal({
                         ? 'bg-primary/10 border-primary border animate-scale-in' 
                         : 'hover:bg-muted/50'
                     }`}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
                     onClick={(e) => {
                       e.stopPropagation();
+                      e.preventDefault();
                       setSelectedUserId(user.id);
                     }}
                   >

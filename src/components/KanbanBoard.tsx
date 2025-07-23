@@ -42,9 +42,10 @@ interface KanbanBoardProps {
   onLeadUpdate: (leadId: string, updates: Partial<Lead>) => void;
   onLeadClick: (lead: Lead) => void;
   onCreateLead?: (stage: LeadStage) => void; // Nova prop para criar lead em etapa específica
+  onOptimisticUpdate?: (leadId: string, updates: Partial<Lead>) => void;
 }
 
-export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead }: KanbanBoardProps) {
+export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, onOptimisticUpdate }: KanbanBoardProps) {
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
 
   const handleDragStart = (e: React.DragEvent, lead: Lead) => {
@@ -121,6 +122,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead }: 
                     onClick={() => onLeadClick(lead)}
                     onUpdate={(updates) => onLeadUpdate(lead.id, updates)}
                     userId={lead.userId}
+                    onOptimisticUpdate={onOptimisticUpdate}
                   />
                 </div>
               ))}
