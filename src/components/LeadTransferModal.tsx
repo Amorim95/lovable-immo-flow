@@ -148,7 +148,11 @@ export function LeadTransferModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-lg animate-scale-in">
+      <DialogContent 
+        className="sm:max-w-lg animate-scale-in" 
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <DialogHeader>
           <DialogTitle>Transferir Lead</DialogTitle>
           <div className="text-sm text-muted-foreground">
