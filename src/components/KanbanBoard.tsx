@@ -38,7 +38,7 @@ const stageConfig = {
 };
 
 interface KanbanBoardProps {
-  leads: Lead[];
+  leads: (Lead & { userId?: string })[];
   onLeadUpdate: (leadId: string, updates: Partial<Lead>) => void;
   onLeadClick: (lead: Lead) => void;
   onCreateLead?: (stage: LeadStage) => void; // Nova prop para criar lead em etapa específica
@@ -120,6 +120,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead }: 
                     lead={lead}
                     onClick={() => onLeadClick(lead)}
                     onUpdate={(updates) => onLeadUpdate(lead.id, updates)}
+                    userId={lead.userId}
                   />
                 </div>
               ))}

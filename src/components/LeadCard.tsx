@@ -1,15 +1,19 @@
 
+import { useState } from "react";
 import { Lead, LeadTag } from "@/types/crm";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TagSelector } from "@/components/TagSelector";
-import { Phone, User, Calendar } from "lucide-react";
+import { LeadTransferModal } from "@/components/LeadTransferModal";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Phone, User, Calendar, ArrowRightLeft } from "lucide-react";
 
 interface LeadCardProps {
   lead: Lead;
   onClick: () => void;
   onUpdate: (updates: Partial<Lead>) => void;
+  userId?: string; // ID do usuário proprietário do lead
 }
 
 const tagConfig: Record<LeadTag, { label: string; className: string }> = {
@@ -27,7 +31,12 @@ const tagConfig: Record<LeadTag, { label: string; className: string }> = {
   }
 };
 
-export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
+export function LeadCard({ lead, onClick, onUpdate, userId }: LeadCardProps) {
+  const { isAdmin, isGestor } = useUserRole();
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  
+  const canTransfer = isAdmin || isGestor;
+  
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -53,6 +62,18 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
 
   const handleTagsChange = (newTags: LeadTag[]) => {
     onUpdate({ etiquetas: newTags });
+  };
+
+  const handleCorretorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (canTransfer) {
+      setIsTransferModalOpen(true);
+    }
+  };
+
+  const handleTransferComplete = () => {
+    // Recarregar os dados do lead após a transferência
+    window.location.reload(); // Simples reload para garantir que os dados sejam atualizados
   };
 
   return (
@@ -96,9 +117,18 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
         {/* Corretor */}
         <div className="flex justify-between items-center mb-3">
           <span className="text-xs text-gray-500">Corretor:</span>
-          <Badge variant="outline" className="text-xs">
-            {lead.corretor}
-          </Badge>
+          <div 
+            className={`flex items-center gap-1 ${canTransfer ? 'cursor-pointer hover:bg-muted/50 rounded p-1 -m-1' : ''}`}
+            onClick={handleCorretorClick}
+            title={canTransfer ? 'Clique para transferir lead' : undefined}
+          >
+            <Badge variant="outline" className="text-xs">
+              {lead.corretor}
+            </Badge>
+            {canTransfer && (
+              <ArrowRightLeft className="w-3 h-3 text-muted-foreground ml-1" />
+            )}
+          </div>
         </div>
 
         {/* Botão de ação único */}
@@ -114,6 +144,17 @@ export function LeadCard({ lead, onClick, onUpdate }: LeadCardProps) {
           </Button>
         </div>
       </CardContent>
+      
+      {/* Modal de Transferência */}
+      <LeadTransferModal
+        isOpen={isTransferModalOpen}
+        onClose={() => setIsTransferModalOpen(false)}
+        leadId={lead.id}
+        leadName={lead.nome}
+        currentOwnerId={userId || lead.id}
+        currentOwnerName={lead.corretor}
+        onTransferComplete={handleTransferComplete}
+      />
     </Card>
   );
 }

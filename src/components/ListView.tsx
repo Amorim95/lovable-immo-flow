@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Lead, LeadTag } from "@/types/crm";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,10 +13,12 @@ import {
 } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TagSelector } from "@/components/TagSelector";
-import { Phone } from "lucide-react";
+import { LeadTransferModal } from "@/components/LeadTransferModal";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Phone, ArrowRightLeft } from "lucide-react";
 
 interface ListViewProps {
-  leads: Lead[];
+  leads: (Lead & { userId?: string })[];
   onLeadClick: (lead: Lead) => void;
   onLeadUpdate: (leadId: string, updates: Partial<Lead>) => void;
 }
@@ -39,6 +42,17 @@ const stageColors = {
 };
 
 export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
+  const { isAdmin, isGestor } = useUserRole();
+  const [transferModalData, setTransferModalData] = useState<{
+    isOpen: boolean;
+    leadId: string;
+    leadName: string;
+    currentOwnerId: string;
+    currentOwnerName: string;
+  } | null>(null);
+  
+  const canTransfer = isAdmin || isGestor;
+  
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -68,6 +82,25 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
 
   const handleStageChange = (leadId: string, newStage: Lead['etapa']) => {
     onLeadUpdate(leadId, { etapa: newStage });
+  };
+
+  const handleCorretorClick = (lead: Lead & { userId?: string }, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (canTransfer) {
+      setTransferModalData({
+        isOpen: true,
+        leadId: lead.id,
+        leadName: lead.nome,
+        currentOwnerId: lead.userId || lead.id,
+        currentOwnerName: lead.corretor
+      });
+    }
+  };
+
+  const handleTransferComplete = () => {
+    setTransferModalData(null);
+    // Recarregar os dados do lead após a transferência
+    window.location.reload();
   };
 
   return (
@@ -134,7 +167,18 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
                   variant="compact"
                 />
               </TableCell>
-              <TableCell>{lead.corretor}</TableCell>
+              <TableCell>
+                <div 
+                  className={`flex items-center gap-1 ${canTransfer ? 'cursor-pointer hover:bg-muted/50 rounded p-1 -m-1' : ''}`}
+                  onClick={(e) => handleCorretorClick(lead, e)}
+                  title={canTransfer ? 'Clique para transferir lead' : undefined}
+                >
+                  <span>{lead.corretor}</span>
+                  {canTransfer && (
+                    <ArrowRightLeft className="w-3 h-3 text-muted-foreground ml-1" />
+                  )}
+                </div>
+              </TableCell>
               <TableCell>{formatDate(lead.dataCriacao)}</TableCell>
               <TableCell>
                 <Button
@@ -149,6 +193,19 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
           ))}
         </TableBody>
       </Table>
+      
+      {/* Modal de Transferência */}
+      {transferModalData && (
+        <LeadTransferModal
+          isOpen={transferModalData.isOpen}
+          onClose={() => setTransferModalData(null)}
+          leadId={transferModalData.leadId}
+          leadName={transferModalData.leadName}
+          currentOwnerId={transferModalData.currentOwnerId}
+          currentOwnerName={transferModalData.currentOwnerName}
+          onTransferComplete={handleTransferComplete}
+        />
+      )}
     </div>
   );
 }

@@ -90,7 +90,7 @@ const Index = () => {
   };
 
   // Converter dados do Supabase para formato da interface
-  const convertedLeads: Lead[] = leads.map(lead => ({
+  const convertedLeads: (Lead & { userId: string })[] = leads.map(lead => ({
     id: lead.id,
     nome: lead.nome,
     telefone: lead.telefone,
@@ -109,7 +109,8 @@ const Index = () => {
       data: new Date(atividade.data),
       corretor: atividade.corretor
     })),
-    status: 'ativo'
+    status: 'ativo',
+    userId: lead.user_id || lead.id // Incluir o user_id real
   }));
 
   const filteredLeads = convertedLeads.filter(lead => {
