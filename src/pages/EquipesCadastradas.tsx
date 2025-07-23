@@ -43,11 +43,10 @@ const EquipesCadastradas = () => {
         return;
       }
 
-      // Carregar todos os usuários ativos
+      // Carregar todos os usuários (ativos e inativos)
       const { data: corretoresData, error: corretoresError } = await supabase
         .from('users')
         .select('*')
-        .eq('status', 'ativo')
         .order('name');
 
       if (corretoresError) {

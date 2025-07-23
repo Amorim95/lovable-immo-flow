@@ -91,7 +91,6 @@ export default function MobileEquipes() {
       const { data, error } = await supabase
         .from('users')
         .select('id, name, email, role, status, equipe_id')
-        .eq('status', 'ativo')
         .order('name');
 
       if (error) throw error;
