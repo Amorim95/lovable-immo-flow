@@ -99,8 +99,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate }: ListViewProps) {
 
   const handleTransferComplete = () => {
     setTransferModalData(null);
-    // Recarregar os dados do lead após a transferência
-    window.location.reload();
+    // Os dados serão atualizados automaticamente pelo hook useLeadsOptimized
   };
 
   return (

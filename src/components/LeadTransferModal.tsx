@@ -106,8 +106,11 @@ export function LeadTransferModal({
         description: `Lead "${leadName}" foi transferido com sucesso.`,
       });
 
-      onTransferComplete();
-      onClose();
+      // Aguardar um pouco para o usuário ver o feedback
+      setTimeout(() => {
+        onTransferComplete();
+        onClose();
+      }, 500);
     } catch (error) {
       console.error('Erro ao transferir lead:', error);
       toast({
@@ -143,7 +146,7 @@ export function LeadTransferModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md animate-scale-in">
         <DialogHeader>
           <DialogTitle>Transferir Lead</DialogTitle>
           <div className="text-sm text-muted-foreground">
@@ -181,9 +184,9 @@ export function LeadTransferModal({
                 {filteredUsers.map((user) => (
                   <div
                     key={user.id}
-                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                    className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all duration-300 hover-scale ${
                       selectedUserId === user.id 
-                        ? 'bg-primary/10 border-primary border' 
+                        ? 'bg-primary/10 border-primary border animate-scale-in' 
                         : 'hover:bg-muted/50'
                     }`}
                     onClick={(e) => {

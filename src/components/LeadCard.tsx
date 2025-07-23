@@ -72,8 +72,9 @@ export function LeadCard({ lead, onClick, onUpdate, userId }: LeadCardProps) {
   };
 
   const handleTransferComplete = () => {
-    // Recarregar os dados do lead após a transferência
-    window.location.reload(); // Simples reload para garantir que os dados sejam atualizados
+    // Fechar modal com animação suave
+    setIsTransferModalOpen(false);
+    // Os dados serão atualizados automaticamente pelo hook useLeadsOptimized
   };
 
   return (
