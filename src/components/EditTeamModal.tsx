@@ -192,9 +192,7 @@ export function EditTeamModal({
     }
   };
 
-  const corretoresDisponiveis = corretores.filter(corretor => 
-    corretor.status === 'ativo'
-  );
+  const corretoresDisponiveis = corretores;
 
   const responsaveisFiltrados = corretoresDisponiveis.filter(corretor =>
     corretor.nome.toLowerCase().includes(searchResponsavel.toLowerCase()) ||
