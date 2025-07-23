@@ -70,6 +70,7 @@ export type Database = {
       }
       consult_base: {
         Row: {
+          anuncio: string | null
           "Como pretende adquirir o seu imóvel?": string
           created_at: string
           id: number
@@ -81,6 +82,7 @@ export type Database = {
           "Valor de RENDA aproximado?": string
         }
         Insert: {
+          anuncio?: string | null
           "Como pretende adquirir o seu imóvel?": string
           created_at?: string
           id?: number
@@ -92,6 +94,7 @@ export type Database = {
           "Valor de RENDA aproximado?": string
         }
         Update: {
+          anuncio?: string | null
           "Como pretende adquirir o seu imóvel?"?: string
           created_at?: string
           id?: number
