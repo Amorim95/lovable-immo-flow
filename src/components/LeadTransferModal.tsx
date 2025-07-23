@@ -186,7 +186,10 @@ export function LeadTransferModal({
                         ? 'bg-primary/10 border-primary border' 
                         : 'hover:bg-muted/50'
                     }`}
-                    onClick={() => setSelectedUserId(user.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedUserId(user.id);
+                    }}
                   >
                     <Avatar className="w-8 h-8">
                       <div className="w-full h-full bg-muted flex items-center justify-center">
