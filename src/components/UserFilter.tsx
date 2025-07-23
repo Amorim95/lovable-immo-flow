@@ -10,6 +10,7 @@ interface Usuario {
   name: string;
   email: string;
   role: string;
+  status: 'ativo' | 'inativo' | 'pendente';
   equipe_id: string | null;
 }
 
@@ -34,11 +35,10 @@ export function UserFilter({
     try {
       setLoading(true);
       
-      // Carregar usuários ativos
+      // Carregar todos os usuários (ativos e inativos)
       const { data: usuariosData, error: usuariosError } = await supabase
         .from('users')
-        .select('id, name, email, role, equipe_id')
-        .eq('status', 'ativo')
+        .select('id, name, email, role, status, equipe_id')
         .order('name');
 
       if (usuariosError) {
@@ -88,7 +88,17 @@ export function UserFilter({
           {usuariosFiltrados.map((usuario) => (
             <SelectItem key={usuario.id} value={usuario.id}>
               <div className="flex flex-col text-left">
-                <span className="font-medium">{usuario.name}</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{usuario.name}</span>
+                  <span className={`text-xs px-1 py-0.5 rounded ${
+                    usuario.status === 'ativo' ? 'bg-green-100 text-green-800' : 
+                    usuario.status === 'inativo' ? 'bg-red-100 text-red-800' : 
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {usuario.status === 'ativo' ? 'Ativo' : 
+                     usuario.status === 'inativo' ? 'Inativo' : 'Pendente'}
+                  </span>
+                </div>
                 <span className="text-xs text-muted-foreground">{usuario.email}</span>
                 <span className="text-xs text-muted-foreground capitalize">{usuario.role}</span>
               </div>
