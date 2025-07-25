@@ -1,0 +1,77 @@
+{
+  "name": "Click Imóveis - Sistema de Gestão de Leads",
+  "short_name": "Click Imóveis",
+  "description": "Sistema completo de CRM para imobiliárias com gestão de leads, dashboards e integração com Meta Ads",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Acessar dashboard principal",
+      "url": "/dashboards",
+      "icons": [
+        {
+          "src": "/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Leads",
+      "short_name": "Leads",
+      "description": "Gerenciar leads",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

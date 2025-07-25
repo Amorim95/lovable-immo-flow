@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { CRMSidebar } from "@/components/CRMSidebar";
 import { MobileTabBar } from "@/components/MobileTabBar";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
+import { PWALifecycle } from "@/components/PWALifecycle";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CompanyProvider, useCompany } from "@/contexts/CompanyContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -129,10 +131,12 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PWALifecycle />
       <BrowserRouter>
         <CompanyProvider>
           <AuthProvider>
             <AppContent />
+            <PWAInstallPrompt />
           </AuthProvider>
         </CompanyProvider>
       </BrowserRouter>
