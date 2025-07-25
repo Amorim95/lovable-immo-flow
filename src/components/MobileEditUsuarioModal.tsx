@@ -46,6 +46,7 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const { user } = useAuth();
   const { isAdmin, isGestor } = useUserRole();
 
@@ -66,6 +67,12 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
       });
     }
   }, [corretor]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setFocusedField(null);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,6 +187,10 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
                 onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                 placeholder="Nome completo"
                 required
+                readOnly={focusedField !== 'nome'}
+                onFocus={() => setFocusedField('nome')}
+                onBlur={() => setFocusedField(null)}
+                className={focusedField !== 'nome' ? 'cursor-pointer' : ''}
               />
             </div>
 
@@ -192,6 +203,10 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="email@exemplo.com"
                 required
+                readOnly={focusedField !== 'email'}
+                onFocus={() => setFocusedField('email')}
+                onBlur={() => setFocusedField(null)}
+                className={focusedField !== 'email' ? 'cursor-pointer' : ''}
               />
             </div>
 
@@ -202,6 +217,10 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
                 value={formData.telefone}
                 onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                 placeholder="(11) 99999-9999"
+                readOnly={focusedField !== 'telefone'}
+                onFocus={() => setFocusedField('telefone')}
+                onBlur={() => setFocusedField(null)}
+                className={focusedField !== 'telefone' ? 'cursor-pointer' : ''}
               />
             </div>
           </div>
