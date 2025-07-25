@@ -132,11 +132,11 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <PWALifecycle />
       <BrowserRouter>
         <CompanyProvider>
           <DynamicPWAUpdater />
           <AuthProvider>
+            <PWALifecycle />
             <AppContent />
             <PWAInstallPrompt />
           </AuthProvider>
