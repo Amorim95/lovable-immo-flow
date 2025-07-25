@@ -57,20 +57,7 @@ const Index = () => {
       navigate(`/lead/${lead.id}`);
     } else {
       // No desktop, abrir modal
-      const viewActivity = {
-        id: Date.now().toString(),
-        tipo: 'observacao' as const,
-        descricao: `Lead Visualizado às ${new Date().toLocaleString('pt-BR')}`,
-        data: new Date(),
-        corretor: user?.name || 'Usuário não identificado'
-      };
-
-      const updatedLead = {
-        ...lead,
-        atividades: [...lead.atividades, viewActivity]
-      };
-
-      setSelectedLead(updatedLead);
+      setSelectedLead(lead);
       setIsModalOpen(true);
     }
   };

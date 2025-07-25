@@ -39,6 +39,7 @@ export function useLeadsOptimized() {
     loadLeads();
   }, [user, isAdmin, isGestor, isCorretor, roleLoading]);
 
+
   const loadLeads = async () => {
     if (!user) return;
 

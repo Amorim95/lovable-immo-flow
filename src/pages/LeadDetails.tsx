@@ -69,47 +69,9 @@ export default function LeadDetails() {
           dadosAdicionais: convertedLead.dadosAdicionais,
           etapa: convertedLead.etapa
         });
-        
-        // Registrar atividade de visualização no mobile
-        if (user?.name) {
-          const viewActivity: Atividade = {
-            id: Date.now().toString(),
-            tipo: 'observacao',
-            descricao: `Lead Visualizado às ${new Date().toLocaleString('pt-BR')}`,
-            data: new Date(),
-            corretor: user.name
-          };
-
-          const updatedActivities = [...(convertedLead.atividades || []), viewActivity];
-          const updatedLead = { ...convertedLead, atividades: updatedActivities };
-          setLead(updatedLead);
-
-          // Salvar no banco de dados
-          const saveViewActivity = async () => {
-            try {
-              const atividadesJson = updatedActivities.map(atividade => ({
-                id: atividade.id,
-                tipo: atividade.tipo,
-                descricao: atividade.descricao,
-                data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
-                corretor: atividade.corretor
-              }));
-
-              const { supabase } = await import('@/integrations/supabase/client');
-              await supabase
-                .from('leads')
-                .update({ atividades: atividadesJson })
-                .eq('id', foundLead.id);
-            } catch (error) {
-              console.error('Erro ao salvar atividade de visualização:', error);
-            }
-          };
-
-          saveViewActivity();
-        }
       }
     }
-  }, [id, leads, user]);
+  }, [id, leads]);
 
   const handleSave = async () => {
     if (!lead) return;
