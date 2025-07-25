@@ -187,10 +187,11 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
                 onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                 placeholder="Nome completo"
                 required
-                readOnly={focusedField !== 'nome'}
-                onFocus={() => setFocusedField('nome')}
+                onClick={() => {
+                  setFocusedField('nome');
+                  document.getElementById('nome')?.focus();
+                }}
                 onBlur={() => setFocusedField(null)}
-                className={focusedField !== 'nome' ? 'cursor-pointer' : ''}
               />
             </div>
 
@@ -203,10 +204,11 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 placeholder="email@exemplo.com"
                 required
-                readOnly={focusedField !== 'email'}
-                onFocus={() => setFocusedField('email')}
+                onClick={() => {
+                  setFocusedField('email');
+                  document.getElementById('email')?.focus();
+                }}
                 onBlur={() => setFocusedField(null)}
-                className={focusedField !== 'email' ? 'cursor-pointer' : ''}
               />
             </div>
 
@@ -217,10 +219,11 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
                 value={formData.telefone}
                 onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                 placeholder="(11) 99999-9999"
-                readOnly={focusedField !== 'telefone'}
-                onFocus={() => setFocusedField('telefone')}
+                onClick={() => {
+                  setFocusedField('telefone');
+                  document.getElementById('telefone')?.focus();
+                }}
                 onBlur={() => setFocusedField(null)}
-                className={focusedField !== 'telefone' ? 'cursor-pointer' : ''}
               />
             </div>
           </div>
