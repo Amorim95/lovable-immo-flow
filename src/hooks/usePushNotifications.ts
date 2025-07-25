@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 export function usePushNotifications() {
-  const { user } = useAuth();
+  const auth = useAuth();
+  const user = auth?.user;
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
 

@@ -9,6 +9,7 @@ import { CRMSidebar } from "@/components/CRMSidebar";
 import { MobileTabBar } from "@/components/MobileTabBar";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWALifecycle } from "@/components/PWALifecycle";
+import { PushNotificationManager } from "@/components/PushNotificationManager";
 import { DynamicPWAUpdater } from "@/components/DynamicPWAUpdater";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CompanyProvider, useCompany } from "@/contexts/CompanyContext";
@@ -137,6 +138,7 @@ const App = () => (
           <DynamicPWAUpdater />
           <AuthProvider>
             <PWALifecycle />
+            <PushNotificationManager />
             <AppContent />
             <PWAInstallPrompt />
           </AuthProvider>
