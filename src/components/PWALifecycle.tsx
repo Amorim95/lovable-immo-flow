@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { toast } from 'sonner';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 export function PWALifecycle() {
+  // Initialize push notifications hook
+  usePushNotifications();
   useEffect(() => {
     // Register service worker
     if ('serviceWorker' in navigator) {

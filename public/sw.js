@@ -7,6 +7,70 @@ const urlsToCache = [
   '/manifest.json'
 ];
 
+// Push notification handler
+self.addEventListener('push', (event) => {
+  console.log('Service Worker: Push event received');
+  
+  if (!event.data) {
+    console.log('Service Worker: No data in push event');
+    return;
+  }
+
+  const data = event.data.json();
+  console.log('Service Worker: Push data:', data);
+
+  const options = {
+    body: data.body || 'Acabou de chegar um Lead para você!',
+    icon: '/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png',
+    badge: '/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png',
+    vibrate: [200, 100, 200],
+    data: {
+      url: data.url || '/',
+      leadId: data.leadId
+    },
+    actions: [
+      {
+        action: 'view',
+        title: 'Ver Lead'
+      },
+      {
+        action: 'close',
+        title: 'Fechar'
+      }
+    ],
+    requireInteraction: true,
+    tag: 'lead-notification'
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'Click Imóveis', options)
+  );
+});
+
+// Notification click handler
+self.addEventListener('notificationclick', (event) => {
+  console.log('Service Worker: Notification clicked');
+  
+  event.notification.close();
+
+  if (event.action === 'view') {
+    const leadId = event.notification.data?.leadId;
+    const url = leadId ? `/lead/${leadId}` : '/';
+    
+    event.waitUntil(
+      clients.openWindow(url)
+    );
+  } else if (event.action === 'close') {
+    // Just close the notification
+    return;
+  } else {
+    // Default action - open the app
+    event.waitUntil(
+      clients.openWindow('/')
+    );
+  }
+});
+
 // Install event
 self.addEventListener('install', (event) => {
   event.waitUntil(
