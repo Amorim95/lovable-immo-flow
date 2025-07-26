@@ -17,6 +17,7 @@ export default function MobileConfiguracoes() {
   const navigate = useNavigate();
 
   const canManageUsers = isAdmin || isGestor;
+  const canAccessCompanyData = isAdmin || isGestor;
 
   const handleLogout = async () => {
     await logout();
@@ -38,7 +39,7 @@ export default function MobileConfiguracoes() {
       description: 'Informações e configurações da empresa',
       icon: Building2,
       action: () => navigate('/company-settings'),
-      show: canManageUsers
+      show: canAccessCompanyData
     },
     {
       id: 'users',

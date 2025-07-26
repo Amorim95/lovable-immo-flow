@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useToast } from "@/hooks/use-toast";
 import { SecuritySettings } from "@/components/SecuritySettings";
+import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun, Shield } from "lucide-react";
 
@@ -97,71 +98,88 @@ const Configuracoes = () => {
         </p>
       </div>
 
-      <Tabs defaultValue="empresa" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="empresa" className="flex items-center gap-2">
-            <Edit className="w-4 h-4" />
-            Empresa
-          </TabsTrigger>
-          <TabsTrigger value="seguranca" className="flex items-center gap-2">
-            <Shield className="w-4 h-4" />
-            Acessos e Segurança
-          </TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="seguranca" className="w-full">
+        <AccessControlWrapper
+          allowCorretor={false}
+          fallback={
+            <TabsList className="grid w-full grid-cols-1">
+              <TabsTrigger value="seguranca" className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                Acessos e Segurança
+              </TabsTrigger>
+            </TabsList>
+          }
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="empresa" className="flex items-center gap-2">
+              <Edit className="w-4 h-4" />
+              Empresa
+            </TabsTrigger>
+            <TabsTrigger value="seguranca" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Acessos e Segurança
+            </TabsTrigger>
+          </TabsList>
+        </AccessControlWrapper>
 
-        <TabsContent value="empresa" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Edit className="w-5 h-5" />
-                Dados da Empresa
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="empresa-nome">Nome da Empresa</Label>
-                <Input 
-                  id="empresa-nome" 
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="Nome da sua imobiliária" 
-                />
-              </div>
-              <div>
-                <Label htmlFor="empresa-logo">Logo da Empresa</Label>
-                <div className="mt-2">
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="file"
-                      id="empresa-logo"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="hidden"
-                    />
-                    <Button
-                      variant="outline"
-                      onClick={() => document.getElementById('empresa-logo')?.click()}
-                      className="flex items-center gap-2"
-                    >
-                      <Upload className="w-4 h-4" />
-                      Coloque aqui sua logo
-                    </Button>
-                    {companyLogo && (
-                      <div className="w-16 h-16 border rounded-lg overflow-hidden">
-                        <img 
-                          src={companyLogo} 
-                          alt="Logo da empresa" 
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                    )}
+        <AccessControlWrapper
+          allowCorretor={false}
+          fallback={null}
+        >
+          <TabsContent value="empresa" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Edit className="w-5 h-5" />
+                  Dados da Empresa
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="empresa-nome">Nome da Empresa</Label>
+                  <Input 
+                    id="empresa-nome" 
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="Nome da sua imobiliária" 
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="empresa-logo">Logo da Empresa</Label>
+                  <div className="mt-2">
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="file"
+                        id="empresa-logo"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={() => document.getElementById('empresa-logo')?.click()}
+                        className="flex items-center gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        Coloque aqui sua logo
+                      </Button>
+                      {companyLogo && (
+                        <div className="w-16 h-16 border rounded-lg overflow-hidden">
+                          <img 
+                            src={companyLogo} 
+                            alt="Logo da empresa" 
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <Button className="w-full" onClick={handleSaveCompany}>Salvar Alterações</Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                <Button className="w-full" onClick={handleSaveCompany}>Salvar Alterações</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </AccessControlWrapper>
 
 
         <TabsContent value="seguranca" className="space-y-6">
