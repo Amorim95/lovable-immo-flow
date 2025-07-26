@@ -51,7 +51,7 @@ const menuItems = [
     url: "/configuracoes", 
     icon: Settings,
     description: "Configurações do sistema",
-    requireAdmin: true
+    showForAll: true // Permitir acesso para todos, controle interno na página
   }
 ];
 
@@ -82,7 +82,6 @@ export function CRMSidebar() {
     if (loading) return true; // Mostrar todos durante carregamento
     
     if (item.showForAll) return true;
-    if (item.requireAdmin && !isAdmin) return false;
     if (item.requireAdminOrGestor && !isAdmin && !isGestor) return false;
     
     return true;
