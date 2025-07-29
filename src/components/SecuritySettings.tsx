@@ -8,7 +8,6 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, User, Mail, Phone, Lock, Save } from 'lucide-react';
 
-
 export function SecuritySettings() {
   const { user, updateProfile, changePassword } = useAuth();
   const { toast } = useToast();
@@ -80,6 +79,14 @@ export function SecuritySettings() {
       return;
     }
 
+    if (passwordData.newPassword.length < 6) {
+      toast({
+        title: "Senha muito curta",
+        description: "A nova senha deve ter pelo menos 6 caracteres.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     setIsUpdatingPassword(true);
 
@@ -220,6 +227,11 @@ export function SecuritySettings() {
               />
             </div>
 
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <p className="text-sm text-blue-800">
+                A senha deve ter pelo menos 6 caracteres para maior segurança.
+              </p>
+            </div>
 
             <Button 
               onClick={handleChangePassword}

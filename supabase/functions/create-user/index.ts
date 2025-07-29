@@ -13,9 +13,6 @@ interface CreateUserRequest {
   equipeId?: string
 }
 
-// Senha provisória padrão
-const DEFAULT_TEMP_PASSWORD = 'mudar123'
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -74,8 +71,8 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Usar senha provisória padrão
-    const tempPassword = DEFAULT_TEMP_PASSWORD
+    // Usar senha fixa para acesso imediato
+    const tempPassword = 'mudar123'
 
     // Criar usuário no auth já confirmado para acesso imediato
     const { data: authUser, error: authError } = await supabaseClient.auth.admin.createUser({
