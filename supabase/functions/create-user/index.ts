@@ -13,6 +13,30 @@ interface CreateUserRequest {
   equipeId?: string
 }
 
+// Função para gerar senha segura
+function generateSecurePassword(): string {
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz'
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  const numbers = '0123456789'
+  const special = '!@#$%^&*'
+  
+  // Garantir pelo menos um caractere de cada tipo
+  let password = ''
+  password += lowercase[Math.floor(Math.random() * lowercase.length)]
+  password += uppercase[Math.floor(Math.random() * uppercase.length)]
+  password += numbers[Math.floor(Math.random() * numbers.length)]
+  password += special[Math.floor(Math.random() * special.length)]
+  
+  // Completar até 12 caracteres com caracteres aleatórios
+  const allChars = lowercase + uppercase + numbers + special
+  for (let i = 4; i < 12; i++) {
+    password += allChars[Math.floor(Math.random() * allChars.length)]
+  }
+  
+  // Embaralhar a senha
+  return password.split('').sort(() => Math.random() - 0.5).join('')
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -71,8 +95,8 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Usar senha fixa para acesso imediato
-    const tempPassword = 'mudar123'
+    // Gerar senha temporária segura
+    const tempPassword = generateSecurePassword()
 
     // Criar usuário no auth já confirmado para acesso imediato
     const { data: authUser, error: authError } = await supabaseClient.auth.admin.createUser({

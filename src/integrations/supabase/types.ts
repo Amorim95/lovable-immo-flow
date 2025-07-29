@@ -517,6 +517,10 @@ export type Database = {
         Args: { email_input: string }
         Returns: boolean
       }
+      validate_strong_password: {
+        Args: { password_input: string }
+        Returns: boolean
+      }
       verify_password: {
         Args: { password: string; hash: string }
         Returns: boolean
