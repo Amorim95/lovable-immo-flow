@@ -8,25 +8,6 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, User, Mail, Phone, Lock, Save } from 'lucide-react';
 
-// Função para validar força da senha
-function validateStrongPassword(password: string): boolean {
-  // Senha deve ter pelo menos 8 caracteres
-  if (password.length < 8) return false;
-  
-  // Deve conter pelo menos uma letra maiúscula
-  if (!/[A-Z]/.test(password)) return false;
-  
-  // Deve conter pelo menos uma letra minúscula
-  if (!/[a-z]/.test(password)) return false;
-  
-  // Deve conter pelo menos um número
-  if (!/[0-9]/.test(password)) return false;
-  
-  // Deve conter pelo menos um caractere especial
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) return false;
-  
-  return true;
-}
 
 export function SecuritySettings() {
   const { user, updateProfile, changePassword } = useAuth();
@@ -99,15 +80,6 @@ export function SecuritySettings() {
       return;
     }
 
-    // Validar força da senha
-    if (!validateStrongPassword(passwordData.newPassword)) {
-      toast({
-        title: "Senha muito fraca",
-        description: "A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula, número e caractere especial.",
-        variant: "destructive"
-      });
-      return;
-    }
 
     setIsUpdatingPassword(true);
 
@@ -248,14 +220,6 @@ export function SecuritySettings() {
               />
             </div>
 
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <p className="text-sm text-blue-800">
-                <strong>Requisitos da senha:</strong><br />
-                • Pelo menos 8 caracteres<br />
-                • Uma letra maiúscula e uma minúscula<br />
-                • Um número e um caractere especial (!@#$%^&*)
-              </p>
-            </div>
 
             <Button 
               onClick={handleChangePassword}
