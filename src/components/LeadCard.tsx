@@ -55,10 +55,58 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
     });
   };
 
-  const handleWhatsAppClick = (telefone: string, e: React.MouseEvent) => {
+  const handleWhatsAppClick = async (telefone: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const cleanPhone = telefone.replace(/\D/g, '');
+    
+    // Registrar tentativa de contato via WhatsApp
+    await registerContactAttempt(lead.id, 'whatsapp', telefone);
+    
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
+  };
+
+  // Função para registrar tentativa de contato
+  const registerContactAttempt = async (leadId: string, type: string, telefone: string) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData.user) return;
+
+      // Buscar o lead atual para pegar as atividades existentes
+      const { data: leadData, error: fetchError } = await supabase
+        .from('leads')
+        .select('atividades')
+        .eq('id', leadId)
+        .single();
+
+      if (fetchError) {
+        console.error('Erro ao buscar lead:', fetchError);
+        return;
+      }
+
+      const contactActivity = {
+        id: Date.now().toString(),
+        tipo: type,
+        descricao: `Tentativa de contato via ${type === 'whatsapp' ? 'WhatsApp' : type} para ${telefone}`,
+        data: new Date().toISOString(),
+        corretor: userData.user.user_metadata?.name || userData.user.email || 'Usuário não identificado'
+      };
+
+      const existingActivities = Array.isArray(leadData.atividades) ? leadData.atividades : [];
+      const updatedActivities = [...existingActivities, contactActivity];
+
+      const { error } = await supabase
+        .from('leads')
+        .update({ atividades: updatedActivities })
+        .eq('id', leadId);
+
+      if (error) {
+        console.error('Erro ao registrar tentativa de contato:', error);
+      }
+    } catch (error) {
+      console.error('Erro geral ao registrar contato:', error);
+    }
   };
 
   const handleTagsChange = (newTags: LeadTag[]) => {

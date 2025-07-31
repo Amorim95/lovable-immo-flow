@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit, MessageCircle, History, Plus, Clock } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const stageLabels = {
   'aguardando-atendimento': 'Aguardando Atendimento',
@@ -25,6 +25,7 @@ export default function LeadDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
   const { leads, updateLeadOptimistic } = useLeadsOptimized();
   const [lead, setLead] = useState<Lead | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -84,12 +85,31 @@ export default function LeadDetails() {
       
       if (!userData.user) return;
 
+      const userName = userData.user.user_metadata?.name || userData.user.email || 'Usuário não identificado';
+
+      // Verificar se já existe uma visualização recente (últimos 5 minutos) do mesmo usuário
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      const recentViewByUser = leadData.atividades?.find(atividade => 
+        atividade.tipo === 'observacao' && 
+        atividade.descricao === 'Lead visualizado' &&
+        atividade.corretor === userName &&
+        new Date(atividade.data) > fiveMinutesAgo
+      );
+
+      // Se já visualizou recentemente, não registrar novamente
+      if (recentViewByUser) {
+        console.log('Visualização já registrada nos últimos 5 minutos');
+        return;
+      }
+
+      console.log('Registrando visualização do lead por:', userName);
+
       const viewActivity: Atividade = {
         id: Date.now().toString(),
         tipo: 'observacao',
         descricao: `Lead visualizado`,
         data: new Date(),
-        corretor: userData.user.user_metadata?.name || userData.user.email || 'Usuário não identificado'
+        corretor: userName
       };
 
       const updatedActivities = [...(leadData.atividades || []), viewActivity];
@@ -109,11 +129,14 @@ export default function LeadDetails() {
         .eq('id', leadData.id);
 
       if (!error) {
+        console.log('Visualização registrada com sucesso');
         // Atualizar estado local
         setLead(prev => prev ? { 
           ...prev, 
           atividades: updatedActivities
         } : null);
+      } else {
+        console.error('Erro ao registrar visualização:', error);
       }
     } catch (error) {
       console.error('Erro ao registrar visualização:', error);

@@ -71,10 +71,58 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
     });
   };
 
-  const handleWhatsAppClick = (telefone: string, e: React.MouseEvent) => {
+  const handleWhatsAppClick = async (telefone: string, e: React.MouseEvent, leadId: string) => {
     e.stopPropagation();
     const cleanPhone = telefone.replace(/\D/g, '');
+    
+    // Registrar tentativa de contato via WhatsApp
+    await registerContactAttempt(leadId, 'whatsapp', telefone);
+    
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
+  };
+
+  // Função para registrar tentativa de contato
+  const registerContactAttempt = async (leadId: string, type: string, telefone: string) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData.user) return;
+
+      // Buscar o lead atual para pegar as atividades existentes
+      const { data: leadData, error: fetchError } = await supabase
+        .from('leads')
+        .select('atividades')
+        .eq('id', leadId)
+        .single();
+
+      if (fetchError) {
+        console.error('Erro ao buscar lead:', fetchError);
+        return;
+      }
+
+      const contactActivity = {
+        id: Date.now().toString(),
+        tipo: type,
+        descricao: `Tentativa de contato via ${type === 'whatsapp' ? 'WhatsApp' : type} para ${telefone}`,
+        data: new Date().toISOString(),
+        corretor: userData.user.user_metadata?.name || userData.user.email || 'Usuário não identificado'
+      };
+
+      const existingActivities = Array.isArray(leadData.atividades) ? leadData.atividades : [];
+      const updatedActivities = [...existingActivities, contactActivity];
+
+      const { error } = await supabase
+        .from('leads')
+        .update({ atividades: updatedActivities })
+        .eq('id', leadId);
+
+      if (error) {
+        console.error('Erro ao registrar tentativa de contato:', error);
+      }
+    } catch (error) {
+      console.error('Erro geral ao registrar contato:', error);
+    }
   };
 
   const handleTagsChange = (leadId: string, newTags: LeadTag[]) => {
@@ -138,7 +186,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                     variant="ghost"
                     size="sm"
                     className="h-6 w-6 p-0"
-                    onClick={(e) => handleWhatsAppClick(lead.telefone, e)}
+                    onClick={(e) => handleWhatsAppClick(lead.telefone, e, lead.id)}
                   >
                     <Phone className="w-3 h-3 text-green-600" />
                   </Button>
@@ -189,7 +237,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={(e) => handleWhatsAppClick(lead.telefone, e)}
+                  onClick={(e) => handleWhatsAppClick(lead.telefone, e, lead.id)}
                 >
                   <Phone className="w-3 h-3" />
                 </Button>
