@@ -69,9 +69,56 @@ export default function LeadDetails() {
           dadosAdicionais: convertedLead.dadosAdicionais,
           etapa: convertedLead.etapa
         });
+
+        // Registrar visualização do lead
+        registerLeadView(convertedLead);
       }
     }
   }, [id, leads]);
+
+  // Função para registrar visualização do lead
+  const registerLeadView = async (leadData: Lead) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: userData } = await supabase.auth.getUser();
+      
+      if (!userData.user) return;
+
+      const viewActivity: Atividade = {
+        id: Date.now().toString(),
+        tipo: 'observacao',
+        descricao: `Lead visualizado`,
+        data: new Date(),
+        corretor: userData.user.user_metadata?.name || userData.user.email || 'Usuário não identificado'
+      };
+
+      const updatedActivities = [...(leadData.atividades || []), viewActivity];
+      
+      // Converter atividades para formato JSON correto
+      const atividadesJson = updatedActivities.map(atividade => ({
+        id: atividade.id,
+        tipo: atividade.tipo,
+        descricao: atividade.descricao,
+        data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
+        corretor: atividade.corretor
+      }));
+
+      const { error } = await supabase
+        .from('leads')
+        .update({ atividades: atividadesJson })
+        .eq('id', leadData.id);
+
+      if (!error) {
+        // Atualizar estado local
+        setLead(prev => prev ? { 
+          ...prev, 
+          atividades: updatedActivities
+        } : null);
+      }
+    } catch (error) {
+      console.error('Erro ao registrar visualização:', error);
+    }
+  };
 
   const handleSave = async () => {
     if (!lead) return;
