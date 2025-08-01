@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -81,25 +82,8 @@ const Login = () => {
 
       {/* Container principal */}
       <div className="w-full max-w-md mx-4">
-        {/* Círculo de fundo */}
-        <div className="relative bg-slate-800/40 backdrop-blur-md rounded-full p-12 border border-slate-700/50 shadow-2xl">
-          {/* Logo da empresa */}
-          <div className="flex justify-center mb-8">
-            {settings.logo ? (
-              <div className="w-24 h-24 rounded-full border-2 border-blue-400/50 p-2 bg-slate-800/50">
-                <img 
-                  src={settings.logo} 
-                  alt={settings.name}
-                  className="w-full h-full object-contain rounded-full"
-                />
-              </div>
-            ) : (
-              <div className="w-24 h-24 rounded-full border-2 border-blue-400/50 flex items-center justify-center bg-slate-800/50">
-                <span className="text-white font-bold text-xl">{settings.name.slice(0, 2).toUpperCase()}</span>
-              </div>
-            )}
-          </div>
-
+        {/* Container do formulário */}
+        <div className="relative bg-slate-800/40 backdrop-blur-md rounded-3xl p-8 border border-slate-700/50 shadow-2xl">
           {/* Formulário */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Campo Email */}
