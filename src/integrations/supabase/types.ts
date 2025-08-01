@@ -318,6 +318,7 @@ export type Database = {
           etapa: Database["public"]["Enums"]["lead_stage"]
           id: string
           nome: string
+          primeiro_contato_whatsapp: string | null
           telefone: string
           updated_at: string
           user_id: string
@@ -329,6 +330,7 @@ export type Database = {
           etapa?: Database["public"]["Enums"]["lead_stage"]
           id?: string
           nome: string
+          primeiro_contato_whatsapp?: string | null
           telefone: string
           updated_at?: string
           user_id?: string
@@ -340,6 +342,7 @@ export type Database = {
           etapa?: Database["public"]["Enums"]["lead_stage"]
           id?: string
           nome?: string
+          primeiro_contato_whatsapp?: string | null
           telefone?: string
           updated_at?: string
           user_id?: string

@@ -62,7 +62,7 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
       // 2. Buscar todos os leads no período (se especificado)
       let leadsQuery = supabase
         .from('leads')
-        .select('id, etapa, created_at, user_id');
+        .select('id, etapa, created_at, user_id, primeiro_contato_whatsapp');
 
       if (dateRange?.from && dateRange?.to) {
         leadsQuery = leadsQuery
@@ -87,7 +87,21 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
         const pausa = userLeads.filter(lead => lead.etapa === 'em-pausa').length;
         
         const conversao = leadsRecebidos > 0 ? (vendas / leadsRecebidos) * 100 : 0;
-        const tempoMedioResposta = Math.floor(Math.random() * 15) + 5; // Simulado por enquanto
+        
+        // Calcular tempo médio de resposta real (em horas)
+        const leadsComTempo = userLeads.filter(lead => lead.primeiro_contato_whatsapp);
+        let tempoMedioResposta = 0;
+        
+        if (leadsComTempo.length > 0) {
+          const temposResposta = leadsComTempo.map(lead => {
+            const created = new Date(lead.created_at);
+            const resposta = new Date(lead.primeiro_contato_whatsapp);
+            return (resposta.getTime() - created.getTime()) / (1000 * 60 * 60); // Converter para horas
+          });
+          
+          const somaTempos = temposResposta.reduce((acc, tempo) => acc + tempo, 0);
+          tempoMedioResposta = Number((somaTempos / temposResposta.length).toFixed(1));
+        }
 
         return {
           id: user.id,

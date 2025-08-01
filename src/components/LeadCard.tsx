@@ -59,10 +59,46 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
     e.stopPropagation();
     const cleanPhone = telefone.replace(/\D/g, '');
     
+    // Registrar primeiro contato via WhatsApp se ainda não foi registrado
+    await registerFirstContactWhatsApp(lead.id);
+    
     // Registrar tentativa de contato via WhatsApp
     await registerContactAttempt(lead.id, 'whatsapp', telefone);
     
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
+  };
+
+  // Função para registrar o primeiro contato via WhatsApp
+  const registerFirstContactWhatsApp = async (leadId: string) => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Buscar o lead para verificar se já tem primeiro contato registrado
+      const { data: leadData, error: fetchError } = await supabase
+        .from('leads')
+        .select('primeiro_contato_whatsapp')
+        .eq('id', leadId)
+        .single();
+
+      if (fetchError) {
+        console.error('Erro ao buscar lead:', fetchError);
+        return;
+      }
+
+      // Se ainda não tem primeiro contato registrado, registrar agora
+      if (!leadData.primeiro_contato_whatsapp) {
+        const { error } = await supabase
+          .from('leads')
+          .update({ primeiro_contato_whatsapp: new Date().toISOString() })
+          .eq('id', leadId);
+
+        if (error) {
+          console.error('Erro ao registrar primeiro contato WhatsApp:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Erro geral ao registrar primeiro contato:', error);
+    }
   };
 
   // Função para registrar tentativa de contato

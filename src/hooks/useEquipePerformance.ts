@@ -71,7 +71,7 @@ export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
       // 3. Buscar todos os leads no período
       let leadsQuery = supabase
         .from('leads')
-        .select('id, etapa, created_at, user_id');
+        .select('id, etapa, created_at, user_id, primeiro_contato_whatsapp');
 
       if (dateRange?.from && dateRange?.to) {
         leadsQuery = leadsQuery
@@ -102,7 +102,21 @@ export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
         const pausa = equipeLeads.filter(lead => lead.etapa === 'em-pausa').length;
 
         const conversao = leadsTotais > 0 ? (vendas / leadsTotais) * 100 : 0;
-        const tempoMedioResposta = Math.floor(Math.random() * 20) + 8; // Simulado
+        
+        // Calcular tempo médio de resposta real (em horas)
+        const leadsComTempo = equipeLeads.filter(lead => lead.primeiro_contato_whatsapp);
+        let tempoMedioResposta = 0;
+        
+        if (leadsComTempo.length > 0) {
+          const temposResposta = leadsComTempo.map(lead => {
+            const created = new Date(lead.created_at);
+            const resposta = new Date(lead.primeiro_contato_whatsapp);
+            return (resposta.getTime() - created.getTime()) / (1000 * 60 * 60); // Converter para horas
+          });
+          
+          const somaTempos = temposResposta.reduce((acc, tempo) => acc + tempo, 0);
+          tempoMedioResposta = Number((somaTempos / temposResposta.length).toFixed(1));
+        }
 
         return {
           id: equipe.id,

@@ -70,7 +70,7 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       // 1. Total de Leads
       const { data: leadsData, error: leadsError } = await supabase
         .from('leads')
-        .select('id, etapa, created_at, user_id')
+        .select('id, etapa, created_at, user_id, primeiro_contato_whatsapp')
         .gte('created_at', dateRange?.from?.toISOString() || '1900-01-01')
         .lte('created_at', dateRange?.to?.toISOString() || '2100-01-01');
 
@@ -139,8 +139,20 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       // Para calcular crescimento, comparar com período anterior (implementação simplificada)
       const crescimento = Math.random() * 20 - 5; // Valor temporário para demonstração
 
-      // 6. Tempo médio de atendimento (simulado baseado em dados existentes)
-      const tempoMedioAtendimento = totalLeads > 0 ? Math.floor(Math.random() * 20) + 5 : 0;
+      // 6. Calcular tempo médio de resposta real (em horas)
+      const leadsComTempo = leadsData?.filter(lead => lead.primeiro_contato_whatsapp) || [];
+      let tempoMedioAtendimento = 0;
+      
+      if (leadsComTempo.length > 0) {
+        const temposResposta = leadsComTempo.map(lead => {
+          const created = new Date(lead.created_at);
+          const resposta = new Date(lead.primeiro_contato_whatsapp);
+          return (resposta.getTime() - created.getTime()) / (1000 * 60 * 60); // Converter para horas
+        });
+        
+        const somaTempos = temposResposta.reduce((acc, tempo) => acc + tempo, 0);
+        tempoMedioAtendimento = Number((somaTempos / temposResposta.length).toFixed(1));
+      }
 
       setMetrics({
         totalLeads,

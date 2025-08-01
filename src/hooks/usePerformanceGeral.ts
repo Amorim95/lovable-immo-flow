@@ -62,7 +62,7 @@ export function usePerformanceGeral(dateRange?: DateRange) {
       // 1. Buscar todos os leads no período
       let leadsQuery = supabase
         .from('leads')
-        .select('id, etapa, created_at, user_id');
+        .select('id, etapa, created_at, user_id, primeiro_contato_whatsapp');
 
       if (dateRange?.from && dateRange?.to) {
         leadsQuery = leadsQuery
@@ -84,8 +84,23 @@ export function usePerformanceGeral(dateRange?: DateRange) {
       const pausa = leadsData?.filter(lead => lead.etapa === 'em-pausa').length || 0;
 
       const conversaoGeral = leadsTotais > 0 ? (vendas / leadsTotais) * 100 : 0;
-      const tempoMedioResposta = Math.floor(Math.random() * 10) + 10; // Simulado
-      const tempoMedioPrimeiroContato = Math.floor(Math.random() * 8) + 15; // Simulado
+      
+      // Calcular tempo médio de resposta real (em horas)
+      const leadsComTempo = leadsData?.filter(lead => lead.primeiro_contato_whatsapp) || [];
+      let tempoMedioResposta = 0;
+      let tempoMedioPrimeiroContato = 0;
+      
+      if (leadsComTempo.length > 0) {
+        const temposResposta = leadsComTempo.map(lead => {
+          const created = new Date(lead.created_at);
+          const resposta = new Date(lead.primeiro_contato_whatsapp);
+          return (resposta.getTime() - created.getTime()) / (1000 * 60 * 60); // Converter para horas
+        });
+        
+        const somaTempos = temposResposta.reduce((acc, tempo) => acc + tempo, 0);
+        tempoMedioResposta = Number((somaTempos / temposResposta.length).toFixed(1));
+        tempoMedioPrimeiroContato = tempoMedioResposta; // Mesmo valor pois é o primeiro contato
+      }
 
       // 3. Calcular crescimento mensal (comparar com mês anterior se possível)
       const crescimentoMensal = Math.random() * 20 - 5; // Simulado
