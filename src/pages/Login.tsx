@@ -49,7 +49,7 @@ const Login = () => {
     } else {
       toast({
         title: "Erro no login",
-        description: result.error || "E-mail ou Senha estão Incorretos!\nPor favor, verifique os acessos corretos e tente novamente.",
+        description: "E-mail ou Senha estão Incorretos!\nPor favor, verifique os acessos corretos e tente novamente.",
         variant: "destructive"
       });
     }
