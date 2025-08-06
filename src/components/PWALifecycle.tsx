@@ -5,36 +5,51 @@ export function PWALifecycle() {
   useEffect(() => {
     // Register service worker
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/sw.js')
-          .then((registration) => {
-            console.log('SW registrado com sucesso: ', registration);
-            
-            // Check for updates
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              if (newWorker) {
-                newWorker.addEventListener('statechange', () => {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    // New content is available, prompt user to refresh
-                    toast.info('Nova versão disponível!', {
-                      description: 'Clique para atualizar',
-                      action: {
-                        label: 'Atualizar',
-                        onClick: () => window.location.reload()
-                      },
-                      duration: 10000
-                    });
-                  }
-                });
-              }
-            });
-          })
-          .catch((error) => {
-            console.log('SW registration falhou: ', error);
+      const registerSW = async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('SW registrado com sucesso: ', registration);
+          
+          // Check for updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New content is available, prompt user to refresh
+                  toast.info('Nova versão disponível!', {
+                    description: 'Clique para atualizar',
+                    action: {
+                      label: 'Atualizar',
+                      onClick: () => {
+                        // Skip waiting and activate the new service worker immediately
+                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                        window.location.reload();
+                      }
+                    },
+                    duration: 10000
+                  });
+                }
+              });
+            }
           });
-      });
+
+          // Listen for controlling service worker changes
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            // Service worker updated, reload the page
+            window.location.reload();
+          });
+
+        } catch (error) {
+          console.log('SW registration falhou: ', error);
+        }
+      };
+
+      if (document.readyState === 'loading') {
+        window.addEventListener('load', registerSW);
+      } else {
+        registerSW();
+      }
     }
 
     // Handle online/offline status

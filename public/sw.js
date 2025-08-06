@@ -1,4 +1,4 @@
-const CACHE_NAME = 'click-imoveis-v1';
+const CACHE_NAME = 'click-imoveis-v2';
 const urlsToCache = [
   '/',
   '/static/js/bundle.js',
@@ -73,6 +73,9 @@ self.addEventListener('notificationclick', (event) => {
 
 // Install event
 self.addEventListener('install', (event) => {
+  // Skip waiting to activate immediately
+  self.skipWaiting();
+  
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -102,6 +105,7 @@ self.addEventListener('fetch', (event) => {
 
 // Activate event
 self.addEventListener('activate', (event) => {
+  // Take control immediately
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -112,8 +116,17 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
+    }).then(() => {
+      return self.clients.claim();
     })
   );
+});
+
+// Listen for skip waiting message
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Handle PWA install prompt
