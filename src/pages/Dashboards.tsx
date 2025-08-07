@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
+import { useUserRole } from "@/hooks/useUserRole";
 import { 
   Calendar,
   Users,
@@ -20,6 +21,7 @@ const Dashboards = () => {
   const navigate = useNavigate();
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
+  const { isAdmin, isGestor } = useUserRole();
 
   // Calcular o range de data baseado no filtro selecionado
   const dateRange = useMemo(() => {
@@ -28,6 +30,9 @@ const Dashboards = () => {
 
   // Buscar métricas reais do banco de dados
   const { metrics, loading, error } = useDashboardMetrics(dateRange);
+
+  // Verificar se o usuário pode ver "Performance do Corretor"
+  const canViewCorretorPerformance = isAdmin || isGestor;
 
 
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
@@ -122,36 +127,38 @@ const Dashboards = () => {
 
       {/* Cards de Dashboards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => navigate('/dashboards/performance-corretor')}
-        >
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+        {canViewCorretorPerformance && (
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/dashboards/performance-corretor')}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Users className="w-6 h-6 text-blue-600" />
+                </div>
+                <CardTitle className="text-lg">Performance do Corretor</CardTitle>
               </div>
-              <CardTitle className="text-lg">Performance do Corretor</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 text-sm">
-              Acompanhe o desempenho individual de cada corretor, incluindo leads convertidos, tempo médio de resposta e taxa de conversão.
-            </p>
-            <div className="mt-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Corretor Destaque:</span>
-                <span className="font-medium">{loading ? '...' : metrics.melhorCorretor.nome}</span>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 text-sm">
+                Acompanhe o desempenho individual de cada corretor, incluindo leads convertidos, tempo médio de resposta e taxa de conversão.
+              </p>
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Corretor Destaque:</span>
+                  <span className="font-medium">{loading ? '...' : metrics.melhorCorretor.nome}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Taxa Conversão:</span>
+                  <span className="font-medium text-green-600">
+                    {loading ? '...' : `${metrics.melhorCorretor.taxaConversao}%`}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between text-sm">
-                <span>Taxa Conversão:</span>
-                <span className="font-medium text-green-600">
-                  {loading ? '...' : `${metrics.melhorCorretor.taxaConversao}%`}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         <Card 
           className="cursor-pointer hover:shadow-lg transition-shadow"
