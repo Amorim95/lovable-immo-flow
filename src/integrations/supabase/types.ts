@@ -512,6 +512,10 @@ export type Database = {
         Args: { password: string }
         Returns: string
       }
+      get_next_user_round_robin: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       is_admin: {
         Args: { _user_id: string }
         Returns: boolean
