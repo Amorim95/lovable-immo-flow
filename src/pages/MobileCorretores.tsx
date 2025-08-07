@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Users, Mail, Phone, Settings } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Search, Users, Mail, Phone, Settings, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { UserRoleBadge } from "@/components/UserRoleBadge";
 import { NewCorretorModal } from "@/components/NewCorretorModal";
@@ -32,6 +33,7 @@ interface EquipeSimple {
 export default function MobileCorretores() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedEquipeId, setSelectedEquipeId] = useState<string | null>(null);
   const [isNewCorretorModalOpen, setIsNewCorretorModalOpen] = useState(false);
   const [selectedCorretor, setSelectedCorretor] = useState<Corretor | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -89,11 +91,15 @@ export default function MobileCorretores() {
     equipeNome: equipes.find(e => e.id === user.equipeId)?.nome
   }));
 
-  const filteredCorretores = corretoresWithEquipes.filter(corretor =>
-    corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    corretor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (corretor.equipeNome && corretor.equipeNome.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredCorretores = corretoresWithEquipes.filter(corretor => {
+    const matchesSearch = corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      corretor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (corretor.equipeNome && corretor.equipeNome.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesTeam = !selectedEquipeId || corretor.equipeId === selectedEquipeId;
+    
+    return matchesSearch && matchesTeam;
+  });
 
   const handleCorretorClick = (corretor: Corretor) => {
     setSelectedCorretor(corretor);
@@ -163,8 +169,8 @@ export default function MobileCorretores() {
         }
       />
 
-      {/* Search */}
-      <div className="p-4">
+      {/* Search and Filters */}
+      <div className="p-4 space-y-3">
         <div className="relative">
           <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
           <Input
@@ -173,6 +179,31 @@ export default function MobileCorretores() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
+        </div>
+        
+        {/* Team Filter */}
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-gray-500" />
+          <Select value={selectedEquipeId || 'all'} onValueChange={(value) => setSelectedEquipeId(value === 'all' ? null : value)}>
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder="Todas as equipes" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as equipes</SelectItem>
+              {equipes.map((equipe) => (
+                <SelectItem key={equipe.id} value={equipe.id}>
+                  <div className="flex flex-col text-left">
+                    <span className="font-medium">{equipe.nome}</span>
+                    {equipe.responsavel_nome && (
+                      <span className="text-xs text-muted-foreground">
+                        Resp: {equipe.responsavel_nome}
+                      </span>
+                    )}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
