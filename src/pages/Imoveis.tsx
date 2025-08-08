@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Edit, Share2, Eye, Home, MapPin, Bed, Bath, Car, DollarSign } from "lucide-react";
+import { Plus, Search, Edit, Share2, Eye, Home, MapPin, Bed, Bath, Car, DollarSign, Upload, X, Image, Video } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,8 @@ export default function Imoveis() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedImovel, setSelectedImovel] = useState<Imovel | null>(null);
   const [loading, setLoading] = useState(true);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ file: File; preview: string; type: 'image' | 'video' }>>([]);
+  const [uploading, setUploading] = useState(false);
 
   // Estados do formulário
   const [formData, setFormData] = useState({
@@ -75,7 +77,29 @@ export default function Imoveis() {
       return;
     }
 
+    if (!selectedImovel && uploadedFiles.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Adicione pelo menos uma foto ou vídeo",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      setUploading(true);
+      const user = await supabase.auth.getUser();
+      const userId = user.data.user?.id;
+
+      if (!userId) {
+        toast({
+          title: "Erro",
+          description: "Usuário não autenticado",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const imovelData = {
         preco: parseFloat(formData.preco),
         localizacao: formData.localizacao,
@@ -91,8 +115,10 @@ export default function Imoveis() {
         closet: formData.closet,
         portaria_24h: formData.portaria_24h,
         portao_eletronico: formData.portao_eletronico,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
+        user_id: userId,
       };
+
+      let imovelId: string;
 
       if (selectedImovel) {
         // Atualizar imóvel existente
@@ -102,6 +128,7 @@ export default function Imoveis() {
           .eq('id', selectedImovel.id);
 
         if (error) throw error;
+        imovelId = selectedImovel.id;
 
         toast({
           title: "Sucesso",
@@ -109,11 +136,19 @@ export default function Imoveis() {
         });
       } else {
         // Criar novo imóvel
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('imoveis')
-          .insert(imovelData);
+          .insert(imovelData)
+          .select('id')
+          .single();
 
         if (error) throw error;
+        imovelId = data.id;
+
+        // Upload dos arquivos para novos imóveis
+        if (uploadedFiles.length > 0) {
+          await uploadFiles(imovelId, userId);
+        }
 
         toast({
           title: "Sucesso",
@@ -133,7 +168,85 @@ export default function Imoveis() {
         description: "Não foi possível salvar o imóvel",
         variant: "destructive",
       });
+    } finally {
+      setUploading(false);
     }
+  };
+
+  const uploadFiles = async (imovelId: string, userId: string) => {
+    for (let i = 0; i < uploadedFiles.length; i++) {
+      const { file, type } = uploadedFiles[i];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/${imovelId}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('property-media')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('Erro ao fazer upload:', uploadError);
+        continue;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('property-media')
+        .getPublicUrl(fileName);
+
+      await supabase
+        .from('imovel_midias')
+        .insert({
+          imovel_id: imovelId,
+          tipo: type,
+          url: publicUrl,
+          ordem: i + 1
+        });
+    }
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      if (file.size > 50 * 1024 * 1024) { // 50MB limit
+        toast({
+          title: "Arquivo muito grande",
+          description: `${file.name} excede o limite de 50MB`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const isVideo = file.type.startsWith('video/');
+      const isImage = file.type.startsWith('image/');
+
+      if (!isVideo && !isImage) {
+        toast({
+          title: "Formato não suportado",
+          description: `${file.name} deve ser uma imagem ou vídeo`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const preview = e.target?.result as string;
+        setUploadedFiles(prev => [...prev, {
+          file,
+          preview,
+          type: isVideo ? 'video' : 'image'
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Reset input
+    event.target.value = '';
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const resetForm = () => {
@@ -153,6 +266,7 @@ export default function Imoveis() {
       portaria_24h: false,
       portao_eletronico: false,
     });
+    setUploadedFiles([]);
   };
 
   const handleEdit = (imovel: Imovel) => {
@@ -226,6 +340,69 @@ export default function Imoveis() {
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Upload de Mídias */}
+          <div className="space-y-3">
+            <Label>Fotos e Vídeos *</Label>
+            <div className="border-2 border-dashed border-border rounded-lg p-6">
+              <div className="text-center">
+                <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground mb-2">
+                  Clique para adicionar fotos e vídeos ou arraste aqui
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Formatos: JPG, PNG, MP4, MOV (máx. 50MB cada)
+                </p>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*,video/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="media-upload"
+                />
+                <label
+                  htmlFor="media-upload"
+                  className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90 mt-2"
+                >
+                  Selecionar Arquivos
+                </label>
+              </div>
+            </div>
+            
+            {/* Preview dos arquivos */}
+            {uploadedFiles.length > 0 && (
+              <div className="grid grid-cols-3 gap-3">
+                {uploadedFiles.map((fileObj, index) => (
+                  <div key={index} className="relative group">
+                    <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                      {fileObj.type === 'image' ? (
+                        <img
+                          src={fileObj.preview}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Video className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeFile(index)}
+                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                    <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1 rounded">
+                      {fileObj.type === 'image' ? <Image className="w-3 h-3" /> : <Video className="w-3 h-3" />}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="preco">Preço *</Label>
@@ -352,8 +529,8 @@ export default function Imoveis() {
             <Button type="button" variant="outline" onClick={onClose}>
               Cancelar
             </Button>
-            <Button type="submit">
-              {selectedImovel ? 'Atualizar' : 'Cadastrar'}
+            <Button type="submit" disabled={uploading}>
+              {uploading ? 'Salvando...' : selectedImovel ? 'Atualizar' : 'Cadastrar'}
             </Button>
           </div>
         </form>
