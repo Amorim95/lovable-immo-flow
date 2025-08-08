@@ -56,18 +56,18 @@ const menuItems = [
     requireAdminOrGestor: true
   },
   { 
-    title: "Configurações", 
-    url: "/configuracoes", 
-    icon: Settings,
-    description: "Configurações do sistema",
-    showForAll: true // Permitir acesso para todos, controle interno na página
-  },
-  { 
     title: "Meu Site", 
     url: "/meu-site", 
     icon: Globe,
     description: "Site público",
     showForAll: true
+  },
+  { 
+    title: "Configurações", 
+    url: "/configuracoes", 
+    icon: Settings,
+    description: "Configurações do sistema",
+    showForAll: true // Permitir acesso para todos, controle interno na página
   }
 ];
 
