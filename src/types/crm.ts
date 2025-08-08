@@ -60,18 +60,34 @@ export interface Corretor {
 
 export interface Imovel {
   id: string;
-  titulo: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  preco: number;
+  localizacao: string;
   endereco: string;
-  tipo: 'apartamento' | 'casa' | 'terreno' | 'comercial';
-  valor: number;
-  area: number;
-  quartos?: number;
-  banheiros?: number;
-  vagas?: number;
   descricao: string;
-  fotos: string[];
-  status: 'disponivel' | 'reservado' | 'vendido';
-  corretor: string;
+  quartos?: number;
+  condominio?: number;
+  iptu?: number;
+  vaga_carro: boolean;
+  banheiros?: number;
+  aceita_animais: boolean;
+  condominio_fechado: boolean;
+  closet: boolean;
+  portaria_24h: boolean;
+  portao_eletronico: boolean;
+  publico: boolean;
+  slug: string;
+}
+
+export interface ImovelMidia {
+  id: string;
+  created_at: string;
+  imovel_id: string;
+  url: string;
+  tipo: 'imagem' | 'video';
+  ordem: number;
 }
 
 export interface DashboardData {

@@ -142,6 +142,110 @@ export type Database = {
           },
         ]
       }
+      imoveis: {
+        Row: {
+          aceita_animais: boolean | null
+          banheiros: number | null
+          closet: boolean | null
+          condominio: number | null
+          condominio_fechado: boolean | null
+          created_at: string
+          descricao: string
+          endereco: string
+          id: string
+          iptu: number | null
+          localizacao: string
+          portao_eletronico: boolean | null
+          portaria_24h: boolean | null
+          preco: number
+          publico: boolean | null
+          quartos: number | null
+          slug: string | null
+          updated_at: string
+          user_id: string
+          vaga_carro: boolean | null
+        }
+        Insert: {
+          aceita_animais?: boolean | null
+          banheiros?: number | null
+          closet?: boolean | null
+          condominio?: number | null
+          condominio_fechado?: boolean | null
+          created_at?: string
+          descricao: string
+          endereco: string
+          id?: string
+          iptu?: number | null
+          localizacao: string
+          portao_eletronico?: boolean | null
+          portaria_24h?: boolean | null
+          preco: number
+          publico?: boolean | null
+          quartos?: number | null
+          slug?: string | null
+          updated_at?: string
+          user_id: string
+          vaga_carro?: boolean | null
+        }
+        Update: {
+          aceita_animais?: boolean | null
+          banheiros?: number | null
+          closet?: boolean | null
+          condominio?: number | null
+          condominio_fechado?: boolean | null
+          created_at?: string
+          descricao?: string
+          endereco?: string
+          id?: string
+          iptu?: number | null
+          localizacao?: string
+          portao_eletronico?: boolean | null
+          portaria_24h?: boolean | null
+          preco?: number
+          publico?: boolean | null
+          quartos?: number | null
+          slug?: string | null
+          updated_at?: string
+          user_id?: string
+          vaga_carro?: boolean | null
+        }
+        Relationships: []
+      }
+      imovel_midias: {
+        Row: {
+          created_at: string
+          id: string
+          imovel_id: string
+          ordem: number | null
+          tipo: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          imovel_id: string
+          ordem?: number | null
+          tipo: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          imovel_id?: string
+          ordem?: number | null
+          tipo?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "imovel_midias_imovel_id_fkey"
+            columns: ["imovel_id"]
+            isOneToOne: false
+            referencedRelation: "imoveis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitations: {
         Row: {
           accepted_at: string | null

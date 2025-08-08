@@ -21,7 +21,9 @@ import {
   LayoutList, 
   Calendar,
   Users,
-  Settings
+  Settings,
+  Building2,
+  Globe
 } from "lucide-react";
 
 const menuItems = [
@@ -40,6 +42,14 @@ const menuItems = [
     showForAll: true
   },
   { 
+    title: "Imóveis", 
+    url: "/imoveis", 
+    icon: Building2,
+    description: "Gestão de imóveis",
+    showForAll: true,
+    badge: "Em desenvolvimento"
+  },
+  { 
     title: "Corretores", 
     url: "/corretores", 
     icon: Users,
@@ -52,6 +62,13 @@ const menuItems = [
     icon: Settings,
     description: "Configurações do sistema",
     showForAll: true // Permitir acesso para todos, controle interno na página
+  },
+  { 
+    title: "Meu Site", 
+    url: "/meu-site", 
+    icon: Globe,
+    description: "Site público",
+    showForAll: true
   }
 ];
 
@@ -128,7 +145,14 @@ export function CRMSidebar() {
                       <item.icon className={`${collapsed ? "w-6 h-6" : "w-5 h-5"} flex-shrink-0`} />
                       {!collapsed && (
                         <div className="flex flex-col gap-1">
-                          <span className="text-base font-medium leading-tight">{item.title}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-base font-medium leading-tight">{item.title}</span>
+                            {item.badge && (
+                              <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded-md">
+                                {item.badge}
+                              </span>
+                            )}
+                          </div>
                           <span className="text-sm opacity-70 leading-tight">{item.description}</span>
                         </div>
                       )}

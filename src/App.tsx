@@ -30,6 +30,8 @@ import PerformanceGeral from "./pages/PerformanceGeral";
 import Corretores from "./pages/Corretores";
 import EquipesCadastradas from "./pages/EquipesCadastradas";
 import Imoveis from "./pages/Imoveis";
+import MeuSite from "./pages/MeuSite";
+import ImovelPublico from "./pages/ImovelPublico";
 import Configuracoes from "./pages/Configuracoes";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -62,6 +64,7 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/imovel-publico/:slug" element={<ImovelPublico />} />
       <Route path="/*" element={
         <ProtectedRoute>
           {isMobile ? (
@@ -114,6 +117,7 @@ function AppContent() {
                       <Route path="/corretores" element={<Corretores />} />
                       <Route path="/equipes" element={<EquipesCadastradas />} />
                       <Route path="/imoveis" element={<Imoveis />} />
+                      <Route path="/meu-site" element={<MeuSite />} />
                       <Route path="/configuracoes" element={<Configuracoes />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>

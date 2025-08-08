@@ -1,272 +1,561 @@
-
-import { useState } from "react";
-import { Imovel } from "@/types/crm";
+import { useState, useEffect } from "react";
+import { Plus, Search, Edit, Share2, Eye, Home, MapPin, Bed, Bath, Car, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { 
-  Plus,
-  Edit
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { Imovel, ImovelMidia } from "@/types/crm";
 
-const mockImoveis: Imovel[] = [
-  {
-    id: '1',
-    titulo: 'Apartamento 2 quartos - Centro',
-    endereco: 'Rua das Flores, 123 - Centro, São Paulo - SP',
-    tipo: 'apartamento',
-    valor: 350000,
-    area: 65,
-    quartos: 2,
-    banheiros: 1,
-    vagas: 1,
-    descricao: 'Apartamento moderno com 2 quartos, sala ampla, cozinha americana e varanda. Localizado no centro da cidade com fácil acesso ao transporte público.',
-    fotos: [],
-    status: 'disponivel',
-    corretor: 'Maria Santos'
-  },
-  {
-    id: '2',
-    titulo: 'Casa 3 quartos - Vila Prudente',
-    endereco: 'Av. Vila Prudente, 456 - Vila Prudente, São Paulo - SP',
-    tipo: 'casa',
-    valor: 480000,
-    area: 120,
-    quartos: 3,
-    banheiros: 2,
-    vagas: 2,
-    descricao: 'Casa térrea com 3 quartos, sendo 1 suíte, sala de estar e jantar, cozinha ampla, área de serviço e quintal.',
-    fotos: [],
-    status: 'disponivel',
-    corretor: 'Pedro Oliveira'
-  },
-  {
-    id: '3',
-    titulo: 'Apartamento 1 quarto - Mooca',
-    endereco: 'Rua da Mooca, 789 - Mooca, São Paulo - SP',
-    tipo: 'apartamento',
-    valor: 280000,
-    area: 45,
-    quartos: 1,
-    banheiros: 1,
-    vagas: 1,
-    descricao: 'Apartamento compacto e funcional, ideal para solteiros ou casais. Prédio com portaria 24h e área de lazer.',
-    fotos: [],
-    status: 'reservado',
-    corretor: 'Maria Santos'
-  },
-  {
-    id: '4',
-    titulo: 'Casa 4 quartos - Tatuapé',
-    endereco: 'Rua do Tatuapé, 321 - Tatuapé, São Paulo - SP',
-    tipo: 'casa',
-    valor: 750000,
-    area: 200,
-    quartos: 4,
-    banheiros: 3,
-    vagas: 3,
-    descricao: 'Casa de alto padrão com 4 quartos, sendo 2 suítes, sala de estar, sala de jantar, cozinha gourmet, área gourmet e piscina.',
-    fotos: [],
-    status: 'disponivel',
-    corretor: 'Pedro Oliveira'
-  }
-];
+export default function Imoveis() {
+  const [imoveis, setImoveis] = useState<Imovel[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedImovel, setSelectedImovel] = useState<Imovel | null>(null);
+  const [loading, setLoading] = useState(true);
 
-const statusConfig = {
-  'disponivel': { label: 'Disponível', color: 'bg-green-100 text-green-800' },
-  'reservado': { label: 'Reservado', color: 'bg-yellow-100 text-yellow-800' },
-  'vendido': { label: 'Vendido', color: 'bg-gray-100 text-gray-800' }
-};
+  // Estados do formulário
+  const [formData, setFormData] = useState({
+    preco: "",
+    localizacao: "",
+    endereco: "",
+    descricao: "",
+    quartos: "",
+    condominio: "",
+    iptu: "",
+    banheiros: "",
+    vaga_carro: false,
+    aceita_animais: false,
+    condominio_fechado: false,
+    closet: false,
+    portaria_24h: false,
+    portao_eletronico: false,
+  });
 
-const tipoConfig = {
-  'apartamento': 'Apartamento',
-  'casa': 'Casa',
-  'terreno': 'Terreno',
-  'comercial': 'Comercial'
-};
+  useEffect(() => {
+    fetchImoveis();
+  }, []);
 
-const Imoveis = () => {
-  const [imoveis, setImoveis] = useState<Imovel[]>(mockImoveis);
-  const [searchTerm, setSearchTerm] = useState('');
+  const fetchImoveis = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('imoveis')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setImoveis(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar imóveis:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os imóveis",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.preco || !formData.localizacao || !formData.endereco || !formData.descricao) {
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const imovelData = {
+        preco: parseFloat(formData.preco),
+        localizacao: formData.localizacao,
+        endereco: formData.endereco,
+        descricao: formData.descricao,
+        quartos: formData.quartos ? parseInt(formData.quartos) : null,
+        condominio: formData.condominio ? parseFloat(formData.condominio) : null,
+        iptu: formData.iptu ? parseFloat(formData.iptu) : null,
+        banheiros: formData.banheiros ? parseInt(formData.banheiros) : null,
+        vaga_carro: formData.vaga_carro,
+        aceita_animais: formData.aceita_animais,
+        condominio_fechado: formData.condominio_fechado,
+        closet: formData.closet,
+        portaria_24h: formData.portaria_24h,
+        portao_eletronico: formData.portao_eletronico,
+        user_id: (await supabase.auth.getUser()).data.user?.id,
+      };
+
+      if (selectedImovel) {
+        // Atualizar imóvel existente
+        const { error } = await supabase
+          .from('imoveis')
+          .update(imovelData)
+          .eq('id', selectedImovel.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Sucesso",
+          description: "Imóvel atualizado com sucesso!",
+        });
+      } else {
+        // Criar novo imóvel
+        const { error } = await supabase
+          .from('imoveis')
+          .insert(imovelData);
+
+        if (error) throw error;
+
+        toast({
+          title: "Sucesso",
+          description: "Imóvel cadastrado com sucesso!",
+        });
+      }
+
+      setIsCreateModalOpen(false);
+      setIsEditModalOpen(false);
+      setSelectedImovel(null);
+      resetForm();
+      fetchImoveis();
+    } catch (error) {
+      console.error('Erro ao salvar imóvel:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar o imóvel",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      preco: "",
+      localizacao: "",
+      endereco: "",
+      descricao: "",
+      quartos: "",
+      condominio: "",
+      iptu: "",
+      banheiros: "",
+      vaga_carro: false,
+      aceita_animais: false,
+      condominio_fechado: false,
+      closet: false,
+      portaria_24h: false,
+      portao_eletronico: false,
+    });
+  };
+
+  const handleEdit = (imovel: Imovel) => {
+    setSelectedImovel(imovel);
+    setFormData({
+      preco: imovel.preco.toString(),
+      localizacao: imovel.localizacao,
+      endereco: imovel.endereco,
+      descricao: imovel.descricao,
+      quartos: imovel.quartos?.toString() || "",
+      condominio: imovel.condominio?.toString() || "",
+      iptu: imovel.iptu?.toString() || "",
+      banheiros: imovel.banheiros?.toString() || "",
+      vaga_carro: imovel.vaga_carro,
+      aceita_animais: imovel.aceita_animais,
+      condominio_fechado: imovel.condominio_fechado,
+      closet: imovel.closet,
+      portaria_24h: imovel.portaria_24h,
+      portao_eletronico: imovel.portao_eletronico,
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleShare = async (imovel: Imovel) => {
+    try {
+      // Tornar o imóvel público se não estiver
+      if (!imovel.publico) {
+        const { error } = await supabase
+          .from('imoveis')
+          .update({ publico: true })
+          .eq('id', imovel.id);
+
+        if (error) throw error;
+      }
+
+      const shareUrl = `${window.location.origin}/imovel-publico/${imovel.slug}`;
+      await navigator.clipboard.writeText(shareUrl);
+      
+      toast({
+        title: "Link copiado!",
+        description: "O link público do imóvel foi copiado para a área de transferência",
+      });
+    } catch (error) {
+      console.error('Erro ao compartilhar imóvel:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar o link de compartilhamento",
+        variant: "destructive",
+      });
+    }
+  };
 
   const filteredImoveis = imoveis.filter(imovel =>
-    imovel.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
     imovel.endereco.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    imovel.corretor.toLowerCase().includes(searchTerm.toLowerCase())
+    imovel.localizacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    imovel.descricao.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(price);
+  };
+
+  const FormModal = ({ isOpen, onClose, title }: { isOpen: boolean; onClose: () => void; title: string }) => (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="preco">Preço *</Label>
+              <Input
+                id="preco"
+                type="number"
+                step="0.01"
+                value={formData.preco}
+                onChange={(e) => setFormData({ ...formData, preco: e.target.value })}
+                placeholder="Ex: 450000"
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="localizacao">Localização *</Label>
+              <Input
+                id="localizacao"
+                value={formData.localizacao}
+                onChange={(e) => setFormData({ ...formData, localizacao: e.target.value })}
+                placeholder="Ex: Bairro, Cidade"
+                required
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="endereco">Endereço Completo *</Label>
+            <Input
+              id="endereco"
+              value={formData.endereco}
+              onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
+              placeholder="Ex: Rua das Flores, 123"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="descricao">Descrição *</Label>
+            <Textarea
+              id="descricao"
+              value={formData.descricao}
+              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
+              placeholder="Descreva o imóvel..."
+              rows={3}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <Label htmlFor="quartos">Quartos</Label>
+              <Input
+                id="quartos"
+                type="number"
+                value={formData.quartos}
+                onChange={(e) => setFormData({ ...formData, quartos: e.target.value })}
+                placeholder="0"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="banheiros">Banheiros</Label>
+              <Input
+                id="banheiros"
+                type="number"
+                value={formData.banheiros}
+                onChange={(e) => setFormData({ ...formData, banheiros: e.target.value })}
+                placeholder="0"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="condominio">Condomínio</Label>
+              <Input
+                id="condominio"
+                type="number"
+                step="0.01"
+                value={formData.condominio}
+                onChange={(e) => setFormData({ ...formData, condominio: e.target.value })}
+                placeholder="0.00"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="iptu">IPTU</Label>
+              <Input
+                id="iptu"
+                type="number"
+                step="0.01"
+                value={formData.iptu}
+                onChange={(e) => setFormData({ ...formData, iptu: e.target.value })}
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <Label>Etiquetas</Label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { key: 'vaga_carro', label: 'Vaga de carro' },
+                { key: 'aceita_animais', label: 'Aceita animais' },
+                { key: 'condominio_fechado', label: 'Condomínio fechado' },
+                { key: 'closet', label: 'Closet' },
+                { key: 'portaria_24h', label: 'Portaria 24h' },
+                { key: 'portao_eletronico', label: 'Portão eletrônico' },
+              ].map(({ key, label }) => (
+                <div key={key} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={key}
+                    checked={formData[key as keyof typeof formData] as boolean}
+                    onCheckedChange={(checked) => 
+                      setFormData({ ...formData, [key]: checked })
+                    }
+                  />
+                  <Label htmlFor={key} className="text-sm">{label}</Label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button type="submit">
+              {selectedImovel ? 'Atualizar' : 'Cadastrar'}
+            </Button>
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Carregando imóveis...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Cadastro de Imóveis</h1>
-          <p className="text-gray-600 mt-1">
-            Gerencie todos os imóveis disponíveis para venda
-          </p>
+          <h1 className="text-2xl font-bold">Imóveis</h1>
+          <p className="text-muted-foreground">Gerencie seus imóveis cadastrados</p>
         </div>
         
-        <Button className="bg-primary hover:bg-primary/90">
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Imóvel
-        </Button>
+        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => { resetForm(); setSelectedImovel(null); }}>
+              <Plus className="w-4 h-4 mr-2" />
+              Cadastrar Imóvel
+            </Button>
+          </DialogTrigger>
+        </Dialog>
+      </div>
+
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        <Input
+          placeholder="Buscar por endereço, localização ou descrição..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10"
+        />
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Edit className="w-6 h-6 text-blue-600" />
-              </div>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Home className="w-5 h-5 text-blue-600" />
               <div>
-                <p className="text-2xl font-bold text-gray-900">{imoveis.length}</p>
-                <p className="text-sm text-gray-600">Total de Imóveis</p>
+                <p className="text-sm text-muted-foreground">Total de Imóveis</p>
+                <p className="text-2xl font-bold">{imoveis.length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-
+        
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Edit className="w-6 h-6 text-green-600" />
-              </div>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Eye className="w-5 h-5 text-green-600" />
               <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {imoveis.filter(i => i.status === 'disponivel').length}
-                </p>
-                <p className="text-sm text-gray-600">Disponíveis</p>
+                <p className="text-sm text-muted-foreground">Públicos</p>
+                <p className="text-2xl font-bold">{imoveis.filter(i => i.publico).length}</p>
               </div>
             </div>
           </CardContent>
         </Card>
-
+        
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Edit className="w-6 h-6 text-yellow-600" />
-              </div>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-yellow-600" />
               <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {imoveis.filter(i => i.status === 'reservado').length}
+                <p className="text-sm text-muted-foreground">Valor Médio</p>
+                <p className="text-xl font-bold">
+                  {imoveis.length > 0 
+                    ? formatPrice(imoveis.reduce((acc, curr) => acc + curr.preco, 0) / imoveis.length)
+                    : formatPrice(0)
+                  }
                 </p>
-                <p className="text-sm text-gray-600">Reservados</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Edit className="w-6 h-6 text-gray-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">
-                  {imoveis.filter(i => i.status === 'vendido').length}
-                </p>
-                <p className="text-sm text-gray-600">Vendidos</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filtros */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
-            <Input
-              placeholder="Buscar imóveis..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-sm"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Lista de Imóveis */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Imóveis Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredImoveis.map((imovel) => (
           <Card key={imovel.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <CardTitle className="text-lg">{imovel.titulo}</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">{imovel.endereco}</p>
+                  <CardTitle className="text-lg">{formatPrice(imovel.preco)}</CardTitle>
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                    <MapPin className="w-4 h-4" />
+                    <span>{imovel.localizacao}</span>
+                  </div>
                 </div>
-                <Badge className={statusConfig[imovel.status].color}>
-                  {statusConfig[imovel.status].label}
-                </Badge>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleEdit(imovel)}
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleShare(imovel)}
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline">{tipoConfig[imovel.tipo]}</Badge>
-                  <span className="text-2xl font-bold text-primary">
-                    {imovel.valor.toLocaleString('pt-BR', {
-                      style: 'currency',
-                      currency: 'BRL'
-                    })}
-                  </span>
-                </div>
+            
+            <CardContent className="space-y-3">
+              <p className="text-sm">{imovel.endereco}</p>
+              
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {imovel.descricao}
+              </p>
 
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Área:</span>
-                    <span className="font-medium">{imovel.area}m²</span>
+              {/* Características */}
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                {imovel.quartos && (
+                  <div className="flex items-center gap-1">
+                    <Bed className="w-4 h-4" />
+                    <span>{imovel.quartos}</span>
                   </div>
-                  {imovel.quartos && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Quartos:</span>
-                      <span className="font-medium">{imovel.quartos}</span>
-                    </div>
-                  )}
-                  {imovel.banheiros && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Banheiros:</span>
-                      <span className="font-medium">{imovel.banheiros}</span>
-                    </div>
-                  )}
-                  {imovel.vagas && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Vagas:</span>
-                      <span className="font-medium">{imovel.vagas}</span>
-                    </div>
-                  )}
-                </div>
+                )}
+                {imovel.banheiros && (
+                  <div className="flex items-center gap-1">
+                    <Bath className="w-4 h-4" />
+                    <span>{imovel.banheiros}</span>
+                  </div>
+                )}
+                {imovel.vaga_carro && (
+                  <div className="flex items-center gap-1">
+                    <Car className="w-4 h-4" />
+                    <span>Vaga</span>
+                  </div>
+                )}
+              </div>
 
-                <p className="text-sm text-gray-600 line-clamp-3">
-                  {imovel.descricao}
-                </p>
-
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Corretor: {imovel.corretor}</span>
-                </div>
-
-                <div className="flex gap-2 pt-3">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Edit className="w-3 h-3 mr-1" />
-                    Editar
-                  </Button>
-                  <Button variant="default" size="sm" className="flex-1">
-                    Ver Detalhes
-                  </Button>
-                </div>
+              {/* Tags */}
+              <div className="flex flex-wrap gap-1">
+                {imovel.publico && (
+                  <Badge variant="secondary" className="text-xs">Público</Badge>
+                )}
+                {imovel.aceita_animais && (
+                  <Badge variant="outline" className="text-xs">Pet Friendly</Badge>
+                )}
+                {imovel.condominio_fechado && (
+                  <Badge variant="outline" className="text-xs">Condomínio Fechado</Badge>
+                )}
+                {imovel.portaria_24h && (
+                  <Badge variant="outline" className="text-xs">Portaria 24h</Badge>
+                )}
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {filteredImoveis.length === 0 && (
+        <div className="text-center py-12">
+          <Home className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-muted-foreground mb-2">
+            {searchTerm ? 'Nenhum imóvel encontrado' : 'Nenhum imóvel cadastrado'}
+          </h3>
+          <p className="text-muted-foreground">
+            {searchTerm 
+              ? 'Tente ajustar os filtros de busca' 
+              : 'Comece cadastrando seu primeiro imóvel'
+            }
+          </p>
+        </div>
+      )}
+
+      {/* Modals */}
+      <FormModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+        title="Cadastrar Novo Imóvel" 
+      />
+      
+      <FormModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        title="Editar Imóvel" 
+      />
     </div>
   );
-};
-
-export default Imoveis;
+}
