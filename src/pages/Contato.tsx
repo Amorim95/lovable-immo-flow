@@ -50,7 +50,7 @@ export default function Contato() {
                 <h2 className="text-xl font-semibold mb-6 text-center">Nossas Informações</h2>
                 
                 <div className="space-y-6">
-                  {settings.site_email && (
+                  {settings.site_email ? (
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                         <Mail className="w-6 h-6 text-primary" />
@@ -65,9 +65,19 @@ export default function Contato() {
                         </a>
                       </div>
                     </div>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Mail className="w-6 h-6 text-gray-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-500">Email</p>
+                        <p className="text-sm text-gray-400">Não configurado</p>
+                      </div>
+                    </div>
                   )}
 
-                  {settings.site_phone && (
+                  {settings.site_phone ? (
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                         <Phone className="w-6 h-6 text-primary" />
@@ -82,9 +92,19 @@ export default function Contato() {
                         </a>
                       </div>
                     </div>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                        <Phone className="w-6 h-6 text-gray-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-500">Telefone</p>
+                        <p className="text-sm text-gray-400">Não configurado</p>
+                      </div>
+                    </div>
                   )}
 
-                  {settings.site_address && (
+                  {settings.site_address ? (
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mt-1">
                         <MapPin className="w-6 h-6 text-primary" />
@@ -94,10 +114,20 @@ export default function Contato() {
                         <p className="text-muted-foreground">{settings.site_address}</p>
                       </div>
                     </div>
+                  ) : (
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mt-1">
+                        <MapPin className="w-6 h-6 text-gray-400" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-500">Endereço</p>
+                        <p className="text-sm text-gray-400">Não configurado</p>
+                      </div>
+                    </div>
                   )}
 
                   {/* Botão do WhatsApp */}
-                  {settings.site_whatsapp && (
+                  {settings.site_whatsapp ? (
                     <div className="pt-6 border-t">
                       <div className="text-center">
                         <h3 className="text-lg font-semibold mb-4">Fale Conosco pelo WhatsApp</h3>
@@ -113,6 +143,16 @@ export default function Contato() {
                         <p className="text-sm text-muted-foreground mt-3">
                           Atendimento rápido e personalizado
                         </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="pt-6 border-t">
+                      <div className="text-center">
+                        <h3 className="text-lg font-semibold mb-4 text-gray-500">WhatsApp</h3>
+                        <div className="inline-flex items-center gap-3 bg-gray-200 text-gray-500 px-8 py-4 rounded-lg">
+                          <MessageCircle className="w-6 h-6" />
+                          Não configurado
+                        </div>
                       </div>
                     </div>
                   )}

@@ -50,11 +50,11 @@ export default function ConfiguracoesSite() {
     // Carregar configurações existentes do contexto
     setSiteSettings({
       title: settings.site_title || settings.name || "",
-      description: settings.site_description || "Encontre o imóvel dos seus sonhos",
-      phone: settings.site_phone || "(11) 9999-9999",
-      email: settings.site_email || "contato@imobiliaria.com.br",
-      address: settings.site_address || "São Paulo, SP",
-      whatsapp: settings.site_whatsapp || "5511999999999",
+      description: settings.site_description || "",
+      phone: settings.site_phone || "",
+      email: settings.site_email || "",
+      address: settings.site_address || "",
+      whatsapp: settings.site_whatsapp || "",
       facebook: settings.site_facebook || "",
       instagram: settings.site_instagram || "",
       about: settings.site_about || "",

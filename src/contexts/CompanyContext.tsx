@@ -24,7 +24,7 @@ interface CompanySettings {
 interface CompanyContextType {
   settings: CompanySettings;
   updateSettings: (newSettings: Partial<CompanySettings>) => Promise<void>;
-  refreshSettings: () => void;
+  refreshSettings: () => Promise<void>;
 }
 
 const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
@@ -57,10 +57,10 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
           logo: data.logo || null,
           site_title: data.site_title || data.name || 'Click Imóveis',
           site_description: data.site_description || 'Encontre o imóvel dos seus sonhos',
-          site_phone: data.site_phone || '(11) 9999-9999',
-          site_email: data.site_email || 'contato@imobiliaria.com.br',
-          site_address: data.site_address || 'São Paulo, SP',
-          site_whatsapp: data.site_whatsapp || '5511999999999',
+          site_phone: data.site_phone || '',
+          site_email: data.site_email || '',
+          site_address: data.site_address || '',
+          site_whatsapp: data.site_whatsapp || '',
           site_facebook: data.site_facebook || '',
           site_instagram: data.site_instagram || '',
           site_about: data.site_about || '',
@@ -109,8 +109,8 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const refreshSettings = () => {
-    loadCompanySettings();
+  const refreshSettings = async () => {
+    await loadCompanySettings();
   };
 
   // Apply dark mode to document
