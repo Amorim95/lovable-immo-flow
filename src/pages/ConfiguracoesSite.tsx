@@ -201,7 +201,7 @@ export default function ConfiguracoesSite() {
       await refreshSettings();
       
       console.log('Logo atualizada com sucesso');
-      toast.success('Logo atualizada com sucesso!');
+      toast.success('Logo atualizada com sucesso! Atualize a página do site público para ver as mudanças.');
     } catch (error) {
       console.error('Erro ao fazer upload da logo:', error);
       toast.error('Erro ao fazer upload da logo. Tente novamente.');
@@ -213,6 +213,10 @@ export default function ConfiguracoesSite() {
   const handleRemoveLogo = async () => {
     try {
       await updateSettings({ logo: null });
+      
+      // Forçar atualização das configurações
+      await refreshSettings();
+      
       toast.success('Logo removida com sucesso!');
     } catch (error) {
       console.error('Erro ao remover logo:', error);
