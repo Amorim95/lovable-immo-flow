@@ -37,16 +37,16 @@ export default function ConfiguracoesSite() {
   });
 
   useEffect(() => {
-    // Carregar configurações existentes
+    // Carregar configurações existentes do contexto
     setSiteSettings({
-      title: settings.name || "",
-      description: "Encontre o imóvel dos seus sonhos",
-      phone: "(11) 9999-9999",
-      email: "contato@imobiliaria.com.br",
-      address: "São Paulo, SP",
-      whatsapp: "5511999999999",
-      facebook: "",
-      instagram: "",
+      title: settings.site_title || settings.name || "",
+      description: settings.site_description || "Encontre o imóvel dos seus sonhos",
+      phone: settings.site_phone || "(11) 9999-9999",
+      email: settings.site_email || "contato@imobiliaria.com.br",
+      address: settings.site_address || "São Paulo, SP",
+      whatsapp: settings.site_whatsapp || "5511999999999",
+      facebook: settings.site_facebook || "",
+      instagram: settings.site_instagram || "",
     });
   }, [settings]);
 
@@ -65,6 +65,14 @@ export default function ConfiguracoesSite() {
           .from('company_settings')
           .update({
             name: siteSettings.title,
+            site_title: siteSettings.title,
+            site_description: siteSettings.description,
+            site_phone: siteSettings.phone,
+            site_email: siteSettings.email,
+            site_address: siteSettings.address,
+            site_whatsapp: siteSettings.whatsapp,
+            site_facebook: siteSettings.facebook,
+            site_instagram: siteSettings.instagram,
           })
           .eq('id', existingSettings.id);
 
@@ -75,6 +83,14 @@ export default function ConfiguracoesSite() {
           .from('company_settings')
           .insert({
             name: siteSettings.title,
+            site_title: siteSettings.title,
+            site_description: siteSettings.description,
+            site_phone: siteSettings.phone,
+            site_email: siteSettings.email,
+            site_address: siteSettings.address,
+            site_whatsapp: siteSettings.whatsapp,
+            site_facebook: siteSettings.facebook,
+            site_instagram: siteSettings.instagram,
           });
 
         if (error) throw error;

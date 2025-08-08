@@ -285,8 +285,9 @@ export default function ImovelDetalhes() {
                   className="w-full bg-green-600 hover:bg-green-700 text-white" 
                   size="lg"
                   onClick={() => {
+                    const whatsappNumber = settings.site_whatsapp || '5511999999999';
                     const message = `Olá! Tenho interesse no imóvel em ${imovel.localizacao} no valor de ${formatPrice(imovel.preco)}`;
-                    const whatsappUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(message)}`;
+                    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
                     window.open(whatsappUrl, '_blank');
                   }}
                 >
@@ -336,16 +337,16 @@ export default function ImovelDetalhes() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">{settings.name}</h3>
+              <h3 className="text-xl font-bold mb-4">{settings.site_title || settings.name}</h3>
               <p className="text-gray-300">
-                Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.
+                {settings.site_description || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Contato</h4>
               <div className="space-y-2 text-gray-300">
-                <p>contato@clickimoveis.com.br</p>
-                <p>(11) 9999-9999</p>
+                <p>{settings.site_email || 'contato@clickimoveis.com.br'}</p>
+                <p>{settings.site_phone || '(11) 9999-9999'}</p>
               </div>
             </div>
             <div>
@@ -358,7 +359,7 @@ export default function ImovelDetalhes() {
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 {settings.name}. Todos os direitos reservados.</p>
+            <p>&copy; 2024 {settings.site_title || settings.name}. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

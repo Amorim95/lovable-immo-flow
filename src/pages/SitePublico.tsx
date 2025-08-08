@@ -245,7 +245,7 @@ export default function SitePublico() {
               {settings.logo ? (
                 <img src={settings.logo} alt={settings.name} className="h-8" />
               ) : (
-                <h1 className="text-2xl font-bold text-primary">{settings.name}</h1>
+                <h1 className="text-2xl font-bold text-primary">{settings.site_title || settings.name}</h1>
               )}
             </div>
             
@@ -470,16 +470,16 @@ export default function SitePublico() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">{settings.name}</h3>
+              <h3 className="text-xl font-bold mb-4">{settings.site_title || settings.name}</h3>
               <p className="text-gray-300">
-                Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.
+                {settings.site_description || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Contato</h4>
               <div className="space-y-2 text-gray-300">
-                <p>contato@clickimoveis.com.br</p>
-                <p>(11) 9999-9999</p>
+                <p>{settings.site_email || 'contato@clickimoveis.com.br'}</p>
+                <p>{settings.site_phone || '(11) 9999-9999'}</p>
               </div>
             </div>
             <div>
@@ -492,7 +492,7 @@ export default function SitePublico() {
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 {settings.name}. Todos os direitos reservados.</p>
+            <p>&copy; 2024 {settings.site_title || settings.name}. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

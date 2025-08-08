@@ -50,6 +50,14 @@ export type Database = {
           id: string
           logo: string | null
           name: string
+          site_address: string | null
+          site_description: string | null
+          site_email: string | null
+          site_facebook: string | null
+          site_instagram: string | null
+          site_phone: string | null
+          site_title: string | null
+          site_whatsapp: string | null
           updated_at: string
         }
         Insert: {
@@ -57,6 +65,14 @@ export type Database = {
           id?: string
           logo?: string | null
           name: string
+          site_address?: string | null
+          site_description?: string | null
+          site_email?: string | null
+          site_facebook?: string | null
+          site_instagram?: string | null
+          site_phone?: string | null
+          site_title?: string | null
+          site_whatsapp?: string | null
           updated_at?: string
         }
         Update: {
@@ -64,6 +80,14 @@ export type Database = {
           id?: string
           logo?: string | null
           name?: string
+          site_address?: string | null
+          site_description?: string | null
+          site_email?: string | null
+          site_facebook?: string | null
+          site_instagram?: string | null
+          site_phone?: string | null
+          site_title?: string | null
+          site_whatsapp?: string | null
           updated_at?: string
         }
         Relationships: []

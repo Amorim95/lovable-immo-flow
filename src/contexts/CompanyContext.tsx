@@ -6,6 +6,14 @@ interface CompanySettings {
   logo: string | null;
   theme: string;
   isDarkMode: boolean;
+  site_title?: string;
+  site_description?: string;
+  site_phone?: string;
+  site_email?: string;
+  site_address?: string;
+  site_whatsapp?: string;
+  site_facebook?: string;
+  site_instagram?: string;
 }
 
 interface CompanyContextType {
@@ -40,7 +48,15 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         setSettings(prev => ({
           ...prev,
           name: data.name || 'Click Imóveis',
-          logo: data.logo || null
+          logo: data.logo || null,
+          site_title: data.site_title || data.name || 'Click Imóveis',
+          site_description: data.site_description || 'Encontre o imóvel dos seus sonhos',
+          site_phone: data.site_phone || '(11) 9999-9999',
+          site_email: data.site_email || 'contato@imobiliaria.com.br',
+          site_address: data.site_address || 'São Paulo, SP',
+          site_whatsapp: data.site_whatsapp || '5511999999999',
+          site_facebook: data.site_facebook || '',
+          site_instagram: data.site_instagram || '',
         }));
       }
     } catch (error) {
