@@ -23,7 +23,7 @@ export default function SobreNos() {
               Voltar
             </Button>
             
-            <div className="flex-1 flex justify-center">
+            <div className="absolute left-1/2 transform -translate-x-1/2">
               <img 
                 src={settings.logo || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
                 alt={settings.name} 
@@ -31,7 +31,7 @@ export default function SobreNos() {
               />
             </div>
             
-            <div className="flex-1" />
+            <div></div>
           </div>
         </div>
       </header>
