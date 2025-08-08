@@ -55,7 +55,11 @@ export type Database = {
           site_description: string | null
           site_email: string | null
           site_facebook: string | null
+          site_horario_domingo: string | null
+          site_horario_sabado: string | null
+          site_horario_semana: string | null
           site_instagram: string | null
+          site_observacoes_horario: string | null
           site_phone: string | null
           site_title: string | null
           site_whatsapp: string | null
@@ -71,7 +75,11 @@ export type Database = {
           site_description?: string | null
           site_email?: string | null
           site_facebook?: string | null
+          site_horario_domingo?: string | null
+          site_horario_sabado?: string | null
+          site_horario_semana?: string | null
           site_instagram?: string | null
+          site_observacoes_horario?: string | null
           site_phone?: string | null
           site_title?: string | null
           site_whatsapp?: string | null
@@ -87,7 +95,11 @@ export type Database = {
           site_description?: string | null
           site_email?: string | null
           site_facebook?: string | null
+          site_horario_domingo?: string | null
+          site_horario_sabado?: string | null
+          site_horario_semana?: string | null
           site_instagram?: string | null
+          site_observacoes_horario?: string | null
           site_phone?: string | null
           site_title?: string | null
           site_whatsapp?: string | null

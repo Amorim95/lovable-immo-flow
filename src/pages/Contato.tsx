@@ -163,19 +163,25 @@ export default function Contato() {
             <Card>
               <CardContent className="p-8">
                 <h3 className="text-2xl font-semibold mb-4">Horário de Atendimento</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-muted-foreground">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-muted-foreground">
                   <div>
                     <p className="font-medium">Segunda à Sexta</p>
-                    <p>8:00 às 18:00</p>
+                    <p>{settings.site_horario_semana || "8:00 às 18:00"}</p>
                   </div>
                   <div>
                     <p className="font-medium">Sábados</p>
-                    <p>8:00 às 14:00</p>
+                    <p>{settings.site_horario_sabado || "8:00 às 14:00"}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Domingos</p>
+                    <p>{settings.site_horario_domingo || "Fechado"}</p>
                   </div>
                 </div>
-                <p className="mt-4 text-sm">
-                  *Atendimento via WhatsApp 24 horas
-                </p>
+                {settings.site_observacoes_horario && (
+                  <p className="mt-4 text-sm">
+                    {settings.site_observacoes_horario}
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>

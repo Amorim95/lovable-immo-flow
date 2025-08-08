@@ -15,6 +15,10 @@ interface CompanySettings {
   site_facebook?: string;
   site_instagram?: string;
   site_about?: string;
+  site_horario_semana?: string;
+  site_horario_sabado?: string;
+  site_horario_domingo?: string;
+  site_observacoes_horario?: string;
 }
 
 interface CompanyContextType {
@@ -60,6 +64,10 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
           site_facebook: data.site_facebook || '',
           site_instagram: data.site_instagram || '',
           site_about: data.site_about || '',
+          site_horario_semana: data.site_horario_semana || '8:00 às 18:00',
+          site_horario_sabado: data.site_horario_sabado || '8:00 às 14:00',
+          site_horario_domingo: data.site_horario_domingo || 'Fechado',
+          site_observacoes_horario: data.site_observacoes_horario || '*Atendimento via WhatsApp 24 horas',
         }));
       }
     } catch (error) {

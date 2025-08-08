@@ -20,6 +20,10 @@ interface SiteSettings {
   facebook?: string;
   instagram?: string;
   about?: string;
+  horario_semana?: string;
+  horario_sabado?: string;
+  horario_domingo?: string;
+  observacoes_horario?: string;
 }
 
 export default function ConfiguracoesSite() {
@@ -36,6 +40,10 @@ export default function ConfiguracoesSite() {
     facebook: "",
     instagram: "",
     about: "",
+    horario_semana: "",
+    horario_sabado: "",
+    horario_domingo: "",
+    observacoes_horario: "",
   });
 
   useEffect(() => {
@@ -50,6 +58,10 @@ export default function ConfiguracoesSite() {
       facebook: settings.site_facebook || "",
       instagram: settings.site_instagram || "",
       about: settings.site_about || "",
+      horario_semana: settings.site_horario_semana || "8:00 às 18:00",
+      horario_sabado: settings.site_horario_sabado || "8:00 às 14:00",
+      horario_domingo: settings.site_horario_domingo || "Fechado",
+      observacoes_horario: settings.site_observacoes_horario || "*Atendimento via WhatsApp 24 horas",
     });
   }, [settings]);
 
@@ -78,6 +90,10 @@ export default function ConfiguracoesSite() {
             site_facebook: siteSettings.facebook,
             site_instagram: siteSettings.instagram,
             site_about: siteSettings.about,
+            site_horario_semana: siteSettings.horario_semana,
+            site_horario_sabado: siteSettings.horario_sabado,
+            site_horario_domingo: siteSettings.horario_domingo,
+            site_observacoes_horario: siteSettings.observacoes_horario,
           })
           .eq('id', allSettings[0].id);
 
@@ -97,6 +113,10 @@ export default function ConfiguracoesSite() {
             site_facebook: siteSettings.facebook,
             site_instagram: siteSettings.instagram,
             site_about: siteSettings.about,
+            site_horario_semana: siteSettings.horario_semana,
+            site_horario_sabado: siteSettings.horario_sabado,
+            site_horario_domingo: siteSettings.horario_domingo,
+            site_observacoes_horario: siteSettings.observacoes_horario,
           });
 
         if (error) throw error;
@@ -267,6 +287,60 @@ export default function ConfiguracoesSite() {
                 placeholder="https://instagram.com/seuperfil"
               />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Horário de Atendimento */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Horário de Atendimento</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="horario_semana">Segunda à Sexta</Label>
+              <Input
+                id="horario_semana"
+                value={siteSettings.horario_semana}
+                onChange={(e) => handleInputChange('horario_semana', e.target.value)}
+                placeholder="8:00 às 18:00"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="horario_sabado">Sábado</Label>
+              <Input
+                id="horario_sabado"
+                value={siteSettings.horario_sabado}
+                onChange={(e) => handleInputChange('horario_sabado', e.target.value)}
+                placeholder="8:00 às 14:00"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="horario_domingo">Domingo</Label>
+              <Input
+                id="horario_domingo"
+                value={siteSettings.horario_domingo}
+                onChange={(e) => handleInputChange('horario_domingo', e.target.value)}
+                placeholder="Fechado"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <Label htmlFor="observacoes_horario">Observações sobre o Horário</Label>
+            <Textarea
+              id="observacoes_horario"
+              value={siteSettings.observacoes_horario}
+              onChange={(e) => handleInputChange('observacoes_horario', e.target.value)}
+              placeholder="*Atendimento via WhatsApp 24 horas"
+              rows={2}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Informações adicionais sobre horários especiais, feriados, etc.
+            </p>
           </div>
         </CardContent>
       </Card>
