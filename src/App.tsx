@@ -30,6 +30,7 @@ import PerformanceGeral from "./pages/PerformanceGeral";
 import Corretores from "./pages/Corretores";
 import EquipesCadastradas from "./pages/EquipesCadastradas";
 import Imoveis from "./pages/Imoveis";
+import MobileImoveis from "./pages/MobileImoveis";
 import MeuSite from "./pages/MeuSite";
 import SitePublico from "./pages/SitePublico";
 import ImovelPublico from "./pages/ImovelPublico";
@@ -90,6 +91,7 @@ function AppContent() {
                 <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
                 <Route path="/corretores" element={<MobileCorretores />} />
                 <Route path="/equipes" element={<MobileEquipes />} />
+                <Route path="/imoveis" element={<MobileImoveis />} />
                 <Route path="/configuracoes" element={<MobileConfiguracoes />} />
                 <Route path="/profile" element={<MobileProfile />} />
                 <Route path="/company-settings" element={<MobileCompanySettings />} />
