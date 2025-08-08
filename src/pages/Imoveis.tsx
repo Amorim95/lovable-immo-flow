@@ -130,6 +130,11 @@ export default function Imoveis() {
         if (error) throw error;
         imovelId = selectedImovel.id;
 
+        // Upload dos arquivos para imóveis editados
+        if (uploadedFiles.length > 0) {
+          await uploadFiles(imovelId, userId);
+        }
+
         toast({
           title: "Sucesso",
           description: "Imóvel atualizado com sucesso!",
@@ -174,32 +179,63 @@ export default function Imoveis() {
   };
 
   const uploadFiles = async (imovelId: string, userId: string) => {
-    for (let i = 0; i < uploadedFiles.length; i++) {
-      const { file, type } = uploadedFiles[i];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${imovelId}/${Date.now()}.${fileExt}`;
+    console.log('Iniciando upload de arquivos:', uploadedFiles.length);
+    
+    try {
+      for (let i = 0; i < uploadedFiles.length; i++) {
+        const { file, type } = uploadedFiles[i];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}/${imovelId}/${Date.now()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('property-media')
-        .upload(fileName, file);
+        console.log('Fazendo upload do arquivo:', fileName, 'tipo:', type);
 
-      if (uploadError) {
-        console.error('Erro ao fazer upload:', uploadError);
-        continue;
+        const { error: uploadError } = await supabase.storage
+          .from('property-media')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error('Erro ao fazer upload do arquivo:', uploadError);
+          toast({
+            title: "Erro no upload",
+            description: `Erro ao fazer upload de ${file.name}`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('property-media')
+          .getPublicUrl(fileName);
+
+        console.log('Inserindo mídia no banco:', { imovelId, type, publicUrl });
+
+        const { error: insertError } = await supabase
+          .from('imovel_midias')
+          .insert({
+            imovel_id: imovelId,
+            tipo: type,
+            url: publicUrl,
+            ordem: i + 1
+          });
+
+        if (insertError) {
+          console.error('Erro ao inserir mídia no banco:', insertError);
+          toast({
+            title: "Erro",
+            description: `Erro ao salvar mídia ${file.name} no banco`,
+            variant: "destructive",
+          });
+        } else {
+          console.log('Mídia inserida com sucesso');
+        }
       }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('property-media')
-        .getPublicUrl(fileName);
-
-      await supabase
-        .from('imovel_midias')
-        .insert({
-          imovel_id: imovelId,
-          tipo: type,
-          url: publicUrl,
-          ordem: i + 1
-        });
+    } catch (error) {
+      console.error('Erro geral no upload:', error);
+      toast({
+        title: "Erro",
+        description: "Erro geral no upload de arquivos",
+        variant: "destructive",
+      });
     }
   };
 
