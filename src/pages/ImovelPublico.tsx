@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { MapPin, Bed, Bath, Car, Home, Check, X } from "lucide-react";
+import { MapPin, Bed, Bath, Car, Home, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Imovel } from "@/types/crm";
+import { Imovel, ImovelMidia } from "@/types/crm";
 
 export default function ImovelPublico() {
   const { slug } = useParams<{ slug: string }>();
   const [imovel, setImovel] = useState<Imovel | null>(null);
+  const [midias, setMidias] = useState<ImovelMidia[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -36,6 +38,20 @@ export default function ImovelPublico() {
       }
 
       setImovel(data);
+
+      // Buscar mídias do imóvel
+      const { data: midiaData, error: midiaError } = await supabase
+        .from('imovel_midias')
+        .select('*')
+        .eq('imovel_id', data.id)
+        .order('ordem', { ascending: true });
+
+      if (midiaError) {
+        console.error('Erro ao carregar mídias:', midiaError);
+      } else {
+        setMidias((midiaData || []) as ImovelMidia[]);
+      }
+
     } catch (error) {
       console.error('Erro ao carregar imóvel:', error);
       setNotFound(true);
@@ -56,6 +72,14 @@ export default function ImovelPublico() {
       `Olá! Tenho interesse no imóvel: ${imovel?.endereco} - ${formatPrice(imovel?.preco || 0)}`
     );
     window.open(`https://wa.me/?text=${message}`, '_blank');
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % midias.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + midias.length) % midias.length);
   };
 
   if (loading) {
@@ -106,17 +130,85 @@ export default function ImovelPublico() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Conteúdo Principal */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Imagem Principal */}
-            <Card>
-              <CardContent className="p-0">
+          {/* Galeria de Imagens */}
+          <Card>
+            <CardContent className="p-0">
+              {midias.length > 0 ? (
+                <div className="relative">
+                  <div className="h-64 rounded-lg overflow-hidden">
+                    {midias[currentImageIndex]?.tipo === 'imagem' ? (
+                      <img
+                        src={midias[currentImageIndex]?.url}
+                        alt={`Foto ${currentImageIndex + 1} do imóvel`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <video
+                        src={midias[currentImageIndex]?.url}
+                        className="w-full h-full object-cover"
+                        controls
+                      />
+                    )}
+                  </div>
+                  
+                  {midias.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white rounded-full p-2 hover:bg-black/70"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                      
+                      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-2 py-1 rounded text-sm">
+                        {currentImageIndex + 1} / {midias.length}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
                 <div className="h-64 bg-gray-200 rounded-lg flex items-center justify-center">
                   <div className="text-center text-muted-foreground">
                     <Home className="w-16 h-16 mx-auto mb-2" />
-                    <p>Imagem em breve</p>
+                    <p>Imagens em breve</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Miniaturas */}
+          {midias.length > 1 && (
+            <div className="grid grid-cols-4 gap-2">
+              {midias.map((midia, index) => (
+                <button
+                  key={midia.id}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`aspect-square rounded-lg overflow-hidden border-2 ${
+                    index === currentImageIndex ? 'border-primary' : 'border-transparent'
+                  }`}
+                >
+                  {midia.tipo === 'imagem' ? (
+                    <img
+                      src={midia.url}
+                      alt={`Miniatura ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                      <span className="text-xs text-gray-600">Vídeo</span>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
 
             {/* Informações Básicas */}
             <Card>
