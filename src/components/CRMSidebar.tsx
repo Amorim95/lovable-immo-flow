@@ -46,8 +46,7 @@ const menuItems = [
     url: "/imoveis", 
     icon: Building2,
     description: "Gestão de imóveis",
-    showForAll: true,
-    badge: "Em desenvolvimento"
+    showForAll: true
   },
   { 
     title: "Corretores", 
@@ -144,17 +143,10 @@ export function CRMSidebar() {
                     >
                       <item.icon className={`${collapsed ? "w-6 h-6" : "w-5 h-5"} flex-shrink-0`} />
                       {!collapsed && (
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-base font-medium leading-tight">{item.title}</span>
-                            {item.badge && (
-                              <span className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded-md">
-                                {item.badge}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-sm opacity-70 leading-tight">{item.description}</span>
-                        </div>
+                         <div className="flex flex-col gap-1">
+                           <span className="text-base font-medium leading-tight">{item.title}</span>
+                           <span className="text-sm opacity-70 leading-tight">{item.description}</span>
+                         </div>
                       )}
                     </NavLink>
                   </SidebarMenuButton>
