@@ -250,7 +250,7 @@ export default function SitePublico() {
             </div>
             
             <div className="flex-1 flex justify-end gap-6">
-              <a href="#sobre" className="text-muted-foreground hover:text-primary">Sobre Nós</a>
+              <a href="/sobre-nos" className="text-muted-foreground hover:text-primary">Sobre Nós</a>
               <a href="#contato" className="text-muted-foreground hover:text-primary">Contato</a>
             </div>
           </div>
@@ -465,34 +465,6 @@ export default function SitePublico() {
           </div>
         </div>
       </div>
-
-      {/* Seção Sobre Nós */}
-      <section id="sobre" className="bg-gray-50 py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-foreground mb-8">Sobre Nós</h2>
-            {settings.site_about ? (
-              <div className="prose prose-lg mx-auto">
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                  {settings.site_about}
-                </p>
-              </div>
-            ) : (
-              <div className="prose prose-lg mx-auto">
-                <p className="text-muted-foreground leading-relaxed">
-                  Somos uma imobiliária comprometida em encontrar o imóvel ideal para você. 
-                  Com anos de experiência no mercado, oferecemos as melhores oportunidades 
-                  e um atendimento personalizado para tornar seu sonho realidade.
-                </p>
-                <p className="text-muted-foreground leading-relaxed mt-4">
-                  Nossa equipe especializada está sempre pronta para ajudá-lo em todas as 
-                  etapas do processo, desde a busca até a conclusão do negócio.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer id="contato" className="bg-gray-900 text-white py-12 mt-16">
