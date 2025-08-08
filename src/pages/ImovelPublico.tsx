@@ -16,6 +16,7 @@ export default function ImovelPublico() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [userPhone, setUserPhone] = useState<string>('');
 
   useEffect(() => {
     if (slug) {
@@ -54,6 +55,17 @@ export default function ImovelPublico() {
         setMidias((midiaData || []) as ImovelMidia[]);
       }
 
+      // Buscar telefone do usuário proprietário do imóvel
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('telefone')
+        .eq('id', data.user_id)
+        .single();
+
+      if (!userError && userData?.telefone) {
+        setUserPhone(userData.telefone);
+      }
+
     } catch (error) {
       console.error('Erro ao carregar imóvel:', error);
       setNotFound(true);
@@ -73,7 +85,9 @@ export default function ImovelPublico() {
     const message = encodeURIComponent(
       `Olá! Tenho interesse no imóvel: ${imovel?.endereco} - ${formatPrice(imovel?.preco || 0)}`
     );
-    window.open(`https://wa.me/?text=${message}`, '_blank');
+    const phoneNumber = userPhone ? userPhone.replace(/\D/g, '') : '';
+    const whatsappUrl = phoneNumber ? `https://wa.me/55${phoneNumber}?text=${message}` : `https://wa.me/?text=${message}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const nextImage = () => {
@@ -341,10 +355,6 @@ export default function ImovelPublico() {
                   className="w-full bg-green-600 hover:bg-green-700"
                 >
                   Contatar via WhatsApp
-                </Button>
-                
-                <Button variant="outline" className="w-full">
-                  Agendar Visita
                 </Button>
               </CardContent>
             </Card>
