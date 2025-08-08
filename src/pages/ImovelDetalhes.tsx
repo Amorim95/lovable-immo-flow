@@ -102,16 +102,20 @@ export default function ImovelDetalhes() {
     setIsSubmitting(true);
     
     try {
-      // Criar um novo lead no sistema
-      const { error } = await supabase
-        .from('leads')
-        .insert({
+      // Usar a edge function para criar o lead
+      const { data, error } = await supabase.functions.invoke('create-public-lead', {
+        body: {
           nome: formData.nome.trim(),
           telefone: formData.telefone.trim(),
           dados_adicionais: `Lead do site - Interesse no imóvel em ${imovel?.localizacao} (${formatPrice(imovel?.preco || 0)})`
-        });
+        }
+      });
 
       if (error) throw error;
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       toast.success('Mensagem enviada com sucesso! Entraremos em contato em breve.');
       setFormData({ nome: '', telefone: '' });
