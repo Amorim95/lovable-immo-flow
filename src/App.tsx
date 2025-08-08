@@ -32,8 +32,6 @@ import EquipesCadastradas from "./pages/EquipesCadastradas";
 import Imoveis from "./pages/Imoveis";
 import MeuSite from "./pages/MeuSite";
 import ImovelPublico from "./pages/ImovelPublico";
-import SitePublico from "./pages/SitePublico";
-import HomePage from "./pages/HomePage";
 import Configuracoes from "./pages/Configuracoes";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -65,27 +63,25 @@ function AppContent() {
   
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/imovel-publico/:slug" element={<ImovelPublico />} />
-      <Route path="/site-publico" element={<SitePublico />} />
-      <Route path="/crm/*" element={
+      <Route path="/*" element={
         <ProtectedRoute>
           {isMobile ? (
             // Mobile Layout
             <div className="min-h-screen bg-gray-50">
               <Routes>
-                <Route path="/crm" element={<MobileLeads />} />
-                <Route path="/crm/lead/:id" element={<LeadDetails />} />
-                <Route path="/crm/dashboards" element={<MobileDashboards />} />
-                <Route path="/crm/dashboards/performance-corretor" element={<PerformancePorCorretor />} />
-                <Route path="/crm/dashboards/performance-equipe" element={<PerformanceDaEquipe />} />
-                <Route path="/crm/dashboards/performance-geral" element={<PerformanceGeral />} />
-                <Route path="/crm/corretores" element={<MobileCorretores />} />
-                <Route path="/crm/equipes" element={<MobileEquipes />} />
-                <Route path="/crm/configuracoes" element={<MobileConfiguracoes />} />
-                <Route path="/crm/profile" element={<MobileProfile />} />
-                <Route path="/crm/company-settings" element={<MobileCompanySettings />} />
+                <Route path="/" element={<MobileLeads />} />
+                <Route path="/lead/:id" element={<LeadDetails />} />
+                <Route path="/dashboards" element={<MobileDashboards />} />
+                <Route path="/dashboards/performance-corretor" element={<PerformancePorCorretor />} />
+                <Route path="/dashboards/performance-equipe" element={<PerformanceDaEquipe />} />
+                <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
+                <Route path="/corretores" element={<MobileCorretores />} />
+                <Route path="/equipes" element={<MobileEquipes />} />
+                <Route path="/configuracoes" element={<MobileConfiguracoes />} />
+                <Route path="/profile" element={<MobileProfile />} />
+                <Route path="/company-settings" element={<MobileCompanySettings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <MobileTabBar />
@@ -112,17 +108,17 @@ function AppContent() {
                     </div>
                   </header>
                   <main className="flex-1 p-6">
-                     <Routes>
-                      <Route path="/crm" element={<Index />} />
-                      <Route path="/crm/dashboards" element={<Dashboards />} />
-                      <Route path="/crm/dashboards/performance-corretor" element={<PerformancePorCorretor />} />
-                      <Route path="/crm/dashboards/performance-equipe" element={<PerformanceDaEquipe />} />
-                      <Route path="/crm/dashboards/performance-geral" element={<PerformanceGeral />} />
-                      <Route path="/crm/corretores" element={<Corretores />} />
-                      <Route path="/crm/equipes" element={<EquipesCadastradas />} />
-                      <Route path="/crm/imoveis" element={<Imoveis />} />
-                      <Route path="/crm/meu-site" element={<MeuSite />} />
-                      <Route path="/crm/configuracoes" element={<Configuracoes />} />
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/dashboards" element={<Dashboards />} />
+                      <Route path="/dashboards/performance-corretor" element={<PerformancePorCorretor />} />
+                      <Route path="/dashboards/performance-equipe" element={<PerformanceDaEquipe />} />
+                      <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
+                      <Route path="/corretores" element={<Corretores />} />
+                      <Route path="/equipes" element={<EquipesCadastradas />} />
+                      <Route path="/imoveis" element={<Imoveis />} />
+                      <Route path="/meu-site" element={<MeuSite />} />
+                      <Route path="/configuracoes" element={<Configuracoes />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
