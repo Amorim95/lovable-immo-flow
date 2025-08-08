@@ -83,6 +83,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   };
 
   const updateSettings = async (newSettings: Partial<CompanySettings>) => {
+    console.log('updateSettings chamado com:', newSettings);
     setSettings(prev => ({ ...prev, ...newSettings }));
     
     // Atualizar no banco sempre que houver mudanças
@@ -93,9 +94,11 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         .limit(1)
         .maybeSingle();
 
+      console.log('Dados existentes:', existingData);
+
       const updateData = {
         name: newSettings.name !== undefined ? newSettings.name : existingData?.name || 'Click Imóveis',
-        logo: newSettings.logo !== undefined ? newSettings.logo : existingData?.logo || null,
+        logo: newSettings.logo !== undefined ? newSettings.logo : existingData?.logo,
         site_title: newSettings.site_title !== undefined ? newSettings.site_title : existingData?.site_title,
         site_description: newSettings.site_description !== undefined ? newSettings.site_description : existingData?.site_description,
         site_phone: newSettings.site_phone !== undefined ? newSettings.site_phone : existingData?.site_phone,
@@ -111,18 +114,35 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         site_observacoes_horario: newSettings.site_observacoes_horario !== undefined ? newSettings.site_observacoes_horario : existingData?.site_observacoes_horario,
       };
 
+      console.log('Dados para atualizar:', updateData);
+
       if (existingData) {
-        await supabase
+        console.log('Atualizando registro existente com ID:', existingData.id);
+        const { error } = await supabase
           .from('company_settings')
           .update(updateData)
           .eq('id', existingData.id);
+        
+        if (error) {
+          console.error('Erro ao atualizar:', error);
+          throw error;
+        }
+        console.log('Atualização bem-sucedida');
       } else {
-        await supabase
+        console.log('Criando novo registro');
+        const { error } = await supabase
           .from('company_settings')
           .insert(updateData);
+        
+        if (error) {
+          console.error('Erro ao inserir:', error);
+          throw error;
+        }
+        console.log('Inserção bem-sucedida');
       }
     } catch (error) {
       console.error('Erro ao atualizar configurações da empresa:', error);
+      throw error;
     }
   };
 
