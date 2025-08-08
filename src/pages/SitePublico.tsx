@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, MapPin, Bed, Bath, Car, Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight, Facebook, Instagram } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ interface ImovelComFotos extends Imovel {
 
 export default function SitePublico() {
   const { settings } = useCompany();
+  const navigate = useNavigate();
   const [imoveis, setImoveis] = useState<ImovelComFotos[]>([]);
   const [filteredImoveis, setFilteredImoveis] = useState<ImovelComFotos[]>([]);
   const [loading, setLoading] = useState(true);
@@ -249,7 +251,7 @@ export default function SitePublico() {
             </div>
             
             <div className="flex-1 flex justify-end items-center gap-6">
-              <a href="/sobre-nos" className="text-muted-foreground hover:text-primary">Sobre Nós</a>
+              <Link to="/sobre-nos" className="text-muted-foreground hover:text-primary">Sobre Nós</Link>
               {settings.site_facebook && (
                 <a 
                   href={settings.site_facebook} 
@@ -270,7 +272,7 @@ export default function SitePublico() {
                   <Instagram className="w-5 h-5" />
                 </a>
               )}
-              <a href="/contato" className="text-muted-foreground hover:text-primary">Contato</a>
+              <Link to="/contato" className="text-muted-foreground hover:text-primary">Contato</Link>
             </div>
           </div>
         </div>
@@ -400,7 +402,7 @@ export default function SitePublico() {
                   <Card 
                     key={imovel.id} 
                     className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                    onClick={() => window.location.href = `/imovel/${imovel.id}`}
+                    onClick={() => navigate(`/imovel/${imovel.id}`)}
                   >
                     <div className="aspect-video bg-gray-100 relative">
                       <ImageCarousel 

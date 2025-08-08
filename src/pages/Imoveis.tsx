@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Plus, Search, Edit, Share2, Eye, Home, MapPin, Bed, Bath, Car, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,11 +37,7 @@ export default function Imoveis() {
     portao_eletronico: false,
   });
 
-  useEffect(() => {
-    fetchImoveis();
-  }, []);
-
-  const fetchImoveis = async () => {
+  const fetchImoveisCallback = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('imoveis')
@@ -60,7 +56,26 @@ export default function Imoveis() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchImoveisCallback();
+  }, [fetchImoveisCallback]);
+
+  // Função para recarregar a lista após operações
+  const refreshImoveis = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('imoveis')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao recarregar imóveis:', error);
+      return;
+    }
+    
+    setImoveis(data || []);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,7 +183,7 @@ export default function Imoveis() {
       setIsEditModalOpen(false);
       setSelectedImovel(null);
       resetForm();
-      fetchImoveis();
+      refreshImoveis();
     } catch (error) {
       console.error('Erro ao salvar imóvel:', error);
       toast({

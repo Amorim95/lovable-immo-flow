@@ -122,8 +122,7 @@ export function EditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorretor, 
       toast.success('Usuário excluído com sucesso!');
       setShowDeleteDialog(false);
       onClose();
-      // Recarregar a página para atualizar a lista
-      window.location.reload();
+      // Fechar modal após sucesso (a lista será atualizada automaticamente)
     } catch (error) {
       console.error('Error deleting user:', error);
       toast.error('Erro ao excluir usuário');
