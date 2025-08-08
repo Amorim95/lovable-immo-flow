@@ -238,18 +238,8 @@ export default function SitePublico() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between gap-6">
-            <div className="flex-1 max-w-md">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Buscar imóveis..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
+          <div className="flex items-center justify-between">
+            <div className="flex-1" />
             
             <div className="flex justify-center">
               <img 
@@ -286,6 +276,23 @@ export default function SitePublico() {
           </div>
         </div>
       </header>
+
+      {/* Barra de Pesquisa */}
+      <section className="bg-gray-50 py-6">
+        <div className="container mx-auto px-4">
+          <div className="max-w-md mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Buscar por endereço, bairro ou cidade..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
 
       {/* Main Content */}
