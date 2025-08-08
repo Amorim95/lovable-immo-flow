@@ -1,16 +1,13 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Edit, Share2, Eye, Home, MapPin, Bed, Bath, Car, DollarSign, Upload, X, Image, Video } from "lucide-react";
+import { Plus, Search, Edit, Share2, Eye, Home, MapPin, Bed, Bath, Car, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Imovel, ImovelMidia } from "@/types/crm";
+import ImovelFormModal from "@/components/ImovelFormModal";
 
 export default function Imoveis() {
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
@@ -374,236 +371,6 @@ export default function Imoveis() {
     }).format(price);
   };
 
-  const FormModal = ({ isOpen, onClose, title }: { isOpen: boolean; onClose: () => void; title: string }) => {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
-          <DialogHeader>
-            <DialogTitle className="animate-scale-in">{title}</DialogTitle>
-          </DialogHeader>
-          
-          <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
-            {/* Upload de Mídias */}
-            <div className="space-y-3 transition-all duration-300 ease-out">
-            <Label>Fotos e Vídeos *</Label>
-            <div className="border-2 border-dashed border-border rounded-lg p-6">
-              <div className="text-center">
-                <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground mb-2">
-                  Clique para adicionar fotos e vídeos ou arraste aqui
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Formatos: JPG, PNG, MP4, MOV (máx. 50MB cada)
-                </p>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*,video/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  id="media-upload"
-                />
-                <label
-                  htmlFor="media-upload"
-                  className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md cursor-pointer hover:bg-primary/90 mt-2"
-                >
-                  Selecionar Arquivos
-                </label>
-              </div>
-            </div>
-            
-            {/* Preview dos arquivos */}
-            {uploadedFiles.length > 0 && (
-              <div className="grid grid-cols-3 gap-3 animate-fade-in transition-all duration-500 ease-out">
-                {uploadedFiles.map((fileObj, index) => (
-                  <div key={index} className="relative group animate-scale-in transition-all duration-300 hover-scale">
-                    <div className="aspect-square rounded-lg overflow-hidden bg-muted transition-all duration-300 ease-out">
-                      {fileObj.type === 'imagem' ? (
-                        <img
-                          src={fileObj.preview}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center transition-all duration-300">
-                          <Video className="w-8 h-8 text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(index)}
-                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-all duration-200 hover-scale opacity-0 group-hover:opacity-100"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                    <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1 rounded">
-                      {fileObj.type === 'imagem' ? <Image className="w-3 h-3" /> : <Video className="w-3 h-3" />}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="preco">Preço *</Label>
-              <input
-                id="preco"
-                type="text"
-                value={formData.preco}
-                onChange={(e) => {
-                  setFormData(prev => ({ ...prev, preco: e.target.value }));
-                }}
-                onFocus={(e) => {
-                  // Move o cursor para o final ao invés de selecionar tudo
-                  setTimeout(() => {
-                    const input = e.target as HTMLInputElement;
-                    const length = input.value.length;
-                    input.setSelectionRange(length, length);
-                  }, 0);
-                }}
-                onClick={(e) => {
-                  // Previne seleção automática no click
-                  const input = e.target as HTMLInputElement;
-                  input.setSelectionRange(input.selectionStart || 0, input.selectionStart || 0);
-                }}
-                placeholder="Ex: 450000 ou R$ 450.000"
-                required
-                autoComplete="off"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="localizacao">Localização *</Label>
-              <Input
-                id="localizacao"
-                value={formData.localizacao}
-                onChange={(e) => setFormData({ ...formData, localizacao: e.target.value })}
-                placeholder="Ex: Bairro, Cidade"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="endereco">Endereço Completo *</Label>
-            <Input
-              id="endereco"
-              value={formData.endereco}
-              onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-              placeholder="Ex: Rua das Flores, 123"
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="descricao">Descrição *</Label>
-            <Textarea
-              id="descricao"
-              value={formData.descricao}
-              onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-              placeholder="Descreva o imóvel..."
-              rows={3}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div>
-              <Label htmlFor="quartos">Quartos</Label>
-              <Input
-                id="quartos"
-                type="number"
-                value={formData.quartos}
-                onChange={(e) => setFormData({ ...formData, quartos: e.target.value })}
-                placeholder="0"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="banheiros">Banheiros</Label>
-              <Input
-                id="banheiros"
-                type="number"
-                value={formData.banheiros}
-                onChange={(e) => setFormData({ ...formData, banheiros: e.target.value })}
-                placeholder="0"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="condominio">Condomínio</Label>
-              <Input
-                id="condominio"
-                type="number"
-                step="0.01"
-                value={formData.condominio}
-                onChange={(e) => setFormData({ ...formData, condominio: e.target.value })}
-                placeholder="0.00"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="iptu">IPTU</Label>
-              <Input
-                id="iptu"
-                type="number"
-                step="0.01"
-                value={formData.iptu}
-                onChange={(e) => setFormData({ ...formData, iptu: e.target.value })}
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <Label>Etiquetas</Label>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { key: 'vaga_carro', label: 'Vaga de carro' },
-                { key: 'aceita_animais', label: 'Aceita animais' },
-                { key: 'condominio_fechado', label: 'Condomínio fechado' },
-                { key: 'closet', label: 'Closet' },
-                { key: 'portaria_24h', label: 'Portaria 24h' },
-                { key: 'portao_eletronico', label: 'Portão eletrônico' },
-              ].map(({ key, label }) => (
-                <div key={key} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={key}
-                    checked={formData[key as keyof typeof formData] as boolean}
-                    onCheckedChange={(checked) => 
-                      setFormData({ ...formData, [key]: checked })
-                    }
-                  />
-                  <Label htmlFor={key} className="text-sm">{label}</Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose} className="transition-all duration-200 hover-scale">
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={uploading} className="transition-all duration-200 hover-scale">
-              {uploading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Salvando...
-                </>
-              ) : (
-                selectedImovel ? 'Atualizar' : 'Cadastrar'
-              )}
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
-    );
-  };
 
   if (loading) {
     return (
@@ -785,16 +552,34 @@ export default function Imoveis() {
       )}
 
       {/* Modals */}
-      <FormModal 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
-        title="Cadastrar Novo Imóvel" 
+      <ImovelFormModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Cadastrar Novo Imóvel"
+        formData={formData}
+        setFormData={setFormData}
+        uploadedFiles={uploadedFiles}
+        setUploadedFiles={setUploadedFiles}
+        handleSubmit={handleSubmit}
+        handleFileUpload={handleFileUpload}
+        removeFile={removeFile}
+        uploading={uploading}
+        selectedImovel={selectedImovel}
       />
       
-      <FormModal 
-        isOpen={isEditModalOpen} 
-        onClose={() => setIsEditModalOpen(false)} 
-        title="Editar Imóvel" 
+      <ImovelFormModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title="Editar Imóvel"
+        formData={formData}
+        setFormData={setFormData}
+        uploadedFiles={uploadedFiles}
+        setUploadedFiles={setUploadedFiles}
+        handleSubmit={handleSubmit}
+        handleFileUpload={handleFileUpload}
+        removeFile={removeFile}
+        uploading={uploading}
+        selectedImovel={selectedImovel}
       />
     </div>
   );
