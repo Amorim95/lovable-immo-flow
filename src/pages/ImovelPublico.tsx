@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { MapPin, Bed, Bath, Car, Home, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Bed, Bath, Car, Home, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Imovel, ImovelMidia } from "@/types/crm";
+import { useCompany } from "@/contexts/CompanyContext";
 
 export default function ImovelPublico() {
   const { slug } = useParams<{ slug: string }>();
+  const { settings } = useCompany();
   const [imovel, setImovel] = useState<Imovel | null>(null);
   const [midias, setMidias] = useState<ImovelMidia[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -114,9 +116,15 @@ export default function ImovelPublico() {
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Home className="w-6 h-6 text-primary" />
-            <span className="text-xl font-bold text-primary">CRM Imóveis</span>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 flex-shrink-0">
+              <img 
+                src={settings.logo || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
+                alt={`${settings.name} Logo`} 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <span className="text-xl font-bold text-primary">{settings.name}</span>
           </div>
           <h1 className="text-3xl font-bold">{formatPrice(imovel.preco)}</h1>
           <div className="flex items-center gap-1 text-muted-foreground">
