@@ -212,7 +212,7 @@ export default function ImovelDetalhes() {
             <Card>
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Descrição</h3>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                   {imovel.descricao}
                 </p>
               </CardContent>
