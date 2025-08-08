@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, MapPin, Bed, Bath, Car, Phone, Mail, ArrowLeft } from "lucide-react";
+import { Search, MapPin, Bed, Bath, Car, Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,10 +9,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCompany } from "@/contexts/CompanyContext";
 import { Imovel } from "@/types/crm";
 
+interface ImovelComFotos extends Imovel {
+  fotos: string[];
+}
+
 export default function SitePublico() {
   const { settings } = useCompany();
-  const [imoveis, setImoveis] = useState<Imovel[]>([]);
-  const [filteredImoveis, setFilteredImoveis] = useState<Imovel[]>([]);
+  const [imoveis, setImoveis] = useState<ImovelComFotos[]>([]);
+  const [filteredImoveis, setFilteredImoveis] = useState<ImovelComFotos[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
@@ -34,14 +38,37 @@ export default function SitePublico() {
 
   const fetchImoveis = async () => {
     try {
-      const { data, error } = await supabase
+      // Buscar imóveis com suas fotos
+      const { data: imoveisData, error: imoveisError } = await supabase
         .from('imoveis')
         .select('*')
         .eq('publico', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setImoveis(data || []);
+      if (imoveisError) throw imoveisError;
+
+      // Buscar fotos para cada imóvel
+      const imoveisComFotos: ImovelComFotos[] = [];
+      
+      for (const imovel of (imoveisData || [])) {
+        const { data: fotosData, error: fotosError } = await supabase
+          .from('imovel_midias')
+          .select('url')
+          .eq('imovel_id', imovel.id)
+          .eq('tipo', 'imagem')
+          .order('ordem', { ascending: true });
+
+        if (fotosError) {
+          console.error('Erro ao carregar fotos do imóvel:', fotosError);
+        }
+
+        imoveisComFotos.push({
+          ...imovel,
+          fotos: fotosData?.map(foto => foto.url) || []
+        });
+      }
+
+      setImoveis(imoveisComFotos);
     } catch (error) {
       console.error('Erro ao carregar imóveis:', error);
     } finally {
@@ -116,6 +143,75 @@ export default function SitePublico() {
       vaga: false
     });
     setSearchTerm("");
+  };
+
+  // Componente do carrossel de fotos
+  const ImageCarousel = ({ fotos, alt }: { fotos: string[], alt: string }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    if (!fotos || fotos.length === 0) {
+      return (
+        <div className="w-full h-full flex items-center justify-center bg-gray-200">
+          <MapPin className="w-8 h-8 text-gray-400" />
+        </div>
+      );
+    }
+
+    const nextImage = () => {
+      setCurrentIndex((prev) => (prev + 1) % fotos.length);
+    };
+
+    const prevImage = () => {
+      setCurrentIndex((prev) => (prev - 1 + fotos.length) % fotos.length);
+    };
+
+    return (
+      <div className="relative w-full h-full">
+        <img
+          src={fotos[currentIndex]}
+          alt={alt}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5TZW0gaW1hZ2VtPC90ZXh0Pjwvc3ZnPg==';
+          }}
+        />
+        
+        {fotos.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70 transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            
+            {/* Indicadores */}
+            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+              {fotos.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentIndex ? 'bg-white' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+            
+            {/* Contador */}
+            <div className="absolute top-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-sm">
+              {currentIndex + 1} / {fotos.length}
+            </div>
+          </>
+        )}
+      </div>
+    );
   };
 
   if (loading) {
@@ -289,12 +385,13 @@ export default function SitePublico() {
                 {filteredImoveis.map((imovel) => (
                   <Card key={imovel.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="aspect-video bg-gray-100 relative">
-                      <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                        <MapPin className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <div className="absolute top-3 right-3">
+                      <ImageCarousel 
+                        fotos={imovel.fotos} 
+                        alt={`Imóvel em ${imovel.localizacao}`}
+                      />
+                      <div className="absolute top-3 left-3">
                         <Badge variant="secondary" className="bg-white/90">
-                          Imóvel
+                          {imovel.fotos?.length || 0} foto{(imovel.fotos?.length || 0) !== 1 ? 's' : ''}
                         </Badge>
                       </div>
                     </div>
