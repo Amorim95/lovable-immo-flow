@@ -29,21 +29,21 @@ import {
 const menuItems = [
   { 
     title: "Leads", 
-    url: "/", 
+    url: "/crm", 
     icon: LayoutList,
     description: "Gestão de leads",
     showForAll: true
   },
   { 
     title: "Dashboards", 
-    url: "/dashboards", 
+    url: "/crm/dashboards", 
     icon: Calendar,
     description: "Análises e relatórios",
     showForAll: true
   },
   { 
     title: "Imóveis", 
-    url: "/imoveis", 
+    url: "/crm/imoveis", 
     icon: Building2,
     description: "Gestão de imóveis",
     showForAll: true,
@@ -51,21 +51,21 @@ const menuItems = [
   },
   { 
     title: "Corretores", 
-    url: "/corretores", 
+    url: "/crm/corretores", 
     icon: Users,
     description: "Gestão de usuários",
     requireAdminOrGestor: true
   },
   { 
     title: "Configurações", 
-    url: "/configuracoes", 
+    url: "/crm/configuracoes", 
     icon: Settings,
     description: "Configurações do sistema",
     showForAll: true // Permitir acesso para todos, controle interno na página
   },
   { 
     title: "Meu Site", 
-    url: "/meu-site", 
+    url: "/crm/meu-site", 
     icon: Globe,
     description: "Site público",
     showForAll: true
@@ -81,8 +81,8 @@ export function CRMSidebar() {
   const collapsed = state === "collapsed";
 
   const isActive = (path: string) => {
-    if (path === "/" && currentPath === "/") return true;
-    if (path !== "/" && currentPath.startsWith(path)) return true;
+    if (path === "/crm" && currentPath === "/crm") return true;
+    if (path !== "/crm" && currentPath.startsWith(path)) return true;
     return false;
   };
 

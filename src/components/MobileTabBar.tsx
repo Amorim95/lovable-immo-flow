@@ -6,19 +6,19 @@ const tabs = [
   {
     id: "leads",
     label: "Gestão de Leads",
-    path: "/",
+    path: "/crm",
     icon: LayoutGrid
   },
   {
     id: "dashboards", 
     label: "Dashboards",
-    path: "/dashboards",
+    path: "/crm/dashboards",
     icon: BarChart3
   },
   {
     id: "configuracoes",
     label: "Configurações", 
-    path: "/configuracoes",
+    path: "/crm/configuracoes",
     icon: Settings
   }
 ];
@@ -28,8 +28,8 @@ export function MobileTabBar() {
   const scrollDirection = useScrollDirection();
   
   const isActive = (path: string) => {
-    if (path === "/") {
-      return location.pathname === "/";
+    if (path === "/crm") {
+      return location.pathname === "/crm";
     }
     return location.pathname.startsWith(path);
   };
