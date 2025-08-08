@@ -335,27 +335,58 @@ export default function ImovelDetalhes() {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 mt-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <h3 className="text-xl font-bold mb-4">{settings.site_title || settings.name}</h3>
               <p className="text-gray-300">
                 {settings.site_description || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
               </p>
+              {settings.site_about && (
+                <div className="mt-4">
+                  <h4 className="font-semibold mb-2">Sobre Nós</h4>
+                  <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
+                    {settings.site_about}
+                  </p>
+                </div>
+              )}
             </div>
             <div>
               <h4 className="font-semibold mb-4">Contato</h4>
               <div className="space-y-2 text-gray-300">
                 <p>{settings.site_email || 'contato@clickimoveis.com.br'}</p>
                 <p>{settings.site_phone || '(11) 9999-9999'}</p>
+                {settings.site_address && (
+                  <p className="text-sm">{settings.site_address}</p>
+                )}
               </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Navegação</h4>
-              <div className="space-y-2">
-                <a href="#" className="block text-gray-300 hover:text-white">Comprar</a>
-                <a href="#" className="block text-gray-300 hover:text-white">Alugar</a>
-                <a href="#" className="block text-gray-300 hover:text-white">Contato</a>
-              </div>
+              
+              {(settings.site_facebook || settings.site_instagram) && (
+                <div className="mt-4">
+                  <h4 className="font-semibold mb-2">Redes Sociais</h4>
+                  <div className="flex gap-4">
+                    {settings.site_facebook && (
+                      <a 
+                        href={settings.site_facebook} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-gray-300 hover:text-white transition-colors"
+                      >
+                        Facebook
+                      </a>
+                    )}
+                    {settings.site_instagram && (
+                      <a 
+                        href={settings.site_instagram} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-gray-300 hover:text-white transition-colors"
+                      >
+                        Instagram
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
