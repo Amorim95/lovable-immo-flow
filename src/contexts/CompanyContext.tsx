@@ -43,14 +43,19 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
 
   const loadCompanySettings = async () => {
     try {
-      const { data } = await supabase
+      console.log('Carregando configurações da empresa...');
+      const { data, error } = await supabase
         .from('company_settings')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
+      console.log('Dados carregados do banco:', data);
+      console.log('Erro na consulta:', error);
+
       if (data) {
+        console.log('Aplicando configurações:', data);
         setSettings(prev => ({
           ...prev,
           name: data.name || 'Click Imóveis',
@@ -69,6 +74,8 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
           site_horario_domingo: data.site_horario_domingo || 'Fechado',
           site_observacoes_horario: data.site_observacoes_horario || '*Atendimento via WhatsApp 24 horas',
         }));
+      } else {
+        console.log('Nenhum dado encontrado na tabela company_settings');
       }
     } catch (error) {
       console.error('Erro ao carregar configurações da empresa:', error);

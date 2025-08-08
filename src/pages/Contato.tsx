@@ -5,6 +5,9 @@ import { useCompany } from "@/contexts/CompanyContext";
 
 export default function Contato() {
   const { settings } = useCompany();
+  
+  // Debug para verificar os dados carregados
+  console.log('Configurações na página de contato:', settings);
 
   const handleBack = () => {
     window.history.back();
