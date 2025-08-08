@@ -24,11 +24,11 @@ export default function SobreNos() {
             </Button>
             
             <div className="flex-1 flex justify-center">
-              {settings.logo ? (
-                <img src={settings.logo} alt={settings.name} className="h-8" />
-              ) : (
-                <h1 className="text-2xl font-bold text-primary">{settings.site_title || settings.name}</h1>
-              )}
+              <img 
+                src={settings.logo || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
+                alt={settings.name} 
+                className="h-8 w-auto"
+              />
             </div>
             
             <div className="flex-1" />
