@@ -455,9 +455,14 @@ export default function Imoveis() {
                 id="preco"
                 type="text"
                 value={formData.preco}
-                onChange={(e) => setFormData({ ...formData, preco: e.target.value })}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  console.log('Preço digitado:', value);
+                  setFormData(prev => ({ ...prev, preco: value }));
+                }}
                 placeholder="Ex: 450000 ou R$ 450.000"
                 required
+                autoComplete="off"
               />
             </div>
             
