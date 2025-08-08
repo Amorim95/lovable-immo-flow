@@ -368,7 +368,10 @@ export default function Imoveis() {
     }).format(price);
   };
 
-  const FormModal = ({ isOpen, onClose, title }: { isOpen: boolean; onClose: () => void; title: string }) => (
+  const FormModal = ({ isOpen, onClose, title }: { isOpen: boolean; onClose: () => void; title: string }) => {
+    if (!isOpen) return null;
+    
+    return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -444,10 +447,13 @@ export default function Imoveis() {
               <Label htmlFor="preco">Preço *</Label>
               <Input
                 id="preco"
-                type="number"
-                step="0.01"
+                type="text"
                 value={formData.preco}
-                onChange={(e) => setFormData({ ...formData, preco: e.target.value })}
+                onChange={(e) => {
+                  // Permite apenas números e ponto decimal
+                  const value = e.target.value.replace(/[^0-9.]/g, '');
+                  setFormData({ ...formData, preco: value });
+                }}
                 placeholder="Ex: 450000"
                 required
               />
@@ -572,7 +578,8 @@ export default function Imoveis() {
         </form>
       </DialogContent>
     </Dialog>
-  );
+    );
+  };
 
   if (loading) {
     return (
