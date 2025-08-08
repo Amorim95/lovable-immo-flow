@@ -6,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { useCompany } from "@/contexts/CompanyContext";
 import { Imovel } from "@/types/crm";
 
 export default function SitePublico() {
+  const { settings } = useCompany();
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [filteredImoveis, setFilteredImoveis] = useState<Imovel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -136,7 +138,11 @@ export default function SitePublico() {
             <div className="flex-1" />
             
             <div className="flex-1 flex justify-center">
-              <h1 className="text-2xl font-bold text-primary">Click Imóveis</h1>
+              {settings.logo ? (
+                <img src={settings.logo} alt={settings.name} className="h-8" />
+              ) : (
+                <h1 className="text-2xl font-bold text-primary">{settings.name}</h1>
+              )}
             </div>
             
             <div className="flex-1 flex justify-end">
@@ -355,7 +361,7 @@ export default function SitePublico() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">Click Imóveis</h3>
+              <h3 className="text-xl font-bold mb-4">{settings.name}</h3>
               <p className="text-gray-300">
                 Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.
               </p>
@@ -377,7 +383,7 @@ export default function SitePublico() {
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 Click Imóveis. Todos os direitos reservados.</p>
+            <p>&copy; 2024 {settings.name}. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>
