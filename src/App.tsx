@@ -69,10 +69,12 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      
+      {/* Rotas públicas com contexto da empresa */}
       <Route path="/imovel-publico/:slug" element={<ImovelPublico />} />
       <Route path="/site-publico" element={<SitePublico />} />
-              <Route path="/sobre-nos" element={<SobreNos />} />
-              <Route path="/contato" element={<Contato />} />
+      <Route path="/sobre-nos" element={<SobreNos />} />
+      <Route path="/contato" element={<Contato />} />
       <Route path="/imovel/:id" element={<ImovelDetalhes />} />
       <Route path="/*" element={
         <ProtectedRoute>
