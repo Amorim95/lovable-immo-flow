@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Bed, Bath, Car, Phone, Mail, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, MapPin, Bed, Bath, Car, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useCompany } from "@/contexts/CompanyContext";
 import { Imovel } from "@/types/crm";
+import { toast } from "sonner";
 
 interface ImovelComFotos extends Imovel {
   fotos: string[];
@@ -19,6 +22,8 @@ export default function ImovelDetalhes() {
   const [imovel, setImovel] = useState<ImovelComFotos | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [formData, setFormData] = useState({ nome: '', telefone: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -83,6 +88,30 @@ export default function ImovelDetalhes() {
   const prevImage = () => {
     if (imovel?.fotos && imovel.fotos.length > 0) {
       setCurrentImageIndex((prev) => (prev - 1 + imovel.fotos.length) % imovel.fotos.length);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.nome.trim() || !formData.telefone.trim()) {
+      toast.error('Por favor, preencha todos os campos');
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      // Aqui você pode adicionar a lógica para salvar o contato no banco de dados
+      // Por exemplo, criar uma tabela de contatos ou enviar um email
+      
+      toast.success('Mensagem enviada com sucesso! Entraremos em contato em breve.');
+      setFormData({ nome: '', telefone: '' });
+    } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
+      toast.error('Erro ao enviar mensagem. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -310,17 +339,44 @@ export default function ImovelDetalhes() {
               </CardContent>
             </Card>
 
-            {/* Botões de Contato */}
-            <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" size="lg">
-                <Phone className="w-5 h-5 mr-2" />
-                Ligar
-              </Button>
-              <Button size="lg">
-                <Mail className="w-5 h-5 mr-2" />
-                WhatsApp
-              </Button>
-            </div>
+            {/* Formulário de Contato */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Entre em Contato</h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="nome">Nome</Label>
+                    <Input
+                      id="nome"
+                      type="text"
+                      value={formData.nome}
+                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                      placeholder="Seu nome completo"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="telefone">Telefone</Label>
+                    <Input
+                      id="telefone"
+                      type="tel"
+                      value={formData.telefone}
+                      onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                      placeholder="(11) 99999-9999"
+                      required
+                    />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    size="lg"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Enviando...' : 'Tenho Interesse'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
