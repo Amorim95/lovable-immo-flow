@@ -19,7 +19,7 @@ export default function Imoveis() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedImovel, setSelectedImovel] = useState<Imovel | null>(null);
   const [loading, setLoading] = useState(true);
-  const [uploadedFiles, setUploadedFiles] = useState<Array<{ file: File; preview: string; type: 'image' | 'video' }>>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ file: File; preview: string; type: 'imagem' | 'video' }>>([]);
   const [uploading, setUploading] = useState(false);
 
   // Estados do formulário
@@ -235,7 +235,7 @@ export default function Imoveis() {
         setUploadedFiles(prev => [...prev, {
           file,
           preview,
-          type: isVideo ? 'video' : 'image'
+          type: isVideo ? 'video' : 'imagem'
         }]);
       };
       reader.readAsDataURL(file);
@@ -375,7 +375,7 @@ export default function Imoveis() {
                 {uploadedFiles.map((fileObj, index) => (
                   <div key={index} className="relative group">
                     <div className="aspect-square rounded-lg overflow-hidden bg-muted">
-                      {fileObj.type === 'image' ? (
+                      {fileObj.type === 'imagem' ? (
                         <img
                           src={fileObj.preview}
                           alt={`Preview ${index + 1}`}
@@ -395,7 +395,7 @@ export default function Imoveis() {
                       <X className="w-3 h-3" />
                     </button>
                     <div className="absolute bottom-1 left-1 bg-black/50 text-white text-xs px-1 rounded">
-                      {fileObj.type === 'image' ? <Image className="w-3 h-3" /> : <Video className="w-3 h-3" />}
+                      {fileObj.type === 'imagem' ? <Image className="w-3 h-3" /> : <Video className="w-3 h-3" />}
                     </div>
                   </div>
                 ))}
@@ -560,14 +560,10 @@ export default function Imoveis() {
           <p className="text-muted-foreground">Gerencie seus imóveis cadastrados</p>
         </div>
         
-        <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setSelectedImovel(null); }}>
-              <Plus className="w-4 h-4 mr-2" />
-              Cadastrar Imóvel
-            </Button>
-          </DialogTrigger>
-        </Dialog>
+        <Button onClick={() => { resetForm(); setSelectedImovel(null); setIsCreateModalOpen(true); }}>
+          <Plus className="w-4 h-4 mr-2" />
+          Cadastrar Imóvel
+        </Button>
       </div>
 
       {/* Search */}
