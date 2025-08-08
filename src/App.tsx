@@ -33,6 +33,7 @@ import Imoveis from "./pages/Imoveis";
 import MeuSite from "./pages/MeuSite";
 import SitePublico from "./pages/SitePublico";
 import ImovelPublico from "./pages/ImovelPublico";
+import ImovelDetalhes from "./pages/ImovelDetalhes";
 import Configuracoes from "./pages/Configuracoes";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -67,6 +68,7 @@ function AppContent() {
       <Route path="/login" element={<Login />} />
       <Route path="/imovel-publico/:slug" element={<ImovelPublico />} />
       <Route path="/site-publico" element={<SitePublico />} />
+      <Route path="/imovel/:id" element={<ImovelDetalhes />} />
       <Route path="/*" element={
         <ProtectedRoute>
           {isMobile ? (

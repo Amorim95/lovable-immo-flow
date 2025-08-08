@@ -383,7 +383,11 @@ export default function SitePublico() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {filteredImoveis.map((imovel) => (
-                  <Card key={imovel.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <Card 
+                    key={imovel.id} 
+                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => window.location.href = `/imovel/${imovel.id}`}
+                  >
                     <div className="aspect-video bg-gray-100 relative">
                       <ImageCarousel 
                         fotos={imovel.fotos} 
