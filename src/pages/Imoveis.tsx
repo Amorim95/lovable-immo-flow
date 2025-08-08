@@ -449,12 +449,8 @@ export default function Imoveis() {
                 id="preco"
                 type="text"
                 value={formData.preco}
-                onChange={(e) => {
-                  // Permite apenas números e ponto decimal
-                  const value = e.target.value.replace(/[^0-9.]/g, '');
-                  setFormData({ ...formData, preco: value });
-                }}
-                placeholder="Ex: 450000"
+                onChange={(e) => setFormData({ ...formData, preco: e.target.value })}
+                placeholder="Ex: 450000 ou R$ 450.000"
                 required
               />
             </div>
