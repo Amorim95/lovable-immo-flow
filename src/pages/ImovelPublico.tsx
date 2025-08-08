@@ -7,16 +7,42 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Imovel, ImovelMidia } from "@/types/crm";
 import { useCompany } from "@/contexts/CompanyContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ImovelPublico() {
   const { slug } = useParams<{ slug: string }>();
   const { settings } = useCompany();
+  const { user } = useAuth();
   const [imovel, setImovel] = useState<Imovel | null>(null);
   const [midias, setMidias] = useState<ImovelMidia[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [userPhone, setUserPhone] = useState<string>('');
+
+  useEffect(() => {
+    if (user) {
+      fetchUserPhone();
+    }
+  }, [user]);
+
+  const fetchUserPhone = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('telefone')
+        .eq('id', user.id)
+        .single();
+
+      if (!error && data?.telefone) {
+        setUserPhone(data.telefone);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar telefone do usuário:', error);
+    }
+  };
 
   useEffect(() => {
     if (slug) {
@@ -55,16 +81,6 @@ export default function ImovelPublico() {
         setMidias((midiaData || []) as ImovelMidia[]);
       }
 
-      // Buscar telefone do usuário proprietário do imóvel
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('telefone')
-        .eq('id', data.user_id)
-        .single();
-
-      if (!userError && userData?.telefone) {
-        setUserPhone(userData.telefone);
-      }
 
     } catch (error) {
       console.error('Erro ao carregar imóvel:', error);
