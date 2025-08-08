@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, MapPin, Bed, Bath, Car, Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, MapPin, Bed, Bath, Car, Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight, Facebook, Instagram } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -249,8 +249,28 @@ export default function SitePublico() {
               )}
             </div>
             
-            <div className="flex-1 flex justify-end gap-6">
+            <div className="flex-1 flex justify-end items-center gap-6">
               <a href="/sobre-nos" className="text-muted-foreground hover:text-primary">Sobre Nós</a>
+              {settings.site_facebook && (
+                <a 
+                  href={settings.site_facebook} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+              )}
+              {settings.site_instagram && (
+                <a 
+                  href={settings.site_instagram} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+              )}
               <a href="#contato" className="text-muted-foreground hover:text-primary">Contato</a>
             </div>
           </div>
