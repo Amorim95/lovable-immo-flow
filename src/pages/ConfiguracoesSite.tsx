@@ -19,6 +19,7 @@ interface SiteSettings {
   whatsapp?: string;
   facebook?: string;
   instagram?: string;
+  about?: string;
 }
 
 export default function ConfiguracoesSite() {
@@ -34,6 +35,7 @@ export default function ConfiguracoesSite() {
     whatsapp: "",
     facebook: "",
     instagram: "",
+    about: "",
   });
 
   useEffect(() => {
@@ -47,6 +49,7 @@ export default function ConfiguracoesSite() {
       whatsapp: settings.site_whatsapp || "5511999999999",
       facebook: settings.site_facebook || "",
       instagram: settings.site_instagram || "",
+      about: settings.site_about || "",
     });
   }, [settings]);
 
@@ -74,6 +77,7 @@ export default function ConfiguracoesSite() {
             site_whatsapp: siteSettings.whatsapp,
             site_facebook: siteSettings.facebook,
             site_instagram: siteSettings.instagram,
+            site_about: siteSettings.about,
           })
           .eq('id', allSettings[0].id);
 
@@ -92,6 +96,7 @@ export default function ConfiguracoesSite() {
             site_whatsapp: siteSettings.whatsapp,
             site_facebook: siteSettings.facebook,
             site_instagram: siteSettings.instagram,
+            site_about: siteSettings.about,
           });
 
         if (error) throw error;
@@ -210,6 +215,28 @@ export default function ConfiguracoesSite() {
               onChange={(e) => handleInputChange('address', e.target.value)}
               placeholder="Endereço completo da empresa"
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sobre a Empresa */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Sobre a Empresa</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="about">Descrição da Empresa</Label>
+            <Textarea
+              id="about"
+              value={siteSettings.about}
+              onChange={(e) => handleInputChange('about', e.target.value)}
+              placeholder="Conte um pouco sobre sua empresa, história, missão, valores..."
+              rows={5}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Esta descrição aparecerá em uma seção "Sobre Nós" no site público
+            </p>
           </div>
         </CardContent>
       </Card>

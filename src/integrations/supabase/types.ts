@@ -50,6 +50,7 @@ export type Database = {
           id: string
           logo: string | null
           name: string
+          site_about: string | null
           site_address: string | null
           site_description: string | null
           site_email: string | null
@@ -65,6 +66,7 @@ export type Database = {
           id?: string
           logo?: string | null
           name: string
+          site_about?: string | null
           site_address?: string | null
           site_description?: string | null
           site_email?: string | null
@@ -80,6 +82,7 @@ export type Database = {
           id?: string
           logo?: string | null
           name?: string
+          site_about?: string | null
           site_address?: string | null
           site_description?: string | null
           site_email?: string | null

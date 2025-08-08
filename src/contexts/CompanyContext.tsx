@@ -14,6 +14,7 @@ interface CompanySettings {
   site_whatsapp?: string;
   site_facebook?: string;
   site_instagram?: string;
+  site_about?: string;
 }
 
 interface CompanyContextType {
@@ -58,6 +59,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
           site_whatsapp: data.site_whatsapp || '5511999999999',
           site_facebook: data.site_facebook || '',
           site_instagram: data.site_instagram || '',
+          site_about: data.site_about || '',
         }));
       }
     } catch (error) {
