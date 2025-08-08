@@ -238,10 +238,20 @@ export default function SitePublico() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex-1" />
+          <div className="flex items-center justify-between gap-6">
+            <div className="flex-1 max-w-md">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  placeholder="Buscar imóveis..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
             
-            <div className="flex-1 flex justify-center">
+            <div className="flex justify-center">
               <img 
                 src={settings.logo || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
                 alt={settings.name} 
@@ -277,37 +287,6 @@ export default function SitePublico() {
         </div>
       </header>
 
-      {/* Hero Section with Search */}
-      <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              Encontre seu imóvel ideal
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Descubra as melhores oportunidades do mercado imobiliário
-            </p>
-          </div>
-          
-          <div className="max-w-2xl mx-auto">
-            <div className="flex gap-2">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Buscar por endereço, bairro ou cidade..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button size="lg">
-                <Search className="w-4 h-4 mr-2" />
-                Buscar
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
