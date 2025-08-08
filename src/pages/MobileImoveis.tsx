@@ -9,10 +9,12 @@ import { toast } from "@/hooks/use-toast";
 import { Imovel } from "@/types/crm";
 import { useNavigate } from "react-router-dom";
 import { MobileHeader } from "@/components/MobileHeader";
+import { useUserRole } from "@/hooks/useUserRole";
 import ImovelFormModal from "@/components/ImovelFormModal";
 
 export default function MobileImoveis() {
   const navigate = useNavigate();
+  const { isAdmin, isGestor } = useUserRole();
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -375,18 +377,20 @@ export default function MobileImoveis() {
       <div className="p-4 space-y-4">
         {/* Botões principais */}
         <div className="grid grid-cols-2 gap-3">
-          <Button 
-            onClick={() => { resetForm(); setSelectedImovel(null); setIsCreateModalOpen(true); }}
-            className="h-12 text-base font-medium"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Cadastrar
-          </Button>
+          {(isAdmin || isGestor) && (
+            <Button 
+              onClick={() => { resetForm(); setSelectedImovel(null); setIsCreateModalOpen(true); }}
+              className="h-12 text-base font-medium"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Cadastrar
+            </Button>
+          )}
           
           <Button 
             variant="outline"
             onClick={() => navigate('/meu-site')}
-            className="h-12 text-base font-medium"
+            className={`h-12 text-base font-medium ${!(isAdmin || isGestor) ? 'col-span-2' : ''}`}
           >
             <Globe className="w-5 h-5 mr-2" />
             Meu Site
@@ -484,24 +488,26 @@ export default function MobileImoveis() {
 
                   {/* Botões de ação */}
                   <div className="grid grid-cols-3 gap-2" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleView(imovel)}
-                      className="text-xs px-2"
-                    >
-                      <Eye className="w-3 h-3 mr-1" />
-                      Ver
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(imovel)}
-                      className="text-xs px-2"
-                    >
-                      <Edit className="w-3 h-3 mr-1" />
-                      Editar
-                    </Button>
+                     <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleView(imovel)}
+                        className="text-xs px-2"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        Ver
+                      </Button>
+                      {(isAdmin || isGestor) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEdit(imovel)}
+                          className="text-xs px-2"
+                        >
+                          <Edit className="w-3 h-3 mr-1" />
+                          Editar
+                        </Button>
+                      )}
                     <Button
                       size="sm"
                       variant="outline"

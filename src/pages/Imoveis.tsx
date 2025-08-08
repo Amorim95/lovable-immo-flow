@@ -7,11 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Imovel, ImovelMidia } from "@/types/crm";
 import ImovelFormModal from "@/components/ImovelFormModal";
 
 export default function Imoveis() {
   const navigate = useNavigate();
+  const { isAdmin, isGestor } = useUserRole();
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -415,10 +417,12 @@ export default function Imoveis() {
           <p className="text-muted-foreground">Gerencie seus imóveis cadastrados</p>
         </div>
         
-        <Button onClick={() => { resetForm(); setSelectedImovel(null); setIsCreateModalOpen(true); }}>
-          <Plus className="w-4 h-4 mr-2" />
-          Cadastrar Imóvel
-        </Button>
+        {(isAdmin || isGestor) && (
+          <Button onClick={() => { resetForm(); setSelectedImovel(null); setIsCreateModalOpen(true); }}>
+            <Plus className="w-4 h-4 mr-2" />
+            Cadastrar Imóvel
+          </Button>
+        )}
       </div>
 
       {/* Search */}
@@ -498,14 +502,16 @@ export default function Imoveis() {
                   >
                     <Eye className="w-4 h-4" />
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEdit(imovel)}
-                    title="Editar imóvel"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
+                  {(isAdmin || isGestor) && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEdit(imovel)}
+                      title="Editar imóvel"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="outline"
