@@ -249,7 +249,7 @@ export default function ImovelPublico() {
 
                 <div>
                   <h3 className="font-semibold mb-2">Descrição</h3>
-                  <p className="text-muted-foreground leading-relaxed">{imovel.descricao}</p>
+                  <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{imovel.descricao}</p>
                 </div>
               </CardContent>
             </Card>
