@@ -102,9 +102,17 @@ export default function ImovelDetalhes() {
     setIsSubmitting(true);
     
     try {
-      // Aqui você pode adicionar a lógica para salvar o contato no banco de dados
-      // Por exemplo, criar uma tabela de contatos ou enviar um email
-      
+      // Criar um novo lead no sistema
+      const { error } = await supabase
+        .from('leads')
+        .insert({
+          nome: formData.nome.trim(),
+          telefone: formData.telefone.trim(),
+          dados_adicionais: `Lead do site - Interesse no imóvel em ${imovel?.localizacao} (${formatPrice(imovel?.preco || 0)})`
+        });
+
+      if (error) throw error;
+
       toast.success('Mensagem enviada com sucesso! Entraremos em contato em breve.');
       setFormData({ nome: '', telefone: '' });
     } catch (error) {
