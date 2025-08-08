@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useCompany } from "@/contexts/CompanyContext";
 import { toast } from "sonner";
+import { useRef } from "react";
 
 interface SiteSettings {
   title?: string;
@@ -28,7 +29,8 @@ interface SiteSettings {
 
 export default function ConfiguracoesSite() {
   const navigate = useNavigate();
-  const { settings, refreshSettings } = useCompany();
+  const { settings, updateSettings, refreshSettings } = useCompany();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>({
     title: "",
@@ -137,6 +139,61 @@ export default function ConfiguracoesSite() {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor, selecione apenas arquivos de imagem.');
+      return;
+    }
+
+    // Validar tamanho (máximo 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 2MB.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Fazer upload para o Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `logo-${Date.now()}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('property-media')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      // Obter URL pública da imagem
+      const { data: { publicUrl } } = supabase.storage
+        .from('property-media')
+        .getPublicUrl(fileName);
+
+      // Atualizar configurações da empresa com a nova logo
+      await updateSettings({ logo: publicUrl });
+      
+      toast.success('Logo atualizada com sucesso!');
+    } catch (error) {
+      console.error('Erro ao fazer upload da logo:', error);
+      toast.error('Erro ao fazer upload da logo. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    try {
+      await updateSettings({ logo: null });
+      toast.success('Logo removida com sucesso!');
+    } catch (error) {
+      console.error('Erro ao remover logo:', error);
+      toast.error('Erro ao remover logo. Tente novamente.');
+    }
   };
 
   return (
@@ -351,6 +408,14 @@ export default function ConfiguracoesSite() {
           <CardTitle>Logo da Empresa</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleLogoUpload}
+            className="hidden"
+          />
+          
           <div className="flex items-center gap-4">
             {settings.logo ? (
               <div className="flex items-center gap-4">
@@ -360,11 +425,21 @@ export default function ConfiguracoesSite() {
                   className="h-16 w-auto border rounded"
                 />
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={loading}
+                  >
                     <Upload className="w-4 h-4 mr-2" />
                     Alterar Logo
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleRemoveLogo}
+                    disabled={loading}
+                  >
                     <Trash2 className="w-4 h-4 mr-2" />
                     Remover
                   </Button>
@@ -375,7 +450,12 @@ export default function ConfiguracoesSite() {
                 <div className="h-16 w-32 border-2 border-dashed border-gray-300 rounded flex items-center justify-center text-sm text-gray-500">
                   Sem logo
                 </div>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={loading}
+                >
                   <Upload className="w-4 h-4 mr-2" />
                   Adicionar Logo
                 </Button>
