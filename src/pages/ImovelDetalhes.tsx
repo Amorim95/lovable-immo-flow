@@ -28,12 +28,11 @@ export default function ImovelDetalhes() {
 
   const fetchImovel = async () => {
     try {
-      // Buscar imóvel por ID
+      // Buscar imóvel por ID (todos os imóveis agora)
       const { data: imovelData, error: imovelError } = await supabase
         .from('imoveis')
         .select('*')
         .eq('id', id)
-        .eq('publico', true)
         .single();
 
       if (imovelError) throw imovelError;

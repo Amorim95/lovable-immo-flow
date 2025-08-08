@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Search, Edit, Share2, Eye, Home, MapPin, Bed, Bath, Car, DollarSign } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +11,7 @@ import { Imovel, ImovelMidia } from "@/types/crm";
 import ImovelFormModal from "@/components/ImovelFormModal";
 
 export default function Imoveis() {
+  const navigate = useNavigate();
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -344,6 +346,10 @@ export default function Imoveis() {
     setIsEditModalOpen(true);
   };
 
+  const handleView = (imovel: Imovel) => {
+    navigate(`/imovel/${imovel.id}`);
+  };
+
   const handleShare = async (imovel: Imovel) => {
     try {
       // Tornar o imóvel público se não estiver
@@ -473,7 +479,7 @@ export default function Imoveis() {
       {/* Imóveis Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredImoveis.map((imovel) => (
-          <Card key={imovel.id} className="hover:shadow-lg transition-shadow">
+          <Card key={imovel.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleView(imovel)}>
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -483,11 +489,20 @@ export default function Imoveis() {
                     <span>{imovel.localizacao}</span>
                   </div>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleView(imovel)}
+                    title="Visualizar imóvel"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleEdit(imovel)}
+                    title="Editar imóvel"
                   >
                     <Edit className="w-4 h-4" />
                   </Button>
@@ -495,6 +510,7 @@ export default function Imoveis() {
                     size="sm"
                     variant="outline"
                     onClick={() => handleShare(imovel)}
+                    title="Compartilhar imóvel"
                   >
                     <Share2 className="w-4 h-4" />
                   </Button>
