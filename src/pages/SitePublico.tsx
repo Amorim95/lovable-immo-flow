@@ -32,8 +32,8 @@ export default function SitePublico() {
   // Filtros
   const [searchTerm, setSearchTerm] = useState("");
   const [tipoImovel, setTipoImovel] = useState<string[]>([]);
-  const [quartos, setQuartos] = useState("");
-  const [banheiros, setBanheiros] = useState("");
+  const [quartos, setQuartos] = useState("all");
+  const [banheiros, setBanheiros] = useState("all");
   const [precoMin, setPrecoMin] = useState("");
   const [precoMax, setPrecoMax] = useState("");
   const [temVaga, setTemVaga] = useState(false);
@@ -93,13 +93,19 @@ export default function SitePublico() {
     }
 
     // Filtro por quartos
-    if (quartos) {
-      filtered = filtered.filter(imovel => imovel.quartos === parseInt(quartos));
+    if (quartos && quartos !== "all") {
+      const quartosNum = quartos === "4" ? 4 : parseInt(quartos);
+      filtered = filtered.filter(imovel => 
+        quartos === "4" ? (imovel.quartos || 0) >= 4 : imovel.quartos === quartosNum
+      );
     }
 
     // Filtro por banheiros
-    if (banheiros) {
-      filtered = filtered.filter(imovel => imovel.banheiros === parseInt(banheiros));
+    if (banheiros && banheiros !== "all") {
+      const banheirosNum = banheiros === "4" ? 4 : parseInt(banheiros);
+      filtered = filtered.filter(imovel => 
+        banheiros === "4" ? (imovel.banheiros || 0) >= 4 : imovel.banheiros === banheirosNum
+      );
     }
 
     // Filtro por preço
@@ -127,8 +133,8 @@ export default function SitePublico() {
   const clearFilters = () => {
     setSearchTerm("");
     setTipoImovel([]);
-    setQuartos("");
-    setBanheiros("");
+    setQuartos("all");
+    setBanheiros("all");
     setPrecoMin("");
     setPrecoMax("");
     setTemVaga(false);
@@ -204,7 +210,7 @@ export default function SitePublico() {
             <SelectValue placeholder="Qualquer" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Qualquer</SelectItem>
+            <SelectItem value="all">Qualquer</SelectItem>
             <SelectItem value="1">1</SelectItem>
             <SelectItem value="2">2</SelectItem>
             <SelectItem value="3">3</SelectItem>
@@ -221,7 +227,7 @@ export default function SitePublico() {
             <SelectValue placeholder="Qualquer" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Qualquer</SelectItem>
+            <SelectItem value="all">Qualquer</SelectItem>
             <SelectItem value="1">1</SelectItem>
             <SelectItem value="2">2</SelectItem>
             <SelectItem value="3">3</SelectItem>
