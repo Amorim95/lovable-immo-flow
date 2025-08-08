@@ -65,8 +65,8 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/site-publico" element={<SitePublico />} />
       <Route path="/imovel-publico/:slug" element={<ImovelPublico />} />
+      <Route path="/site-publico" element={<SitePublico />} />
       <Route path="/*" element={
         <ProtectedRoute>
           {isMobile ? (
