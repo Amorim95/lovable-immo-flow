@@ -53,14 +53,15 @@ export default function ConfiguracoesSite() {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // Atualizar configurações da empresa (usar a primeira configuração)
-      const { data: existingSettings } = await supabase
+      // Primeiro, buscar todas as configurações existentes para pegar o ID mais recente
+      const { data: allSettings } = await supabase
         .from('company_settings')
         .select('id')
-        .limit(1)
-        .maybeSingle();
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      if (existingSettings) {
+      if (allSettings && allSettings.length > 0) {
+        // Atualizar o registro mais recente
         const { error } = await supabase
           .from('company_settings')
           .update({
@@ -74,11 +75,11 @@ export default function ConfiguracoesSite() {
             site_facebook: siteSettings.facebook,
             site_instagram: siteSettings.instagram,
           })
-          .eq('id', existingSettings.id);
+          .eq('id', allSettings[0].id);
 
         if (error) throw error;
       } else {
-        // Criar nova configuração se não existir
+        // Criar nova configuração se não existir nenhuma
         const { error } = await supabase
           .from('company_settings')
           .insert({
