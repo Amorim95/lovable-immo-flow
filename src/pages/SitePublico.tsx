@@ -133,17 +133,15 @@ export default function SitePublico() {
       <header className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex-1" />
+            
+            <div className="flex-1 flex justify-center">
               <h1 className="text-2xl font-bold text-primary">Click Imóveis</h1>
             </div>
-            <nav className="hidden md:flex items-center gap-6">
-              <a href="#" className="text-muted-foreground hover:text-primary">Comprar</a>
-              <a href="#" className="text-muted-foreground hover:text-primary">Alugar</a>
-              <a href="#" className="text-muted-foreground hover:text-primary">Contato</a>
-              <Button variant="outline" onClick={() => window.location.href = '/crm'}>
-                Área do Corretor
-              </Button>
-            </nav>
+            
+            <div className="flex-1 flex justify-end">
+              <a href="#contato" className="text-muted-foreground hover:text-primary">Contato</a>
+            </div>
           </div>
         </div>
       </header>
@@ -353,7 +351,7 @@ export default function SitePublico() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 mt-16">
+      <footer id="contato" className="bg-gray-900 text-white py-12 mt-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
