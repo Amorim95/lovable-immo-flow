@@ -467,16 +467,6 @@ export default function SitePublico() {
                         )}
                       </div>
 
-                      <div className="flex gap-2">
-                        <Button variant="outline" className="flex-1">
-                          <Phone className="w-4 h-4 mr-1" />
-                          Telefone
-                        </Button>
-                        <Button className="flex-1">
-                          <Mail className="w-4 h-4 mr-1" />
-                          Contato
-                        </Button>
-                      </div>
                     </CardContent>
                   </Card>
                 ))}
