@@ -456,9 +456,20 @@ export default function Imoveis() {
                 type="text"
                 value={formData.preco}
                 onChange={(e) => {
-                  console.log('Valor atual:', e.target.value);
-                  console.log('Tamanho:', e.target.value.length);
                   setFormData(prev => ({ ...prev, preco: e.target.value }));
+                }}
+                onFocus={(e) => {
+                  // Move o cursor para o final ao invés de selecionar tudo
+                  setTimeout(() => {
+                    const input = e.target as HTMLInputElement;
+                    const length = input.value.length;
+                    input.setSelectionRange(length, length);
+                  }, 0);
+                }}
+                onClick={(e) => {
+                  // Previne seleção automática no click
+                  const input = e.target as HTMLInputElement;
+                  input.setSelectionRange(input.selectionStart || 0, input.selectionStart || 0);
                 }}
                 placeholder="Ex: 450000 ou R$ 450.000"
                 required
