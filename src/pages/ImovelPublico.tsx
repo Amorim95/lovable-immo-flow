@@ -254,35 +254,39 @@ export default function ImovelPublico() {
               </CardContent>
             </Card>
 
-            {/* Características */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Características</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[
-                    { condition: imovel.vaga_carro, label: 'Vaga de carro' },
-                    { condition: imovel.aceita_animais, label: 'Aceita animais' },
-                    { condition: imovel.condominio_fechado, label: 'Condomínio fechado' },
-                    { condition: imovel.closet, label: 'Closet' },
-                    { condition: imovel.portaria_24h, label: 'Portaria 24h' },
-                    { condition: imovel.portao_eletronico, label: 'Portão eletrônico' },
-                  ].map(({ condition, label }, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      {condition ? (
-                        <Check className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <X className="w-5 h-5 text-gray-400" />
-                      )}
-                      <span className={condition ? 'text-foreground' : 'text-muted-foreground'}>
-                        {label}
-                      </span>
+            {/* Características - só mostra se houver características selecionadas */}
+            {(() => {
+              const caracteristicas = [
+                { condition: imovel.vaga_carro, label: 'Vaga de carro' },
+                { condition: imovel.aceita_animais, label: 'Aceita animais' },
+                { condition: imovel.condominio_fechado, label: 'Condomínio fechado' },
+                { condition: imovel.closet, label: 'Closet' },
+                { condition: imovel.portaria_24h, label: 'Portaria 24h' },
+                { condition: imovel.portao_eletronico, label: 'Portão eletrônico' },
+              ].filter(item => item.condition);
+
+              if (caracteristicas.length === 0) {
+                return null;
+              }
+
+              return (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Características</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {caracteristicas.map(({ label }, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Check className="w-5 h-5 text-green-600" />
+                          <span className="text-foreground">{label}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              );
+            })()}
           </div>
 
           {/* Sidebar */}
