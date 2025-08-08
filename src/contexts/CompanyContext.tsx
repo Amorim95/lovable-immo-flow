@@ -78,34 +78,44 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   const updateSettings = async (newSettings: Partial<CompanySettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }));
     
-    // Se foi atualizada a logo ou nome, também atualizar no banco
-    if (newSettings.logo !== undefined || newSettings.name !== undefined) {
-      try {
-        const { data: existingData } = await supabase
-          .from('company_settings')
-          .select('*')
-          .limit(1)
-          .maybeSingle();
+    // Atualizar no banco sempre que houver mudanças
+    try {
+      const { data: existingData } = await supabase
+        .from('company_settings')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
 
-        if (existingData) {
-          await supabase
-            .from('company_settings')
-            .update({
-              name: newSettings.name || existingData.name,
-              logo: newSettings.logo || existingData.logo
-            })
-            .eq('id', existingData.id);
-        } else {
-          await supabase
-            .from('company_settings')
-            .insert({
-              name: newSettings.name || 'Click Imóveis',
-              logo: newSettings.logo || null
-            });
-        }
-      } catch (error) {
-        console.error('Erro ao atualizar configurações da empresa:', error);
+      const updateData = {
+        name: newSettings.name !== undefined ? newSettings.name : existingData?.name || 'Click Imóveis',
+        logo: newSettings.logo !== undefined ? newSettings.logo : existingData?.logo || null,
+        site_title: newSettings.site_title !== undefined ? newSettings.site_title : existingData?.site_title,
+        site_description: newSettings.site_description !== undefined ? newSettings.site_description : existingData?.site_description,
+        site_phone: newSettings.site_phone !== undefined ? newSettings.site_phone : existingData?.site_phone,
+        site_email: newSettings.site_email !== undefined ? newSettings.site_email : existingData?.site_email,
+        site_address: newSettings.site_address !== undefined ? newSettings.site_address : existingData?.site_address,
+        site_whatsapp: newSettings.site_whatsapp !== undefined ? newSettings.site_whatsapp : existingData?.site_whatsapp,
+        site_facebook: newSettings.site_facebook !== undefined ? newSettings.site_facebook : existingData?.site_facebook,
+        site_instagram: newSettings.site_instagram !== undefined ? newSettings.site_instagram : existingData?.site_instagram,
+        site_about: newSettings.site_about !== undefined ? newSettings.site_about : existingData?.site_about,
+        site_horario_semana: newSettings.site_horario_semana !== undefined ? newSettings.site_horario_semana : existingData?.site_horario_semana,
+        site_horario_sabado: newSettings.site_horario_sabado !== undefined ? newSettings.site_horario_sabado : existingData?.site_horario_sabado,
+        site_horario_domingo: newSettings.site_horario_domingo !== undefined ? newSettings.site_horario_domingo : existingData?.site_horario_domingo,
+        site_observacoes_horario: newSettings.site_observacoes_horario !== undefined ? newSettings.site_observacoes_horario : existingData?.site_observacoes_horario,
+      };
+
+      if (existingData) {
+        await supabase
+          .from('company_settings')
+          .update(updateData)
+          .eq('id', existingData.id);
+      } else {
+        await supabase
+          .from('company_settings')
+          .insert(updateData);
       }
+    } catch (error) {
+      console.error('Erro ao atualizar configurações da empresa:', error);
     }
   };
 
