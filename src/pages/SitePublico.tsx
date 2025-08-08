@@ -38,11 +38,10 @@ export default function SitePublico() {
 
   const fetchImoveis = async () => {
     try {
-      // Buscar imóveis com suas fotos
+      // Buscar todos os imóveis com suas fotos
       const { data: imoveisData, error: imoveisError } = await supabase
         .from('imoveis')
         .select('*')
-        .eq('publico', true)
         .order('created_at', { ascending: false });
 
       if (imoveisError) throw imoveisError;
