@@ -143,40 +143,61 @@ export default function ConfiguracoesSite() {
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log('Nenhum arquivo selecionado');
+      return;
+    }
+
+    console.log('Arquivo selecionado:', file.name, 'Tamanho:', file.size, 'Tipo:', file.type);
 
     // Validar tipo de arquivo
     if (!file.type.startsWith('image/')) {
+      console.log('Tipo de arquivo inválido:', file.type);
       toast.error('Por favor, selecione apenas arquivos de imagem.');
       return;
     }
 
     // Validar tamanho (máximo 2MB)
     if (file.size > 2 * 1024 * 1024) {
+      console.log('Arquivo muito grande:', file.size);
       toast.error('A imagem deve ter no máximo 2MB.');
       return;
     }
 
     setLoading(true);
+    console.log('Iniciando upload...');
+    
     try {
       // Fazer upload para o Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `logo-${Date.now()}.${fileExt}`;
       
+      console.log('Nome do arquivo gerado:', fileName);
+      console.log('Fazendo upload para bucket property-media...');
+      
       const { data, error } = await supabase.storage
         .from('property-media')
         .upload(fileName, file);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro no upload do storage:', error);
+        throw error;
+      }
+
+      console.log('Upload realizado com sucesso:', data);
 
       // Obter URL pública da imagem
       const { data: { publicUrl } } = supabase.storage
         .from('property-media')
         .getPublicUrl(fileName);
 
+      console.log('URL pública gerada:', publicUrl);
+
       // Atualizar configurações da empresa com a nova logo
+      console.log('Atualizando configurações da empresa...');
       await updateSettings({ logo: publicUrl });
       
+      console.log('Logo atualizada com sucesso');
       toast.success('Logo atualizada com sucesso!');
     } catch (error) {
       console.error('Erro ao fazer upload da logo:', error);
