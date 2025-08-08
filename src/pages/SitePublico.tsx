@@ -245,7 +245,7 @@ export default function SitePublico() {
               <img 
                 src={settings.logo || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
                 alt={settings.name} 
-                className="h-60 w-auto" 
+                className="h-16 w-auto" 
               />
             </div>
             
