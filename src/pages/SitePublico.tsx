@@ -157,11 +157,15 @@ export default function SitePublico() {
       );
     }
 
-    const nextImage = () => {
+    const nextImage = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       setCurrentIndex((prev) => (prev + 1) % fotos.length);
     };
 
-    const prevImage = () => {
+    const prevImage = (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
       setCurrentIndex((prev) => (prev - 1 + fotos.length) % fotos.length);
     };
 
@@ -180,13 +184,13 @@ export default function SitePublico() {
           <>
             <button
               onClick={prevImage}
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70 transition-colors"
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors z-10"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={nextImage}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-1 rounded-full hover:bg-black/70 transition-colors"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors z-10"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -196,7 +200,11 @@ export default function SitePublico() {
               {fotos.map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => setCurrentIndex(index)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setCurrentIndex(index);
+                  }}
                   className={`w-2 h-2 rounded-full transition-colors ${
                     index === currentIndex ? 'bg-white' : 'bg-white/50'
                   }`}
