@@ -22,8 +22,6 @@ export default function ImovelDetalhes() {
   const [imovel, setImovel] = useState<ImovelComFotos | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [formData, setFormData] = useState({ nome: '', telefone: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -91,41 +89,6 @@ export default function ImovelDetalhes() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.nome.trim() || !formData.telefone.trim()) {
-      toast.error('Por favor, preencha todos os campos');
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      // Usar a edge function para criar o lead
-      const { data, error } = await supabase.functions.invoke('create-public-lead', {
-        body: {
-          nome: formData.nome.trim(),
-          telefone: formData.telefone.trim(),
-          dados_adicionais: `Lead do site - Interesse no imóvel em ${imovel?.localizacao} (${formatPrice(imovel?.preco || 0)})`
-        }
-      });
-
-      if (error) throw error;
-
-      if (data?.error) {
-        throw new Error(data.error);
-      }
-
-      toast.success('Mensagem enviada com sucesso! Entraremos em contato em breve.');
-      setFormData({ nome: '', telefone: '' });
-    } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
-      toast.error('Erro ao enviar mensagem. Tente novamente.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -351,42 +314,21 @@ export default function ImovelDetalhes() {
               </CardContent>
             </Card>
 
-            {/* Formulário de Contato */}
+            {/* Botão WhatsApp */}
             <Card>
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-4">Entre em Contato</h3>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="nome">Nome</Label>
-                    <Input
-                      id="nome"
-                      type="text"
-                      value={formData.nome}
-                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                      placeholder="Seu nome completo"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="telefone">Telefone</Label>
-                    <Input
-                      id="telefone"
-                      type="tel"
-                      value={formData.telefone}
-                      onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                      placeholder="(11) 99999-9999"
-                      required
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    size="lg"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Enviando...' : 'Tenho Interesse'}
-                  </Button>
-                </form>
+                <Button 
+                  className="w-full bg-green-600 hover:bg-green-700 text-white" 
+                  size="lg"
+                  onClick={() => {
+                    const message = `Olá! Tenho interesse no imóvel em ${imovel.localizacao} no valor de ${formatPrice(imovel.preco)}`;
+                    const whatsappUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                  }}
+                >
+                  Falar pelo WhatsApp
+                </Button>
               </CardContent>
             </Card>
           </div>
