@@ -271,7 +271,7 @@ export default function SitePublico() {
                   <Instagram className="w-5 h-5" />
                 </a>
               )}
-              <a href="#contato" className="text-muted-foreground hover:text-primary">Contato</a>
+              <a href="/contato" className="text-muted-foreground hover:text-primary">Contato</a>
             </div>
           </div>
         </div>
@@ -487,93 +487,13 @@ export default function SitePublico() {
       </div>
 
       {/* Footer */}
-      <footer id="contato" className="bg-gray-900 text-white py-12 mt-16">
+      <footer className="bg-gray-900 text-white py-12 mt-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">{settings.site_title || settings.name}</h3>
-              <p className="text-gray-300">
-                {settings.site_description || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
-              </p>
-              {settings.site_about && (
-                <div className="mt-4">
-                  <h4 className="font-semibold mb-2">Sobre Nós</h4>
-                  <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
-                    {settings.site_about}
-                  </p>
-                </div>
-              )}
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Contato</h4>
-              <div className="space-y-2 text-gray-300">
-                {settings.site_email && (
-                  <p className="flex items-center gap-2">
-                    <span>📧</span>
-                    <a href={`mailto:${settings.site_email}`} className="hover:text-white transition-colors">
-                      {settings.site_email}
-                    </a>
-                  </p>
-                )}
-                {settings.site_phone && (
-                  <p className="flex items-center gap-2">
-                    <span>📞</span>
-                    <a href={`tel:${settings.site_phone}`} className="hover:text-white transition-colors">
-                      {settings.site_phone}
-                    </a>
-                  </p>
-                )}
-                {settings.site_whatsapp && (
-                  <p className="flex items-center gap-2">
-                    <span>💬</span>
-                    <a 
-                      href={`https://wa.me/${settings.site_whatsapp}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="hover:text-white transition-colors"
-                    >
-                      WhatsApp
-                    </a>
-                  </p>
-                )}
-                {settings.site_address && (
-                  <p className="flex items-start gap-2">
-                    <span>📍</span>
-                    <span className="text-sm">{settings.site_address}</span>
-                  </p>
-                )}
-              </div>
-              
-              {(settings.site_facebook || settings.site_instagram) && (
-                <div className="mt-6">
-                  <h4 className="font-semibold mb-3">Redes Sociais</h4>
-                  <div className="flex gap-4">
-                    {settings.site_facebook && (
-                      <a 
-                        href={settings.site_facebook} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-gray-300 hover:text-white transition-colors flex items-center gap-2"
-                      >
-                        <span>📘</span>
-                        Facebook
-                      </a>
-                    )}
-                    {settings.site_instagram && (
-                      <a 
-                        href={settings.site_instagram} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-gray-300 hover:text-white transition-colors flex items-center gap-2"
-                      >
-                        <span>📸</span>
-                        Instagram
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+          <div className="text-center">
+            <h3 className="text-xl font-bold mb-4">{settings.site_title || settings.name}</h3>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              {settings.site_description || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
+            </p>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
             <p>&copy; 2024 {settings.site_title || settings.name}. Todos os direitos reservados.</p>
