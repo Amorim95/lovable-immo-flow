@@ -486,24 +486,55 @@ export default function SitePublico() {
             <div>
               <h4 className="font-semibold mb-4">Contato</h4>
               <div className="space-y-2 text-gray-300">
-                <p>{settings.site_email || 'contato@clickimoveis.com.br'}</p>
-                <p>{settings.site_phone || '(11) 9999-9999'}</p>
+                {settings.site_email && (
+                  <p className="flex items-center gap-2">
+                    <span>📧</span>
+                    <a href={`mailto:${settings.site_email}`} className="hover:text-white transition-colors">
+                      {settings.site_email}
+                    </a>
+                  </p>
+                )}
+                {settings.site_phone && (
+                  <p className="flex items-center gap-2">
+                    <span>📞</span>
+                    <a href={`tel:${settings.site_phone}`} className="hover:text-white transition-colors">
+                      {settings.site_phone}
+                    </a>
+                  </p>
+                )}
+                {settings.site_whatsapp && (
+                  <p className="flex items-center gap-2">
+                    <span>💬</span>
+                    <a 
+                      href={`https://wa.me/${settings.site_whatsapp}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="hover:text-white transition-colors"
+                    >
+                      WhatsApp
+                    </a>
+                  </p>
+                )}
                 {settings.site_address && (
-                  <p className="text-sm">{settings.site_address}</p>
+                  <p className="flex items-start gap-2">
+                    <span>📍</span>
+                    <span className="text-sm">{settings.site_address}</span>
+                  </p>
                 )}
               </div>
               
               {(settings.site_facebook || settings.site_instagram) && (
-                <div className="mt-4">
-                  <h4 className="font-semibold mb-2">Redes Sociais</h4>
+                <div className="mt-6">
+                  <h4 className="font-semibold mb-3">Redes Sociais</h4>
                   <div className="flex gap-4">
                     {settings.site_facebook && (
                       <a 
                         href={settings.site_facebook} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-gray-300 hover:text-white transition-colors"
+                        className="text-gray-300 hover:text-white transition-colors flex items-center gap-2"
                       >
+                        <span>📘</span>
                         Facebook
                       </a>
                     )}
@@ -512,8 +543,9 @@ export default function SitePublico() {
                         href={settings.site_instagram} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-gray-300 hover:text-white transition-colors"
+                        className="text-gray-300 hover:text-white transition-colors flex items-center gap-2"
                       >
+                        <span>📸</span>
                         Instagram
                       </a>
                     )}
