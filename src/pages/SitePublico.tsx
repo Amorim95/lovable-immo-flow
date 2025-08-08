@@ -249,7 +249,10 @@ export default function SitePublico() {
               )}
             </div>
             
-            <div className="flex-1 flex justify-end">
+            <div className="flex-1 flex justify-end gap-6">
+              {settings.site_about && (
+                <a href="#sobre" className="text-muted-foreground hover:text-primary">Sobre</a>
+              )}
               <a href="#contato" className="text-muted-foreground hover:text-primary">Contato</a>
             </div>
           </div>
@@ -475,7 +478,7 @@ export default function SitePublico() {
                 {settings.site_description || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
               </p>
               {settings.site_about && (
-                <div className="mt-4">
+                <div id="sobre" className="mt-4">
                   <h4 className="font-semibold mb-2">Sobre Nós</h4>
                   <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
                     {settings.site_about}
