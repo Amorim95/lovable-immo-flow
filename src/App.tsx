@@ -31,6 +31,7 @@ import Corretores from "./pages/Corretores";
 import EquipesCadastradas from "./pages/EquipesCadastradas";
 import Imoveis from "./pages/Imoveis";
 import MeuSite from "./pages/MeuSite";
+import SitePublico from "./pages/SitePublico";
 import ImovelPublico from "./pages/ImovelPublico";
 import Configuracoes from "./pages/Configuracoes";
 import Login from "./pages/Login";
@@ -64,6 +65,7 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/site-publico" element={<SitePublico />} />
       <Route path="/imovel-publico/:slug" element={<ImovelPublico />} />
       <Route path="/*" element={
         <ProtectedRoute>
