@@ -34,6 +34,7 @@ import MeuSite from "./pages/MeuSite";
 import SitePublico from "./pages/SitePublico";
 import ImovelPublico from "./pages/ImovelPublico";
 import ImovelDetalhes from "./pages/ImovelDetalhes";
+import ConfiguracoesSite from "./pages/ConfiguracoesSite";
 import Configuracoes from "./pages/Configuracoes";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
@@ -122,6 +123,7 @@ function AppContent() {
                       <Route path="/equipes" element={<EquipesCadastradas />} />
                       <Route path="/imoveis" element={<Imoveis />} />
                       <Route path="/meu-site" element={<MeuSite />} />
+                      <Route path="/configuracoes-site" element={<ConfiguracoesSite />} />
                       <Route path="/configuracoes" element={<Configuracoes />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>

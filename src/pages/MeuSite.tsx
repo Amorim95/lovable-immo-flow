@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Globe, Eye, Share2, Settings } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { Imovel } from "@/types/crm";
 
 export default function MeuSite() {
+  const navigate = useNavigate();
   const [imoveisPublicos, setImoveisPublicos] = useState<Imovel[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -91,7 +93,7 @@ export default function MeuSite() {
         </div>
         
         <div className="flex gap-2">
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => navigate('/configuracoes-site')}>
             <Settings className="w-4 h-4 mr-2" />
             Configurar Site
           </Button>
