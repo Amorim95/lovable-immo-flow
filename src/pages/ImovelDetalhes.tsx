@@ -125,9 +125,13 @@ export default function ImovelDetalhes() {
               Voltar
             </Button>
             
-            <div className="flex-1 flex justify-center">
+            <div className="flex justify-center">
               {settings.logo ? (
-                <img src={settings.logo} alt={settings.name} className="h-8" />
+                <img 
+                  src={settings.logo} 
+                  alt={settings.name} 
+                  className="h-20 w-auto" 
+                />
               ) : (
                 <h1 className="text-2xl font-bold text-primary">{settings.name}</h1>
               )}
