@@ -100,8 +100,14 @@ export default function Imoveis() {
         return;
       }
 
+      // Função para extrair apenas números do preço para o banco
+      const extractPrice = (priceString: string): number => {
+        const numericValue = priceString.replace(/[^\d.,]/g, '').replace(',', '.');
+        return parseFloat(numericValue) || 0;
+      };
+
       const imovelData = {
-        preco: parseFloat(formData.preco),
+        preco: extractPrice(formData.preco), // Converte para number apenas para o banco
         localizacao: formData.localizacao,
         endereco: formData.endereco,
         descricao: formData.descricao,
@@ -308,7 +314,7 @@ export default function Imoveis() {
   const handleEdit = (imovel: Imovel) => {
     setSelectedImovel(imovel);
     setFormData({
-      preco: imovel.preco.toString(),
+      preco: imovel.preco?.toString() || "", // Preserva formatação existente
       localizacao: imovel.localizacao,
       endereco: imovel.endereco,
       descricao: imovel.descricao,
