@@ -375,18 +375,16 @@ export default function Imoveis() {
   };
 
   const FormModal = ({ isOpen, onClose, title }: { isOpen: boolean; onClose: () => void; title: string }) => {
-    if (!isOpen) return null;
-    
     return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Upload de Mídias */}
-          <div className="space-y-3">
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-in">
+          <DialogHeader>
+            <DialogTitle className="animate-scale-in">{title}</DialogTitle>
+          </DialogHeader>
+          
+          <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
+            {/* Upload de Mídias */}
+            <div className="space-y-3 transition-all duration-300 ease-out">
             <Label>Fotos e Vídeos *</Label>
             <div className="border-2 border-dashed border-border rounded-lg p-6">
               <div className="text-center">
@@ -416,18 +414,18 @@ export default function Imoveis() {
             
             {/* Preview dos arquivos */}
             {uploadedFiles.length > 0 && (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3 animate-fade-in transition-all duration-500 ease-out">
                 {uploadedFiles.map((fileObj, index) => (
-                  <div key={index} className="relative group">
-                    <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                  <div key={index} className="relative group animate-scale-in transition-all duration-300 hover-scale">
+                    <div className="aspect-square rounded-lg overflow-hidden bg-muted transition-all duration-300 ease-out">
                       {fileObj.type === 'imagem' ? (
                         <img
                           src={fileObj.preview}
                           alt={`Preview ${index + 1}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
+                        <div className="w-full h-full flex items-center justify-center transition-all duration-300">
                           <Video className="w-8 h-8 text-muted-foreground" />
                         </div>
                       )}
@@ -435,7 +433,7 @@ export default function Imoveis() {
                     <button
                       type="button"
                       onClick={() => removeFile(index)}
-                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+                      className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-all duration-200 hover-scale opacity-0 group-hover:opacity-100"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -587,11 +585,18 @@ export default function Imoveis() {
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} className="transition-all duration-200 hover-scale">
               Cancelar
             </Button>
-            <Button type="submit" disabled={uploading}>
-              {uploading ? 'Salvando...' : selectedImovel ? 'Atualizar' : 'Cadastrar'}
+            <Button type="submit" disabled={uploading} className="transition-all duration-200 hover-scale">
+              {uploading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Salvando...
+                </>
+              ) : (
+                selectedImovel ? 'Atualizar' : 'Cadastrar'
+              )}
             </Button>
           </div>
         </form>
