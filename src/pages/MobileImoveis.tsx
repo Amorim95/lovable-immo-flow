@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Search, Edit, Share2, Eye, MapPin, Bed, Bath, Car, DollarSign } from "lucide-react";
+import { Plus, Search, Edit, Share2, Eye, MapPin, Bed, Bath, Car, Globe } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -373,14 +373,25 @@ export default function MobileImoveis() {
       <MobileHeader title="Imóveis" />
       
       <div className="p-4 space-y-4">
-        {/* Botão Cadastrar */}
-        <Button 
-          onClick={() => { resetForm(); setSelectedImovel(null); setIsCreateModalOpen(true); }}
-          className="w-full h-12 text-base font-medium"
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Cadastrar Imóvel
-        </Button>
+        {/* Botões principais */}
+        <div className="grid grid-cols-2 gap-3">
+          <Button 
+            onClick={() => { resetForm(); setSelectedImovel(null); setIsCreateModalOpen(true); }}
+            className="h-12 text-base font-medium"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            Cadastrar
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={() => navigate('/meu-site')}
+            className="h-12 text-base font-medium"
+          >
+            <Globe className="w-5 h-5 mr-2" />
+            Meu Site
+          </Button>
+        </div>
 
         {/* Search */}
         <div className="relative">
