@@ -4,12 +4,9 @@ import { ArrowLeft, MapPin, Bed, Bath, Car, ChevronLeft, ChevronRight } from "lu
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useCompany } from "@/contexts/CompanyContext";
 import { Imovel } from "@/types/crm";
-import { toast } from "sonner";
 
 interface ImovelComFotos extends Imovel {
   fotos: string[];
@@ -88,7 +85,6 @@ export default function ImovelDetalhes() {
       setCurrentImageIndex((prev) => (prev - 1 + imovel.fotos.length) % imovel.fotos.length);
     }
   };
-
 
   if (loading) {
     return (
@@ -211,6 +207,16 @@ export default function ImovelDetalhes() {
                 ))}
               </div>
             )}
+
+            {/* Descrição */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Descrição</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {imovel.descricao}
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Informações do Imóvel */}
@@ -271,6 +277,24 @@ export default function ImovelDetalhes() {
               </CardContent>
             </Card>
 
+            {/* Botão WhatsApp */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Entre em Contato</h3>
+                <Button 
+                  className="w-full bg-green-600 hover:bg-green-700 text-white" 
+                  size="lg"
+                  onClick={() => {
+                    const message = `Olá! Tenho interesse no imóvel em ${imovel.localizacao} no valor de ${formatPrice(imovel.preco)}`;
+                    const whatsappUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                  }}
+                >
+                  Falar pelo WhatsApp
+                </Button>
+              </CardContent>
+            </Card>
+
             {/* Valores */}
             {(imovel.condominio || imovel.iptu) && (
               <Card>
@@ -294,16 +318,6 @@ export default function ImovelDetalhes() {
               </Card>
             )}
 
-            {/* Descrição */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Descrição</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  {imovel.descricao}
-                </p>
-              </CardContent>
-            </Card>
-
             {/* Endereço */}
             <Card>
               <CardContent className="p-6">
@@ -311,24 +325,6 @@ export default function ImovelDetalhes() {
                 <p className="text-muted-foreground">
                   {imovel.endereco}
                 </p>
-              </CardContent>
-            </Card>
-
-            {/* Botão WhatsApp */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Entre em Contato</h3>
-                <Button 
-                  className="w-full bg-green-600 hover:bg-green-700 text-white" 
-                  size="lg"
-                  onClick={() => {
-                    const message = `Olá! Tenho interesse no imóvel em ${imovel.localizacao} no valor de ${formatPrice(imovel.preco)}`;
-                    const whatsappUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(message)}`;
-                    window.open(whatsappUrl, '_blank');
-                  }}
-                >
-                  Falar pelo WhatsApp
-                </Button>
               </CardContent>
             </Card>
           </div>
