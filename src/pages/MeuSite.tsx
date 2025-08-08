@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Imovel } from "@/types/crm";
 
 export default function MeuSite() {
   const navigate = useNavigate();
+  const { isAdmin, isGestor } = useUserRole();
   const [imoveisPublicos, setImoveisPublicos] = useState<Imovel[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -93,10 +95,12 @@ export default function MeuSite() {
         </div>
         
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate('/configuracoes-site')}>
-            <Settings className="w-4 h-4 mr-2" />
-            Configurar Site
-          </Button>
+          {(isAdmin || isGestor) && (
+            <Button variant="outline" onClick={() => navigate('/configuracoes-site')}>
+              <Settings className="w-4 h-4 mr-2" />
+              Configurar Site
+            </Button>
+          )}
           <Button onClick={() => window.open('/site-publico', '_blank')}>
             <Eye className="w-4 h-4 mr-2" />
             Ver Site Público
