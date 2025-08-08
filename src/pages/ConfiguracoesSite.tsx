@@ -197,6 +197,9 @@ export default function ConfiguracoesSite() {
       console.log('Atualizando configurações da empresa...');
       await updateSettings({ logo: publicUrl });
       
+      // Forçar atualização das configurações
+      await refreshSettings();
+      
       console.log('Logo atualizada com sucesso');
       toast.success('Logo atualizada com sucesso!');
     } catch (error) {
