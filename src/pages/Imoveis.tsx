@@ -494,14 +494,6 @@ export default function Imoveis() {
                   </div>
                 </div>
                 <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleView(imovel)}
-                    title="Visualizar imóvel"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
                   {(isAdmin || isGestor) && (
                     <Button
                       size="sm"
