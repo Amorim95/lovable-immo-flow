@@ -356,24 +356,6 @@ export default function ImovelPublico() {
               </CardContent>
             </Card>
 
-            {/* Contato */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Interessado?</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Entre em contato conosco para mais informações ou para agendar uma visita.
-                </p>
-                
-                <Button 
-                  onClick={handleWhatsAppContact}
-                  className="w-full bg-green-600 hover:bg-green-700"
-                >
-                  Contatar via WhatsApp
-                </Button>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
