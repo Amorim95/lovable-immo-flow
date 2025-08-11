@@ -309,6 +309,13 @@ export default function LeadDetails() {
         {/* Contact Actions */}
         <div className="flex gap-3">
           <Button 
+            onClick={handleWhatsApp}
+            className="flex-1 bg-green-500 hover:bg-green-600"
+          >
+            <MessageCircle className="w-4 h-4 mr-2" />
+            WhatsApp
+          </Button>
+          <Button 
             onClick={() => setShowActivities(!showActivities)}
             variant="outline"
             className="flex-1"
