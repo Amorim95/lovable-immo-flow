@@ -167,10 +167,6 @@ const PerformancePorCorretor = () => {
                         <span className="text-gray-600">Leads:</span>
                         <span className="font-medium text-gray-700">{corretor.leadsRecebidos}</span>
                       </div>
-                      <div className="flex justify-between pt-1 border-t border-gray-200">
-                        <span className="text-gray-600 font-medium">Pontuação:</span>
-                        <span className="font-bold text-purple-600">{(corretor as any).pontuacaoFinal}</span>
-                      </div>
                     </div>
                   </div>
                 );
