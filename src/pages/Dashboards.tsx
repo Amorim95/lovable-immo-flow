@@ -184,9 +184,9 @@ const Dashboards = () => {
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Meta do Mês:</span>
-                <span className="font-medium text-blue-600">
-                  {loading ? '...' : `${metrics.equipeDestaque.metaAtingida}% atingida`}
+                <span>Total de Leads:</span>
+                <span className="font-medium">
+                  {loading ? '...' : `${metrics.equipeDestaque.totalLeads} leads`}
                 </span>
               </div>
             </div>
