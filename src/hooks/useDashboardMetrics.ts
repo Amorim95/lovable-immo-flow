@@ -108,12 +108,24 @@ export function useDashboardMetrics(dateRange?: DateRange) {
         return current.taxaConversao > best.taxaConversao ? current : best;
       }, corretorMetrics[0] || { name: 'N/A', taxaConversao: 0 });
 
-      // 4. Buscar dados das equipes
+      // 4. Buscar dados das equipes e suas metas
       const { data: equipesData, error: equipesError } = await supabase
         .from('equipes')
         .select('id, nome');
 
       if (equipesError) throw equipesError;
+
+      // Buscar metas do mês atual
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      
+      const { data: metasData, error: metasError } = await supabase
+        .from('metas')
+        .select('*')
+        .eq('mes', currentMonth)
+        .eq('ano', currentYear);
+
+      if (metasError) throw metasError;
 
       // Calcular métricas por equipe
       const equipeMetrics = equipesData?.map(equipe => {
@@ -122,10 +134,19 @@ export function useDashboardMetrics(dateRange?: DateRange) {
           equipeUsers.some(user => user.id === lead.user_id)
         ) || [];
         
+        // Buscar meta da equipe
+        const metaEquipe = metasData?.find(meta => 
+          meta.tipo === 'equipe' && meta.referencia_id === equipe.id
+        );
+        
+        const metaLeads = metaEquipe?.meta_leads || 50; // Fallback para 50 se não encontrar meta
+        const metaAtingida = equipeLeads.length > 0 ? 
+          Math.min((equipeLeads.length / metaLeads) * 100, 200) : 0;
+        
         return {
           ...equipe,
           totalLeads: equipeLeads.length,
-          metaAtingida: equipeLeads.length > 0 ? Math.min((equipeLeads.length / 100) * 100, 150) : 0 // Meta fictícia de 100 leads por equipe
+          metaAtingida: Number(metaAtingida.toFixed(1))
         };
       }) || [];
 
@@ -133,11 +154,36 @@ export function useDashboardMetrics(dateRange?: DateRange) {
         return current.totalLeads > best.totalLeads ? current : best;
       }, equipeMetrics[0] || { nome: 'N/A', totalLeads: 0, metaAtingida: 0 });
 
-      // 5. Calcular conversão geral e crescimento
+      // 5. Calcular conversão geral e crescimento real
       const conversaoGeral = totalLeads > 0 ? (vendasFechadas / totalLeads) * 100 : 0;
       
-      // Para calcular crescimento, comparar com período anterior (implementação simplificada)
-      const crescimento = Math.random() * 20 - 5; // Valor temporário para demonstração
+      // Calcular crescimento comparando com período anterior
+      const periodoDays = dateRange?.from && dateRange?.to 
+        ? Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
+        : 30; // Default 30 dias
+      
+      const startDatePreviousPeriod = new Date();
+      const endDatePreviousPeriod = new Date();
+      
+      if (dateRange?.from && dateRange?.to) {
+        startDatePreviousPeriod.setTime(dateRange.from.getTime() - (periodoDays * 24 * 60 * 60 * 1000));
+        endDatePreviousPeriod.setTime(dateRange.to.getTime() - (periodoDays * 24 * 60 * 60 * 1000));
+      } else {
+        startDatePreviousPeriod.setDate(startDatePreviousPeriod.getDate() - 60);
+        endDatePreviousPeriod.setDate(endDatePreviousPeriod.getDate() - 30);
+      }
+      
+      // Buscar leads do período anterior
+      const { data: leadsPreviousPeriod } = await supabase
+        .from('leads')
+        .select('id')
+        .gte('created_at', startDatePreviousPeriod.toISOString())
+        .lte('created_at', endDatePreviousPeriod.toISOString());
+      
+      const leadsPeriodoAnterior = leadsPreviousPeriod?.length || 0;
+      const crescimento = leadsPeriodoAnterior > 0 
+        ? ((totalLeads - leadsPeriodoAnterior) / leadsPeriodoAnterior) * 100 
+        : totalLeads > 0 ? 100 : 0;
 
       // 6. Calcular tempo médio de resposta real (em horas)
       const leadsComTempo = leadsData?.filter(lead => lead.primeiro_contato_whatsapp) || [];

@@ -107,45 +107,6 @@ export type Database = {
         }
         Relationships: []
       }
-      consult_base: {
-        Row: {
-          anuncio: string | null
-          "Como pretende adquirir o seu imóvel?": string
-          created_at: string
-          id: number
-          Nome: string
-          "Possui algum valor de Entrada?": string
-          "Possui FGTS?": string
-          Telefone: string
-          "Vai comprar sozinho ou vão compor renda familiar?": string
-          "Valor de RENDA aproximado?": string
-        }
-        Insert: {
-          anuncio?: string | null
-          "Como pretende adquirir o seu imóvel?": string
-          created_at?: string
-          id?: number
-          Nome: string
-          "Possui algum valor de Entrada?": string
-          "Possui FGTS?": string
-          Telefone: string
-          "Vai comprar sozinho ou vão compor renda familiar?": string
-          "Valor de RENDA aproximado?": string
-        }
-        Update: {
-          anuncio?: string | null
-          "Como pretende adquirir o seu imóvel?"?: string
-          created_at?: string
-          id?: number
-          Nome?: string
-          "Possui algum valor de Entrada?"?: string
-          "Possui FGTS?"?: string
-          Telefone?: string
-          "Vai comprar sozinho ou vão compor renda familiar?"?: string
-          "Valor de RENDA aproximado?"?: string
-        }
-        Relationships: []
-      }
       equipes: {
         Row: {
           created_at: string
@@ -537,6 +498,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      metas: {
+        Row: {
+          ano: number
+          created_at: string
+          id: string
+          mes: number
+          meta_conversao: number | null
+          meta_leads: number
+          meta_vendas: number
+          referencia_id: string | null
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          ano: number
+          created_at?: string
+          id?: string
+          mes: number
+          meta_conversao?: number | null
+          meta_leads?: number
+          meta_vendas?: number
+          referencia_id?: string | null
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          ano?: number
+          created_at?: string
+          id?: string
+          mes?: number
+          meta_conversao?: number | null
+          meta_leads?: number
+          meta_vendas?: number
+          referencia_id?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       permissions: {
         Row: {
