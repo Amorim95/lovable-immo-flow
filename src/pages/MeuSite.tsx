@@ -109,7 +109,7 @@ export default function MeuSite() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -117,19 +117,6 @@ export default function MeuSite() {
               <div>
                 <p className="text-sm text-muted-foreground">Imóveis Públicos</p>
                 <p className="text-2xl font-bold">{imoveisPublicos.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <Eye className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Visualizações</p>
-                <p className="text-2xl font-bold">-</p>
-                <p className="text-xs text-muted-foreground">Em breve</p>
               </div>
             </div>
           </CardContent>
