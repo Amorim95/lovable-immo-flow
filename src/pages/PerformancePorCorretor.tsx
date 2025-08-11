@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { useCorretorPerformance } from "@/hooks/useCorretorPerformance";
-import { CalendarIcon, Download, Loader2 } from "lucide-react";
+import { CalendarIcon, Download, Loader2, Trophy, Medal, Award } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
 
@@ -28,7 +28,7 @@ const PerformancePorCorretor = () => {
   }, [dateFilter, customDateRange]);
 
   // Buscar dados reais do banco
-  const { corretores, selectedCorretor, loading, error } = useCorretorPerformance(corretorSelecionado, dateRange);
+  const { corretores, selectedCorretor, rankingCorretores, loading, error } = useCorretorPerformance(corretorSelecionado, dateRange);
 
   const corretor = selectedCorretor || {
     id: "",
@@ -109,6 +109,79 @@ const PerformancePorCorretor = () => {
           </div>
         </div>
       </div>
+      
+      {/* Ranking dos 5 Melhores Corretores */}
+      {rankingCorretores.length > 0 && (
+        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-800">
+              <Trophy className="w-6 h-6 text-yellow-500" />
+              Ranking dos Melhores Corretores
+            </CardTitle>
+            <p className="text-sm text-blue-600">
+              Baseado em Tempo de Resposta (70%) e Taxa de Conversão (30%)
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              {rankingCorretores.map((corretor, index) => {
+                const getRankIcon = (position: number) => {
+                  switch (position) {
+                    case 0: return <Trophy className="w-6 h-6 text-yellow-500" />;
+                    case 1: return <Medal className="w-6 h-6 text-gray-400" />;
+                    case 2: return <Award className="w-6 h-6 text-orange-600" />;
+                    default: return <span className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full text-sm font-bold">{position + 1}</span>;
+                  }
+                };
+
+                const getBorderColor = (position: number) => {
+                  switch (position) {
+                    case 0: return "border-yellow-300 bg-yellow-50";
+                    case 1: return "border-gray-300 bg-gray-50";
+                    case 2: return "border-orange-300 bg-orange-50";
+                    default: return "border-blue-200 bg-blue-50";
+                  }
+                };
+
+                return (
+                  <div 
+                    key={corretor.id} 
+                    className={`p-4 rounded-lg border-2 ${getBorderColor(index)} transition-all hover:shadow-md`}
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      {getRankIcon(index)}
+                      <span className="font-bold text-gray-700">{index + 1}º Lugar</span>
+                    </div>
+                    
+                    <h4 className="font-semibold text-gray-900 mb-2 truncate" title={corretor.nome}>
+                      {corretor.nome}
+                    </h4>
+                    
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Tempo Resp.:</span>
+                        <span className="font-medium text-green-600">{corretor.tempoMedioResposta}min</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Conversão:</span>
+                        <span className="font-medium text-blue-600">{corretor.conversao}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Leads:</span>
+                        <span className="font-medium text-gray-700">{corretor.leadsRecebidos}</span>
+                      </div>
+                      <div className="flex justify-between pt-1 border-t border-gray-200">
+                        <span className="text-gray-600 font-medium">Pontuação:</span>
+                        <span className="font-bold text-purple-600">{(corretor as any).pontuacaoFinal}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filtros */}
       <Card>

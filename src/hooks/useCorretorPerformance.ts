@@ -27,6 +27,7 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
   const { user } = useAuth();
   const [corretores, setCorretores] = useState<CorretorPerformance[]>([]);
   const [selectedCorretor, setSelectedCorretor] = useState<CorretorPerformance | null>(null);
+  const [rankingCorretores, setRankingCorretores] = useState<CorretorPerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -120,10 +121,38 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
         };
       }) || [];
 
-      // Ordenar por conversão (decrescente)
+      // Calcular ranking baseado em critérios ponderados
+      const corretoresComPontuacao = corretoresPerformance.map(corretor => {
+        // Critério 1: Tempo Médio de Resposta (peso 70% - quanto menor, melhor)
+        // Normalizar usando tempo máximo encontrado + epsilon para evitar divisão por zero
+        const tempoMaximo = Math.max(...corretoresPerformance.map(c => c.tempoMedioResposta)) || 1;
+        const pontuacaoTempo = corretor.tempoMedioResposta > 0 
+          ? (tempoMaximo - corretor.tempoMedioResposta) / tempoMaximo * 100
+          : 0; // Se não tem tempo de resposta, pontuação 0
+        
+        // Critério 2: Taxa de Conversão (peso 30% - quanto maior, melhor)
+        const pontuacaoConversao = corretor.conversao;
+        
+        // Pontuação final ponderada
+        const pontuacaoFinal = (pontuacaoTempo * 0.7) + (pontuacaoConversao * 0.3);
+        
+        return {
+          ...corretor,
+          pontuacaoFinal: Number(pontuacaoFinal.toFixed(2))
+        };
+      });
+
+      // Ordenar por pontuação (decrescente) e pegar top 5
+      const ranking = corretoresComPontuacao
+        .filter(c => c.leadsRecebidos > 0) // Só considera corretores que receberam leads
+        .sort((a, b) => b.pontuacaoFinal - a.pontuacaoFinal)
+        .slice(0, 5);
+
+      // Ordenar corretores por conversão (decrescente) para exibição geral
       corretoresPerformance.sort((a, b) => b.conversao - a.conversao);
 
       setCorretores(corretoresPerformance);
+      setRankingCorretores(ranking);
 
     } catch (error) {
       console.error('Error loading corretor performance:', error);
@@ -136,6 +165,7 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
   return {
     corretores,
     selectedCorretor,
+    rankingCorretores,
     loading,
     error,
     refreshData: loadCorretorPerformance
