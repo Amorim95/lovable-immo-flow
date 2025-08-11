@@ -223,18 +223,7 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
           </div>
         </div>
 
-        {/* Botão de ação único */}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 text-xs"
-            onClick={(e) => handleWhatsAppClick(lead.telefone, e)}
-          >
-            <Phone className="w-3 h-3 mr-1" />
-            WhatsApp
-          </Button>
-        </div>
+        {/* Telefone apenas para exibição */}
       </CardContent>
       
       {/* Modal de Transferência */}

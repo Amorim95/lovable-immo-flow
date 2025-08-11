@@ -182,14 +182,6 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
               <TableCell>
                 <div className="flex items-center gap-2">
                   <span>{lead.telefone}</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-6 w-6 p-0"
-                    onClick={(e) => handleWhatsAppClick(lead.telefone, e, lead.id)}
-                  >
-                    <Phone className="w-3 h-3 text-green-600" />
-                  </Button>
                 </div>
               </TableCell>
               <TableCell className="max-w-xs truncate">
@@ -233,15 +225,6 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                 </div>
               </TableCell>
               <TableCell>{formatDate(lead.dataCriacao)}</TableCell>
-              <TableCell>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => handleWhatsAppClick(lead.telefone, e, lead.id)}
-                >
-                  <Phone className="w-3 h-3" />
-                </Button>
-              </TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -303,13 +303,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                           onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                           disabled={!editMode}
                         />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleWhatsAppClick(lead.telefone)}
-                        >
-                          <Phone className="w-4 h-4" />
-                        </Button>
                       </div>
                     </div>
                     <div>

@@ -321,16 +321,6 @@ export default function MobileLeads() {
                   <span>{lead.dataCriacao.toLocaleDateString('pt-BR')}</span>
                 </div>
                 
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => handleWhatsApp(lead.telefone, e, lead.id)}
-                    className="p-2"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                  </Button>
-                </div>
               </div>
             </div>
           ))
