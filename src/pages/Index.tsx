@@ -6,7 +6,7 @@ import { KanbanBoard } from "@/components/KanbanBoard";
 import { ListView } from "@/components/ListView";
 import { LeadModal } from "@/components/LeadModal";
 import { NewLeadModal } from "@/components/NewLeadModal";
-import { UserFilter } from "@/components/UserFilter";
+import { TeamUserFilters } from "@/components/TeamUserFilters";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -35,6 +35,7 @@ const Index = () => {
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
   // Permitir criação de leads para todos os usuários autenticados
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
@@ -119,7 +120,18 @@ const Index = () => {
       matchesUser = originalLead?.user_id === selectedUserId;
     }
 
-    return matchesSearch && matchesDate && matchesUser;
+    // Filtro por equipe (apenas para admin e gestor)
+    let matchesTeam = true;
+    if ((isAdmin || isGestor) && selectedTeamId) {
+      const originalLead = leads.find(l => l.id === lead.id);
+      if (originalLead?.user?.equipe_id) {
+        matchesTeam = originalLead.user.equipe_id === selectedTeamId;
+      } else {
+        matchesTeam = false; // Se não tem equipe, não mostra no filtro de equipe
+      }
+    }
+
+    return matchesSearch && matchesDate && matchesUser && matchesTeam;
   });
 
   if (loading || roleLoading) {
@@ -218,10 +230,12 @@ const Index = () => {
               customRange={customDateRange}
               onValueChange={handleDateFilterChange}
             />
-            {/* Filtro de Usuário - Apenas para Admin e Gestor */}
+            {/* Filtros de Equipe e Usuário - Apenas para Admin e Gestor */}
             {(isAdmin || isGestor) && (
-              <UserFilter
+              <TeamUserFilters
+                onTeamChange={setSelectedTeamId}
                 onUserChange={setSelectedUserId}
+                selectedTeamId={selectedTeamId}
                 selectedUserId={selectedUserId}
               />
             )}
