@@ -116,7 +116,7 @@ const PerformancePorCorretor = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-800">
               <Trophy className="w-6 h-6 text-yellow-500" />
-              Ranking dos Melhores Corretores
+              Ranking dos Corretores Focados
             </CardTitle>
           </CardHeader>
           <CardContent>
