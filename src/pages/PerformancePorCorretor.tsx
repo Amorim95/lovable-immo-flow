@@ -118,9 +118,6 @@ const PerformancePorCorretor = () => {
               <Trophy className="w-6 h-6 text-yellow-500" />
               Ranking dos Melhores Corretores
             </CardTitle>
-            <p className="text-sm text-blue-600">
-              Baseado em Tempo de Resposta (70%) e Taxa de Conversão (30%)
-            </p>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
