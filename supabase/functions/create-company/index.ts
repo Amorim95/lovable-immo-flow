@@ -27,34 +27,32 @@ serve(async (req) => {
       }
     );
 
-    // Criar cliente normal para verificar permissões do usuário
+    // Verificar autenticação através do header JWT
     const authHeader = req.headers.get('Authorization');
-    const supabaseUser = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        },
-        global: {
-          headers: { Authorization: authHeader ?? '' }
-        }
-      }
-    );
-
-    // Verificar se o usuário atual é super admin
-    const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
-    if (userError || !user) {
-      console.error('Erro ao obter usuário:', userError);
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Usuário não autenticado' }),
+        JSON.stringify({ error: 'Token de autorização ausente' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Verificar se é super admin
-    const { data: permissions, error: permError } = await supabaseUser
+    // Extrair JWT do header (formato: "Bearer <token>")
+    const jwt = authHeader.replace('Bearer ', '');
+    
+    // Verificar o JWT e obter o user_id
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(jwt);
+    if (userError || !user) {
+      console.error('Erro ao verificar JWT:', userError);
+      return new Response(
+        JSON.stringify({ error: 'Token inválido ou expirado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Usuário verificado:', user.id);
+
+    // Verificar se é super admin usando service role
+    const { data: permissions, error: permError } = await supabaseAdmin
       .from('permissions')
       .select('is_super_admin')
       .eq('user_id', user.id)
@@ -67,6 +65,8 @@ serve(async (req) => {
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('Permissões verificadas - Super admin confirmado');
 
     // Obter dados do body
     const { companyName, adminName, adminEmail, adminPassword } = await req.json();
