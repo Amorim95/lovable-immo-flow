@@ -44,13 +44,24 @@ export default function GerenciamentoContas() {
       const { data, error } = await supabase
         .from('companies')
         .select(`
-          *,
+          id,
+          name,
+          logo_url,
+          created_at,
           users!inner(count)
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as Company[];
+      if (error) {
+        console.error('Error fetching companies:', error);
+        throw error;
+      }
+
+      // Corrigir o processamento da contagem de usuários
+      return data?.map(company => ({
+        ...company,
+        user_count: Array.isArray(company.users) ? company.users[0]?.count || 0 : 0
+      })) || [];
     },
     enabled: isSuperAdmin && !permissionsLoading // Só executar se for super admin
   });
@@ -137,6 +148,32 @@ export default function GerenciamentoContas() {
         await supabase.auth.admin.deleteUser(authUser.user.id);
         await supabase.from('companies').delete().eq('id', company.id);
         throw profileError;
+      }
+
+      // 4. Criar configurações iniciais da empresa (sem logo)
+      const { error: settingsError } = await supabase
+        .from('company_settings')
+        .insert({
+          name: formData.companyName,
+          logo: null, // Sem logo inicial
+          site_title: formData.companyName,
+          site_description: `${formData.companyName} - Encontre o imóvel dos seus sonhos`,
+          site_phone: '',
+          site_email: formData.adminEmail,
+          site_address: '',
+          site_whatsapp: '',
+          site_facebook: '',
+          site_instagram: '',
+          site_about: `Bem-vindo à ${formData.companyName}! Estamos aqui para ajudar você a encontrar o imóvel ideal.`,
+          site_horario_semana: '9:00 às 18:00',
+          site_horario_sabado: '9:00 às 15:00',
+          site_horario_domingo: 'Fechado',
+          site_observacoes_horario: ''
+        });
+
+      if (settingsError) {
+        console.warn('Erro ao criar configurações da empresa:', settingsError);
+        // Não falhar a criação por causa das configurações
       }
 
       toast({
