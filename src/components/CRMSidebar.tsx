@@ -17,6 +17,7 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { UserRoleBadge } from "@/components/UserRoleBadge";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   LayoutList, 
   Calendar,
@@ -68,6 +69,13 @@ const menuItems = [
     icon: Settings,
     description: "Configurações do sistema",
     showForAll: true // Permitir acesso para todos, controle interno na página
+  },
+  { 
+    title: "Gerenciar Contas", 
+    url: "/gerenciamento-contas", 
+    icon: Building2,
+    description: "Gerenciar imobiliárias",
+    requireSuperAdmin: true
   }
 ];
 
@@ -75,6 +83,7 @@ export function CRMSidebar() {
   const { state } = useSidebar();
   const { settings } = useCompany();
   const { isAdmin, isGestor, isCorretor, loading } = useUserRole();
+  const { user } = useAuth();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
@@ -99,6 +108,7 @@ export function CRMSidebar() {
     
     if (item.showForAll) return true;
     if (item.requireAdminOrGestor && !isAdmin && !isGestor) return false;
+    if (item.requireSuperAdmin && !user?.is_super_admin) return false;
     
     return true;
   });

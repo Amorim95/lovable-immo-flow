@@ -20,6 +20,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
+import { useCompanyFilter } from "@/hooks/useCompanyFilter";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -29,6 +30,7 @@ const Corretores = () => {
   const { user } = useAuth();
   const { isAdmin, isGestor } = useUserRole();
   const navigate = useNavigate();
+  const { addCompanyFilter, getCompanyId } = useCompanyFilter();
   const [corretores, setCorretores] = useState<Corretor[]>([]);
   const [equipes, setEquipes] = useState<Equipe[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,6 +59,7 @@ const Corretores = () => {
           status,
           role,
           equipe_id,
+          company_id,
           permissions (
             can_view_all_leads,
             can_invite_users,
@@ -67,6 +70,9 @@ const Corretores = () => {
             can_access_configurations
           )
         `);
+
+      // Filtrar por company_id
+      usersQuery = addCompanyFilter(usersQuery);
 
       // Se for gestor, mostrar apenas usuários da sua equipe
       if (isGestor && !isAdmin) {
@@ -90,9 +96,12 @@ const Corretores = () => {
       }
 
       // Contar leads para cada usuário
-      const { data: leadsData } = await supabase
+      let leadsQuery = supabase
         .from('leads')
-        .select('user_id');
+        .select('user_id, company_id');
+      
+      leadsQuery = addCompanyFilter(leadsQuery);
+      const { data: leadsData } = await leadsQuery;
 
       // Transformar dados para o formato da interface
       const formattedCorretores: Corretor[] = usersData?.map(userData => {
@@ -123,10 +132,13 @@ const Corretores = () => {
       }) || [];
 
       // Carregar equipes
-      const { data: equipesData, error: equipesError } = await supabase
+      let equipesQuery = supabase
         .from('equipes')
         .select('*')
         .order('nome', { ascending: true });
+      
+      equipesQuery = addCompanyFilter(equipesQuery);
+      const { data: equipesData, error: equipesError } = await equipesQuery;
 
       if (equipesError) {
         console.error('Error loading equipes:', equipesError);

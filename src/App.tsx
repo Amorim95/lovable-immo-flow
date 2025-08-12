@@ -41,6 +41,7 @@ import ConfiguracoesSite from "./pages/ConfiguracoesSite";
 import SobreNos from "./pages/SobreNos";
 import Contato from "./pages/Contato";
 import Configuracoes from "./pages/Configuracoes";
+import GerenciamentoContas from "./pages/GerenciamentoContas";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -137,6 +138,7 @@ function AppContent() {
                       <Route path="/meu-site" element={<MeuSite />} />
                       <Route path="/configuracoes-site" element={<ConfiguracoesSite />} />
                       <Route path="/configuracoes" element={<Configuracoes />} />
+                      <Route path="/gerenciamento-contas" element={<GerenciamentoContas />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>

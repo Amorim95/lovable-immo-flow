@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Corretor, Equipe } from "@/types/crm";
+import { useCompanyFilter } from "@/hooks/useCompanyFilter";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,7 @@ const availableRoles = [
 export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = [] }: NewCorretorModalProps) {
   const [equipesFromDB, setEquipesFromDB] = useState<Equipe[]>([]);
   const [loadingEquipes, setLoadingEquipes] = useState(true);
+  const { addCompanyFilter, getCompanyId } = useCompanyFilter();
 
   // Carregar equipes do banco de dados
   useEffect(() => {
@@ -39,10 +41,13 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
 
   const loadEquipes = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('equipes')
         .select('*')
         .order('nome');
+      
+      query = addCompanyFilter(query);
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error loading equipes:', error);
@@ -91,7 +96,8 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
           name: formData.nome,
           telefone: formData.telefone,
           role: formData.role,
-          equipeId: formData.equipeId
+          equipeId: formData.equipeId,
+          companyId: getCompanyId()
         }
       });
 

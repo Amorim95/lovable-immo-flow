@@ -11,6 +11,7 @@ interface CreateUserRequest {
   telefone?: string
   role: 'admin' | 'gestor' | 'corretor'
   equipeId?: string
+  companyId?: string
 }
 
 Deno.serve(async (req) => {
@@ -30,7 +31,7 @@ Deno.serve(async (req) => {
       }
     )
 
-    const { email, name, telefone, role, equipeId }: CreateUserRequest = await req.json()
+    const { email, name, telefone, role, equipeId, companyId }: CreateUserRequest = await req.json()
 
     // Verificar se email já existe no auth.users
     const { data: authUsers, error: listError } = await supabaseClient.auth.admin.listUsers()
@@ -103,6 +104,7 @@ Deno.serve(async (req) => {
         telefone: telefone || null,
         role,
         equipe_id: equipeId && equipeId !== 'no-team' ? equipeId : null,
+        company_id: companyId || null,
         status: 'ativo', // Conta já ativa para acesso imediato
         password_hash: 'managed_by_auth'
       })

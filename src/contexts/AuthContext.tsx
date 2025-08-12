@@ -8,6 +8,8 @@ interface AppUser {
   email: string;
   role: 'admin' | 'corretor' | 'gestor';
   status: 'ativo' | 'inativo' | 'pendente';
+  company_id?: string;
+  is_super_admin?: boolean;
 }
 
 interface AuthContextType {
@@ -82,7 +84,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           name: userData.name,
           email: userData.email,
           role: userData.role,
-          status: userData.status
+          status: userData.status,
+          company_id: userData.company_id,
+          is_super_admin: userData.company_id === null && userData.role === 'admin'
         };
 
         setUser(appUser);
@@ -126,7 +130,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           name: userData.name,
           email: userData.email,
           role: userData.role,
-          status: userData.status
+          status: userData.status,
+          company_id: userData.company_id,
+          is_super_admin: userData.company_id === null && userData.role === 'admin'
         };
 
         setUser(appUser);

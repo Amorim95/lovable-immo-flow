@@ -56,6 +56,7 @@ export function useLeadsAccess() {
           created_at,
           updated_at,
           user_id,
+          company_id,
           user:users(name, equipe_id),
           lead_tag_relations(
             lead_tags(
@@ -67,10 +68,10 @@ export function useLeadsAccess() {
         `)
         .order('created_at', { ascending: false });
 
-      // As políticas RLS já filtram automaticamente baseado no papel do usuário
-      // Admins veem todos os leads
-      // Gestores veem leads da sua equipe
-      // Corretores veem apenas seus próprios leads
+      // Filtrar por company_id se não for super admin
+      if (!user.is_super_admin && user.company_id) {
+        query = query.eq('company_id', user.company_id);
+      }
 
       const { data, error } = await query;
 

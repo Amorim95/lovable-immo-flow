@@ -44,6 +44,30 @@ export type Database = {
         }
         Relationships: []
       }
+      companies: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       company_settings: {
         Row: {
           created_at: string
@@ -109,6 +133,7 @@ export type Database = {
       }
       equipes: {
         Row: {
+          company_id: string | null
           created_at: string
           id: string
           nome: string
@@ -117,6 +142,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           id?: string
           nome: string
@@ -125,6 +151,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           id?: string
           nome?: string
@@ -133,6 +160,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "equipes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "equipes_responsavel_id_fkey"
             columns: ["responsavel_id"]
@@ -147,6 +181,7 @@ export type Database = {
           aceita_animais: boolean | null
           banheiros: number | null
           closet: boolean | null
+          company_id: string | null
           condominio: number | null
           condominio_fechado: boolean | null
           created_at: string
@@ -169,6 +204,7 @@ export type Database = {
           aceita_animais?: boolean | null
           banheiros?: number | null
           closet?: boolean | null
+          company_id?: string | null
           condominio?: number | null
           condominio_fechado?: boolean | null
           created_at?: string
@@ -191,6 +227,7 @@ export type Database = {
           aceita_animais?: boolean | null
           banheiros?: number | null
           closet?: boolean | null
+          company_id?: string | null
           condominio?: number | null
           condominio_fechado?: boolean | null
           created_at?: string
@@ -209,7 +246,15 @@ export type Database = {
           user_id?: string
           vaga_carro?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "imoveis_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       imovel_midias: {
         Row: {
@@ -417,6 +462,7 @@ export type Database = {
       leads: {
         Row: {
           atividades: Json | null
+          company_id: string | null
           created_at: string
           dados_adicionais: string | null
           etapa: Database["public"]["Enums"]["lead_stage"]
@@ -429,6 +475,7 @@ export type Database = {
         }
         Insert: {
           atividades?: Json | null
+          company_id?: string | null
           created_at?: string
           dados_adicionais?: string | null
           etapa?: Database["public"]["Enums"]["lead_stage"]
@@ -441,6 +488,7 @@ export type Database = {
         }
         Update: {
           atividades?: Json | null
+          company_id?: string | null
           created_at?: string
           dados_adicionais?: string | null
           etapa?: Database["public"]["Enums"]["lead_stage"]
@@ -453,6 +501,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "leads_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "leads_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -464,6 +519,7 @@ export type Database = {
       logs: {
         Row: {
           action: string
+          company_id: string | null
           created_at: string
           details: Json | null
           entity: string
@@ -473,6 +529,7 @@ export type Database = {
         }
         Insert: {
           action: string
+          company_id?: string | null
           created_at?: string
           details?: Json | null
           entity: string
@@ -482,6 +539,7 @@ export type Database = {
         }
         Update: {
           action?: string
+          company_id?: string | null
           created_at?: string
           details?: Json | null
           entity?: string
@@ -490,6 +548,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "logs_user_id_fkey"
             columns: ["user_id"]
@@ -502,6 +567,7 @@ export type Database = {
       metas: {
         Row: {
           ano: number
+          company_id: string | null
           created_at: string
           id: string
           mes: number
@@ -514,6 +580,7 @@ export type Database = {
         }
         Insert: {
           ano: number
+          company_id?: string | null
           created_at?: string
           id?: string
           mes: number
@@ -526,6 +593,7 @@ export type Database = {
         }
         Update: {
           ano?: number
+          company_id?: string | null
           created_at?: string
           id?: string
           mes?: number
@@ -536,7 +604,15 @@ export type Database = {
           tipo?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "metas_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       permissions: {
         Row: {
@@ -590,6 +666,7 @@ export type Database = {
       }
       users: {
         Row: {
+          company_id: string | null
           created_at: string
           email: string
           equipe_id: string | null
@@ -603,6 +680,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           email: string
           equipe_id?: string | null
@@ -616,6 +694,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           email?: string
           equipe_id?: string | null
@@ -629,6 +708,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "users_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "users_equipe_id_fkey"
             columns: ["equipe_id"]
@@ -659,8 +745,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_company_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       is_admin: {
         Args: { _user_id: string }
+        Returns: boolean
+      }
+      is_super_admin: {
+        Args: Record<PropertyKey, never>
         Returns: boolean
       }
       validate_email: {
