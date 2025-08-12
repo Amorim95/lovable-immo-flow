@@ -106,79 +106,28 @@ export default function GerenciamentoContas() {
 
     setLoading(true);
     try {
-      // 1. Criar empresa
-      const { data: company, error: companyError } = await supabase
-        .from('companies')
-        .insert({
-          name: formData.companyName
-        })
-        .select()
-        .single();
-
-      if (companyError) throw companyError;
-
-      // 2. Criar usuário no auth
-      const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.adminEmail,
-        password: formData.adminPassword,
-        email_confirm: true
+      // Chamar a Edge Function para criar a empresa com segurança
+      const { data, error } = await supabase.functions.invoke('create-company', {
+        body: {
+          companyName: formData.companyName,
+          adminName: formData.adminName,
+          adminEmail: formData.adminEmail,
+          adminPassword: formData.adminPassword
+        }
       });
 
-      if (authError) {
-        // Se falhou, deletar a empresa criada
-        await supabase.from('companies').delete().eq('id', company.id);
-        throw authError;
+      if (error) {
+        console.error('Erro da Edge Function:', error);
+        throw error;
       }
 
-      // 3. Criar perfil do usuário
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert({
-          id: authUser.user.id,
-          name: formData.adminName,
-          email: formData.adminEmail,
-          role: 'admin',
-          status: 'ativo',
-          company_id: company.id,
-          password_hash: 'managed_by_auth'
-        });
-
-      if (profileError) {
-        // Se falhou, deletar o usuário auth e a empresa
-        await supabase.auth.admin.deleteUser(authUser.user.id);
-        await supabase.from('companies').delete().eq('id', company.id);
-        throw profileError;
-      }
-
-      // 4. Criar configurações iniciais da empresa (sem logo)
-      const { error: settingsError } = await supabase
-        .from('company_settings')
-        .insert({
-          name: formData.companyName,
-          logo: null, // Sem logo inicial
-          site_title: formData.companyName,
-          site_description: `${formData.companyName} - Encontre o imóvel dos seus sonhos`,
-          site_phone: '',
-          site_email: formData.adminEmail,
-          site_address: '',
-          site_whatsapp: '',
-          site_facebook: '',
-          site_instagram: '',
-          site_about: `Bem-vindo à ${formData.companyName}! Estamos aqui para ajudar você a encontrar o imóvel ideal.`,
-          site_horario_semana: '9:00 às 18:00',
-          site_horario_sabado: '9:00 às 15:00',
-          site_horario_domingo: 'Fechado',
-          site_observacoes_horario: ''
-        });
-
-      if (settingsError) {
-        console.warn('Erro ao criar configurações da empresa:', settingsError);
-        // Não falhar a criação por causa das configurações
+      if (!data.success) {
+        throw new Error(data.error || 'Erro desconhecido');
       }
 
       toast({
         title: "Sucesso",
-        description: `Imobiliária "${formData.companyName}" criada com sucesso!`
+        description: data.message
       });
 
       setFormData({ companyName: '', adminName: '', adminEmail: '', adminPassword: '' });
