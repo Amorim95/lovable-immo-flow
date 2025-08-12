@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { CompanyProvider } from '@/contexts/CompanyContext';
-import { OnboardingModal } from '@/components/OnboardingModal';
+import { OnboardingSteps } from '@/components/OnboardingSteps';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { CRMSidebar } from "@/components/CRMSidebar";
 import { MobileTabBar } from "@/components/MobileTabBar";
@@ -76,7 +76,7 @@ function AppContent() {
   
   return (
     <>
-      <OnboardingModal isOpen={showOnboarding} onComplete={completeOnboarding} />
+      <OnboardingSteps isOpen={showOnboarding} onComplete={completeOnboarding} />
       <Routes>
       <Route path="/login" element={<Login />} />
       
