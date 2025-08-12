@@ -43,7 +43,7 @@ export function usePermissions(): UserPermissions {
     }
 
     loadPermissions();
-  }, [user]);
+  }, [user?.id]); // Mudança aqui: dependência específica do user.id
 
   const loadPermissions = async () => {
     if (!user) return;
@@ -89,21 +89,7 @@ export function usePermissions(): UserPermissions {
 
       const isAdmin = userData?.role === 'admin';
 
-      if (isAdmin) {
-        setPermissions({
-          canInviteUsers: true,
-          canManageLeads: true,
-          canViewReports: true,
-          canManageTeams: true,
-          canAccessConfigurations: true,
-          isAdmin: true,
-          isSuperAdmin: false,
-          loading: false
-        });
-        return;
-      }
-
-      // Buscar permissões específicas do usuário
+      // Buscar permissões específicas do usuário (para todos os usuários, incluindo admins)
       const { data: userPermissions, error } = await supabase
         .from('permissions')
         .select('*')
@@ -114,6 +100,21 @@ export function usePermissions(): UserPermissions {
         console.error('Error loading permissions:', error);
       }
 
+      if (isAdmin) {
+        setPermissions({
+          canInviteUsers: true,
+          canManageLeads: true,
+          canViewReports: true,
+          canManageTeams: true,
+          canAccessConfigurations: true,
+          isAdmin: true,
+          isSuperAdmin: userPermissions?.is_super_admin || false, // Verificar permissão específica
+          loading: false
+        });
+        return;
+      }
+
+      // Para não-admins, usar as permissões específicas
       setPermissions({
         canInviteUsers: userPermissions?.can_invite_users || false,
         canManageLeads: userPermissions?.can_manage_leads || true, // Permitir por padrão
