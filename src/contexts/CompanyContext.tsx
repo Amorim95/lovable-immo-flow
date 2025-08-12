@@ -117,6 +117,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       }
 
       const userId = authData.user.id;
+      console.log('UserId:', userId);
 
       // Buscar company_id primeiro na tabela users
       const userQuery = await supabase
@@ -125,12 +126,47 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         .eq('id', userId)
         .single();
 
+      console.log('UserQuery result:', userQuery);
+
       let companyId: string | null = userQuery.data?.company_id;
 
+      // Se não tiver company_id, criar uma empresa automaticamente
       if (!companyId) {
-        throw new Error('Usuário sem empresa associada');
+        console.log('Criando empresa automaticamente para o usuário');
+        
+        // Criar nova empresa
+        const { data: newCompany, error: companyError } = await supabase
+          .from('companies')
+          .insert({
+            name: newSettings.name || 'Nova Empresa',
+            logo_url: newSettings.logo
+          })
+          .select('id')
+          .single();
+
+        if (companyError) {
+          console.error('Erro ao criar empresa:', companyError);
+          throw new Error('Erro ao criar empresa');
+        }
+
+        companyId = newCompany.id;
+        console.log('Nova empresa criada com ID:', companyId);
+
+        // Atualizar o usuário com o company_id
+        const { error: userUpdateError } = await supabase
+          .from('users')
+          .update({ company_id: companyId })
+          .eq('id', userId);
+
+        if (userUpdateError) {
+          console.error('Erro ao atualizar usuário:', userUpdateError);
+          throw new Error('Erro ao associar usuário à empresa');
+        }
+
+        console.log('Usuário atualizado com company_id');
       }
 
+      // Agora que temos company_id, continuar com a atualização
       const existingQuery = await supabase
         .from('company_settings')
         .select('*')
