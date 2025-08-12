@@ -127,28 +127,6 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
 
       let companyId: string | null = userQuery.data?.company_id;
 
-      // Se não encontrar, buscar na tabela companies usando RPC
-      if (!companyId) {
-        try {
-          const companyResponse = await supabase.rpc('get_user_company_id', { 
-            user_id: userId 
-          });
-          const companyData = companyResponse.data;
-          
-          if (companyData) {
-            companyId = companyData as string;
-            
-            // Atualizar o company_id na tabela users para próximas consultas
-            await supabase
-              .from('users')
-              .update({ company_id: companyId })
-              .eq('id', userId);
-          }
-        } catch (rpcError) {
-          console.log('RPC não disponível, continuando sem company_id');
-        }
-      }
-
       if (!companyId) {
         throw new Error('Usuário sem empresa associada');
       }
