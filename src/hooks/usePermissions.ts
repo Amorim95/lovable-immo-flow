@@ -10,6 +10,7 @@ interface UserPermissions {
   canManageTeams: boolean;
   canAccessConfigurations: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   loading: boolean;
 }
 
@@ -22,6 +23,7 @@ export function usePermissions(): UserPermissions {
     canManageTeams: false,
     canAccessConfigurations: false,
     isAdmin: false,
+    isSuperAdmin: false,
     loading: true
   });
 
@@ -34,6 +36,7 @@ export function usePermissions(): UserPermissions {
         canManageTeams: false,
         canAccessConfigurations: false,
         isAdmin: false,
+        isSuperAdmin: false,
         loading: false
       });
       return;
@@ -55,6 +58,7 @@ export function usePermissions(): UserPermissions {
           canManageTeams: true,
           canAccessConfigurations: true,
           isAdmin: true,
+          isSuperAdmin: true,
           loading: false
         });
         return;
@@ -77,6 +81,7 @@ export function usePermissions(): UserPermissions {
           canManageTeams: false,
           canAccessConfigurations: false,
           isAdmin: false,
+          isSuperAdmin: false,
           loading: false
         });
         return;
@@ -92,6 +97,7 @@ export function usePermissions(): UserPermissions {
           canManageTeams: true,
           canAccessConfigurations: true,
           isAdmin: true,
+          isSuperAdmin: false,
           loading: false
         });
         return;
@@ -115,6 +121,7 @@ export function usePermissions(): UserPermissions {
         canManageTeams: userPermissions?.can_manage_teams || false,
         canAccessConfigurations: userPermissions?.can_access_configurations || false,
         isAdmin: false,
+        isSuperAdmin: userPermissions?.is_super_admin || false,
         loading: false
       });
 
@@ -128,6 +135,7 @@ export function usePermissions(): UserPermissions {
         canManageTeams: false,
         canAccessConfigurations: false,
         isAdmin: false,
+        isSuperAdmin: false,
         loading: false
       });
     }

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -26,7 +26,7 @@ interface Company {
 }
 
 export default function GerenciamentoContas() {
-  const { user } = useAuth();
+  const { isSuperAdmin, loading: permissionsLoading } = usePermissions();
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -37,7 +37,19 @@ export default function GerenciamentoContas() {
   });
 
   // Verificar se é super admin
-  if (!user?.is_super_admin) {
+  if (permissionsLoading) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <p className="text-muted-foreground">Carregando...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!isSuperAdmin) {
     return (
       <div className="container mx-auto p-6">
         <Card>

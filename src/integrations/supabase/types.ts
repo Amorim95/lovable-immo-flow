@@ -625,6 +625,7 @@ export type Database = {
           can_view_reports: boolean
           created_at: string
           id: string
+          is_super_admin: boolean
           updated_at: string
           user_id: string
         }
@@ -638,6 +639,7 @@ export type Database = {
           can_view_reports?: boolean
           created_at?: string
           id?: string
+          is_super_admin?: boolean
           updated_at?: string
           user_id: string
         }
@@ -651,6 +653,7 @@ export type Database = {
           can_view_reports?: boolean
           created_at?: string
           id?: string
+          is_super_admin?: boolean
           updated_at?: string
           user_id?: string
         }

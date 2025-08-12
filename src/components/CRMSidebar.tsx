@@ -17,7 +17,7 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { UserRoleBadge } from "@/components/UserRoleBadge";
 import { useUserRole } from "@/hooks/useUserRole";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePermissions } from "@/hooks/usePermissions";
 import { 
   LayoutList, 
   Calendar,
@@ -83,7 +83,7 @@ export function CRMSidebar() {
   const { state } = useSidebar();
   const { settings } = useCompany();
   const { isAdmin, isGestor, isCorretor, loading } = useUserRole();
-  const { user } = useAuth();
+  const { isSuperAdmin } = usePermissions();
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
@@ -108,7 +108,7 @@ export function CRMSidebar() {
     
     if (item.showForAll) return true;
     if (item.requireAdminOrGestor && !isAdmin && !isGestor) return false;
-    if (item.requireSuperAdmin && !user?.is_super_admin) return false;
+    if (item.requireSuperAdmin && !isSuperAdmin) return false;
     
     return true;
   });
