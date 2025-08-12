@@ -148,25 +148,25 @@ serve(async (req) => {
         throw profileError;
       }
 
-      console.log('=== Etapa 4: Criando configurações da empresa ===');
-      // 4. Criar configurações iniciais da empresa
+      console.log('=== Etapa 4: Criando configurações vazias da empresa ===');
+      // 4. Criar configurações iniciais vazias da empresa para onboarding
       const { error: settingsError } = await supabaseAdmin
         .from('company_settings')
         .insert({
           company_id: company.id, // Associar à empresa criada
-          name: companyName,
+          name: '', // Vazio para onboarding
           logo: null,
-          site_title: companyName,
-          site_description: `${companyName} - Encontre o imóvel dos seus sonhos`,
+          site_title: '',
+          site_description: '',
           site_phone: '',
-          site_email: adminEmail,
+          site_email: adminEmail, // Apenas o email do admin
           site_address: '',
           site_whatsapp: '',
           site_facebook: '',
           site_instagram: '',
-          site_about: `Bem-vindo à ${companyName}! Estamos aqui para ajudar você a encontrar o imóvel ideal.`,
+          site_about: '',
           site_horario_semana: '9:00 às 18:00',
-          site_horario_sabado: '9:00 às 15:00',
+          site_horario_sabado: '9:00 às 15:00', 
           site_horario_domingo: 'Fechado',
           site_observacoes_horario: ''
         });

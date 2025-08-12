@@ -31,7 +31,7 @@ const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 
 export function CompanyProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<CompanySettings>({
-    name: 'Click Imóveis',
+    name: '', // Vazio por padrão para onboarding
     logo: null,
     theme: 'blue',
     isDarkMode: false
@@ -80,10 +80,10 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         console.log('Aplicando configurações:', data);
         setSettings(prev => ({
           ...prev,
-          name: data.name || 'Click Imóveis',
+          name: data.name || '',
           logo: data.logo || null,
-          site_title: data.site_title || data.name || 'Click Imóveis',
-          site_description: data.site_description || 'Encontre o imóvel dos seus sonhos',
+          site_title: data.site_title || data.name || '',
+          site_description: data.site_description || '',
           site_phone: data.site_phone || '',
           site_email: data.site_email || '',
           site_address: data.site_address || '',
@@ -97,7 +97,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
           site_observacoes_horario: data.site_observacoes_horario || '*Atendimento via WhatsApp 24 horas',
         }));
       } else {
-        console.log('Nenhum dado encontrado na tabela company_settings');
+        console.log('Nenhum dado encontrado na tabela company_settings - mantendo valores vazios para onboarding');
       }
     } catch (error) {
       console.error('Erro ao carregar configurações da empresa:', error);
@@ -137,7 +137,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
 
       const updateData = {
         company_id: userData.company_id, // Sempre incluir o company_id
-        name: newSettings.name !== undefined ? newSettings.name : existingData?.name || 'Click Imóveis',
+        name: newSettings.name !== undefined ? newSettings.name : existingData?.name || '',
         logo: newSettings.logo !== undefined ? newSettings.logo : existingData?.logo,
         site_title: newSettings.site_title !== undefined ? newSettings.site_title : existingData?.site_title,
         site_description: newSettings.site_description !== undefined ? newSettings.site_description : existingData?.site_description,

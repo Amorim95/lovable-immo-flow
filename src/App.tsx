@@ -5,6 +5,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { CompanyProvider } from '@/contexts/CompanyContext';
+import { OnboardingModal } from '@/components/OnboardingModal';
+import { useOnboarding } from '@/hooks/useOnboarding';
 import { CRMSidebar } from "@/components/CRMSidebar";
 import { MobileTabBar } from "@/components/MobileTabBar";
 import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
@@ -12,7 +15,7 @@ import { PWALifecycle } from "@/components/PWALifecycle";
 import { PushNotificationManager } from "@/components/PushNotificationManager";
 import { DynamicPWAUpdater } from "@/components/DynamicPWAUpdater";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { CompanyProvider, useCompany } from "@/contexts/CompanyContext";
+import { useCompany } from "@/contexts/CompanyContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import MobileLeads from "./pages/MobileLeads";
@@ -69,9 +72,12 @@ function AppContent() {
   const { settings } = useCompany();
   const { user, logout } = useAuth();
   const isMobile = useIsMobile();
+  const { showOnboarding, completeOnboarding } = useOnboarding();
   
   return (
-    <Routes>
+    <>
+      <OnboardingModal isOpen={showOnboarding} onComplete={completeOnboarding} />
+      <Routes>
       <Route path="/login" element={<Login />} />
       
       {/* Rotas públicas com contexto da empresa */}
@@ -115,7 +121,7 @@ function AppContent() {
                     <div className="flex-1" />
                     <div className="flex items-center gap-4">
                       <div className="text-sm text-gray-600">
-                        {user?.name} - {settings.name}
+                        {user?.name}{settings.name ? ` - ${settings.name}` : ''}
                       </div>
                       <button
                         onClick={logout}
@@ -149,6 +155,7 @@ function AppContent() {
         </ProtectedRoute>
       } />
     </Routes>
+    </>
   );
 }
 

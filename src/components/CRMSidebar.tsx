@@ -118,15 +118,23 @@ export function CRMSidebar() {
       <div className="p-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 flex-shrink-0">
-            <img 
-              src={settings.logo || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
-              alt={`${settings.name} Logo`} 
-              className="w-full h-full object-contain"
-            />
+            {settings.logo ? (
+              <img 
+                src={settings.logo} 
+                alt={`${settings.name || 'Logo'}`} 
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
+                <Building2 className="w-6 h-6 text-muted-foreground" />
+              </div>
+            )}
           </div>
           {!collapsed && (
             <div>
-              <h1 className="text-lg font-bold text-foreground">{settings.name}</h1>
+              <h1 className="text-lg font-bold text-foreground">
+                {settings.name || 'Sistema CRM'}
+              </h1>
               <p className="text-xs text-muted-foreground">Feito Por: Monumental Marketing</p>
               <div className="mt-2">
                 <UserRoleBadge showIcon={false} variant="outline" />
