@@ -153,6 +153,7 @@ serve(async (req) => {
       const { error: settingsError } = await supabaseAdmin
         .from('company_settings')
         .insert({
+          company_id: company.id, // Associar à empresa criada
           name: companyName,
           logo: null,
           site_title: companyName,

@@ -44,9 +44,31 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
   const loadCompanySettings = async () => {
     try {
       console.log('Carregando configurações da empresa...');
+      
+      // Obter o usuário atual para pegar o company_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('Usuário não autenticado');
+        return;
+      }
+
+      // Buscar dados do usuário para obter company_id
+      const { data: userData } = await supabase
+        .from('users')
+        .select('company_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!userData?.company_id) {
+        console.log('Usuário sem company_id definido');
+        return;
+      }
+
+      // Buscar configurações da empresa específica
       const { data, error } = await supabase
         .from('company_settings')
         .select('*')
+        .eq('company_id', userData.company_id)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -88,15 +110,33 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     
     // Atualizar no banco sempre que houver mudanças
     try {
+      // Obter o usuário atual e seu company_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('company_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!userData?.company_id) {
+        throw new Error('Usuário sem company_id definido');
+      }
+
       const { data: existingData } = await supabase
         .from('company_settings')
         .select('*')
+        .eq('company_id', userData.company_id)
         .limit(1)
         .maybeSingle();
 
       console.log('Dados existentes:', existingData);
 
       const updateData = {
+        company_id: userData.company_id, // Sempre incluir o company_id
         name: newSettings.name !== undefined ? newSettings.name : existingData?.name || 'Click Imóveis',
         logo: newSettings.logo !== undefined ? newSettings.logo : existingData?.logo,
         site_title: newSettings.site_title !== undefined ? newSettings.site_title : existingData?.site_title,

@@ -70,6 +70,7 @@ export type Database = {
       }
       company_settings: {
         Row: {
+          company_id: string | null
           created_at: string
           id: string
           logo: string | null
@@ -90,6 +91,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          company_id?: string | null
           created_at?: string
           id?: string
           logo?: string | null
@@ -110,6 +112,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          company_id?: string | null
           created_at?: string
           id?: string
           logo?: string | null

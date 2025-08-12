@@ -21,6 +21,7 @@ export default function MeuSite() {
 
   const fetchImoveisPublicos = async () => {
     try {
+      // RLS irá automaticamente filtrar pelos imóveis da empresa do usuário
       const { data, error } = await supabase
         .from('imoveis')
         .select('*')
