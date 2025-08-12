@@ -757,6 +757,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      user_role_check: {
+        Args: { _user_id: string; _company_id: string }
+        Returns: string
+      }
       validate_email: {
         Args: { email_input: string }
         Returns: boolean
