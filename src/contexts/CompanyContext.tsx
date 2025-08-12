@@ -110,58 +110,84 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     
     // Atualizar no banco sempre que houver mudanças
     try {
-      // Obter o usuário atual e seu company_id
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      // Obter o usuário atual
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData.user) {
         throw new Error('Usuário não autenticado');
       }
 
-      const { data: userData } = await supabase
+      const userId = authData.user.id;
+
+      // Buscar company_id primeiro na tabela users
+      const userQuery = await supabase
         .from('users')
         .select('company_id')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single();
 
-      if (!userData?.company_id) {
-        throw new Error('Usuário sem company_id definido');
+      let companyId = userQuery.data?.company_id;
+
+      // Se não encontrar, buscar na tabela companies usando RPC
+      if (!companyId) {
+        try {
+          const { data: companyData } = await supabase.rpc('get_user_company_id', { 
+            user_id: userId 
+          });
+          
+          if (companyData) {
+            companyId = companyData;
+            
+            // Atualizar o company_id na tabela users para próximas consultas
+            await supabase
+              .from('users')
+              .update({ company_id: companyId })
+              .eq('id', userId);
+          }
+        } catch (rpcError) {
+          console.log('RPC não disponível, continuando sem company_id');
+        }
       }
 
-      const { data: existingData } = await supabase
+      if (!companyId) {
+        throw new Error('Usuário sem empresa associada');
+      }
+
+      const existingQuery = await supabase
         .from('company_settings')
         .select('*')
-        .eq('company_id', userData.company_id)
+        .eq('company_id', companyId)
         .limit(1)
         .maybeSingle();
 
-      console.log('Dados existentes:', existingData);
+      console.log('Dados existentes:', existingQuery.data);
 
       const updateData = {
-        company_id: userData.company_id, // Sempre incluir o company_id
-        name: newSettings.name !== undefined ? newSettings.name : existingData?.name || '',
-        logo: newSettings.logo !== undefined ? newSettings.logo : existingData?.logo,
-        site_title: newSettings.site_title !== undefined ? newSettings.site_title : existingData?.site_title,
-        site_description: newSettings.site_description !== undefined ? newSettings.site_description : existingData?.site_description,
-        site_phone: newSettings.site_phone !== undefined ? newSettings.site_phone : existingData?.site_phone,
-        site_email: newSettings.site_email !== undefined ? newSettings.site_email : existingData?.site_email,
-        site_address: newSettings.site_address !== undefined ? newSettings.site_address : existingData?.site_address,
-        site_whatsapp: newSettings.site_whatsapp !== undefined ? newSettings.site_whatsapp : existingData?.site_whatsapp,
-        site_facebook: newSettings.site_facebook !== undefined ? newSettings.site_facebook : existingData?.site_facebook,
-        site_instagram: newSettings.site_instagram !== undefined ? newSettings.site_instagram : existingData?.site_instagram,
-        site_about: newSettings.site_about !== undefined ? newSettings.site_about : existingData?.site_about,
-        site_horario_semana: newSettings.site_horario_semana !== undefined ? newSettings.site_horario_semana : existingData?.site_horario_semana,
-        site_horario_sabado: newSettings.site_horario_sabado !== undefined ? newSettings.site_horario_sabado : existingData?.site_horario_sabado,
-        site_horario_domingo: newSettings.site_horario_domingo !== undefined ? newSettings.site_horario_domingo : existingData?.site_horario_domingo,
-        site_observacoes_horario: newSettings.site_observacoes_horario !== undefined ? newSettings.site_observacoes_horario : existingData?.site_observacoes_horario,
+        company_id: companyId,
+        name: newSettings.name !== undefined ? newSettings.name : existingQuery.data?.name || '',
+        logo: newSettings.logo !== undefined ? newSettings.logo : existingQuery.data?.logo,
+        site_title: newSettings.site_title !== undefined ? newSettings.site_title : existingQuery.data?.site_title,
+        site_description: newSettings.site_description !== undefined ? newSettings.site_description : existingQuery.data?.site_description,
+        site_phone: newSettings.site_phone !== undefined ? newSettings.site_phone : existingQuery.data?.site_phone,
+        site_email: newSettings.site_email !== undefined ? newSettings.site_email : existingQuery.data?.site_email,
+        site_address: newSettings.site_address !== undefined ? newSettings.site_address : existingQuery.data?.site_address,
+        site_whatsapp: newSettings.site_whatsapp !== undefined ? newSettings.site_whatsapp : existingQuery.data?.site_whatsapp,
+        site_facebook: newSettings.site_facebook !== undefined ? newSettings.site_facebook : existingQuery.data?.site_facebook,
+        site_instagram: newSettings.site_instagram !== undefined ? newSettings.site_instagram : existingQuery.data?.site_instagram,
+        site_about: newSettings.site_about !== undefined ? newSettings.site_about : existingQuery.data?.site_about,
+        site_horario_semana: newSettings.site_horario_semana !== undefined ? newSettings.site_horario_semana : existingQuery.data?.site_horario_semana,
+        site_horario_sabado: newSettings.site_horario_sabado !== undefined ? newSettings.site_horario_sabado : existingQuery.data?.site_horario_sabado,
+        site_horario_domingo: newSettings.site_horario_domingo !== undefined ? newSettings.site_horario_domingo : existingQuery.data?.site_horario_domingo,
+        site_observacoes_horario: newSettings.site_observacoes_horario !== undefined ? newSettings.site_observacoes_horario : existingQuery.data?.site_observacoes_horario,
       };
 
       console.log('Dados para atualizar:', updateData);
 
-      if (existingData) {
-        console.log('Atualizando registro existente com ID:', existingData.id);
+      if (existingQuery.data) {
+        console.log('Atualizando registro existente com ID:', existingQuery.data.id);
         const { error } = await supabase
           .from('company_settings')
           .update(updateData)
-          .eq('id', existingData.id);
+          .eq('id', existingQuery.data.id);
         
         if (error) {
           console.error('Erro ao atualizar:', error);
