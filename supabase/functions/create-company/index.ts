@@ -39,8 +39,23 @@ serve(async (req) => {
     // Extrair JWT do header (formato: "Bearer <token>")
     const jwt = authHeader.replace('Bearer ', '');
     
-    // Verificar o JWT e obter o user_id
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.getUser(jwt);
+    // Usar cliente com JWT para verificar usuário
+    const supabaseWithJWT = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        },
+        global: {
+          headers: { Authorization: `Bearer ${jwt}` }
+        }
+      }
+    );
+    
+    // Verificar se o usuário atual é válido
+    const { data: { user }, error: userError } = await supabaseWithJWT.auth.getUser();
     if (userError || !user) {
       console.error('Erro ao verificar JWT:', userError);
       return new Response(
