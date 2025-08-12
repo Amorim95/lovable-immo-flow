@@ -36,7 +36,26 @@ export default function GerenciamentoContas() {
     adminPassword: ''
   });
 
-  // Verificar se é super admin
+  // IMPORTANTE: Mover useQuery para ANTES dos returns condicionais
+  // Buscar empresas cadastradas
+  const { data: companies, isLoading, refetch } = useQuery({
+    queryKey: ['companies'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('companies')
+        .select(`
+          *,
+          users!inner(count)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Company[];
+    },
+    enabled: isSuperAdmin && !permissionsLoading // Só executar se for super admin
+  });
+
+  // Verificar se é super admin - APÓS todos os hooks
   if (permissionsLoading) {
     return (
       <div className="container mx-auto p-6">
@@ -63,23 +82,6 @@ export default function GerenciamentoContas() {
       </div>
     );
   }
-
-  // Buscar empresas cadastradas
-  const { data: companies, isLoading, refetch } = useQuery({
-    queryKey: ['companies'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('companies')
-        .select(`
-          *,
-          users!inner(count)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as Company[];
-    }
-  });
 
   const handleCreateCompany = async () => {
     if (!formData.companyName || !formData.adminName || !formData.adminEmail || !formData.adminPassword) {
