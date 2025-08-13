@@ -778,6 +778,14 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      is_admin_or_dono: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      is_admin_or_owner: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
