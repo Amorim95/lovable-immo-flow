@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { useCompany } from "@/contexts/CompanyContext";
+import { useCompanyByDomain } from "@/hooks/useCompanyByDomain";
 import { Imovel } from "@/types/crm";
 
 interface ImovelComFotos extends Imovel {
@@ -15,7 +15,7 @@ interface ImovelComFotos extends Imovel {
 }
 
 export default function SitePublico() {
-  const { settings } = useCompany();
+  const { company, loading: companyLoading, error: companyError } = useCompanyByDomain();
   const navigate = useNavigate();
   const [imoveis, setImoveis] = useState<ImovelComFotos[]>([]);
   const [filteredImoveis, setFilteredImoveis] = useState<ImovelComFotos[]>([]);
@@ -31,35 +31,26 @@ export default function SitePublico() {
   });
 
   useEffect(() => {
-    fetchImoveis();
-  }, []);
+    if (company) {
+      fetchImoveis();
+    }
+  }, [company]);
 
   useEffect(() => {
     applyFilters();
   }, [searchTerm, filters, imoveis]);
 
   const fetchImoveis = async () => {
+    if (!company) return;
+    
     try {
-      // Descobrir company_id do usuário (se estiver logado) para filtrar
-      const { data: auth } = await supabase.auth.getUser();
-      let companyId: string | null = null;
-      if (auth.user) {
-        const { data: userRow } = await supabase
-          .from('users')
-          .select('company_id')
-          .eq('id', auth.user.id)
-          .single();
-        companyId = userRow?.company_id ?? null;
-      }
-
-      // Buscar imóveis públicos, e se houver companyId, filtrar por ele
+      // Buscar imóveis públicos da empresa detectada pelo domínio
       let query = supabase
         .from('imoveis')
         .select('*')
         .eq('publico', true)
+        .eq('company_id', company.id)
         .order('created_at', { ascending: false });
-
-      if (companyId) query = query.eq('company_id', companyId);
 
       const { data: imoveisData, error: imoveisError } = await query;
 
@@ -240,12 +231,22 @@ export default function SitePublico() {
     );
   };
 
-  if (loading) {
+  if (loading || companyLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Carregando imóveis...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (companyError || !company) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Empresa não encontrada para este domínio</p>
         </div>
       </div>
     );
@@ -261,17 +262,17 @@ export default function SitePublico() {
             
             <div className="flex justify-center">
               <img 
-                src={settings.logo || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
-                alt={settings.name} 
+                src={company?.logo_url || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
+                alt={company?.name} 
                 className="h-20 w-auto" 
               />
             </div>
             
             <div className="flex-1 flex justify-end items-center gap-6">
               <Link to="/sobre-nos" className="text-muted-foreground hover:text-primary">Sobre Nós</Link>
-              {settings.siteFacebook && (
+              {company?.settings?.site_facebook && (
                 <a 
-                  href={settings.siteFacebook} 
+                  href={company.settings.site_facebook} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-primary"
@@ -279,9 +280,9 @@ export default function SitePublico() {
                   <Facebook className="w-5 h-5" />
                 </a>
               )}
-              {settings.siteInstagram && (
+              {company?.settings?.site_instagram && (
                 <a 
-                  href={settings.siteInstagram} 
+                  href={company.settings.site_instagram} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-primary"
@@ -484,13 +485,13 @@ export default function SitePublico() {
       <footer className="bg-gray-900 text-white py-12 mt-16">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <h3 className="text-xl font-bold mb-4">{settings.siteTitle || settings.name}</h3>
+            <h3 className="text-xl font-bold mb-4">{company?.settings?.site_title || company?.name}</h3>
             <p className="text-gray-300 max-w-2xl mx-auto">
-              {settings.siteDescription || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
+              {company?.settings?.site_description || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
             </p>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 {settings.siteTitle || settings.name}. Todos os direitos reservados.</p>
+            <p>&copy; 2024 {company?.settings?.site_title || company?.name}. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

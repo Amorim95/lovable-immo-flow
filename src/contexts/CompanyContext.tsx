@@ -19,6 +19,10 @@ interface CompanySettings {
   siteHorarioSabado?: string;
   siteHorarioDomingo?: string;
   siteObservacoesHorario?: string;
+  custom_domain?: string;
+  domain_status?: string;
+  ssl_status?: string;
+  domain_verified_at?: string;
 }
 
 interface CompanyContextType {
@@ -111,6 +115,10 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         siteHorarioSabado: settingsData?.site_horario_sabado || '8:00 às 14:00',
         siteHorarioDomingo: settingsData?.site_horario_domingo || 'Fechado',
         siteObservacoesHorario: settingsData?.site_observacoes_horario || '*Atendimento via WhatsApp 24 horas',
+        custom_domain: settingsData?.custom_domain || '',
+        domain_status: settingsData?.domain_status || 'pendente',
+        ssl_status: settingsData?.ssl_status || 'pendente',
+        domain_verified_at: settingsData?.domain_verified_at || '',
       }));
     } catch (error) {
       console.error('Erro ao carregar configurações da empresa:', error);
@@ -204,9 +212,15 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       if (newSettings.siteHorarioSabado !== undefined) settingsData.site_horario_sabado = newSettings.siteHorarioSabado;
       if (newSettings.siteHorarioDomingo !== undefined) settingsData.site_horario_domingo = newSettings.siteHorarioDomingo;
       if (newSettings.siteObservacoesHorario !== undefined) settingsData.site_observacoes_horario = newSettings.siteObservacoesHorario;
+      if (newSettings.custom_domain !== undefined) settingsData.custom_domain = newSettings.custom_domain;
+      if (newSettings.domain_status !== undefined) settingsData.domain_status = newSettings.domain_status;
+      if (newSettings.ssl_status !== undefined) settingsData.ssl_status = newSettings.ssl_status;
+      if (newSettings.domain_verified_at !== undefined) settingsData.domain_verified_at = newSettings.domain_verified_at;
 
-      // Só atualizar company_settings se houver campos relacionados ao site
-      const hasSiteSettings = Object.keys(settingsData).some(key => key.startsWith('site_'));
+      // Só atualizar company_settings se houver campos relacionados ao site ou domínio
+      const hasSiteSettings = Object.keys(settingsData).some(key => 
+        key.startsWith('site_') || key.startsWith('custom_domain') || key.startsWith('domain_') || key.startsWith('ssl_')
+      );
       
       if (hasSiteSettings) {
         if (existingSettingsQuery.data) {

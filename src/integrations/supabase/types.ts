@@ -72,6 +72,9 @@ export type Database = {
         Row: {
           company_id: string | null
           created_at: string
+          custom_domain: string | null
+          domain_status: string | null
+          domain_verified_at: string | null
           id: string
           logo: string | null
           name: string
@@ -88,11 +91,15 @@ export type Database = {
           site_phone: string | null
           site_title: string | null
           site_whatsapp: string | null
+          ssl_status: string | null
           updated_at: string
         }
         Insert: {
           company_id?: string | null
           created_at?: string
+          custom_domain?: string | null
+          domain_status?: string | null
+          domain_verified_at?: string | null
           id?: string
           logo?: string | null
           name: string
@@ -109,11 +116,15 @@ export type Database = {
           site_phone?: string | null
           site_title?: string | null
           site_whatsapp?: string | null
+          ssl_status?: string | null
           updated_at?: string
         }
         Update: {
           company_id?: string | null
           created_at?: string
+          custom_domain?: string | null
+          domain_status?: string | null
+          domain_verified_at?: string | null
           id?: string
           logo?: string | null
           name?: string
@@ -130,6 +141,7 @@ export type Database = {
           site_phone?: string | null
           site_title?: string | null
           site_whatsapp?: string | null
+          ssl_status?: string | null
           updated_at?: string
         }
         Relationships: []

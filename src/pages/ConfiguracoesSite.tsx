@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCompany } from "@/contexts/CompanyContext";
 import { toast } from "sonner";
 import { useRef } from "react";
+import { DomainSettings } from "@/components/DomainSettings";
 
 interface SiteSettings {
   title?: string;
@@ -460,6 +461,9 @@ export default function ConfiguracoesSite() {
           </p>
         </CardContent>
       </Card>
+
+      {/* Domínio Personalizado */}
+      <DomainSettings />
 
       {/* Ações */}
       <div className="flex justify-between">
