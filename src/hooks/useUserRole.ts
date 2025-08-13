@@ -36,7 +36,8 @@ export function useUserRole(): UserRole {
       return;
     }
 
-    // Como os dados do usuário já vêm do AuthContext, podemos usar diretamente
+    // Permitir acesso para usuários com cargo admin/gestor/dono independente do status
+    // para que possam gerenciar outros usuários mesmo se estiverem inativos
     setRoleInfo({
       isAdmin: user.role === 'admin',
       isGestor: user.role === 'gestor', 
