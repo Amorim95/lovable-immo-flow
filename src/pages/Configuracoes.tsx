@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { useToast } from "@/hooks/use-toast";
 import { SecuritySettings } from "@/components/SecuritySettings";
 import { AccessControlWrapper } from "@/components/AccessControlWrapper";
+import { supabase } from "@/integrations/supabase/client";
 
 import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun, Shield } from "lucide-react";
 
@@ -22,6 +23,12 @@ const Configuracoes = () => {
   const [companyName, setCompanyName] = useState(settings.name);
   const [companyLogo, setCompanyLogo] = useState<string | null>(settings.logo);
 
+  // Sincronizar estado local com as configurações quando elas mudarem
+  useEffect(() => {
+    setCompanyName(settings.name);
+    setCompanyLogo(settings.logo);
+  }, [settings.name, settings.logo]);
+
   const themes = [
     { id: 'blue', name: 'Azul', color: '#3B82F6' },
     { id: 'green', name: 'Verde', color: '#10B981' },
@@ -30,14 +37,61 @@ const Configuracoes = () => {
     { id: 'red', name: 'Vermelho', color: '#EF4444' }
   ];
 
-  const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "Arquivo muito grande",
+          description: "A logo deve ter no máximo 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Preview local da imagem
       const reader = new FileReader();
       reader.onload = (e) => {
         setCompanyLogo(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+
+      // Upload para o Supabase Storage
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Usuário não autenticado');
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `logo-${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('property-media')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error('Erro no upload:', uploadError);
+          throw new Error('Erro ao fazer upload da logo');
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('property-media')
+          .getPublicUrl(fileName);
+
+        // Atualizar o estado com a URL pública
+        setCompanyLogo(publicUrl);
+        
+        toast({
+          title: "Upload concluído",
+          description: "Logo carregada com sucesso!",
+        });
+      } catch (error) {
+        console.error('Erro no upload da logo:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível fazer upload da logo. Tente novamente.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
