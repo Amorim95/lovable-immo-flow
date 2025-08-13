@@ -198,7 +198,7 @@ serve(async (req) => {
           id: authUser.user.id,
           name: adminName,
           email: adminEmail,
-          role: 'admin',
+          role: 'dono',
           status: 'ativo',
           company_id: company.id,
           password_hash: 'managed_by_auth'
@@ -253,6 +253,23 @@ serve(async (req) => {
         }
       } else {
         console.log('Configurações já existem para empresa:', company.id);
+      }
+
+      // 6. Conceder permissões padrão ao dono
+      const { error: permInsertError } = await supabaseAdmin
+        .from('permissions')
+        .insert({
+          user_id: authUser.user.id,
+          can_invite_users: true,
+          can_manage_leads: true,
+          can_manage_teams: true,
+          can_access_configurations: true,
+          can_view_all_leads: true,
+          is_super_admin: false
+        });
+
+      if (permInsertError) {
+        console.warn('Permissões não inseridas (não crítico):', permInsertError);
       }
 
       console.log('=== Imobiliária criada com sucesso ===');
