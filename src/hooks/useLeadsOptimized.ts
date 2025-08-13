@@ -240,7 +240,7 @@ export function useLeadsOptimized() {
     updateLeadOptimistic,
     canCreateLeads: isAdmin || isGestor || isCorretor,
     canAssignLeads: isAdmin || isGestor,
-    canViewAllLeads: isAdmin,
+    canViewAllLeads: isAdmin || isGestor,
     canViewTeamLeads: isAdmin || isGestor
   };
 }
