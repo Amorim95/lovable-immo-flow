@@ -771,7 +771,7 @@ export type Database = {
         Returns: string
       }
       get_next_user_round_robin: {
-        Args: Record<PropertyKey, never>
+        Args: Record<PropertyKey, never> | { _company_id?: string }
         Returns: string
       }
       get_user_company_id: {
