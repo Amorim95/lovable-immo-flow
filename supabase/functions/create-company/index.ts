@@ -133,47 +133,68 @@ serve(async (req) => {
 
     try {
       console.log('=== Etapa 2: Verificando se email já existe ===');
-      // 2. Verificar se o email já existe
-      const { data: existingUser, error: checkError } = await supabaseAdmin.auth.admin.listUsers();
+      // 2. Verificar se o email já existe no auth
+      const { data: existingUsers, error: checkError } = await supabaseAdmin.auth.admin.listUsers();
       
       if (checkError) {
         console.error('Erro ao verificar usuários existentes:', checkError);
         throw checkError;
       }
 
-      const emailExists = existingUser.users.some(user => user.email === adminEmail);
+      const existingAuthUser = existingUsers.users.find(user => user.email === adminEmail);
       
-      if (emailExists) {
-        console.error('Email já cadastrado:', adminEmail);
-        return new Response(
-          JSON.stringify({ 
-            error: `O email ${adminEmail} já está cadastrado no sistema. Use um email diferente.`,
-            success: false 
-          }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      let authUser;
+      
+      if (existingAuthUser) {
+        console.log('Email já existe no auth, usando usuário existente:', existingAuthUser.id);
+        
+        // Verificar se já existe na tabela users
+        const { data: existingUserProfile, error: profileCheckError } = await supabaseAdmin
+          .from('users')
+          .select('id, company_id')
+          .eq('id', existingAuthUser.id)
+          .single();
+        
+        if (profileCheckError && profileCheckError.code !== 'PGRST116') {
+          console.error('Erro ao verificar perfil existente:', profileCheckError);
+          throw profileCheckError;
+        }
+        
+        if (existingUserProfile && existingUserProfile.company_id) {
+          return new Response(
+            JSON.stringify({ 
+              error: `O usuário ${adminEmail} já está associado a uma empresa.`,
+              success: false 
+            }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        authUser = { user: existingAuthUser };
+      } else {
+        console.log('=== Etapa 3: Criando novo usuário admin ===');
+        // 3. Criar usuário admin usando service role
+        const { data: newAuthUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+          email: adminEmail,
+          password: adminPassword,
+          email_confirm: true
+        });
+
+        if (authError) {
+          console.error('Erro ao criar usuário admin:', authError);
+          throw authError;
+        }
+        
+        authUser = newAuthUser;
       }
 
-      console.log('=== Etapa 3: Criando usuário admin ===');
-      // 3. Criar usuário admin usando service role
-      const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
-        email: adminEmail,
-        password: adminPassword,
-        email_confirm: true
-      });
+      console.log('Usuário admin obtido/criado:', authUser.user.id);
 
-      if (authError) {
-        console.error('Erro ao criar usuário admin:', authError);
-        throw authError;
-      }
-
-      console.log('Usuário admin criado:', authUser.user.id);
-
-      console.log('=== Etapa 3: Criando perfil do usuário ===');
-      // 3. Criar perfil do usuário
+      console.log('=== Etapa 4: Criando perfil do usuário ===');
+      // 4. Criar ou atualizar perfil do usuário
       const { error: profileError } = await supabaseAdmin
         .from('users')
-        .insert({
+        .upsert({
           id: authUser.user.id,
           name: adminName,
           email: adminEmail,
@@ -181,6 +202,8 @@ serve(async (req) => {
           status: 'ativo',
           company_id: company.id,
           password_hash: 'managed_by_auth'
+        }, {
+          onConflict: 'id'
         });
 
       if (profileError) {
@@ -188,8 +211,8 @@ serve(async (req) => {
         throw profileError;
       }
 
-      console.log('=== Etapa 4: Criando configurações vazias da empresa ===');
-      // 4. Criar configurações iniciais vazias da empresa para onboarding
+      console.log('=== Etapa 5: Criando configurações vazias da empresa ===');
+      // 5. Criar configurações iniciais vazias da empresa para onboarding
       const { error: settingsError } = await supabaseAdmin
         .from('company_settings')
         .insert({
