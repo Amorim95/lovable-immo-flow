@@ -34,6 +34,11 @@ const stageConfig = {
     title: 'Em Pausa',
     color: 'bg-orange-50 border-orange-200',
     headerColor: 'bg-orange-500'
+  },
+  'descarte': {
+    title: 'Descarte',
+    color: 'bg-red-50 border-red-200',
+    headerColor: 'bg-red-500'
   }
 };
 

@@ -22,7 +22,8 @@ export type LeadStage =
   | 'atendeu'
   | 'visita'
   | 'vendas-fechadas'
-  | 'em-pausa';
+  | 'em-pausa'
+  | 'descarte';
 
 export type LeadTag = 
   | 'tentando-financiamento'
