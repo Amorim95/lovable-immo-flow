@@ -23,15 +23,15 @@ export function AccessControlWrapper({
   allowCorretor = true,
   fallback = null
 }: AccessControlWrapperProps) {
-  const { isAdmin, isGestor, isCorretor, loading } = useUserRole();
+  const { isAdmin, isGestor, isCorretor, isDono, loading } = useUserRole();
 
   // Durante o carregamento, mostrar o conteúdo para evitar layout shift
   if (loading) {
     return <>{children}</>;
   }
 
-  // Verificar requisitos específicos
-  if (requireAdmin && !isAdmin) {
+  // Verificar requisitos específicos (Dono tem acesso como Admin)
+  if (requireAdmin && !isAdmin && !isDono) {
     return <>{fallback}</>;
   }
 
@@ -43,9 +43,9 @@ export function AccessControlWrapper({
     return <>{fallback}</>;
   }
 
-  // Verificar permissões gerais
+  // Verificar permissões gerais (Dono tem acesso total como Admin)
   const hasAccess = 
-    (allowAdmin && isAdmin) ||
+    (allowAdmin && (isAdmin || isDono)) ||
     (allowGestor && isGestor) ||
     (allowCorretor && isCorretor);
 

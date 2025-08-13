@@ -119,7 +119,8 @@ serve(async (req) => {
     const { data: company, error: companyError } = await supabaseAdmin
       .from('companies')
       .insert({
-        name: companyName
+        name: companyName,
+        logo_url: null // Inicializar com null, será atualizado durante onboarding
       })
       .select()
       .single();
@@ -198,7 +199,7 @@ serve(async (req) => {
           id: authUser.user.id,
           name: adminName,
           email: adminEmail,
-          role: 'admin',
+          role: 'dono',
           status: 'ativo',
           company_id: company.id,
           password_hash: 'managed_by_auth'

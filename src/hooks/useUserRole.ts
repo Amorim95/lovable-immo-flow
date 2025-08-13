@@ -7,6 +7,7 @@ interface UserRole {
   isAdmin: boolean;
   isGestor: boolean;
   isCorretor: boolean;
+  isDono: boolean;
   loading: boolean;
   equipeId?: string;
 }
@@ -17,6 +18,7 @@ export function useUserRole(): UserRole {
     isAdmin: false,
     isGestor: false,
     isCorretor: false,
+    isDono: false,
     loading: true,
     equipeId: undefined
   });
@@ -27,6 +29,7 @@ export function useUserRole(): UserRole {
         isAdmin: false,
         isGestor: false,
         isCorretor: false,
+        isDono: false,
         loading: false,
         equipeId: undefined
       });
@@ -36,8 +39,9 @@ export function useUserRole(): UserRole {
     // Como os dados do usuário já vêm do AuthContext, podemos usar diretamente
     setRoleInfo({
       isAdmin: user.role === 'admin',
-      isGestor: user.role === 'gestor',
+      isGestor: user.role === 'gestor', 
       isCorretor: user.role === 'corretor',
+      isDono: user.role === 'dono',
       loading: false,
       equipeId: undefined // Pode ser expandido se necessário
     });

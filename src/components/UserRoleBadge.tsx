@@ -11,7 +11,7 @@ interface UserRoleBadgeProps {
 }
 
 export function UserRoleBadge({ showIcon = true, variant = 'default', role }: UserRoleBadgeProps) {
-  const { isAdmin, isGestor, isCorretor, loading } = useUserRole();
+  const { isAdmin, isGestor, isCorretor, isDono, loading } = useUserRole();
 
   if (!role && loading) {
     return (
@@ -26,7 +26,7 @@ export function UserRoleBadge({ showIcon = true, variant = 'default', role }: Us
   let badgeClass = '';
 
   // Use the provided role prop, or fall back to user's own role
-  const currentRole = role || (isAdmin ? 'admin' : isGestor ? 'gestor' : isCorretor ? 'corretor' : 'corretor');
+  const currentRole = role || (isDono ? 'dono' : isAdmin ? 'admin' : isGestor ? 'gestor' : isCorretor ? 'corretor' : 'corretor');
 
   if (currentRole === 'admin') {
     roleText = 'Administrador';

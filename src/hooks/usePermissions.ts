@@ -87,7 +87,7 @@ export function usePermissions(): UserPermissions {
         return;
       }
 
-      const isAdmin = userData?.role === 'admin';
+      const isAdmin = userData?.role === 'admin' || userData?.role === 'dono';
 
       // Buscar permissões específicas do usuário (para todos os usuários, incluindo admins)
       const { data: userPermissions, error } = await supabase
