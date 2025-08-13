@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
+import { NextUserQueue } from "@/components/NextUserQueue";
 import { 
   LayoutList, 
   LayoutGrid,
@@ -244,27 +245,39 @@ const Index = () => {
       </div>
 
       {/* Content */}
-      <div className="min-h-[600px] transition-all duration-300 ease-in-out">
-        {isMobile || viewMode === 'list' ? (
-          <div className="animate-fade-in">
-            <ListView
-              leads={filteredLeads}
-              onLeadClick={handleLeadClick}
-              onLeadUpdate={handleLeadUpdate}
-              onOptimisticUpdate={updateLeadOptimistic}
-            />
-          </div>
-        ) : (
-          <div className="animate-fade-in">
-            <KanbanBoard
-              leads={filteredLeads}
-              onLeadUpdate={handleLeadUpdate}
-              onLeadClick={handleLeadClick}
-              onCreateLead={handleCreateLeadInStage}
-              onOptimisticUpdate={updateLeadOptimistic}
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Fila de Leads - Apenas para Admin e Gestor */}
+        {(isAdmin || isGestor || isDono) && (
+          <div className="lg:col-span-1">
+            <NextUserQueue />
           </div>
         )}
+        
+        {/* Board Principal */}
+        <div className={`min-h-[600px] transition-all duration-300 ease-in-out ${
+          (isAdmin || isGestor || isDono) ? 'lg:col-span-3' : 'lg:col-span-4'
+        }`}>
+          {isMobile || viewMode === 'list' ? (
+            <div className="animate-fade-in">
+              <ListView
+                leads={filteredLeads}
+                onLeadClick={handleLeadClick}
+                onLeadUpdate={handleLeadUpdate}
+                onOptimisticUpdate={updateLeadOptimistic}
+              />
+            </div>
+          ) : (
+            <div className="animate-fade-in">
+              <KanbanBoard
+                leads={filteredLeads}
+                onLeadUpdate={handleLeadUpdate}
+                onLeadClick={handleLeadClick}
+                onCreateLead={handleCreateLeadInStage}
+                onOptimisticUpdate={updateLeadOptimistic}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Modals */}
