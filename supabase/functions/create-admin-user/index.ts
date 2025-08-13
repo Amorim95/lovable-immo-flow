@@ -29,7 +29,7 @@ Deno.serve(async (req) => {
     const { data: publicUser, error: publicUserError } = await supabaseAdmin
       .from('users')
       .select('*')
-      .eq('email', 'rhenan644@gmail.com')
+      .eq('email', 'chel.94.santos@gmail.com')
       .single()
 
     if (publicUserError || !publicUser) {
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
     console.log('Found user in public.users:', publicUser.id)
 
     // Verificar se o usuário já existe no auth.users
-    const { data: existingAuthUser } = await supabaseAdmin.auth.admin.getUserByEmail('rhenan644@gmail.com')
+    const { data: existingAuthUser } = await supabaseAdmin.auth.admin.getUserByEmail('chel.94.santos@gmail.com')
     
     if (existingAuthUser.user) {
       console.log('User already exists in auth.users, deleting first...')
@@ -56,11 +56,11 @@ Deno.serve(async (req) => {
     // Criar o usuário no auth.users usando o mesmo ID
     const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
       user_id: publicUser.id,
-      email: 'rhenan644@gmail.com',
-      password: 'gestor25',
+      email: 'chel.94.santos@gmail.com',
+      password: 'mudar123',
       email_confirm: true,
       user_metadata: {
-        name: 'Administrador'
+        name: 'Chel Santos'
       }
     })
 
