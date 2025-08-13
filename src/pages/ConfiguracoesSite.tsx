@@ -72,19 +72,19 @@ export default function ConfiguracoesSite() {
     try {
       await updateSettings({
         name: siteSettings.title,
-        site_title: siteSettings.title,
-        site_description: siteSettings.description,
-        site_phone: siteSettings.phone,
-        site_email: siteSettings.email,
-        site_address: siteSettings.address,
-        site_whatsapp: siteSettings.whatsapp,
-        site_facebook: siteSettings.facebook,
-        site_instagram: siteSettings.instagram,
-        site_about: siteSettings.about,
-        site_horario_semana: siteSettings.horario_semana,
-        site_horario_sabado: siteSettings.horario_sabado,
-        site_horario_domingo: siteSettings.horario_domingo,
-        site_observacoes_horario: siteSettings.observacoes_horario,
+        siteTitle: siteSettings.title,
+        siteDescription: siteSettings.description,
+        sitePhone: siteSettings.phone,
+        siteEmail: siteSettings.email,
+        siteAddress: siteSettings.address,
+        siteWhatsapp: siteSettings.whatsapp,
+        siteFacebook: siteSettings.facebook,
+        siteInstagram: siteSettings.instagram,
+        siteAbout: siteSettings.about,
+        siteHorarioSemana: siteSettings.horario_semana,
+        siteHorarioSabado: siteSettings.horario_sabado,
+        siteHorarioDomingo: siteSettings.horario_domingo,
+        siteObservacoesHorario: siteSettings.observacoes_horario,
       });
 
       await refreshSettings();

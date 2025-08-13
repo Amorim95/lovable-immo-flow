@@ -50,10 +50,10 @@ export default function SobreNos() {
           {/* Conteúdo */}
           <Card>
             <CardContent className="p-8">
-              {settings.site_about ? (
+              {settings.siteAbout ? (
                 <div className="prose prose-lg max-w-none">
                   <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap text-lg">
-                    {settings.site_about}
+                    {settings.siteAbout}
                   </p>
                 </div>
               ) : (
@@ -96,43 +96,43 @@ export default function SobreNos() {
             <CardContent className="p-8">
               <h2 className="text-2xl font-semibold text-foreground mb-6">Entre em Contato</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {settings.site_email && (
+                {settings.siteEmail && (
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">📧</span>
                     <div>
                       <p className="font-medium text-foreground">E-mail</p>
                       <a 
-                        href={`mailto:${settings.site_email}`} 
+                        href={`mailto:${settings.siteEmail}`} 
                         className="text-primary hover:underline"
                       >
-                        {settings.site_email}
+                        {settings.siteEmail}
                       </a>
                     </div>
                   </div>
                 )}
                 
-                {settings.site_phone && (
+                {settings.sitePhone && (
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">📞</span>
                     <div>
                       <p className="font-medium text-foreground">Telefone</p>
                       <a 
-                        href={`tel:${settings.site_phone}`} 
+                        href={`tel:${settings.sitePhone}`} 
                         className="text-primary hover:underline"
                       >
-                        {settings.site_phone}
+                        {settings.sitePhone}
                       </a>
                     </div>
                   </div>
                 )}
                 
-                {settings.site_whatsapp && (
+                {settings.siteWhatsapp && (
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">💬</span>
                     <div>
                       <p className="font-medium text-foreground">WhatsApp</p>
                       <a 
-                        href={`https://wa.me/${settings.site_whatsapp}`} 
+                        href={`https://wa.me/${settings.siteWhatsapp}`} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
@@ -143,24 +143,24 @@ export default function SobreNos() {
                   </div>
                 )}
                 
-                {settings.site_address && (
+                {settings.siteAddress && (
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">📍</span>
                     <div>
                       <p className="font-medium text-foreground">Endereço</p>
-                      <p className="text-muted-foreground">{settings.site_address}</p>
+                      <p className="text-muted-foreground">{settings.siteAddress}</p>
                     </div>
                   </div>
                 )}
               </div>
               
-              {(settings.site_facebook || settings.site_instagram) && (
+              {(settings.siteFacebook || settings.siteInstagram) && (
                 <div className="mt-8 pt-6 border-t">
                   <p className="font-medium text-foreground mb-4">Siga-nos nas redes sociais</p>
                   <div className="flex gap-4">
-                    {settings.site_facebook && (
+                    {settings.siteFacebook && (
                       <a 
-                        href={settings.site_facebook} 
+                        href={settings.siteFacebook} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-primary hover:underline"
@@ -169,9 +169,9 @@ export default function SobreNos() {
                         Facebook
                       </a>
                     )}
-                    {settings.site_instagram && (
+                    {settings.siteInstagram && (
                       <a 
-                        href={settings.site_instagram} 
+                        href={settings.siteInstagram} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-primary hover:underline"

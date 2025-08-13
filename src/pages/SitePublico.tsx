@@ -269,9 +269,9 @@ export default function SitePublico() {
             
             <div className="flex-1 flex justify-end items-center gap-6">
               <Link to="/sobre-nos" className="text-muted-foreground hover:text-primary">Sobre Nós</Link>
-              {settings.site_facebook && (
+              {settings.siteFacebook && (
                 <a 
-                  href={settings.site_facebook} 
+                  href={settings.siteFacebook} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-primary"
@@ -279,9 +279,9 @@ export default function SitePublico() {
                   <Facebook className="w-5 h-5" />
                 </a>
               )}
-              {settings.site_instagram && (
+              {settings.siteInstagram && (
                 <a 
-                  href={settings.site_instagram} 
+                  href={settings.siteInstagram} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-muted-foreground hover:text-primary"
@@ -484,13 +484,13 @@ export default function SitePublico() {
       <footer className="bg-gray-900 text-white py-12 mt-16">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <h3 className="text-xl font-bold mb-4">{settings.site_title || settings.name}</h3>
+            <h3 className="text-xl font-bold mb-4">{settings.siteTitle || settings.name}</h3>
             <p className="text-gray-300 max-w-2xl mx-auto">
-              {settings.site_description || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
+              {settings.siteDescription || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
             </p>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 {settings.site_title || settings.name}. Todos os direitos reservados.</p>
+            <p>&copy; 2024 {settings.siteTitle || settings.name}. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

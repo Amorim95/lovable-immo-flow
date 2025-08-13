@@ -288,7 +288,7 @@ export default function ImovelDetalhes() {
                   className="w-full bg-green-600 hover:bg-green-700 text-white" 
                   size="lg"
                   onClick={() => {
-                    const whatsappNumber = settings.site_whatsapp || '5511999999999';
+                    const whatsappNumber = settings.siteWhatsapp || '5511999999999';
                     const message = `Olá! Tenho interesse no imóvel em ${imovel.localizacao} no valor de ${formatPrice(imovel.preco)}`;
                     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
                     window.open(whatsappUrl, '_blank');
@@ -340,15 +340,15 @@ export default function ImovelDetalhes() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">{settings.site_title || settings.name}</h3>
+              <h3 className="text-xl font-bold mb-4">{settings.siteTitle || settings.name}</h3>
               <p className="text-gray-300">
-                {settings.site_description || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
+                {settings.siteDescription || 'Sua parceira na busca pelo imóvel ideal. Encontre as melhores oportunidades do mercado.'}
               </p>
-              {settings.site_about && (
+              {settings.siteAbout && (
                 <div className="mt-4">
                   <h4 className="font-semibold mb-2">Sobre Nós</h4>
                   <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
-                    {settings.site_about}
+                    {settings.siteAbout}
                   </p>
                 </div>
               )}
@@ -356,27 +356,27 @@ export default function ImovelDetalhes() {
             <div>
               <h4 className="font-semibold mb-4">Contato</h4>
               <div className="space-y-2 text-gray-300">
-                {settings.site_email && (
+                {settings.siteEmail && (
                   <p className="flex items-center gap-2">
                     <span>📧</span>
-                    <a href={`mailto:${settings.site_email}`} className="hover:text-white transition-colors">
-                      {settings.site_email}
+                    <a href={`mailto:${settings.siteEmail}`} className="hover:text-white transition-colors">
+                      {settings.siteEmail}
                     </a>
                   </p>
                 )}
-                {settings.site_phone && (
+                {settings.sitePhone && (
                   <p className="flex items-center gap-2">
                     <span>📞</span>
-                    <a href={`tel:${settings.site_phone}`} className="hover:text-white transition-colors">
-                      {settings.site_phone}
+                    <a href={`tel:${settings.sitePhone}`} className="hover:text-white transition-colors">
+                      {settings.sitePhone}
                     </a>
                   </p>
                 )}
-                {settings.site_whatsapp && (
+                {settings.siteWhatsapp && (
                   <p className="flex items-center gap-2">
                     <span>💬</span>
                     <a 
-                      href={`https://wa.me/${settings.site_whatsapp}`} 
+                      href={`https://wa.me/${settings.siteWhatsapp}`} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="hover:text-white transition-colors"
@@ -385,21 +385,21 @@ export default function ImovelDetalhes() {
                     </a>
                   </p>
                 )}
-                {settings.site_address && (
+                {settings.siteAddress && (
                   <p className="flex items-start gap-2">
                     <span>📍</span>
-                    <span className="text-sm">{settings.site_address}</span>
+                    <span className="text-sm">{settings.siteAddress}</span>
                   </p>
                 )}
               </div>
               
-              {(settings.site_facebook || settings.site_instagram) && (
+              {(settings.siteFacebook || settings.siteInstagram) && (
                 <div className="mt-6">
                   <h4 className="font-semibold mb-3">Redes Sociais</h4>
                   <div className="flex gap-4">
-                    {settings.site_facebook && (
+                    {settings.siteFacebook && (
                       <a 
-                        href={settings.site_facebook} 
+                        href={settings.siteFacebook} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-gray-300 hover:text-white transition-colors flex items-center gap-2"
@@ -408,9 +408,9 @@ export default function ImovelDetalhes() {
                         Facebook
                       </a>
                     )}
-                    {settings.site_instagram && (
+                    {settings.siteInstagram && (
                       <a 
-                        href={settings.site_instagram} 
+                        href={settings.siteInstagram} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-gray-300 hover:text-white transition-colors flex items-center gap-2"
@@ -425,7 +425,7 @@ export default function ImovelDetalhes() {
             </div>
           </div>
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 {settings.site_title || settings.name}. Todos os direitos reservados.</p>
+            <p>&copy; 2024 {settings.siteTitle || settings.name}. Todos os direitos reservados.</p>
           </div>
         </div>
       </footer>

@@ -33,14 +33,14 @@ export default function MobileConfiguracoesSite() {
   useEffect(() => {
     if (settings) {
       setFormData({
-        site_title: settings.site_title || "",
-        site_phone: settings.site_phone || "",
-        site_email: settings.site_email || "",
-        site_address: settings.site_address || "",
-        site_about: settings.site_about || "",
-        site_whatsapp: settings.site_whatsapp || "",
-        site_facebook: settings.site_facebook || "",
-        site_instagram: settings.site_instagram || "",
+        site_title: settings.siteTitle || "",
+        site_phone: settings.sitePhone || "",
+        site_email: settings.siteEmail || "",
+        site_address: settings.siteAddress || "",
+        site_about: settings.siteAbout || "",
+        site_whatsapp: settings.siteWhatsapp || "",
+        site_facebook: settings.siteFacebook || "",
+        site_instagram: settings.siteInstagram || "",
       });
       setLogoPreview(settings.logo || "");
     }
