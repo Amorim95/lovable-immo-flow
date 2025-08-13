@@ -818,6 +818,7 @@ export type Database = {
         | "visita"
         | "vendas-fechadas"
         | "em-pausa"
+        | "descarte"
       user_role: "admin" | "corretor" | "gestor" | "dono"
       user_status: "ativo" | "inativo" | "pendente"
     }
@@ -962,6 +963,7 @@ export const Constants = {
         "visita",
         "vendas-fechadas",
         "em-pausa",
+        "descarte",
       ],
       user_role: ["admin", "corretor", "gestor", "dono"],
       user_status: ["ativo", "inativo", "pendente"],
