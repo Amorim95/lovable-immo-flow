@@ -40,11 +40,28 @@ export default function SitePublico() {
 
   const fetchImoveis = async () => {
     try {
-      // Buscar todos os imóveis com suas fotos
-      const { data: imoveisData, error: imoveisError } = await supabase
+      // Descobrir company_id do usuário (se estiver logado) para filtrar
+      const { data: auth } = await supabase.auth.getUser();
+      let companyId: string | null = null;
+      if (auth.user) {
+        const { data: userRow } = await supabase
+          .from('users')
+          .select('company_id')
+          .eq('id', auth.user.id)
+          .single();
+        companyId = userRow?.company_id ?? null;
+      }
+
+      // Buscar imóveis públicos, e se houver companyId, filtrar por ele
+      let query = supabase
         .from('imoveis')
         .select('*')
+        .eq('publico', true)
         .order('created_at', { ascending: false });
+
+      if (companyId) query = query.eq('company_id', companyId);
+
+      const { data: imoveisData, error: imoveisError } = await query;
 
       if (imoveisError) throw imoveisError;
 

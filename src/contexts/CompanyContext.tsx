@@ -39,6 +39,12 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     loadCompanySettings();
+
+    // Recarregar quando autenticação mudar (evita estado "preso" da empresa anterior)
+    const { data: subscription } = supabase.auth.onAuthStateChange(() => {
+      loadCompanySettings();
+    });
+    return () => subscription.subscription?.unsubscribe();
   }, []);
 
   const loadCompanySettings = async () => {
@@ -49,6 +55,8 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('Usuário não autenticado');
+        // Reset para estado neutro
+        setSettings((prev) => ({ ...prev, name: '', logo: null }));
         return;
       }
 
@@ -61,6 +69,8 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
 
       if (!userData?.company_id) {
         console.log('Usuário sem company_id definido');
+        // Resetar para estado neutro (evita "herdar" dados de outra empresa)
+        setSettings((prev) => ({ ...prev, name: '', logo: null }));
         return;
       }
 
