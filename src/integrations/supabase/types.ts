@@ -758,6 +758,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      check_duplicate_lead: {
+        Args: { _telefone: string; _time_window_minutes?: number }
+        Returns: boolean
+      }
       crypt_password: {
         Args: { password: string }
         Returns: string

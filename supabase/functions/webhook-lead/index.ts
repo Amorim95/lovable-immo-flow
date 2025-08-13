@@ -48,6 +48,26 @@ Deno.serve(async (req) => {
 
     console.log('Dados recebidos no webhook:', leadData);
 
+    // Verificar se já existe um lead duplicado nos últimos 5 minutos
+    const { data: duplicateCheck, error: duplicateError } = await supabase
+      .rpc('check_duplicate_lead', { _telefone: leadData.telefone, _time_window_minutes: 5 });
+
+    if (duplicateError) {
+      console.error('Erro ao verificar duplicatas:', duplicateError);
+    } else if (duplicateCheck) {
+      console.log(`Lead duplicado detectado para telefone: ${leadData.telefone}`);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Lead duplicado', 
+          message: `Um lead com o telefone ${leadData.telefone} já foi registrado nos últimos 5 minutos.` 
+        }),
+        { 
+          status: 409, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     // Buscar usuários ativos
     const { data: activeUsers, error: usersError } = await supabase
       .from('users')
@@ -98,6 +118,21 @@ Deno.serve(async (req) => {
 
     if (leadError) {
       console.error('Erro ao criar lead:', leadError);
+      
+      // Verificar se é erro de duplicação
+      if (leadError.code === 'P0001' && leadError.message.includes('Lead duplicado detectado')) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Lead duplicado', 
+            message: `Um lead com o telefone ${leadData.telefone} já foi registrado nos últimos 5 minutos.` 
+          }),
+          { 
+            status: 409, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ error: 'Erro ao criar lead', details: leadError.message }),
         { 
