@@ -55,7 +55,7 @@ export interface Corretor {
   leads: string[];
   equipeId?: string;
   equipeNome?: string;
-  role: 'admin' | 'gestor' | 'corretor';
+  role: 'admin' | 'gestor' | 'corretor' | 'dono';
 }
 
 export interface Imovel {

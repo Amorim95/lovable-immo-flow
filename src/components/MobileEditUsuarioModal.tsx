@@ -32,7 +32,8 @@ interface MobileEditUsuarioModalProps {
 const availableRoles = [
   { value: 'admin', label: 'Administrador' },
   { value: 'gestor', label: 'Gestor' },
-  { value: 'corretor', label: 'Corretor' }
+  { value: 'corretor', label: 'Corretor' },
+  { value: 'dono', label: 'Dono' }
 ];
 
 export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorretor, equipes = [] }: MobileEditUsuarioModalProps) {
@@ -40,7 +41,7 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
     nome: '',
     email: '',
     telefone: '',
-    role: 'corretor' as 'admin' | 'gestor' | 'corretor',
+    role: 'corretor' as 'admin' | 'gestor' | 'corretor' | 'dono',
     equipeId: '',
     status: 'ativo' as 'ativo' | 'inativo' | 'pendente'
   });
@@ -261,7 +262,7 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
             {canChangeRole && (
               <div>
                 <Label htmlFor="role">Cargo</Label>
-                <Select value={formData.role} onValueChange={(value: 'admin' | 'gestor' | 'corretor') => setFormData({ ...formData, role: value })}>
+                <Select value={formData.role} onValueChange={(value: 'admin' | 'gestor' | 'corretor' | 'dono') => setFormData({ ...formData, role: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione um cargo" />
                   </SelectTrigger>

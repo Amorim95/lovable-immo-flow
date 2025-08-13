@@ -12,7 +12,7 @@ interface User {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'gestor' | 'corretor';
+  role: 'admin' | 'gestor' | 'corretor' | 'dono';
   status: 'ativo' | 'inativo' | 'pendente';
   equipe_id?: string;
 }

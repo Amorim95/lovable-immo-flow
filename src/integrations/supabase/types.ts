@@ -676,6 +676,7 @@ export type Database = {
           created_at: string
           email: string
           equipe_id: string | null
+          has_completed_onboarding: boolean | null
           id: string
           name: string
           password_hash: string
@@ -690,6 +691,7 @@ export type Database = {
           created_at?: string
           email: string
           equipe_id?: string | null
+          has_completed_onboarding?: boolean | null
           id?: string
           name: string
           password_hash: string
@@ -704,6 +706,7 @@ export type Database = {
           created_at?: string
           email?: string
           equipe_id?: string | null
+          has_completed_onboarding?: boolean | null
           id?: string
           name?: string
           password_hash?: string
@@ -795,7 +798,7 @@ export type Database = {
         | "visita"
         | "vendas-fechadas"
         | "em-pausa"
-      user_role: "admin" | "corretor" | "gestor"
+      user_role: "admin" | "corretor" | "gestor" | "dono"
       user_status: "ativo" | "inativo" | "pendente"
     }
     CompositeTypes: {
@@ -940,7 +943,7 @@ export const Constants = {
         "vendas-fechadas",
         "em-pausa",
       ],
-      user_role: ["admin", "corretor", "gestor"],
+      user_role: ["admin", "corretor", "gestor", "dono"],
       user_status: ["ativo", "inativo", "pendente"],
     },
   },

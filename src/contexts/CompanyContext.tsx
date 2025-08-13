@@ -64,8 +64,15 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Buscar configurações da empresa específica
-      const { data, error } = await supabase
+      // Buscar dados da empresa na tabela companies
+      const { data: companyData } = await supabase
+        .from('companies')
+        .select('name, logo_url')
+        .eq('id', userData.company_id)
+        .single();
+
+      // Buscar configurações do site na tabela company_settings
+      const { data: settingsData } = await supabase
         .from('company_settings')
         .select('*')
         .eq('company_id', userData.company_id)
@@ -73,32 +80,28 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         .limit(1)
         .maybeSingle();
 
-      console.log('Dados carregados do banco:', data);
-      console.log('Erro na consulta:', error);
+      console.log('Dados da empresa:', companyData);
+      console.log('Configurações do site:', settingsData);
 
-      if (data) {
-        console.log('Aplicando configurações:', data);
-        setSettings(prev => ({
-          ...prev,
-          name: data.name || '',
-          logo: data.logo || null,
-          site_title: data.site_title || data.name || '',
-          site_description: data.site_description || '',
-          site_phone: data.site_phone || '',
-          site_email: data.site_email || '',
-          site_address: data.site_address || '',
-          site_whatsapp: data.site_whatsapp || '',
-          site_facebook: data.site_facebook || '',
-          site_instagram: data.site_instagram || '',
-          site_about: data.site_about || '',
-          site_horario_semana: data.site_horario_semana || '8:00 às 18:00',
-          site_horario_sabado: data.site_horario_sabado || '8:00 às 14:00',
-          site_horario_domingo: data.site_horario_domingo || 'Fechado',
-          site_observacoes_horario: data.site_observacoes_horario || '*Atendimento via WhatsApp 24 horas',
-        }));
-      } else {
-        console.log('Nenhum dado encontrado na tabela company_settings - mantendo valores vazios para onboarding');
-      }
+      // Aplicar configurações combinadas
+      setSettings(prev => ({
+        ...prev,
+        name: companyData?.name || '',
+        logo: companyData?.logo_url || null,
+        site_title: settingsData?.site_title || companyData?.name || '',
+        site_description: settingsData?.site_description || '',
+        site_phone: settingsData?.site_phone || '',
+        site_email: settingsData?.site_email || '',
+        site_address: settingsData?.site_address || '',
+        site_whatsapp: settingsData?.site_whatsapp || '',
+        site_facebook: settingsData?.site_facebook || '',
+        site_instagram: settingsData?.site_instagram || '',
+        site_about: settingsData?.site_about || '',
+        site_horario_semana: settingsData?.site_horario_semana || '8:00 às 18:00',
+        site_horario_sabado: settingsData?.site_horario_sabado || '8:00 às 14:00',
+        site_horario_domingo: settingsData?.site_horario_domingo || 'Fechado',
+        site_observacoes_horario: settingsData?.site_observacoes_horario || '*Atendimento via WhatsApp 24 horas',
+      }));
     } catch (error) {
       console.error('Erro ao carregar configurações da empresa:', error);
     }
@@ -122,7 +125,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       // Buscar company_id primeiro na tabela users
       const userQuery = await supabase
         .from('users')
-        .select('company_id')
+        .select('company_id, role')
         .eq('id', userId)
         .single();
 
@@ -134,7 +137,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       if (!companyId) {
         console.log('Criando empresa automaticamente para o usuário');
         
-        // Criar nova empresa
+        // Criar nova empresa diretamente na tabela companies
         const { data: newCompany, error: companyError } = await supabase
           .from('companies')
           .insert({
@@ -152,10 +155,14 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         companyId = newCompany.id;
         console.log('Nova empresa criada com ID:', companyId);
 
-        // Atualizar o usuário com o company_id
+        // Atualizar o usuário com o company_id e marcar como dono se for o primeiro da empresa
         const { error: userUpdateError } = await supabase
           .from('users')
-          .update({ company_id: companyId })
+          .update({ 
+            company_id: companyId,
+            role: 'dono', // Primeiro usuário da empresa vira dono
+            has_completed_onboarding: true // Marca que completou o onboarding
+          })
           .eq('id', userId);
 
         if (userUpdateError) {
@@ -163,64 +170,80 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
           throw new Error('Erro ao associar usuário à empresa');
         }
 
-        console.log('Usuário atualizado com company_id');
+        console.log('Usuário atualizado com company_id e role dono');
+      } else {
+        // Se já tem company_id, apenas marcar onboarding como completo se for dono
+        if (userQuery.data?.role === 'dono') {
+          await supabase
+            .from('users')
+            .update({ has_completed_onboarding: true })
+            .eq('id', userId);
+        }
+
+        // Atualizar informações da empresa existente
+        const { error: companyUpdateError } = await supabase
+          .from('companies')
+          .update({
+            name: newSettings.name,
+            logo_url: newSettings.logo
+          })
+          .eq('id', companyId);
+
+        if (companyUpdateError) {
+          console.error('Erro ao atualizar empresa:', companyUpdateError);
+          throw new Error('Erro ao atualizar empresa');
+        }
       }
 
-      // Agora que temos company_id, continuar com a atualização
-      const existingQuery = await supabase
+      // Atualizar company_settings para informações do site
+      const existingSettingsQuery = await supabase
         .from('company_settings')
         .select('*')
         .eq('company_id', companyId)
         .limit(1)
         .maybeSingle();
 
-      console.log('Dados existentes:', existingQuery.data);
-
-      const updateData = {
+      const settingsData = {
         company_id: companyId,
-        name: newSettings.name !== undefined ? newSettings.name : existingQuery.data?.name || '',
-        logo: newSettings.logo !== undefined ? newSettings.logo : existingQuery.data?.logo,
-        site_title: newSettings.site_title !== undefined ? newSettings.site_title : existingQuery.data?.site_title,
-        site_description: newSettings.site_description !== undefined ? newSettings.site_description : existingQuery.data?.site_description,
-        site_phone: newSettings.site_phone !== undefined ? newSettings.site_phone : existingQuery.data?.site_phone,
-        site_email: newSettings.site_email !== undefined ? newSettings.site_email : existingQuery.data?.site_email,
-        site_address: newSettings.site_address !== undefined ? newSettings.site_address : existingQuery.data?.site_address,
-        site_whatsapp: newSettings.site_whatsapp !== undefined ? newSettings.site_whatsapp : existingQuery.data?.site_whatsapp,
-        site_facebook: newSettings.site_facebook !== undefined ? newSettings.site_facebook : existingQuery.data?.site_facebook,
-        site_instagram: newSettings.site_instagram !== undefined ? newSettings.site_instagram : existingQuery.data?.site_instagram,
-        site_about: newSettings.site_about !== undefined ? newSettings.site_about : existingQuery.data?.site_about,
-        site_horario_semana: newSettings.site_horario_semana !== undefined ? newSettings.site_horario_semana : existingQuery.data?.site_horario_semana,
-        site_horario_sabado: newSettings.site_horario_sabado !== undefined ? newSettings.site_horario_sabado : existingQuery.data?.site_horario_sabado,
-        site_horario_domingo: newSettings.site_horario_domingo !== undefined ? newSettings.site_horario_domingo : existingQuery.data?.site_horario_domingo,
-        site_observacoes_horario: newSettings.site_observacoes_horario !== undefined ? newSettings.site_observacoes_horario : existingQuery.data?.site_observacoes_horario,
+        name: newSettings.name || '',
+        logo: newSettings.logo,
+        site_title: newSettings.site_title,
+        site_description: newSettings.site_description,
+        site_phone: newSettings.site_phone,
+        site_email: newSettings.site_email,
+        site_address: newSettings.site_address,
+        site_whatsapp: newSettings.site_whatsapp,
+        site_facebook: newSettings.site_facebook,
+        site_instagram: newSettings.site_instagram,
+        site_about: newSettings.site_about,
+        site_horario_semana: newSettings.site_horario_semana,
+        site_horario_sabado: newSettings.site_horario_sabado,
+        site_horario_domingo: newSettings.site_horario_domingo,
+        site_observacoes_horario: newSettings.site_observacoes_horario,
       };
 
-      console.log('Dados para atualizar:', updateData);
-
-      if (existingQuery.data) {
-        console.log('Atualizando registro existente com ID:', existingQuery.data.id);
+      if (existingSettingsQuery.data) {
         const { error } = await supabase
           .from('company_settings')
-          .update(updateData)
-          .eq('id', existingQuery.data.id);
+          .update(settingsData)
+          .eq('id', existingSettingsQuery.data.id);
         
         if (error) {
-          console.error('Erro ao atualizar:', error);
+          console.error('Erro ao atualizar settings:', error);
           throw error;
         }
-        console.log('Atualização bem-sucedida');
       } else {
-        console.log('Criando novo registro');
         const { error } = await supabase
           .from('company_settings')
-          .insert(updateData);
+          .insert(settingsData);
         
         if (error) {
-          console.error('Erro ao inserir:', error);
+          console.error('Erro ao inserir settings:', error);
           throw error;
         }
-        console.log('Inserção bem-sucedida');
       }
+
+      console.log('Empresa e configurações atualizadas com sucesso');
     } catch (error) {
       console.error('Erro ao atualizar configurações da empresa:', error);
       throw error;

@@ -7,7 +7,7 @@ import { Crown, Users, User } from 'lucide-react';
 interface UserRoleBadgeProps {
   showIcon?: boolean;
   variant?: 'default' | 'outline' | 'secondary';
-  role?: 'admin' | 'gestor' | 'corretor';
+  role?: 'admin' | 'gestor' | 'corretor' | 'dono';
 }
 
 export function UserRoleBadge({ showIcon = true, variant = 'default', role }: UserRoleBadgeProps) {
@@ -40,6 +40,10 @@ export function UserRoleBadge({ showIcon = true, variant = 'default', role }: Us
     roleText = 'Corretor';
     roleIcon = <User className="w-3 h-3" />;
     badgeClass = 'bg-green-100 text-green-800 border-green-200';
+  } else if (currentRole === 'dono') {
+    roleText = 'Dono';
+    roleIcon = <Crown className="w-3 h-3" />;
+    badgeClass = 'bg-yellow-100 text-yellow-800 border-yellow-200';
   } else {
     roleText = 'Usuário';
     roleIcon = <User className="w-3 h-3" />;

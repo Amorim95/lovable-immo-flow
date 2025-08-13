@@ -27,7 +27,8 @@ interface EditUsuarioModalProps {
 const availableRoles = [
   { value: 'admin', label: 'Administrador' },
   { value: 'gestor', label: 'Gestor' },
-  { value: 'corretor', label: 'Corretor' }
+  { value: 'corretor', label: 'Corretor' },
+  { value: 'dono', label: 'Dono' }
 ];
 
 export function EditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorretor, equipes = [] }: EditUsuarioModalProps) {
@@ -35,7 +36,7 @@ export function EditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorretor, 
     nome: '',
     email: '',
     telefone: '',
-    role: 'corretor' as 'admin' | 'gestor' | 'corretor',
+    role: 'corretor' as 'admin' | 'gestor' | 'corretor' | 'dono',
     equipeId: ''
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -181,7 +182,7 @@ export function EditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorretor, 
 
           <div>
             <Label htmlFor="role">Cargo</Label>
-            <Select value={formData.role} onValueChange={(value: 'admin' | 'gestor' | 'corretor') => setFormData({ ...formData, role: value })}>
+            <Select value={formData.role} onValueChange={(value: 'admin' | 'gestor' | 'corretor' | 'dono') => setFormData({ ...formData, role: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um cargo" />
               </SelectTrigger>

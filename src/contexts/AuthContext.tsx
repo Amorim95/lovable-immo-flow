@@ -6,7 +6,7 @@ interface AppUser {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'corretor' | 'gestor';
+  role: 'admin' | 'corretor' | 'gestor' | 'dono';
   status: 'ativo' | 'inativo' | 'pendente';
   company_id?: string;
   is_super_admin?: boolean;
