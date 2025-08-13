@@ -75,7 +75,7 @@ const menuItems = [
 export function CRMSidebar() {
   const { state } = useSidebar();
   const { settings } = useCompany();
-  const { isAdmin, isGestor, isCorretor, loading } = useUserRole();
+  const { isAdmin, isGestor, isCorretor, isDono, loading } = useUserRole();
   const { isSuperAdmin } = usePermissions();
   const location = useLocation();
   const currentPath = location.pathname;
@@ -100,7 +100,7 @@ export function CRMSidebar() {
     if (loading) return true; // Mostrar todos durante carregamento
     
     if (item.showForAll) return true;
-    if (item.requireAdminOrGestor && !isAdmin && !isGestor) return false;
+    if (item.requireAdminOrGestor && !isAdmin && !isGestor && !isDono) return false;
     
     return true;
   });

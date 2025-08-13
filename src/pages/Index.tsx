@@ -25,7 +25,7 @@ const Index = () => {
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
-  const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
+  const { isAdmin, isGestor, isCorretor, isDono, loading: roleLoading } = useUserRole();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,7 +38,7 @@ const Index = () => {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
 
   // Permitir criação de leads para todos os usuários autenticados
-  const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
+  const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor || isDono);
 
   const handleLeadUpdate = async (leadId: string, updates: Partial<Lead>) => {
     const success = await updateLeadOptimistic(leadId, updates);
@@ -113,16 +113,16 @@ const Index = () => {
       lead.dataCriacao >= dateRange.from && lead.dataCriacao <= dateRange.to
     );
 
-    // Filtro por usuário (apenas para admin e gestor)
+    // Filtro por usuário (apenas para admin, gestor e dono)
     let matchesUser = true;
-    if ((isAdmin || isGestor) && selectedUserId) {
+    if ((isAdmin || isGestor || isDono) && selectedUserId) {
       const originalLead = leads.find(l => l.id === lead.id);
       matchesUser = originalLead?.user_id === selectedUserId;
     }
 
-    // Filtro por equipe (apenas para admin e gestor)
+    // Filtro por equipe (apenas para admin, gestor e dono)
     let matchesTeam = true;
-    if ((isAdmin || isGestor) && selectedTeamId) {
+    if ((isAdmin || isGestor || isDono) && selectedTeamId) {
       const originalLead = leads.find(l => l.id === lead.id);
       if (originalLead?.user?.equipe_id) {
         matchesTeam = originalLead.user.equipe_id === selectedTeamId;
@@ -230,8 +230,8 @@ const Index = () => {
               customRange={customDateRange}
               onValueChange={handleDateFilterChange}
             />
-            {/* Filtros de Equipe e Usuário - Apenas para Admin e Gestor */}
-            {(isAdmin || isGestor) && (
+            {/* Filtros de Equipe e Usuário - Apenas para Admin, Gestor e Dono */}
+            {(isAdmin || isGestor || isDono) && (
               <TeamUserFilters
                 onTeamChange={setSelectedTeamId}
                 onUserChange={setSelectedUserId}
