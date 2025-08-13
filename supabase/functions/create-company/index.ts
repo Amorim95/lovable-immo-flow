@@ -132,8 +132,30 @@ serve(async (req) => {
     console.log('Empresa criada:', company.id);
 
     try {
-      console.log('=== Etapa 2: Criando usuário admin ===');
-      // 2. Criar usuário admin usando service role
+      console.log('=== Etapa 2: Verificando se email já existe ===');
+      // 2. Verificar se o email já existe
+      const { data: existingUser, error: checkError } = await supabaseAdmin.auth.admin.listUsers();
+      
+      if (checkError) {
+        console.error('Erro ao verificar usuários existentes:', checkError);
+        throw checkError;
+      }
+
+      const emailExists = existingUser.users.some(user => user.email === adminEmail);
+      
+      if (emailExists) {
+        console.error('Email já cadastrado:', adminEmail);
+        return new Response(
+          JSON.stringify({ 
+            error: `O email ${adminEmail} já está cadastrado no sistema. Use um email diferente.`,
+            success: false 
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('=== Etapa 3: Criando usuário admin ===');
+      // 3. Criar usuário admin usando service role
       const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email: adminEmail,
         password: adminPassword,
