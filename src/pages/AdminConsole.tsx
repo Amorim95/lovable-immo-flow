@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 
-import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2, LogOut } from "lucide-react";
+import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2, LogOut, Edit2 } from "lucide-react";
+import { EditCompanyNameModal } from "@/components/EditCompanyNameModal";
 
 type CompanyRow = {
   id: string;
@@ -89,6 +90,9 @@ export default function AdminConsole() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState({ companyName: "", adminName: "", adminEmail: "", adminPassword: "" });
+
+  // Edit company modal state
+  const [editingCompany, setEditingCompany] = useState<{ id: string; name: string } | null>(null);
 
   const [search, setSearch] = useState("");
   const filtered = useMemo(() => {
@@ -325,9 +329,23 @@ export default function AdminConsole() {
                       <TableCell>{c.user_count}</TableCell>
                       <TableCell>{c.imoveis_count}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" className="text-destructive" onClick={() => handleDelete(c.id, c.name)}>
-                          <Trash2 className="w-4 h-4 mr-2" /> Deletar
-                        </Button>
+                        <div className="flex gap-2 justify-end">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => setEditingCompany({ id: c.id, name: c.name })}
+                          >
+                            <Edit2 className="w-4 h-4 mr-2" /> Editar
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-destructive" 
+                            onClick={() => handleDelete(c.id, c.name)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" /> Deletar
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -337,6 +355,19 @@ export default function AdminConsole() {
           </Card>
         </section>
       </main>
+
+      {/* Edit Company Name Modal */}
+      {editingCompany && (
+        <EditCompanyNameModal
+          company={editingCompany}
+          isOpen={!!editingCompany}
+          onOpenChange={(open) => !open && setEditingCompany(null)}
+          onSuccess={() => {
+            companiesQuery.refetch();
+            statsQuery.refetch();
+          }}
+        />
+      )}
     </div>
   );
 }
