@@ -207,6 +207,26 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // Se for DONO e alterou nome/logo, também refletir na tabela companies da MESMA empresa
+      if (userQuery.data?.role === 'dono') {
+        const companyUpdateData: any = {};
+        if (newSettings.name !== undefined && newSettings.name.trim() !== '') {
+          companyUpdateData.name = newSettings.name.trim();
+        }
+        if (newSettings.logo !== undefined) {
+          companyUpdateData.logo_url = newSettings.logo; // pode ser null para remover logo
+        }
+        if (Object.keys(companyUpdateData).length > 0) {
+          const { error: companyUpdateError } = await supabase
+            .from('companies')
+            .update(companyUpdateData)
+            .eq('id', companyId);
+          if (companyUpdateError) {
+            console.error('Erro ao refletir alterações em companies:', companyUpdateError);
+          }
+        }
+      }
+
       console.log('Empresa e configurações atualizadas com sucesso');
     } catch (error) {
       console.error('Erro ao atualizar configurações da empresa:', error);
