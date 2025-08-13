@@ -133,66 +133,45 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
 
       let companyId: string | null = userQuery.data?.company_id;
 
-      // Se não tiver company_id, criar uma empresa automaticamente
+      // Se não tiver company_id, não deve criar empresa automaticamente
+      // Isso previne a criação de empresas duplicadas
       if (!companyId) {
-        console.log('Criando empresa automaticamente para o usuário');
-        
-        // Criar nova empresa diretamente na tabela companies
-        const { data: newCompany, error: companyError } = await supabase
-          .from('companies')
-          .insert({
-            name: newSettings.name || 'Nova Empresa',
-            logo_url: newSettings.logo
-          })
-          .select('id')
-          .single();
+        console.error('Usuário não está associado a nenhuma empresa');
+        throw new Error('Usuário deve estar associado a uma empresa para fazer atualizações');
+      }
 
-        if (companyError) {
-          console.error('Erro ao criar empresa:', companyError);
-          throw new Error('Erro ao criar empresa');
-        }
-
-        companyId = newCompany.id;
-        console.log('Nova empresa criada com ID:', companyId);
-
-        // Atualizar o usuário com o company_id e marcar como dono se for o primeiro da empresa
-        const { error: userUpdateError } = await supabase
+      // Marcar onboarding como completo se for dono
+      if (userQuery.data?.role === 'dono') {
+        await supabase
           .from('users')
-          .update({ 
-            company_id: companyId,
-            role: 'dono', // Primeiro usuário da empresa vira dono
-            has_completed_onboarding: true // Marca que completou o onboarding
-          })
+          .update({ has_completed_onboarding: true })
           .eq('id', userId);
+      }
 
-        if (userUpdateError) {
-          console.error('Erro ao atualizar usuário:', userUpdateError);
-          throw new Error('Erro ao associar usuário à empresa');
-        }
+      // Atualizar informações da empresa existente APENAS SE DADOS FOREM FORNECIDOS
+      const companyUpdateData: any = {};
+      
+      if (newSettings.name !== undefined) {
+        companyUpdateData.name = newSettings.name;
+      }
+      
+      if (newSettings.logo !== undefined) {
+        companyUpdateData.logo_url = newSettings.logo;
+      }
 
-        console.log('Usuário atualizado com company_id e role dono');
-      } else {
-        // Se já tem company_id, apenas marcar onboarding como completo se for dono
-        if (userQuery.data?.role === 'dono') {
-          await supabase
-            .from('users')
-            .update({ has_completed_onboarding: true })
-            .eq('id', userId);
-        }
-
-        // Atualizar informações da empresa existente
+      // Só fazer update se houver dados para atualizar
+      if (Object.keys(companyUpdateData).length > 0) {
         const { error: companyUpdateError } = await supabase
           .from('companies')
-          .update({
-            name: newSettings.name,
-            logo_url: newSettings.logo
-          })
+          .update(companyUpdateData)
           .eq('id', companyId);
 
         if (companyUpdateError) {
           console.error('Erro ao atualizar empresa:', companyUpdateError);
           throw new Error('Erro ao atualizar empresa');
         }
+        
+        console.log('Empresa atualizada:', companyUpdateData);
       }
 
       // Atualizar company_settings para informações do site
