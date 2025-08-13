@@ -81,6 +81,9 @@ function AppContent() {
       <Routes>
       <Route path="/login" element={<Login />} />
       
+      {/* Área de gestão exclusiva (sem sidebar) */}
+      <Route path="/admin" element={<ProtectedRoute><AdminConsole /></ProtectedRoute>} />
+      
       {/* Rotas públicas com contexto da empresa */}
       <Route path="/imovel-publico/:slug" element={<ImovelPublico />} />
       <Route path="/site-publico" element={<SitePublico />} />
@@ -145,7 +148,6 @@ function AppContent() {
                       <Route path="/meu-site" element={<MeuSite />} />
                       <Route path="/configuracoes-site" element={<ConfiguracoesSite />} />
                       <Route path="/configuracoes" element={<Configuracoes />} />
-                      <Route path="/admin" element={<AdminConsole />} />
                       <Route path="/gerenciamento-contas" element={<GerenciamentoContas />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>

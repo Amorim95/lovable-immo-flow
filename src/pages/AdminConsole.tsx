@@ -20,7 +20,7 @@ type CompanyRow = {
   logo_url?: string | null;
   created_at: string;
   user_count: number;
-  leads_count: number;
+  imoveis_count: number;
 };
 
 export default function AdminConsole() {
@@ -37,15 +37,17 @@ export default function AdminConsole() {
     queryKey: ["admin-stats"],
     enabled: isSuperAdmin && !permLoading,
     queryFn: async () => {
-      const [companiesMeta, usersMeta, leadsMeta] = await Promise.all([
+      const [companiesMeta, usersMeta, adminsMeta, imoveisMeta] = await Promise.all([
         supabase.from("companies").select("*", { count: "exact", head: true }),
         supabase.from("users").select("*", { count: "exact", head: true }),
-        supabase.from("leads").select("*", { count: "exact", head: true }),
+        supabase.from("users").select("*", { count: "exact", head: true }).eq("role", "admin"),
+        supabase.from("imoveis").select("*", { count: "exact", head: true }),
       ]);
       return {
         companies: companiesMeta.count || 0,
+        admins: adminsMeta.count || 0,
         users: usersMeta.count || 0,
-        leads: leadsMeta.count || 0,
+        imoveis: imoveisMeta.count || 0,
       };
     },
   });
@@ -63,9 +65,9 @@ export default function AdminConsole() {
 
       const rows: CompanyRow[] = await Promise.all(
         (data || []).map(async (c) => {
-          const [{ count: userCount }, { count: leadsCount }] = await Promise.all([
+          const [{ count: userCount }, { count: imoveisCount }] = await Promise.all([
             supabase.from("users").select("*", { count: "exact", head: true }).eq("company_id", c.id),
-            supabase.from("leads").select("*", { count: "exact", head: true }).eq("company_id", c.id),
+            supabase.from("imoveis").select("*", { count: "exact", head: true }).eq("company_id", c.id),
           ]);
           return {
             id: c.id,
@@ -73,7 +75,7 @@ export default function AdminConsole() {
             logo_url: (c as any).logo_url ?? null,
             created_at: c.created_at as any,
             user_count: userCount || 0,
-            leads_count: leadsCount || 0,
+            imoveis_count: imoveisCount || 0,
           };
         })
       );
@@ -213,7 +215,7 @@ export default function AdminConsole() {
       <main className="container mx-auto px-6 py-8 space-y-8">
         {/* Stats */}
         <section>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="pb-2 flex-row items-center justify-between">
                 <CardTitle className="text-base">Empresas</CardTitle>
@@ -221,6 +223,15 @@ export default function AdminConsole() {
               </CardHeader>
               <CardContent className="text-3xl font-bold">
                 {statsQuery.data?.companies ?? "-"}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2 flex-row items-center justify-between">
+                <CardTitle className="text-base">Donos (Admins)</CardTitle>
+                <Users className="w-4 h-4 text-primary" />
+              </CardHeader>
+              <CardContent className="text-3xl font-bold">
+                {statsQuery.data?.admins ?? "-"}
               </CardContent>
             </Card>
             <Card>
@@ -234,11 +245,11 @@ export default function AdminConsole() {
             </Card>
             <Card>
               <CardHeader className="pb-2 flex-row items-center justify-between">
-                <CardTitle className="text-base">Leads</CardTitle>
+                <CardTitle className="text-base">Imóveis</CardTitle>
                 <LayoutList className="w-4 h-4 text-primary" />
               </CardHeader>
               <CardContent className="text-3xl font-bold">
-                {statsQuery.data?.leads ?? "-"}
+                {statsQuery.data?.imoveis ?? "-"}
               </CardContent>
             </Card>
           </div>
@@ -270,7 +281,7 @@ export default function AdminConsole() {
                     <TableHead>Empresa</TableHead>
                     <TableHead className="hidden md:table-cell">Criada em</TableHead>
                     <TableHead>Usuários</TableHead>
-                    <TableHead>Leads</TableHead>
+                    <TableHead>Imóveis</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -296,7 +307,7 @@ export default function AdminConsole() {
                         {new Date(c.created_at).toLocaleDateString("pt-BR")}
                       </TableCell>
                       <TableCell>{c.user_count}</TableCell>
-                      <TableCell>{c.leads_count}</TableCell>
+                      <TableCell>{c.imoveis_count}</TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="sm" className="text-destructive" onClick={() => handleDelete(c.id, c.name)}>
                           <Trash2 className="w-4 h-4 mr-2" /> Deletar
