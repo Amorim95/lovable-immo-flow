@@ -68,52 +68,18 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Buscar usuários ativos
-    const { data: activeUsers, error: usersError } = await supabase
-      .from('users')
-      .select('id, name')
-      .eq('status', 'ativo');
-
-    if (usersError) {
-      console.error('Erro ao buscar usuários:', usersError);
-      return new Response(
-        JSON.stringify({ error: 'Erro ao buscar usuários ativos' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    if (!activeUsers || activeUsers.length === 0) {
-      console.error('Nenhum usuário ativo encontrado');
-      return new Response(
-        JSON.stringify({ error: 'Nenhum usuário ativo disponível' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
-    // Randomizar usuário
-    const randomIndex = Math.floor(Math.random() * activeUsers.length);
-    const selectedUser = activeUsers[randomIndex];
-
-    console.log(`Usuário selecionado: ${selectedUser.name} (${selectedUser.id})`);
-
-    // Criar o lead
+    // Criar o lead SEM definir user_id para que o trigger round-robin funcione
     const { data: newLead, error: leadError } = await supabase
       .from('leads')
       .insert({
         nome: leadData.nome,
         telefone: leadData.telefone,
         dados_adicionais: leadData.dados_adicionais || null,
-        user_id: selectedUser.id,
         etapa: 'aguardando-atendimento',
         atividades: []
+        // user_id será atribuído automaticamente pelo trigger round-robin
       })
-      .select()
+      .select('*, users!leads_user_id_fkey(name)')
       .single();
 
     if (leadError) {
@@ -149,8 +115,8 @@ Deno.serve(async (req) => {
         success: true, 
         lead: newLead,
         assigned_user: {
-          id: selectedUser.id,
-          name: selectedUser.name
+          id: newLead.user_id,
+          name: newLead.users?.name || 'Usuário não encontrado'
         }
       }),
       { 
