@@ -162,18 +162,26 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         if (newSettings.name !== undefined) companyUpdateData.name = newSettings.name;
         if (newSettings.logo !== undefined) companyUpdateData.logo_url = newSettings.logo;
         
+        console.log('Atualizando tabela companies com:', companyUpdateData);
+        console.log('Company ID:', companyId);
+        
         if (Object.keys(companyUpdateData).length > 0) {
-          const { error: companyUpdateError } = await supabase
+          const { data: companyUpdateData_result, error: companyUpdateError } = await supabase
             .from('companies')
             .update(companyUpdateData)
-            .eq('id', companyId);
+            .eq('id', companyId)
+            .select();
+          
           if (companyUpdateError) {
             console.error('Erro ao atualizar companies:', companyUpdateError);
+            throw new Error(`Erro ao atualizar empresa: ${companyUpdateError.message}`);
           }
+          
+          console.log('Tabela companies atualizada com sucesso:', companyUpdateData_result);
         }
       }
 
-      // Atualizar company_settings para informações do site
+      // Atualizar company_settings apenas para informações do site (não name e logo)
       const existingSettingsQuery = await supabase
         .from('company_settings')
         .select('*')
@@ -182,8 +190,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       const settingsData: any = { company_id: companyId };
-      if (newSettings.name !== undefined) settingsData.name = newSettings.name;
-      if (newSettings.logo !== undefined) settingsData.logo = newSettings.logo;
+      // NÃO incluir name e logo aqui - eles vão para a tabela companies
       if (newSettings.siteTitle !== undefined) settingsData.site_title = newSettings.siteTitle;
       if (newSettings.siteDescription !== undefined) settingsData.site_description = newSettings.siteDescription;
       if (newSettings.sitePhone !== undefined) settingsData.site_phone = newSettings.sitePhone;
@@ -198,24 +205,29 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       if (newSettings.siteHorarioDomingo !== undefined) settingsData.site_horario_domingo = newSettings.siteHorarioDomingo;
       if (newSettings.siteObservacoesHorario !== undefined) settingsData.site_observacoes_horario = newSettings.siteObservacoesHorario;
 
-      if (existingSettingsQuery.data) {
-        const { error } = await supabase
-          .from('company_settings')
-          .update(settingsData)
-          .eq('id', existingSettingsQuery.data.id);
-        
-        if (error) {
-          console.error('Erro ao atualizar settings:', error);
-          throw error;
-        }
-      } else {
-        const { error } = await supabase
-          .from('company_settings')
-          .insert(settingsData);
-        
-        if (error) {
-          console.error('Erro ao inserir settings:', error);
-          throw error;
+      // Só atualizar company_settings se houver campos relacionados ao site
+      const hasSiteSettings = Object.keys(settingsData).some(key => key.startsWith('site_'));
+      
+      if (hasSiteSettings) {
+        if (existingSettingsQuery.data) {
+          const { error } = await supabase
+            .from('company_settings')
+            .update(settingsData)
+            .eq('id', existingSettingsQuery.data.id);
+          
+          if (error) {
+            console.error('Erro ao atualizar settings:', error);
+            throw error;
+          }
+        } else if (Object.keys(settingsData).length > 1) { // Mais que só company_id
+          const { error } = await supabase
+            .from('company_settings')
+            .insert(settingsData);
+          
+          if (error) {
+            console.error('Erro ao inserir settings:', error);
+            throw error;
+          }
         }
       }
 
