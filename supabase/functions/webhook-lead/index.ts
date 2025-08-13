@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Determinar empresa (versão simplificada)
+    // Determinar empresa e usuário de destino
     let companyId = leadData.company_id;
     
     if (!companyId) {
@@ -96,7 +96,30 @@ Deno.serve(async (req) => {
       console.log('Empresa padrão encontrada:', companyId);
     }
 
-    // Criar o lead (como antes)
+    // Buscar próximo usuário no round-robin (fazendo manualmente)
+    const { data: nextUser, error: userError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('company_id', companyId)
+      .eq('status', 'ativo')
+      .order('ultimo_lead_recebido', { ascending: true, nullsFirst: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (userError || !nextUser) {
+      console.error('Erro ao buscar usuário disponível:', userError);
+      return new Response(
+        JSON.stringify({ error: 'Nenhum usuário ativo disponível para receber o lead' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    console.log('Usuário selecionado:', nextUser.id);
+
+    // Criar o lead COM user_id definido (para evitar problemas de trigger)
     const { data: newLead, error: leadError } = await supabase
       .from('leads')
       .insert({
@@ -105,10 +128,19 @@ Deno.serve(async (req) => {
         dados_adicionais: leadData.dados_adicionais || null,
         etapa: 'aguardando-atendimento',
         atividades: [],
-        company_id: companyId
+        company_id: companyId,
+        user_id: nextUser.id // Definindo diretamente para evitar trigger
       })
       .select('*, users!leads_user_id_fkey(name)')
       .maybeSingle();
+
+    // Atualizar ultimo_lead_recebido do usuário que recebeu o lead
+    if (!leadError && newLead) {
+      await supabase
+        .from('users')
+        .update({ ultimo_lead_recebido: new Date().toISOString() })
+        .eq('id', nextUser.id);
+    }
 
     if (leadError) {
       console.error('Erro ao criar lead:', leadError);
