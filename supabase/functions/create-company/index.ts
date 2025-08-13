@@ -84,12 +84,30 @@ serve(async (req) => {
     console.log('Permissões verificadas - Super admin confirmado');
 
     // Obter dados do body
-    const { companyName, adminName, adminEmail, adminPassword } = await req.json();
+    let requestBody;
+    try {
+      requestBody = await req.json();
+      console.log('Body recebido:', requestBody);
+    } catch (bodyError) {
+      console.error('Erro ao fazer parse do body:', bodyError);
+      return new Response(
+        JSON.stringify({ error: 'Body da requisição inválido' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { companyName, adminName, adminEmail, adminPassword } = requestBody;
     
-    console.log('Dados recebidos:', { companyName, adminName, adminEmail });
+    console.log('Dados extraídos:', { companyName, adminName, adminEmail, passwordProvided: !!adminPassword });
 
     // Validar dados obrigatórios
     if (!companyName || !adminName || !adminEmail || !adminPassword) {
+      console.error('Dados obrigatórios ausentes:', {
+        companyName: !!companyName,
+        adminName: !!adminName, 
+        adminEmail: !!adminEmail,
+        adminPassword: !!adminPassword
+      });
       return new Response(
         JSON.stringify({ error: 'Todos os campos são obrigatórios' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

@@ -108,6 +108,13 @@ export default function GerenciamentoContas() {
 
     setLoading(true);
     try {
+      console.log('Enviando dados para create-company:', {
+        companyName: formData.companyName,
+        adminName: formData.adminName,
+        adminEmail: formData.adminEmail,
+        passwordProvided: !!formData.adminPassword
+      });
+
       // Chamar a Edge Function para criar a empresa com segurança
       const { data, error } = await supabase.functions.invoke('create-company', {
         body: {
@@ -120,11 +127,35 @@ export default function GerenciamentoContas() {
 
       if (error) {
         console.error('Erro da Edge Function:', error);
-        throw error;
+        
+        // Tentar obter mais detalhes do erro
+        let errorMessage = 'Erro desconhecido';
+        if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        // Se há contexto adicional
+        if (error.context && typeof error.context === 'object') {
+          console.error('Contexto do erro:', error.context);
+        }
+        
+        toast({
+          title: "Erro ao criar imobiliária",
+          description: errorMessage,
+          variant: "destructive"
+        });
+        return;
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Erro desconhecido');
+      if (!data?.success) {
+        const errorMsg = data?.error || 'Erro desconhecido';
+        console.error('Função retornou erro:', errorMsg);
+        toast({
+          title: "Erro ao criar imobiliária", 
+          description: errorMsg,
+          variant: "destructive"
+        });
+        return;
       }
 
       toast({
