@@ -144,6 +144,15 @@ export function useLeadsOptimized() {
       if (updates.etapa !== undefined) supabaseUpdates.etapa = updates.etapa;
       if (updates.userId !== undefined) supabaseUpdates.user_id = updates.userId;
       
+      // Auto-registrar primeiro contato quando etapa muda de "aguardando-atendimento"
+      if (updates.etapa !== undefined && updates.etapa !== 'aguardando-atendimento') {
+        // Verificar se o lead atualmente está em "aguardando-atendimento"
+        const currentLead = leads.find(l => l.id === leadId);
+        if (currentLead && currentLead.etapa === 'aguardando-atendimento') {
+          supabaseUpdates.primeiro_contato_whatsapp = new Date().toISOString();
+        }
+      }
+      
       // Atualizar atividades no banco se foram modificadas
       if (updates.atividades !== undefined) {
         supabaseUpdates.atividades = updates.atividades.map(atividade => ({
