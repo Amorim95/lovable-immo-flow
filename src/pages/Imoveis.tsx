@@ -13,7 +13,7 @@ import ImovelFormModal from "@/components/ImovelFormModal";
 
 export default function Imoveis() {
   const navigate = useNavigate();
-  const { isAdmin, isGestor } = useUserRole();
+  const { isAdmin, isGestor, isDono } = useUserRole();
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -417,7 +417,7 @@ export default function Imoveis() {
           <p className="text-muted-foreground">Gerencie seus imóveis cadastrados</p>
         </div>
         
-        {(isAdmin || isGestor) && (
+        {(isAdmin || isGestor || isDono) && (
           <Button onClick={() => { resetForm(); setSelectedImovel(null); setIsCreateModalOpen(true); }}>
             <Plus className="w-4 h-4 mr-2" />
             Cadastrar Imóvel
@@ -494,7 +494,7 @@ export default function Imoveis() {
                   </div>
                 </div>
                 <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                  {(isAdmin || isGestor) && (
+                  {(isAdmin || isGestor || isDono) && (
                     <Button
                       size="sm"
                       variant="outline"

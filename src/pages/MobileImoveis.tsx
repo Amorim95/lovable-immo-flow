@@ -14,7 +14,7 @@ import ImovelFormModal from "@/components/ImovelFormModal";
 
 export default function MobileImoveis() {
   const navigate = useNavigate();
-  const { isAdmin, isGestor } = useUserRole();
+  const { isAdmin, isGestor, isDono } = useUserRole();
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -377,7 +377,7 @@ export default function MobileImoveis() {
       <div className="p-4 space-y-4">
         {/* Botões principais */}
         <div className="grid grid-cols-2 gap-3">
-          {(isAdmin || isGestor) && (
+          {(isAdmin || isGestor || isDono) && (
             <Button 
               onClick={() => { resetForm(); setSelectedImovel(null); setIsCreateModalOpen(true); }}
               className="h-12 text-base font-medium"
@@ -390,7 +390,7 @@ export default function MobileImoveis() {
           <Button 
             variant="outline"
             onClick={() => navigate('/meu-site')}
-            className={`h-12 text-base font-medium ${!(isAdmin || isGestor) ? 'col-span-2' : ''}`}
+            className={`h-12 text-base font-medium ${!(isAdmin || isGestor || isDono) ? 'col-span-2' : ''}`}
           >
             <Globe className="w-5 h-5 mr-2" />
             Meu Site
@@ -497,7 +497,7 @@ export default function MobileImoveis() {
                         <Eye className="w-3 h-3 mr-1" />
                         Ver
                       </Button>
-                      {(isAdmin || isGestor) && (
+                      {(isAdmin || isGestor || isDono) && (
                         <Button
                           size="sm"
                           variant="outline"

@@ -12,7 +12,7 @@ import { Imovel } from "@/types/crm";
 
 export default function MobileMeuSite() {
   const navigate = useNavigate();
-  const { isAdmin, isGestor } = useUserRole();
+  const { isAdmin, isGestor, isDono } = useUserRole();
   const [imoveisPublicos, setImoveisPublicos] = useState<Imovel[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -91,7 +91,7 @@ export default function MobileMeuSite() {
       <div className="p-4 space-y-4 pb-20">
         {/* Botões de ação */}
         <div className="flex flex-col gap-2">
-          {(isAdmin || isGestor) && (
+          {(isAdmin || isGestor || isDono) && (
             <Button 
               variant="outline" 
               onClick={() => navigate('/configuracoes-site')}

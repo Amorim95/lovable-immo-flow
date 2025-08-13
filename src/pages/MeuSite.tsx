@@ -11,7 +11,7 @@ import { Imovel } from "@/types/crm";
 
 export default function MeuSite() {
   const navigate = useNavigate();
-  const { isAdmin, isGestor } = useUserRole();
+  const { isAdmin, isGestor, isDono } = useUserRole();
   const [imoveisPublicos, setImoveisPublicos] = useState<Imovel[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -96,7 +96,7 @@ export default function MeuSite() {
         </div>
         
         <div className="flex gap-2">
-          {(isAdmin || isGestor) && (
+          {(isAdmin || isGestor || isDono) && (
             <Button variant="outline" onClick={() => navigate('/configuracoes-site')}>
               <Settings className="w-4 h-4 mr-2" />
               Configurar Site
