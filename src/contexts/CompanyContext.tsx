@@ -6,19 +6,19 @@ interface CompanySettings {
   logo: string | null;
   theme: string;
   isDarkMode: boolean;
-  site_title?: string;
-  site_description?: string;
-  site_phone?: string;
-  site_email?: string;
-  site_address?: string;
-  site_whatsapp?: string;
-  site_facebook?: string;
-  site_instagram?: string;
-  site_about?: string;
-  site_horario_semana?: string;
-  site_horario_sabado?: string;
-  site_horario_domingo?: string;
-  site_observacoes_horario?: string;
+  siteTitle?: string;
+  siteDescription?: string;
+  sitePhone?: string;
+  siteEmail?: string;
+  siteAddress?: string;
+  siteWhatsapp?: string;
+  siteFacebook?: string;
+  siteInstagram?: string;
+  siteAbout?: string;
+  siteHorarioSemana?: string;
+  siteHorarioSabado?: string;
+  siteHorarioDomingo?: string;
+  siteObservacoesHorario?: string;
 }
 
 interface CompanyContextType {
@@ -93,24 +93,24 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       console.log('Dados da empresa:', companyData);
       console.log('Configurações do site:', settingsData);
 
-      // Aplicar configurações combinadas (prioriza company_settings)
+      // Usar sempre dados da tabela companies para name e logo (são atualizados pelo admin)
       setSettings(prev => ({
         ...prev,
-        name: (settingsData?.name && settingsData.name.trim() !== '' ? settingsData.name : companyData?.name) || '',
-        logo: (settingsData?.logo && settingsData.logo !== '' ? settingsData.logo : companyData?.logo_url) || null,
-        site_title: settingsData?.site_title || companyData?.name || '',
-        site_description: settingsData?.site_description || '',
-        site_phone: settingsData?.site_phone || '',
-        site_email: settingsData?.site_email || '',
-        site_address: settingsData?.site_address || '',
-        site_whatsapp: settingsData?.site_whatsapp || '',
-        site_facebook: settingsData?.site_facebook || '',
-        site_instagram: settingsData?.site_instagram || '',
-        site_about: settingsData?.site_about || '',
-        site_horario_semana: settingsData?.site_horario_semana || '8:00 às 18:00',
-        site_horario_sabado: settingsData?.site_horario_sabado || '8:00 às 14:00',
-        site_horario_domingo: settingsData?.site_horario_domingo || 'Fechado',
-        site_observacoes_horario: settingsData?.site_observacoes_horario || '*Atendimento via WhatsApp 24 horas',
+        name: companyData?.name || '',
+        logo: companyData?.logo_url || null,
+        siteTitle: settingsData?.site_title || companyData?.name || '',
+        siteDescription: settingsData?.site_description || '',
+        sitePhone: settingsData?.site_phone || '',
+        siteEmail: settingsData?.site_email || '',
+        siteAddress: settingsData?.site_address || '',
+        siteWhatsapp: settingsData?.site_whatsapp || '',
+        siteFacebook: settingsData?.site_facebook || '',
+        siteInstagram: settingsData?.site_instagram || '',
+        siteAbout: settingsData?.site_about || '',
+        siteHorarioSemana: settingsData?.site_horario_semana || '8:00 às 18:00',
+        siteHorarioSabado: settingsData?.site_horario_sabado || '8:00 às 14:00',
+        siteHorarioDomingo: settingsData?.site_horario_domingo || 'Fechado',
+        siteObservacoesHorario: settingsData?.site_observacoes_horario || '*Atendimento via WhatsApp 24 horas',
       }));
     } catch (error) {
       console.error('Erro ao carregar configurações da empresa:', error);
@@ -150,16 +150,28 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         throw new Error('Usuário deve estar associado a uma empresa para fazer atualizações');
       }
 
-      // Marcar onboarding como completo se for dono
-      if (userQuery.data?.role === 'dono') {
-        await supabase
-          .from('users')
-          .update({ has_completed_onboarding: true })
-          .eq('id', userId);
-      }
+      // Marcar onboarding como completo
+      await supabase
+        .from('users')
+        .update({ has_completed_onboarding: true })
+        .eq('id', userId);
 
-      // Não atualizar tabela companies aqui para evitar efeitos colaterais entre empresas
-      // Todas as alterações de nome/logo ficam em company_settings, respeitando RLS
+      // SEMPRE atualizar na tabela companies para name e logo
+      if (newSettings.name !== undefined || newSettings.logo !== undefined) {
+        const companyUpdateData: any = {};
+        if (newSettings.name !== undefined) companyUpdateData.name = newSettings.name;
+        if (newSettings.logo !== undefined) companyUpdateData.logo_url = newSettings.logo;
+        
+        if (Object.keys(companyUpdateData).length > 0) {
+          const { error: companyUpdateError } = await supabase
+            .from('companies')
+            .update(companyUpdateData)
+            .eq('id', companyId);
+          if (companyUpdateError) {
+            console.error('Erro ao atualizar companies:', companyUpdateError);
+          }
+        }
+      }
 
       // Atualizar company_settings para informações do site
       const existingSettingsQuery = await supabase
@@ -172,19 +184,19 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       const settingsData: any = { company_id: companyId };
       if (newSettings.name !== undefined) settingsData.name = newSettings.name;
       if (newSettings.logo !== undefined) settingsData.logo = newSettings.logo;
-      if (newSettings.site_title !== undefined) settingsData.site_title = newSettings.site_title;
-      if (newSettings.site_description !== undefined) settingsData.site_description = newSettings.site_description;
-      if (newSettings.site_phone !== undefined) settingsData.site_phone = newSettings.site_phone;
-      if (newSettings.site_email !== undefined) settingsData.site_email = newSettings.site_email;
-      if (newSettings.site_address !== undefined) settingsData.site_address = newSettings.site_address;
-      if (newSettings.site_whatsapp !== undefined) settingsData.site_whatsapp = newSettings.site_whatsapp;
-      if (newSettings.site_facebook !== undefined) settingsData.site_facebook = newSettings.site_facebook;
-      if (newSettings.site_instagram !== undefined) settingsData.site_instagram = newSettings.site_instagram;
-      if (newSettings.site_about !== undefined) settingsData.site_about = newSettings.site_about;
-      if (newSettings.site_horario_semana !== undefined) settingsData.site_horario_semana = newSettings.site_horario_semana;
-      if (newSettings.site_horario_sabado !== undefined) settingsData.site_horario_sabado = newSettings.site_horario_sabado;
-      if (newSettings.site_horario_domingo !== undefined) settingsData.site_horario_domingo = newSettings.site_horario_domingo;
-      if (newSettings.site_observacoes_horario !== undefined) settingsData.site_observacoes_horario = newSettings.site_observacoes_horario;
+      if (newSettings.siteTitle !== undefined) settingsData.site_title = newSettings.siteTitle;
+      if (newSettings.siteDescription !== undefined) settingsData.site_description = newSettings.siteDescription;
+      if (newSettings.sitePhone !== undefined) settingsData.site_phone = newSettings.sitePhone;
+      if (newSettings.siteEmail !== undefined) settingsData.site_email = newSettings.siteEmail;
+      if (newSettings.siteAddress !== undefined) settingsData.site_address = newSettings.siteAddress;
+      if (newSettings.siteWhatsapp !== undefined) settingsData.site_whatsapp = newSettings.siteWhatsapp;
+      if (newSettings.siteFacebook !== undefined) settingsData.site_facebook = newSettings.siteFacebook;
+      if (newSettings.siteInstagram !== undefined) settingsData.site_instagram = newSettings.siteInstagram;
+      if (newSettings.siteAbout !== undefined) settingsData.site_about = newSettings.siteAbout;
+      if (newSettings.siteHorarioSemana !== undefined) settingsData.site_horario_semana = newSettings.siteHorarioSemana;
+      if (newSettings.siteHorarioSabado !== undefined) settingsData.site_horario_sabado = newSettings.siteHorarioSabado;
+      if (newSettings.siteHorarioDomingo !== undefined) settingsData.site_horario_domingo = newSettings.siteHorarioDomingo;
+      if (newSettings.siteObservacoesHorario !== undefined) settingsData.site_observacoes_horario = newSettings.siteObservacoesHorario;
 
       if (existingSettingsQuery.data) {
         const { error } = await supabase
@@ -204,26 +216,6 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         if (error) {
           console.error('Erro ao inserir settings:', error);
           throw error;
-        }
-      }
-
-      // Se for DONO e alterou nome/logo, também refletir na tabela companies da MESMA empresa
-      if (userQuery.data?.role === 'dono') {
-        const companyUpdateData: any = {};
-        if (newSettings.name !== undefined && newSettings.name.trim() !== '') {
-          companyUpdateData.name = newSettings.name.trim();
-        }
-        if (newSettings.logo !== undefined) {
-          companyUpdateData.logo_url = newSettings.logo; // pode ser null para remover logo
-        }
-        if (Object.keys(companyUpdateData).length > 0) {
-          const { error: companyUpdateError } = await supabase
-            .from('companies')
-            .update(companyUpdateData)
-            .eq('id', companyId);
-          if (companyUpdateError) {
-            console.error('Erro ao refletir alterações em companies:', companyUpdateError);
-          }
         }
       }
 

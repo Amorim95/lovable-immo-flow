@@ -53,7 +53,7 @@ export default function Contato() {
                 <h2 className="text-xl font-semibold mb-6 text-center">Nossas Informações</h2>
                 
                 <div className="space-y-6">
-                  {settings.site_email ? (
+                  {settings.siteEmail ? (
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                         <Mail className="w-6 h-6 text-primary" />
@@ -61,10 +61,10 @@ export default function Contato() {
                       <div>
                         <p className="font-medium">Email</p>
                         <a 
-                          href={`mailto:${settings.site_email}`} 
+                          href={`mailto:${settings.siteEmail}`} 
                           className="text-primary hover:underline"
                         >
-                          {settings.site_email}
+                          {settings.siteEmail}
                         </a>
                       </div>
                     </div>
@@ -80,7 +80,7 @@ export default function Contato() {
                     </div>
                   )}
 
-                  {settings.site_phone ? (
+                  {settings.sitePhone ? (
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
                         <Phone className="w-6 h-6 text-primary" />
@@ -88,10 +88,10 @@ export default function Contato() {
                       <div>
                         <p className="font-medium">Telefone</p>
                         <a 
-                          href={`tel:${settings.site_phone}`} 
+                          href={`tel:${settings.sitePhone}`} 
                           className="text-primary hover:underline"
                         >
-                          {settings.site_phone}
+                          {settings.sitePhone}
                         </a>
                       </div>
                     </div>
@@ -107,14 +107,14 @@ export default function Contato() {
                     </div>
                   )}
 
-                  {settings.site_address ? (
+                  {settings.siteAddress ? (
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mt-1">
                         <MapPin className="w-6 h-6 text-primary" />
                       </div>
                       <div>
                         <p className="font-medium">Endereço</p>
-                        <p className="text-muted-foreground">{settings.site_address}</p>
+                        <p className="text-muted-foreground">{settings.siteAddress}</p>
                       </div>
                     </div>
                   ) : (
@@ -130,12 +130,12 @@ export default function Contato() {
                   )}
 
                   {/* Botão do WhatsApp */}
-                  {settings.site_whatsapp ? (
+                  {settings.siteWhatsapp ? (
                     <div className="pt-6 border-t">
                       <div className="text-center">
                         <h3 className="text-lg font-semibold mb-4">Fale Conosco pelo WhatsApp</h3>
                         <a 
-                          href={`https://wa.me/${settings.site_whatsapp}`} 
+                          href={`https://wa.me/${settings.siteWhatsapp}`} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg transition-colors text-lg font-medium"
@@ -164,14 +164,14 @@ export default function Contato() {
             </Card>
 
             {/* Redes Sociais */}
-            {(settings.site_facebook || settings.site_instagram) && (
+            {(settings.siteFacebook || settings.siteInstagram) && (
               <Card className="mt-6">
                 <CardContent className="p-6">
                   <h3 className="text-lg font-semibold mb-4 text-center">Redes Sociais</h3>
                   <div className="flex justify-center gap-6">
-                    {settings.site_facebook && (
+                    {settings.siteFacebook && (
                       <a 
-                        href={settings.site_facebook} 
+                        href={settings.siteFacebook} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors"
@@ -182,9 +182,9 @@ export default function Contato() {
                         Facebook
                       </a>
                     )}
-                    {settings.site_instagram && (
+                    {settings.siteInstagram && (
                       <a 
-                        href={settings.site_instagram} 
+                        href={settings.siteInstagram} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors"
@@ -209,20 +209,20 @@ export default function Contato() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-muted-foreground">
                   <div>
                     <p className="font-medium">Segunda à Sexta</p>
-                    <p>{settings.site_horario_semana || "8:00 às 18:00"}</p>
+                    <p>{settings.siteHorarioSemana || "8:00 às 18:00"}</p>
                   </div>
                   <div>
                     <p className="font-medium">Sábados</p>
-                    <p>{settings.site_horario_sabado || "8:00 às 14:00"}</p>
+                    <p>{settings.siteHorarioSabado || "8:00 às 14:00"}</p>
                   </div>
                   <div>
                     <p className="font-medium">Domingos</p>
-                    <p>{settings.site_horario_domingo || "Fechado"}</p>
+                    <p>{settings.siteHorarioDomingo || "Fechado"}</p>
                   </div>
                 </div>
-                {settings.site_observacoes_horario && (
+                {settings.siteObservacoesHorario && (
                   <p className="mt-4 text-sm">
-                    {settings.site_observacoes_horario}
+                    {settings.siteObservacoesHorario}
                   </p>
                 )}
               </CardContent>

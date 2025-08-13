@@ -70,13 +70,6 @@ const menuItems = [
     description: "Configurações do sistema",
     showForAll: true // Permitir acesso para todos, controle interno na página
   },
-  { 
-    title: "Admin",
-    url: "/admin",
-    icon: Building2,
-    description: "Console do super admin",
-    requireSuperAdmin: true
-  }
 ];
 
 export function CRMSidebar() {
@@ -108,7 +101,6 @@ export function CRMSidebar() {
     
     if (item.showForAll) return true;
     if (item.requireAdminOrGestor && !isAdmin && !isGestor) return false;
-    if (item.requireSuperAdmin && !isSuperAdmin) return false;
     
     return true;
   });

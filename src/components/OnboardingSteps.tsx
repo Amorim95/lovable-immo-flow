@@ -88,9 +88,9 @@ export function OnboardingSteps({ isOpen, onComplete }: OnboardingStepsProps) {
       await updateSettings({
         name: companyName.trim(),
         logo: logoUrl,
-        site_title: companyName.trim(),
-        site_description: `${companyName.trim()} - Encontre o imóvel dos seus sonhos`,
-        site_about: `Bem-vindo à ${companyName.trim()}! Estamos aqui para ajudar você a encontrar o imóvel ideal.`,
+        siteTitle: companyName.trim(),
+        siteDescription: `${companyName.trim()} - Encontre o imóvel dos seus sonhos`,
+        siteAbout: `Bem-vindo à ${companyName.trim()}! Estamos aqui para ajudar você a encontrar o imóvel ideal.`,
       });
 
       toast({

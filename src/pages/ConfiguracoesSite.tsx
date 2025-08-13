@@ -51,19 +51,19 @@ export default function ConfiguracoesSite() {
   useEffect(() => {
     // Carregar configurações existentes do contexto
     setSiteSettings({
-      title: settings.site_title || settings.name || "",
-      description: settings.site_description || "",
-      phone: settings.site_phone || "",
-      email: settings.site_email || "",
-      address: settings.site_address || "",
-      whatsapp: settings.site_whatsapp || "",
-      facebook: settings.site_facebook || "",
-      instagram: settings.site_instagram || "",
-      about: settings.site_about || "",
-      horario_semana: settings.site_horario_semana || "8:00 às 18:00",
-      horario_sabado: settings.site_horario_sabado || "8:00 às 14:00",
-      horario_domingo: settings.site_horario_domingo || "Fechado",
-      observacoes_horario: settings.site_observacoes_horario || "*Atendimento via WhatsApp 24 horas",
+      title: settings.siteTitle || settings.name || "",
+      description: settings.siteDescription || "",
+      phone: settings.sitePhone || "",
+      email: settings.siteEmail || "",
+      address: settings.siteAddress || "",
+      whatsapp: settings.siteWhatsapp || "",
+      facebook: settings.siteFacebook || "",
+      instagram: settings.siteInstagram || "",
+      about: settings.siteAbout || "",
+      horario_semana: settings.siteHorarioSemana || "8:00 às 18:00",
+      horario_sabado: settings.siteHorarioSabado || "8:00 às 14:00",
+      horario_domingo: settings.siteHorarioDomingo || "Fechado",
+      observacoes_horario: settings.siteObservacoesHorario || "*Atendimento via WhatsApp 24 horas",
     });
   }, [settings]);
 

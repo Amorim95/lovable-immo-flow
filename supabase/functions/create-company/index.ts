@@ -198,7 +198,7 @@ serve(async (req) => {
           id: authUser.user.id,
           name: adminName,
           email: adminEmail,
-          role: 'dono',
+          role: 'admin',
           status: 'ativo',
           company_id: company.id,
           password_hash: 'managed_by_auth'
