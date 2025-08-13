@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { CompanyProvider } from '@/contexts/CompanyContext';
 import { OnboardingSteps } from '@/components/OnboardingSteps';
@@ -47,12 +47,14 @@ import Configuracoes from "./pages/Configuracoes";
 import GerenciamentoContas from "./pages/GerenciamentoContas";
 import AdminConsole from "./pages/AdminConsole";
 import Login from "./pages/Login";
+import AdminLogin from "./components/AdminLogin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const location = useLocation();
   
   if (loading) {
     return (
@@ -63,6 +65,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
   
   if (!user) {
+    // Se está tentando acessar /admin, usar login com fundo especial
+    if (location.pathname === '/admin') {
+      return <AdminLogin />;
+    }
     return <Login />;
   }
   

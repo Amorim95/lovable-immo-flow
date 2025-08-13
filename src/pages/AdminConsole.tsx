@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 
-import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2 } from "lucide-react";
+import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2, LogOut } from "lucide-react";
 
 type CompanyRow = {
   id: string;
@@ -25,6 +26,7 @@ type CompanyRow = {
 
 export default function AdminConsole() {
   const { isSuperAdmin, loading: permLoading } = usePermissions();
+  const { logout } = useAuth();
   const { toast } = useToast();
 
   // SEO title
@@ -162,14 +164,28 @@ export default function AdminConsole() {
     <div>
       <header className="bg-gradient-to-br from-primary/20 via-accent/10 to-background">
         <div className="container mx-auto px-6 py-10">
-          <div className="flex items-center gap-3 mb-3">
-            <ShieldCheck className="w-6 h-6 text-primary" />
-            <span className="text-sm text-muted-foreground">Área exclusiva</span>
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <ShieldCheck className="w-6 h-6 text-primary" />
+                <span className="text-sm text-muted-foreground">Área exclusiva</span>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Console de Gestão • Super Admin</h1>
+              <p className="text-muted-foreground mt-2 max-w-2xl">Crie, gerencie e audite as imobiliárias da plataforma com segurança.</p>
+            </div>
+            
+            {/* Botão de Logout */}
+            <Button 
+              variant="outline" 
+              onClick={logout}
+              className="flex items-center gap-2 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+            >
+              <LogOut className="w-4 h-4" />
+              Sair do Console
+            </Button>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Console de Gestão • Super Admin</h1>
-          <p className="text-muted-foreground mt-2 max-w-2xl">Crie, gerencie e audite as imobiliárias da plataforma com segurança.</p>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3">
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
               <DialogTrigger asChild>
                 <Button>
