@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { Trash2, Building2, Users, Plus } from "lucide-react";
+import { CompanyManagement } from "@/components/CompanyManagement";
 import {
   Dialog,
   DialogContent,
@@ -176,137 +178,149 @@ export default function GerenciamentoContas() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Gerenciamento de Contas</h1>
-          <p className="text-muted-foreground">
-            Gerencie as imobiliárias cadastradas na plataforma
-          </p>
-        </div>
-
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Nova Imobiliária
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Cadastrar Nova Imobiliária</DialogTitle>
-              <DialogDescription>
-                Preencha os dados para criar uma nova conta de imobiliária
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="companyName">Nome da Imobiliária</Label>
-                <Input
-                  id="companyName"
-                  value={formData.companyName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
-                  placeholder="Ex: Imobiliária ABC"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="adminName">Nome do Administrador</Label>
-                <Input
-                  id="adminName"
-                  value={formData.adminName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, adminName: e.target.value }))}
-                  placeholder="Ex: João Silva"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="adminEmail">Email do Administrador</Label>
-                <Input
-                  id="adminEmail"
-                  type="email"
-                  value={formData.adminEmail}
-                  onChange={(e) => setFormData(prev => ({ ...prev, adminEmail: e.target.value }))}
-                  placeholder="admin@imobiliaria.com"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="adminPassword">Senha Inicial</Label>
-                <Input
-                  id="adminPassword"
-                  type="password"
-                  value={formData.adminPassword}
-                  onChange={(e) => setFormData(prev => ({ ...prev, adminPassword: e.target.value }))}
-                  placeholder="Senha temporária"
-                />
-              </div>
-
-              <Button 
-                onClick={handleCreateCompany} 
-                disabled={loading}
-                className="w-full"
-              >
-                {loading ? "Criando..." : "Criar Imobiliária"}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Gerenciamento de Contas</h1>
+        <p className="text-muted-foreground">
+          Gerencie as imobiliárias cadastradas na plataforma
+        </p>
       </div>
 
-      {isLoading ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p>Carregando empresas...</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {companies?.map((company) => (
-            <Card key={company.id}>
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-primary" />
-                    <CardTitle className="text-lg">{company.name}</CardTitle>
+      <Tabs defaultValue="create" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="create">Criar Imobiliárias</TabsTrigger>
+          <TabsTrigger value="manage">Gerenciar Empresas</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="create" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Criar Novas Imobiliárias</h2>
+              <p className="text-muted-foreground">
+                Cadastre novas empresas na plataforma
+              </p>
+            </div>
+
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nova Imobiliária
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Cadastrar Nova Imobiliária</DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados para criar uma nova conta de imobiliária
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="companyName">Nome da Imobiliária</Label>
+                    <Input
+                      id="companyName"
+                      value={formData.companyName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, companyName: e.target.value }))}
+                      placeholder="Ex: Imobiliária ABC"
+                    />
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeleteCompany(company.id, company.name)}
-                    className="text-destructive hover:text-destructive"
+
+                  <div>
+                    <Label htmlFor="adminName">Nome do Administrador</Label>
+                    <Input
+                      id="adminName"
+                      value={formData.adminName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, adminName: e.target.value }))}
+                      placeholder="Ex: João Silva"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="adminEmail">Email do Administrador</Label>
+                    <Input
+                      id="adminEmail"
+                      type="email"
+                      value={formData.adminEmail}
+                      onChange={(e) => setFormData(prev => ({ ...prev, adminEmail: e.target.value }))}
+                      placeholder="admin@imobiliaria.com"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="adminPassword">Senha Inicial</Label>
+                    <Input
+                      id="adminPassword"
+                      type="password"
+                      value={formData.adminPassword}
+                      onChange={(e) => setFormData(prev => ({ ...prev, adminPassword: e.target.value }))}
+                      placeholder="Senha temporária"
+                    />
+                  </div>
+
+                  <Button 
+                    onClick={handleCreateCompany} 
+                    disabled={loading}
+                    className="w-full"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    {loading ? "Criando..." : "Criar Imobiliária"}
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="w-4 h-4" />
-                    <span>{company.user_count || 0} usuários</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Criada em: {new Date(company.created_at).toLocaleDateString('pt-BR')}
-                  </div>
-                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {isLoading ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p>Carregando empresas...</p>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {companies?.map((company) => (
+                <Card key={company.id}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="w-5 h-5 text-primary" />
+                        <CardTitle className="text-lg">{company.name}</CardTitle>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Users className="w-4 h-4" />
+                        <span>{company.user_count || 0} usuários</span>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Criada em: {new Date(company.created_at).toLocaleDateString('pt-BR')}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
-      {companies?.length === 0 && (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Nenhuma imobiliária cadastrada</h3>
-            <p className="text-muted-foreground mb-4">
-              Comece criando a primeira conta de imobiliária
-            </p>
-          </CardContent>
-        </Card>
-      )}
+          {companies?.length === 0 && (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Nenhuma imobiliária cadastrada</h3>
+                <p className="text-muted-foreground mb-4">
+                  Comece criando a primeira conta de imobiliária
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="manage" className="space-y-6">
+          <CompanyManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
