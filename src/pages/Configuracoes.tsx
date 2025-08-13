@@ -13,7 +13,7 @@ import { useCompany } from "@/contexts/CompanyContext";
 import { useToast } from "@/hooks/use-toast";
 import { SecuritySettings } from "@/components/SecuritySettings";
 import { AccessControlWrapper } from "@/components/AccessControlWrapper";
-import { supabase } from "@/integrations/supabase/client";
+
 import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun, Shield } from "lucide-react";
 
 const Configuracoes = () => {
@@ -52,17 +52,6 @@ const Configuracoes = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from('company_settings')
-        .upsert({
-          name: companyName,
-          logo: companyLogo
-        });
-
-      if (error) {
-        throw error;
-      }
-
       await updateSettings({
         name: companyName,
         logo: companyLogo

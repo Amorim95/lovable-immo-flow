@@ -70,59 +70,22 @@ export default function ConfiguracoesSite() {
   const handleSave = async () => {
     setLoading(true);
     try {
-      // Primeiro, buscar todas as configurações existentes para pegar o ID mais recente
-      const { data: allSettings } = await supabase
-        .from('company_settings')
-        .select('id')
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      if (allSettings && allSettings.length > 0) {
-        // Atualizar o registro mais recente
-        const { error } = await supabase
-          .from('company_settings')
-          .update({
-            name: siteSettings.title,
-            site_title: siteSettings.title,
-            site_description: siteSettings.description,
-            site_phone: siteSettings.phone,
-            site_email: siteSettings.email,
-            site_address: siteSettings.address,
-            site_whatsapp: siteSettings.whatsapp,
-            site_facebook: siteSettings.facebook,
-            site_instagram: siteSettings.instagram,
-            site_about: siteSettings.about,
-            site_horario_semana: siteSettings.horario_semana,
-            site_horario_sabado: siteSettings.horario_sabado,
-            site_horario_domingo: siteSettings.horario_domingo,
-            site_observacoes_horario: siteSettings.observacoes_horario,
-          })
-          .eq('id', allSettings[0].id);
-
-        if (error) throw error;
-      } else {
-        // Criar nova configuração se não existir nenhuma
-        const { error } = await supabase
-          .from('company_settings')
-          .insert({
-            name: siteSettings.title,
-            site_title: siteSettings.title,
-            site_description: siteSettings.description,
-            site_phone: siteSettings.phone,
-            site_email: siteSettings.email,
-            site_address: siteSettings.address,
-            site_whatsapp: siteSettings.whatsapp,
-            site_facebook: siteSettings.facebook,
-            site_instagram: siteSettings.instagram,
-            site_about: siteSettings.about,
-            site_horario_semana: siteSettings.horario_semana,
-            site_horario_sabado: siteSettings.horario_sabado,
-            site_horario_domingo: siteSettings.horario_domingo,
-            site_observacoes_horario: siteSettings.observacoes_horario,
-          });
-
-        if (error) throw error;
-      }
+      await updateSettings({
+        name: siteSettings.title,
+        site_title: siteSettings.title,
+        site_description: siteSettings.description,
+        site_phone: siteSettings.phone,
+        site_email: siteSettings.email,
+        site_address: siteSettings.address,
+        site_whatsapp: siteSettings.whatsapp,
+        site_facebook: siteSettings.facebook,
+        site_instagram: siteSettings.instagram,
+        site_about: siteSettings.about,
+        site_horario_semana: siteSettings.horario_semana,
+        site_horario_sabado: siteSettings.horario_sabado,
+        site_horario_domingo: siteSettings.horario_domingo,
+        site_observacoes_horario: siteSettings.observacoes_horario,
+      });
 
       await refreshSettings();
       toast.success('Configurações do site atualizadas com sucesso!');
@@ -193,54 +156,9 @@ export default function ConfiguracoesSite() {
 
       console.log('URL pública gerada:', publicUrl);
 
-      // Atualizar configurações da empresa com a nova logo
-      console.log('Atualizando configurações da empresa...');
-      
-      // Buscar configurações existentes primeiro
-      const { data: existingSettings, error: fetchError } = await supabase
-        .from('company_settings')
-        .select('id')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (fetchError) {
-        console.error('Erro ao buscar configurações existentes:', fetchError);
-        throw fetchError;
-      }
-
-      if (existingSettings) {
-        // Atualizar registro existente
-        const { error: updateError } = await supabase
-          .from('company_settings')
-          .update({ logo: publicUrl })
-          .eq('id', existingSettings.id);
-
-        if (updateError) {
-          console.error('Erro ao atualizar logo:', updateError);
-          throw updateError;
-        }
-        console.log('Logo atualizada no banco de dados');
-      } else {
-        // Criar novo registro se não existir
-        const { error: insertError } = await supabase
-          .from('company_settings')
-          .insert({ 
-            name: 'Click Imóveis',
-            logo: publicUrl 
-          });
-
-        if (insertError) {
-          console.error('Erro ao inserir nova configuração:', insertError);
-          throw insertError;
-        }
-        console.log('Nova configuração criada com logo');
-      }
-
-      // Atualizar contexto local
+      // Atualizar no contexto e no banco, com segurança por company_id
       await updateSettings({ logo: publicUrl });
-      
-      // Forçar atualização das configurações
+
       await refreshSettings();
       
       console.log('Logo atualizada com sucesso');

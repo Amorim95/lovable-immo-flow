@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useCompany } from "@/contexts/CompanyContext";
-import { supabase } from "@/integrations/supabase/client";
+
 import { 
   Upload
 } from "lucide-react";
@@ -20,11 +20,6 @@ export default function MobileCompanySettings() {
 
   const canManageCompany = isAdmin || isGestor;
 
-  useEffect(() => {
-    if (canManageCompany) {
-      loadCompanySettings();
-    }
-  }, [canManageCompany]);
 
   useEffect(() => {
     // Sincronizar com o contexto
@@ -33,29 +28,6 @@ export default function MobileCompanySettings() {
     setLoading(false);
   }, [settings]);
 
-  const loadCompanySettings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('company_settings')
-        .select('*')
-        .limit(1)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Erro ao carregar configurações da empresa:', error);
-        return;
-      }
-
-      if (data) {
-        setCompanyName(data.name || '');
-        setCompanyLogo(data.logo || null);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar configurações da empresa:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -79,22 +51,12 @@ export default function MobileCompanySettings() {
     }
 
     try {
-      const { error } = await supabase
-        .from('company_settings')
-        .upsert({
-          name: companyName,
-          logo: companyLogo
-        });
-
-      if (error) {
-        throw error;
-      }
-
-      // Atualizar o contexto para refletir na tela de login
       await updateSettings({
         name: companyName,
         logo: companyLogo
       });
+
+      await refreshSettings();
 
       toast({
         title: "Dados salvos",
