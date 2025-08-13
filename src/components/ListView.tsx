@@ -204,6 +204,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                     <SelectItem value="visita">Visita</SelectItem>
                     <SelectItem value="vendas-fechadas">Vendas Fechadas</SelectItem>
                     <SelectItem value="em-pausa">Em Pausa</SelectItem>
+                    <SelectItem value="descarte">Descarte</SelectItem>
                   </SelectContent>
                 </Select>
               </TableCell>
