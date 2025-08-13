@@ -71,10 +71,10 @@ const menuItems = [
     showForAll: true // Permitir acesso para todos, controle interno na página
   },
   { 
-    title: "Gerenciar Contas", 
-    url: "/gerenciamento-contas", 
+    title: "Admin",
+    url: "/admin",
     icon: Building2,
-    description: "Gerenciar imobiliárias",
+    description: "Console do super admin",
     requireSuperAdmin: true
   }
 ];

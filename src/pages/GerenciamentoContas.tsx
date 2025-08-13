@@ -217,9 +217,8 @@ export default function GerenciamentoContas() {
       </div>
 
       <Tabs defaultValue="create" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="create">Criar Imobiliárias</TabsTrigger>
-          <TabsTrigger value="manage">Gerenciar Empresas</TabsTrigger>
         </TabsList>
         
         <TabsContent value="create" className="space-y-6">
@@ -348,9 +347,6 @@ export default function GerenciamentoContas() {
           )}
         </TabsContent>
 
-        <TabsContent value="manage" className="space-y-6">
-          <CompanyManagement />
-        </TabsContent>
       </Tabs>
     </div>
   );
