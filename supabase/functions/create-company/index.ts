@@ -212,30 +212,47 @@ serve(async (req) => {
       }
 
       console.log('=== Etapa 5: Criando configurações vazias da empresa ===');
-      // 5. Criar configurações iniciais vazias da empresa para onboarding
-      const { error: settingsError } = await supabaseAdmin
+      // 5. Verificar se já existem configurações para esta empresa
+      const { data: existingSettings, error: settingsCheckError } = await supabaseAdmin
         .from('company_settings')
-        .insert({
-          company_id: company.id, // Associar à empresa criada
-          name: '', // Vazio para onboarding
-          logo: null,
-          site_title: '',
-          site_description: '',
-          site_phone: '',
-          site_email: adminEmail, // Apenas o email do admin
-          site_address: '',
-          site_whatsapp: '',
-          site_facebook: '',
-          site_instagram: '',
-          site_about: '',
-          site_horario_semana: '9:00 às 18:00',
-          site_horario_sabado: '9:00 às 15:00', 
-          site_horario_domingo: 'Fechado',
-          site_observacoes_horario: ''
-        });
+        .select('id')
+        .eq('company_id', company.id)
+        .single();
 
-      if (settingsError) {
-        console.warn('Erro ao criar configurações (não crítico):', settingsError);
+      if (settingsCheckError && settingsCheckError.code !== 'PGRST116') {
+        console.warn('Erro ao verificar configurações existentes:', settingsCheckError);
+      }
+
+      // Só criar configurações se não existirem
+      if (!existingSettings) {
+        const { error: settingsError } = await supabaseAdmin
+          .from('company_settings')
+          .insert({
+            company_id: company.id, // Associar à empresa criada
+            name: '', // Vazio para onboarding
+            logo: null,
+            site_title: '',
+            site_description: '',
+            site_phone: '',
+            site_email: adminEmail, // Apenas o email do admin
+            site_address: '',
+            site_whatsapp: '',
+            site_facebook: '',
+            site_instagram: '',
+            site_about: '',
+            site_horario_semana: '9:00 às 18:00',
+            site_horario_sabado: '9:00 às 15:00', 
+            site_horario_domingo: 'Fechado',
+            site_observacoes_horario: ''
+          });
+
+        if (settingsError) {
+          console.warn('Erro ao criar configurações (não crítico):', settingsError);
+        } else {
+          console.log('Configurações criadas para empresa:', company.id);
+        }
+      } else {
+        console.log('Configurações já existem para empresa:', company.id);
       }
 
       console.log('=== Imobiliária criada com sucesso ===');
