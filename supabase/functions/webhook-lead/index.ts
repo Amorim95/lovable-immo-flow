@@ -68,7 +68,27 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Criar o lead SEM definir user_id para que o trigger round-robin funcione
+    // Obter a primeira empresa ativa para atribuir ao lead (caso não seja especificada)
+    const { data: defaultCompany, error: companyError } = await supabase
+      .from('companies')
+      .select('id')
+      .limit(1)
+      .single();
+
+    if (companyError || !defaultCompany) {
+      console.error('Erro ao obter empresa padrão:', companyError);
+      return new Response(
+        JSON.stringify({ error: 'Nenhuma empresa encontrada para processar o lead' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    console.log('Empresa padrão encontrada:', defaultCompany.id);
+
+    // Criar o lead com company_id para que o trigger round-robin funcione
     const { data: newLead, error: leadError } = await supabase
       .from('leads')
       .insert({
@@ -76,7 +96,8 @@ Deno.serve(async (req) => {
         telefone: leadData.telefone,
         dados_adicionais: leadData.dados_adicionais || null,
         etapa: 'aguardando-atendimento',
-        atividades: []
+        atividades: [],
+        company_id: defaultCompany.id
         // user_id será atribuído automaticamente pelo trigger round-robin
       })
       .select('*, users!leads_user_id_fkey(name)')
