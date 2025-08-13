@@ -93,11 +93,11 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
       console.log('Dados da empresa:', companyData);
       console.log('Configurações do site:', settingsData);
 
-      // Aplicar configurações combinadas
+      // Aplicar configurações combinadas (prioriza company_settings)
       setSettings(prev => ({
         ...prev,
-        name: companyData?.name || '',
-        logo: companyData?.logo_url || null,
+        name: (settingsData?.name && settingsData.name.trim() !== '' ? settingsData.name : companyData?.name) || '',
+        logo: (settingsData?.logo && settingsData.logo !== '' ? settingsData.logo : companyData?.logo_url) || null,
         site_title: settingsData?.site_title || companyData?.name || '',
         site_description: settingsData?.site_description || '',
         site_phone: settingsData?.site_phone || '',
@@ -158,31 +158,8 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
           .eq('id', userId);
       }
 
-      // Atualizar informações da empresa existente APENAS SE DADOS FOREM FORNECIDOS
-      const companyUpdateData: any = {};
-      
-      if (newSettings.name !== undefined) {
-        companyUpdateData.name = newSettings.name;
-      }
-      
-      if (newSettings.logo !== undefined) {
-        companyUpdateData.logo_url = newSettings.logo;
-      }
-
-      // Só fazer update se houver dados para atualizar
-      if (Object.keys(companyUpdateData).length > 0) {
-        const { error: companyUpdateError } = await supabase
-          .from('companies')
-          .update(companyUpdateData)
-          .eq('id', companyId);
-
-        if (companyUpdateError) {
-          console.error('Erro ao atualizar empresa:', companyUpdateError);
-          throw new Error('Erro ao atualizar empresa');
-        }
-        
-        console.log('Empresa atualizada:', companyUpdateData);
-      }
+      // Não atualizar tabela companies aqui para evitar efeitos colaterais entre empresas
+      // Todas as alterações de nome/logo ficam em company_settings, respeitando RLS
 
       // Atualizar company_settings para informações do site
       const existingSettingsQuery = await supabase
@@ -192,24 +169,22 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
         .limit(1)
         .maybeSingle();
 
-      const settingsData = {
-        company_id: companyId,
-        name: newSettings.name || '',
-        logo: newSettings.logo,
-        site_title: newSettings.site_title,
-        site_description: newSettings.site_description,
-        site_phone: newSettings.site_phone,
-        site_email: newSettings.site_email,
-        site_address: newSettings.site_address,
-        site_whatsapp: newSettings.site_whatsapp,
-        site_facebook: newSettings.site_facebook,
-        site_instagram: newSettings.site_instagram,
-        site_about: newSettings.site_about,
-        site_horario_semana: newSettings.site_horario_semana,
-        site_horario_sabado: newSettings.site_horario_sabado,
-        site_horario_domingo: newSettings.site_horario_domingo,
-        site_observacoes_horario: newSettings.site_observacoes_horario,
-      };
+      const settingsData: any = { company_id: companyId };
+      if (newSettings.name !== undefined) settingsData.name = newSettings.name;
+      if (newSettings.logo !== undefined) settingsData.logo = newSettings.logo;
+      if (newSettings.site_title !== undefined) settingsData.site_title = newSettings.site_title;
+      if (newSettings.site_description !== undefined) settingsData.site_description = newSettings.site_description;
+      if (newSettings.site_phone !== undefined) settingsData.site_phone = newSettings.site_phone;
+      if (newSettings.site_email !== undefined) settingsData.site_email = newSettings.site_email;
+      if (newSettings.site_address !== undefined) settingsData.site_address = newSettings.site_address;
+      if (newSettings.site_whatsapp !== undefined) settingsData.site_whatsapp = newSettings.site_whatsapp;
+      if (newSettings.site_facebook !== undefined) settingsData.site_facebook = newSettings.site_facebook;
+      if (newSettings.site_instagram !== undefined) settingsData.site_instagram = newSettings.site_instagram;
+      if (newSettings.site_about !== undefined) settingsData.site_about = newSettings.site_about;
+      if (newSettings.site_horario_semana !== undefined) settingsData.site_horario_semana = newSettings.site_horario_semana;
+      if (newSettings.site_horario_sabado !== undefined) settingsData.site_horario_sabado = newSettings.site_horario_sabado;
+      if (newSettings.site_horario_domingo !== undefined) settingsData.site_horario_domingo = newSettings.site_horario_domingo;
+      if (newSettings.site_observacoes_horario !== undefined) settingsData.site_observacoes_horario = newSettings.site_observacoes_horario;
 
       if (existingSettingsQuery.data) {
         const { error } = await supabase
