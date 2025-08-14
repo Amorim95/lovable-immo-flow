@@ -285,9 +285,12 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                     <SelectItem value="aguardando-atendimento">Aguardando Atendimento</SelectItem>
                     <SelectItem value="tentativas-contato">Em Tentativas de Contato</SelectItem>
                     <SelectItem value="atendeu">Atendeu</SelectItem>
+                    <SelectItem value="nome-sujo">Nome Sujo</SelectItem>
+                    <SelectItem value="nome-limpo">Nome Limpo</SelectItem>
                     <SelectItem value="visita">Visita</SelectItem>
                     <SelectItem value="vendas-fechadas">Vendas Fechadas</SelectItem>
                     <SelectItem value="em-pausa">Em Pausa</SelectItem>
+                    <SelectItem value="descarte">Descarte</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
