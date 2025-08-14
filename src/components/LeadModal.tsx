@@ -20,7 +20,8 @@ import {
   Phone, 
   User, 
   Edit,
-  Calendar 
+  Calendar,
+  Copy
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -222,6 +223,17 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
     });
   };
 
+  const handleCopyDadosAdicionais = async () => {
+    try {
+      const dadosAdicionais = lead.dadosAdicionais || '';
+      await navigator.clipboard.writeText(dadosAdicionais);
+      toast.success('Dados adicionais copiados!');
+    } catch (error) {
+      console.error('Erro ao copiar:', error);
+      toast.error('Erro ao copiar dados');
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
@@ -329,7 +341,18 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                 
                 {/* Dados Adicionais - Espaço Aumentado */}
                 <div className="space-y-3">
-                  <Label className="text-base font-semibold">Dados Adicionais do Lead</Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base font-semibold">Dados Adicionais do Lead</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCopyDadosAdicionais}
+                      className="flex items-center gap-2"
+                    >
+                      <Copy className="w-4 h-4" />
+                      Copiar
+                    </Button>
+                  </div>
                   <Textarea
                     value={editMode ? (formData.dadosAdicionais ?? lead.dadosAdicionais ?? '') : lead.dadosAdicionais ?? ''}
                     onChange={(e) => setFormData({ ...formData, dadosAdicionais: e.target.value })}
