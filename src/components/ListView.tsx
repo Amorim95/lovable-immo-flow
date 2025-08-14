@@ -28,6 +28,8 @@ const stageLabels = {
   'aguardando-atendimento': 'Aguardando Atendimento',
   'tentativas-contato': 'Em Tentativas de Contato',
   'atendeu': 'Atendeu',
+  'nome-sujo': 'Nome Sujo',
+  'nome-limpo': 'Nome Limpo',
   'visita': 'Visita',
   'vendas-fechadas': 'Vendas Fechadas',
   'em-pausa': 'Em Pausa',
@@ -38,6 +40,8 @@ const stageColors = {
   'aguardando-atendimento': 'bg-slate-100 text-slate-800',
   'tentativas-contato': 'bg-yellow-100 text-yellow-800',
   'atendeu': 'bg-blue-100 text-blue-800',
+  'nome-sujo': 'bg-amber-100 text-amber-800',
+  'nome-limpo': 'bg-teal-100 text-teal-800',
   'visita': 'bg-purple-100 text-purple-800',
   'vendas-fechadas': 'bg-green-100 text-green-800',
   'em-pausa': 'bg-orange-100 text-orange-800',
@@ -201,6 +205,8 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                     <SelectItem value="aguardando-atendimento">Aguardando Atendimento</SelectItem>
                     <SelectItem value="tentativas-contato">Em Tentativas de Contato</SelectItem>
                     <SelectItem value="atendeu">Atendeu</SelectItem>
+                    <SelectItem value="nome-sujo">Nome Sujo</SelectItem>
+                    <SelectItem value="nome-limpo">Nome Limpo</SelectItem>
                     <SelectItem value="visita">Visita</SelectItem>
                     <SelectItem value="vendas-fechadas">Vendas Fechadas</SelectItem>
                     <SelectItem value="em-pausa">Em Pausa</SelectItem>

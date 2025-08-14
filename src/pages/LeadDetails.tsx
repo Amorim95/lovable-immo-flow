@@ -16,9 +16,12 @@ const stageLabels = {
   'aguardando-atendimento': 'Aguardando Atendimento',
   'tentativas-contato': 'Em Tentativas de Contato', 
   'atendeu': 'Atendeu',
+  'nome-sujo': 'Nome Sujo',
+  'nome-limpo': 'Nome Limpo',
   'visita': 'Visita',
   'vendas-fechadas': 'Vendas Fechadas',
-  'em-pausa': 'Em Pausa'
+  'em-pausa': 'Em Pausa',
+  'descarte': 'Descarte'
 };
 
 export default function LeadDetails() {

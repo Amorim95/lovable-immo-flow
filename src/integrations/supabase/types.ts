@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -795,7 +795,7 @@ export type Database = {
         Returns: boolean
       }
       user_role_check: {
-        Args: { _user_id: string; _company_id: string }
+        Args: { _company_id: string; _user_id: string }
         Returns: string
       }
       validate_email: {
@@ -803,7 +803,7 @@ export type Database = {
         Returns: boolean
       }
       verify_password: {
-        Args: { password: string; hash: string }
+        Args: { hash: string; password: string }
         Returns: boolean
       }
     }
@@ -823,6 +823,8 @@ export type Database = {
         | "vendas-fechadas"
         | "em-pausa"
         | "descarte"
+        | "nome-sujo"
+        | "nome-limpo"
       user_role: "admin" | "corretor" | "gestor" | "dono"
       user_status: "ativo" | "inativo" | "pendente"
     }
@@ -968,6 +970,8 @@ export const Constants = {
         "vendas-fechadas",
         "em-pausa",
         "descarte",
+        "nome-sujo",
+        "nome-limpo",
       ],
       user_role: ["admin", "corretor", "gestor", "dono"],
       user_status: ["ativo", "inativo", "pendente"],
