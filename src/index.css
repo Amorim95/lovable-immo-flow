@@ -156,3 +156,9 @@ All colors MUST be HSL.
   color: #3730a3;
   border: 1px solid #818cf8;
 }
+
+.tag-aprovado {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #34d399;
+}

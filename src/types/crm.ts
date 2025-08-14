@@ -30,7 +30,8 @@ export type LeadStage =
 export type LeadTag = 
   | 'tentando-financiamento'
   | 'parou-responder'
-  | 'cpf-restricao';
+  | 'cpf-restricao'
+  | 'aprovado';
 
 export interface Atividade {
   id: string;

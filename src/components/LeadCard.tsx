@@ -29,6 +29,10 @@ const tagConfig: Record<LeadTag, { label: string; className: string }> = {
   'cpf-restricao': {
     label: 'CPF Restrição',
     className: 'tag-cpf-restricao'
+  },
+  'aprovado': {
+    label: 'Aprovado',
+    className: 'tag-aprovado'
   }
 };
 

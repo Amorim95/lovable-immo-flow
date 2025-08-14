@@ -29,7 +29,8 @@ const getTagColor = (nome: string, dbColor?: string) => {
   const colorMap: Record<string, string> = {
     'tentando-financiamento': 'bg-blue-100 text-blue-800 border-blue-200',
     'parou-responder': 'bg-red-100 text-red-800 border-red-200',
-    'cpf-restricao': 'bg-orange-100 text-orange-800 border-orange-200'
+    'cpf-restricao': 'bg-orange-100 text-orange-800 border-orange-200',
+    'aprovado': 'bg-green-100 text-green-800 border-green-200'
   };
   
   return colorMap[nome] || 'bg-gray-100 text-gray-800 border-gray-200';
@@ -53,7 +54,8 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
     const displayNames: Record<string, string> = {
       'tentando-financiamento': 'Tentando Financiamento',
       'parou-responder': 'Parou de Responder',
-      'cpf-restricao': 'CPF Restrição'
+      'cpf-restricao': 'CPF Restrição',
+      'aprovado': 'Aprovado'
     };
     return displayNames[tagName] || tagName;
   };
