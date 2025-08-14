@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, MessageCircle, History, Plus, Clock } from "lucide-react";
+import { Edit, MessageCircle, History, Plus, Clock, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const stageLabels = {
@@ -268,6 +268,23 @@ export default function LeadDetails() {
     }
   };
 
+  const handleCopyDadosAdicionais = async () => {
+    try {
+      const dadosAdicionais = formData.dadosAdicionais || '';
+      await navigator.clipboard.writeText(dadosAdicionais);
+      toast({
+        title: "Copiado!",
+        description: "Dados adicionais copiados para a área de transferência."
+      });
+    } catch (error) {
+      console.error('Erro ao copiar:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao copiar dados."
+      });
+    }
+  };
+
   if (!lead) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -373,7 +390,18 @@ export default function LeadDetails() {
             </div>
 
             <div>
-              <Label htmlFor="dados">Dados Adicionais</Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label htmlFor="dados">Dados Adicionais</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyDadosAdicionais}
+                  className="flex items-center gap-2"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copiar
+                </Button>
+              </div>
               <Textarea
                 id="dados"
                 value={formData.dadosAdicionais}
