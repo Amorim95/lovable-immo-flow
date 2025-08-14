@@ -235,75 +235,42 @@ const PerformanceGeral = () => {
         </CardContent>
       </Card>
 
-      {/* Tabelas de Análise */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Análise por Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-medium">Status</th>
-                    <th className="text-right py-3 px-4 font-medium">Qtd</th>
-                    <th className="text-right py-3 px-4 font-medium">%</th>
+      {/* Tabela de Análise */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Análise por Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-3 px-4 font-medium">Status</th>
+                  <th className="text-right py-3 px-4 font-medium">Qtd</th>
+                  <th className="text-right py-3 px-4 font-medium">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dadosStatus.map((item, index) => (
+                  <tr key={index} className="border-b hover:bg-gray-50">
+                    <td className="py-3 px-4 flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: item.color }}
+                      ></div>
+                      {item.name}
+                    </td>
+                    <td className="text-right py-3 px-4 font-medium">{item.value}</td>
+                    <td className="text-right py-3 px-4">
+                      {performanceGeral.leadsTotais > 0 ? ((item.value / performanceGeral.leadsTotais) * 100).toFixed(1) : '0.0'}%
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {dadosStatus.map((item, index) => (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4 flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: item.color }}
-                        ></div>
-                        {item.name}
-                      </td>
-                      <td className="text-right py-3 px-4 font-medium">{item.value}</td>
-                      <td className="text-right py-3 px-4">
-                        {performanceGeral.leadsTotais > 0 ? ((item.value / performanceGeral.leadsTotais) * 100).toFixed(1) : '0.0'}%
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Metas vs Realizado</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                <span className="font-medium">Tempo Resposta</span>
-                <div className="text-right">
-                  <div className="font-bold">{performanceGeral.tempoMedioResposta} min</div>
-                  <div className="text-sm text-gray-500">Meta: 15 min</div>
-                </div>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                <span className="font-medium">Taxa Conversão</span>
-                <div className="text-right">
-                  <div className="font-bold">{performanceGeral.conversaoGeral}%</div>
-                  <div className="text-sm text-gray-500">Meta: 8%</div>
-                </div>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                <span className="font-medium">Leads Mensais</span>
-                <div className="text-right">
-                  <div className="font-bold">{Math.floor(performanceGeral.leadsTotais / 12)}</div>
-                  <div className="text-sm text-gray-500">Meta: 100</div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
