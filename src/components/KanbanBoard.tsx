@@ -20,6 +20,16 @@ const stageConfig = {
     color: 'bg-blue-50 border-blue-200',
     headerColor: 'bg-blue-500'
   },
+  'nome-sujo': {
+    title: 'Nome Sujo',
+    color: 'bg-amber-50 border-amber-200',
+    headerColor: 'bg-amber-500'
+  },
+  'nome-limpo': {
+    title: 'Nome Limpo',
+    color: 'bg-teal-50 border-teal-200',
+    headerColor: 'bg-teal-500'
+  },
   'visita': {
     title: 'Visita',
     color: 'bg-purple-50 border-purple-200',

@@ -20,6 +20,8 @@ export type LeadStage =
   | 'aguardando-atendimento'
   | 'tentativas-contato' 
   | 'atendeu'
+  | 'nome-sujo'
+  | 'nome-limpo'
   | 'visita'
   | 'vendas-fechadas'
   | 'em-pausa'
