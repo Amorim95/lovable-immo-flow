@@ -224,181 +224,183 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[95vh] overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <User className="w-5 h-5" />
-            {editMode ? (
-              <div className="flex gap-2 flex-1">
-                <Input
-                  value={formData.nome ?? lead.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  placeholder="Nome do lead"
-                  className="flex-1"
-                />
+      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
+        <div className="max-h-full">
+          <DialogHeader className="sticky top-0 bg-background z-10 pb-4">
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              {editMode ? (
+                <div className="flex gap-2 flex-1">
+                  <Input
+                    value={formData.nome ?? lead.nome}
+                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                    placeholder="Nome do lead"
+                    className="flex-1"
+                  />
+                </div>
+              ) : (
+                lead.nome
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
+            {/* Coluna Principal - Dados do Lead */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">Dados do Lead</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditMode(!editMode)}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  {editMode ? 'Cancelar' : 'Editar'}
+                </Button>
               </div>
-            ) : (
-              lead.nome
-            )}
-          </DialogTitle>
-        </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(95vh-120px)]">
-          {/* Coluna Principal - Dados do Lead */}
-          <div className="lg:col-span-2">
-            <ScrollArea className="h-full pr-4">
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold">Dados do Lead</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditMode(!editMode)}
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    {editMode ? 'Cancelar' : 'Editar'}
-                  </Button>
-                </div>
+              {/* Etapa do Lead */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-700">Etapa do Lead</h4>
+                <Select
+                  value={lead.etapa}
+                  onValueChange={(value) => onUpdate(lead.id, { etapa: value as Lead['etapa'] })}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="aguardando-atendimento">Aguardando Atendimento</SelectItem>
+                    <SelectItem value="tentativas-contato">Em Tentativas de Contato</SelectItem>
+                    <SelectItem value="atendeu">Atendeu</SelectItem>
+                    <SelectItem value="visita">Visita</SelectItem>
+                    <SelectItem value="vendas-fechadas">Vendas Fechadas</SelectItem>
+                    <SelectItem value="em-pausa">Em Pausa</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                {/* Etapa do Lead */}
-                <div className="space-y-4">
-                  <h4 className="font-medium text-gray-700">Etapa do Lead</h4>
-                  <Select
-                    value={lead.etapa}
-                    onValueChange={(value) => onUpdate(lead.id, { etapa: value as Lead['etapa'] })}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="aguardando-atendimento">Aguardando Atendimento</SelectItem>
-                      <SelectItem value="tentativas-contato">Em Tentativas de Contato</SelectItem>
-                      <SelectItem value="atendeu">Atendeu</SelectItem>
-                      <SelectItem value="visita">Visita</SelectItem>
-                      <SelectItem value="vendas-fechadas">Vendas Fechadas</SelectItem>
-                      <SelectItem value="em-pausa">Em Pausa</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <Separator />
 
-                <Separator />
-
-                {/* Dados Primários */}
-                <div className="space-y-4">
-                  <h4 className="font-medium text-gray-700">Dados Primários</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Nome</Label>
+              {/* Dados Primários */}
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-700">Dados Primários</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Nome</Label>
+                    <Input
+                      value={editMode ? (formData.nome ?? lead.nome) : lead.nome}
+                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                      disabled={!editMode}
+                    />
+                  </div>
+                  <div>
+                    <Label>Telefone</Label>
+                    <div className="flex gap-2">
                       <Input
-                        value={editMode ? (formData.nome ?? lead.nome) : lead.nome}
-                        onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                        value={editMode ? (formData.telefone ?? lead.telefone) : lead.telefone}
+                        onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                         disabled={!editMode}
                       />
-                    </div>
-                    <div>
-                      <Label>Telefone</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={editMode ? (formData.telefone ?? lead.telefone) : lead.telefone}
-                          onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                          disabled={!editMode}
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleWhatsAppClick(lead.telefone)}
-                        >
-                          <Phone className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Corretor</Label>
-                      <Input
-                        value={lead.corretor}
-                        disabled
-                      />
-                    </div>
-                    <div>
-                      <Label>Data de Criação</Label>
-                      <Input
-                        value={formatDate(lead.dataCriacao)}
-                        disabled
-                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleWhatsAppClick(lead.telefone)}
+                      >
+                        <Phone className="w-4 h-4" />
+                      </Button>
                     </div>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label>Dados Adicionais do Lead</Label>
-                    <Textarea
-                      value={editMode ? (formData.dadosAdicionais ?? lead.dadosAdicionais ?? '') : lead.dadosAdicionais ?? ''}
-                      onChange={(e) => setFormData({ ...formData, dadosAdicionais: e.target.value })}
-                      disabled={!editMode}
-                      placeholder="Digite informações adicionais sobre o lead..."
-                      rows={6}
-                      className="resize-none"
+                  <div>
+                    <Label>Corretor</Label>
+                    <Input
+                      value={lead.corretor}
+                      disabled
+                    />
+                  </div>
+                  <div>
+                    <Label>Data de Criação</Label>
+                    <Input
+                      value={formatDate(lead.dataCriacao)}
+                      disabled
                     />
                   </div>
                 </div>
-
-                {editMode && (
-                  <div className="flex gap-2 pb-4">
-                    <Button onClick={handleSave}>Salvar</Button>
-                    <Button variant="outline" onClick={() => setEditMode(false)}>
-                      Cancelar
-                    </Button>
-                  </div>
-                )}
+                
+                {/* Dados Adicionais - Espaço Aumentado */}
+                <div className="space-y-3">
+                  <Label className="text-base font-semibold">Dados Adicionais do Lead</Label>
+                  <Textarea
+                    value={editMode ? (formData.dadosAdicionais ?? lead.dadosAdicionais ?? '') : lead.dadosAdicionais ?? ''}
+                    onChange={(e) => setFormData({ ...formData, dadosAdicionais: e.target.value })}
+                    disabled={!editMode}
+                    placeholder="Digite informações adicionais sobre o lead... (Ex: Interesse específico, orçamento, preferências de localização, histórico de contatos anteriores, observações importantes, etc.)"
+                    rows={12}
+                    className="min-h-[300px] resize-y text-sm leading-relaxed"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Use este espaço para registrar informações detalhadas sobre o lead, suas necessidades, preferências e histórico de interações.
+                  </p>
+                </div>
               </div>
-            </ScrollArea>
-          </div>
 
-          {/* Coluna Lateral - Atividades */}
-          <div className="space-y-4 flex flex-col h-full">
-            <h3 className="text-lg font-semibold">Histórico de Atividades</h3>
-            
-            {/* Adicionar Nova Atividade */}
-            <div className="space-y-2">
-              <Textarea
-                placeholder="Adicionar nova atividade..."
-                value={newActivity}
-                onChange={(e) => setNewActivity(e.target.value)}
-                rows={3}
-              />
-              <Button onClick={handleAddActivity} size="sm" className="w-full">
-                Adicionar Atividade
-              </Button>
+              {editMode && (
+                <div className="flex gap-2 pb-6">
+                  <Button onClick={handleSave}>Salvar</Button>
+                  <Button variant="outline" onClick={() => setEditMode(false)}>
+                    Cancelar
+                  </Button>
+                </div>
+              )}
             </div>
 
-            <Separator />
+            {/* Coluna Lateral - Atividades */}
+            <div className="space-y-4 flex flex-col min-h-[600px]">
+              <h3 className="text-lg font-semibold">Histórico de Atividades</h3>
+              
+              {/* Adicionar Nova Atividade */}
+              <div className="space-y-2">
+                <Textarea
+                  placeholder="Adicionar nova atividade..."
+                  value={newActivity}
+                  onChange={(e) => setNewActivity(e.target.value)}
+                  rows={3}
+                />
+                <Button onClick={handleAddActivity} size="sm" className="w-full">
+                  Adicionar Atividade
+                </Button>
+              </div>
 
-            {/* Lista de Atividades */}
-            <div className="flex-1">
-              <ScrollArea className="h-full">
-                <div className="space-y-3 pr-4">
-                  {lead.atividades.map((atividade) => (
-                    <div key={atividade.id} className="p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Calendar className="w-3 h-3 text-gray-500" />
-                        <span className="text-xs text-gray-500">
-                          {formatDate(atividade.data)}
-                        </span>
-                        <Badge variant="outline" className="text-xs">
-                          {atividade.tipo}
-                        </Badge>
+              <Separator />
+
+              {/* Lista de Atividades */}
+              <div className="flex-1">
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-3 pr-4">
+                    {lead.atividades.map((atividade) => (
+                      <div key={atividade.id} className="p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Calendar className="w-3 h-3 text-gray-500" />
+                          <span className="text-xs text-gray-500">
+                            {formatDate(atividade.data)}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            {atividade.tipo}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-800">{atividade.descricao}</p>
+                        <p className="text-xs text-gray-500 mt-1">Por: {atividade.corretor}</p>
                       </div>
-                      <p className="text-sm text-gray-800">{atividade.descricao}</p>
-                      <p className="text-xs text-gray-500 mt-1">Por: {atividade.corretor}</p>
-                    </div>
-                  ))}
-                  
-                  {lead.atividades.length === 0 && (
-                    <div className="text-center py-4 text-gray-500">
-                      <p className="text-sm">Nenhuma atividade registrada</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
+                    ))}
+                    
+                    {lead.atividades.length === 0 && (
+                      <div className="text-center py-4 text-gray-500">
+                        <p className="text-sm">Nenhuma atividade registrada</p>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
             </div>
           </div>
         </div>
