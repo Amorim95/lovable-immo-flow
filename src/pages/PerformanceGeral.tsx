@@ -11,9 +11,12 @@ const chartConfig = {
   aguardando: { label: "Aguardando", color: "#64748b" },
   tentativas: { label: "Tentativas", color: "#eab308" },
   atendeu: { label: "Atendeu", color: "#3b82f6" },
+  nomeSujo: { label: "Nome Sujo", color: "#f59e0b" },
+  nomeLimpo: { label: "Nome Limpo", color: "#14b8a6" },
   visita: { label: "Visita", color: "#8b5cf6" },
   vendas: { label: "Vendas", color: "#10b981" },
-  pausa: { label: "Pausa", color: "#f97316" }
+  pausa: { label: "Pausa", color: "#f97316" },
+  descarte: { label: "Descarte", color: "#ef4444" }
 };
 
 const PerformanceGeral = () => {
@@ -32,9 +35,12 @@ const PerformanceGeral = () => {
     { name: "Aguardando", value: performanceGeral.aguardandoAtendimento, color: chartConfig.aguardando.color },
     { name: "Tentativas", value: performanceGeral.tentativasContato, color: chartConfig.tentativas.color },
     { name: "Atendeu", value: performanceGeral.atendeu, color: chartConfig.atendeu.color },
+    { name: "Nome Sujo", value: performanceGeral.nomeSujo, color: chartConfig.nomeSujo.color },
+    { name: "Nome Limpo", value: performanceGeral.nomeLimpo, color: chartConfig.nomeLimpo.color },
     { name: "Visita", value: performanceGeral.visita, color: chartConfig.visita.color },
     { name: "Vendas", value: performanceGeral.vendasFechadas, color: chartConfig.vendas.color },
-    { name: "Pausa", value: performanceGeral.pausa, color: chartConfig.pausa.color }
+    { name: "Pausa", value: performanceGeral.pausa, color: chartConfig.pausa.color },
+    { name: "Descarte", value: performanceGeral.descarte, color: chartConfig.descarte.color }
   ];
 
 
