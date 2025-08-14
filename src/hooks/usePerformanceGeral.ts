@@ -10,9 +10,12 @@ interface PerformanceGeral {
   aguardandoAtendimento: number;
   tentativasContato: number;
   atendeu: number;
+  nomeSujo: number;
+  nomeLimpo: number;
   visita: number;
   vendasFechadas: number;
   pausa: number;
+  descarte: number;
   crescimentoMensal: number;
 }
 
@@ -38,9 +41,12 @@ export function usePerformanceGeral(dateRange?: DateRange) {
     aguardandoAtendimento: 0,
     tentativasContato: 0,
     atendeu: 0,
+    nomeSujo: 0,
+    nomeLimpo: 0,
     visita: 0,
     vendasFechadas: 0,
     pausa: 0,
+    descarte: 0,
     crescimentoMensal: 0
   });
   const [evolutionData, setEvolutionData] = useState<EvolutionData[]>([]);
@@ -79,9 +85,12 @@ export function usePerformanceGeral(dateRange?: DateRange) {
       const aguardandoAtendimento = leadsData?.filter(lead => lead.etapa === 'aguardando-atendimento').length || 0;
       const tentativasContato = leadsData?.filter(lead => lead.etapa === 'tentativas-contato').length || 0;
       const atendeu = leadsData?.filter(lead => lead.etapa === 'atendeu').length || 0;
+      const nomeSujo = leadsData?.filter(lead => lead.etapa === 'nome-sujo').length || 0;
+      const nomeLimpo = leadsData?.filter(lead => lead.etapa === 'nome-limpo').length || 0;
       const visita = leadsData?.filter(lead => lead.etapa === 'visita').length || 0;
       const vendas = leadsData?.filter(lead => lead.etapa === 'vendas-fechadas').length || 0;
       const pausa = leadsData?.filter(lead => lead.etapa === 'em-pausa').length || 0;
+      const descarte = leadsData?.filter(lead => lead.etapa === 'descarte').length || 0;
 
       const conversaoGeral = leadsTotais > 0 ? (vendas / leadsTotais) * 100 : 0;
       
@@ -128,9 +137,12 @@ export function usePerformanceGeral(dateRange?: DateRange) {
         aguardandoAtendimento,
         tentativasContato,
         atendeu,
+        nomeSujo,
+        nomeLimpo,
         visita,
         vendasFechadas: vendas,
         pausa,
+        descarte,
         crescimentoMensal: Number(crescimentoMensal.toFixed(1))
       });
 

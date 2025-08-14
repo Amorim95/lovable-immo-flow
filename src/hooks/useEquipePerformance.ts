@@ -13,9 +13,12 @@ interface EquipePerformance {
   aguardandoAtendimento: number;
   tentativasContato: number;
   atendeu: number;
+  nomeSujo: number;
+  nomeLimpo: number;
   visita: number;
   vendasFechadas: number;
   pausa: number;
+  descarte: number;
   ranking?: number;
 }
 
@@ -97,9 +100,12 @@ export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
         const aguardandoAtendimento = equipeLeads.filter(lead => lead.etapa === 'aguardando-atendimento').length;
         const tentativasContato = equipeLeads.filter(lead => lead.etapa === 'tentativas-contato').length;
         const atendeu = equipeLeads.filter(lead => lead.etapa === 'atendeu').length;
+        const nomeSujo = equipeLeads.filter(lead => lead.etapa === 'nome-sujo').length;
+        const nomeLimpo = equipeLeads.filter(lead => lead.etapa === 'nome-limpo').length;
         const visita = equipeLeads.filter(lead => lead.etapa === 'visita').length;
         const vendas = equipeLeads.filter(lead => lead.etapa === 'vendas-fechadas').length;
         const pausa = equipeLeads.filter(lead => lead.etapa === 'em-pausa').length;
+        const descarte = equipeLeads.filter(lead => lead.etapa === 'descarte').length;
 
         const conversao = leadsTotais > 0 ? (vendas / leadsTotais) * 100 : 0;
         
@@ -129,9 +135,12 @@ export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
           aguardandoAtendimento,
           tentativasContato,
           atendeu,
+          nomeSujo,
+          nomeLimpo,
           visita,
           vendasFechadas: vendas,
-          pausa
+          pausa,
+          descarte
         };
       }) || [];
 

@@ -13,9 +13,12 @@ interface CorretorPerformance {
   aguardandoAtendimento: number;
   tentativasContato: number;
   atendeu: number;
+  nomeSujo: number;
+  nomeLimpo: number;
   visita: number;
   vendas: number;
   pausa: number;
+  descarte: number;
 }
 
 interface DateRange {
@@ -83,9 +86,12 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
         const aguardandoAtendimento = userLeads.filter(lead => lead.etapa === 'aguardando-atendimento').length;
         const tentativasContato = userLeads.filter(lead => lead.etapa === 'tentativas-contato').length;
         const atendeu = userLeads.filter(lead => lead.etapa === 'atendeu').length;
+        const nomeSujo = userLeads.filter(lead => lead.etapa === 'nome-sujo').length;
+        const nomeLimpo = userLeads.filter(lead => lead.etapa === 'nome-limpo').length;
         const visita = userLeads.filter(lead => lead.etapa === 'visita').length;
         const vendas = userLeads.filter(lead => lead.etapa === 'vendas-fechadas').length;
         const pausa = userLeads.filter(lead => lead.etapa === 'em-pausa').length;
+        const descarte = userLeads.filter(lead => lead.etapa === 'descarte').length;
         
         const conversao = leadsRecebidos > 0 ? (vendas / leadsRecebidos) * 100 : 0;
         
@@ -115,9 +121,12 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
           aguardandoAtendimento,
           tentativasContato,
           atendeu,
+          nomeSujo,
+          nomeLimpo,
           visita,
           vendas,
-          pausa
+          pausa,
+          descarte
         };
       }) || [];
 
