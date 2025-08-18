@@ -29,6 +29,7 @@ interface DateFilterProps {
   customRange?: DateRange;
   onValueChange: (option: DateFilterOption, customRange?: DateRange) => void;
   className?: string;
+  availableDates?: Date[]; // Datas que possuem leads
 }
 
 const dateFilterOptions = [
@@ -43,7 +44,7 @@ const dateFilterOptions = [
   { value: 'personalizado', label: 'Personalizado' },
 ] as const;
 
-export function DateFilter({ value, customRange, onValueChange, className }: DateFilterProps) {
+export function DateFilter({ value, customRange, onValueChange, className, availableDates }: DateFilterProps) {
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({
     from: customRange?.from,
     to: customRange?.to,
@@ -68,6 +69,27 @@ export function DateFilter({ value, customRange, onValueChange, className }: Dat
     if (!dateRange.from) return "Selecionar período";
     if (!dateRange.to) return format(dateRange.from, "dd/MM/yyyy", { locale: ptBR });
     return `${format(dateRange.from, "dd/MM/yyyy", { locale: ptBR })} - ${format(dateRange.to, "dd/MM/yyyy", { locale: ptBR })}`;
+  };
+
+  // Função para verificar se uma data deve ser desabilitada
+  const isDateDisabled = (date: Date) => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // Permitir até o final de hoje
+    
+    // Desabilitar datas futuras
+    if (date > today) {
+      return true;
+    }
+    
+    // Se availableDates foi fornecido, desabilitar datas que não possuem leads
+    if (availableDates && availableDates.length > 0) {
+      const dateString = date.toDateString();
+      return !availableDates.some(availableDate => 
+        availableDate.toDateString() === dateString
+      );
+    }
+    
+    return false;
   };
 
   return (
@@ -107,6 +129,7 @@ export function DateFilter({ value, customRange, onValueChange, className }: Dat
               selected={{ from: dateRange.from, to: dateRange.to }}
               onSelect={handleDateRangeChange}
               numberOfMonths={2}
+              disabled={isDateDisabled}
               className="pointer-events-auto"
             />
           </PopoverContent>

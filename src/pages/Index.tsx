@@ -105,6 +105,11 @@ const Index = () => {
     userId: lead.user_id || lead.id // Incluir o user_id real
   }));
 
+  // Extrair datas únicas dos leads para o DateFilter
+  const availableDates = [...new Set(convertedLeads.map(lead => 
+    lead.dataCriacao.toDateString()
+  ))].map(dateString => new Date(dateString));
+
   const filteredLeads = convertedLeads.filter(lead => {
     const matchesSearch = lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -231,6 +236,7 @@ const Index = () => {
               value={dateFilter}
               customRange={customDateRange}
               onValueChange={handleDateFilterChange}
+              availableDates={availableDates}
             />
             {/* Filtros de Equipe e Usuário - Apenas para Admin, Gestor e Dono */}
             {(isAdmin || isGestor || isDono) && (
