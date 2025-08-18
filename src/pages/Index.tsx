@@ -74,8 +74,10 @@ const Index = () => {
 
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
     setDateFilter(option);
-    if (customRange) {
+    if (option === 'personalizado' && customRange) {
       setCustomDateRange(customRange);
+    } else if (option !== 'personalizado') {
+      setCustomDateRange(undefined);
     }
   };
 
