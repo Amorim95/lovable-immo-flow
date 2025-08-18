@@ -92,8 +92,34 @@ export function DateFilter({ value, customRange, onValueChange, className, avail
     return false;
   };
 
+  // Função para adicionar classes customizadas aos dias
+  const getDayModifiers = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return {
+      today: today
+    };
+  };
+
   return (
     <div className={cn("flex flex-col gap-2", className)}>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .rdp-day_today {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            border-radius: 6px;
+            font-weight: 600;
+          }
+          .rdp-day_today:hover {
+            background-color: #2563eb !important;
+          }
+          .rdp-day_selected.rdp-day_today {
+            background-color: #1d4ed8 !important;
+          }
+        `
+      }} />
       <Select value={value} onValueChange={handleSelectChange}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Filtrar por data" />
