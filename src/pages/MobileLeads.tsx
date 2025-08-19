@@ -201,8 +201,7 @@ export default function MobileLeads() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <MobileHeader
-        title=""
-        logoOnly={true}
+        title="Gestão de Leads"
         rightElement={
           canCreateLeads && (
             <Button
