@@ -68,6 +68,44 @@ export type Database = {
         }
         Relationships: []
       }
+      company_access_control: {
+        Row: {
+          company_id: string
+          created_at: string
+          dashboards_enabled: boolean
+          id: string
+          imoveis_enabled: boolean
+          site_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          dashboards_enabled?: boolean
+          id?: string
+          imoveis_enabled?: boolean
+          site_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          dashboards_enabled?: boolean
+          id?: string
+          imoveis_enabled?: boolean
+          site_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_access_control_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_settings: {
         Row: {
           company_id: string | null

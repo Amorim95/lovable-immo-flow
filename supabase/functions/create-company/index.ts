@@ -256,7 +256,25 @@ serve(async (req) => {
         console.log('Configurações já existem para empresa:', company.id);
       }
 
-      // 6. Conceder permissões padrão ao dono
+      // 6. Criar controle de acesso padrão da empresa
+      const { error: accessControlError } = await supabaseAdmin
+        .from('company_access_control')
+        .upsert({
+          company_id: company.id,
+          site_enabled: true,
+          imoveis_enabled: true,
+          dashboards_enabled: true
+        }, {
+          onConflict: 'company_id'
+        });
+
+      if (accessControlError) {
+        console.warn('Erro ao criar controle de acesso (não crítico):', accessControlError);
+      } else {
+        console.log('Controle de acesso criado para empresa:', company.id);
+      }
+
+      // 7. Conceder permissões padrão ao dono
       const { error: permInsertError } = await supabaseAdmin
         .from('permissions')
         .insert({

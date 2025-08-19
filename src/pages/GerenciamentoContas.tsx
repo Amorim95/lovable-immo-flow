@@ -8,7 +8,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { Trash2, Building2, Users, Plus } from "lucide-react";
+import { Trash2, Building2, Users, Plus, Shield, ShieldCheck, ShieldX } from "lucide-react";
 import { CompanyManagement } from "@/components/CompanyManagement";
 import {
   Dialog,
@@ -25,6 +25,11 @@ interface Company {
   logo_url?: string;
   created_at: string;
   user_count?: number;
+  access_control?: {
+    site_enabled: boolean;
+    imoveis_enabled: boolean;
+    dashboards_enabled: boolean;
+  };
 }
 
 export default function GerenciamentoContas() {
@@ -50,7 +55,12 @@ export default function GerenciamentoContas() {
           name,
           logo_url,
           created_at,
-          users!inner(count)
+          users!inner(count),
+          company_access_control!left(
+            site_enabled,
+            imoveis_enabled,
+            dashboards_enabled
+          )
         `)
         .order('created_at', { ascending: false });
 
@@ -59,10 +69,15 @@ export default function GerenciamentoContas() {
         throw error;
       }
 
-      // Corrigir o processamento da contagem de usuários
+      // Corrigir o processamento da contagem de usuários e controle de acesso
       return data?.map(company => ({
         ...company,
-        user_count: Array.isArray(company.users) ? company.users[0]?.count || 0 : 0
+        user_count: Array.isArray(company.users) ? company.users[0]?.count || 0 : 0,
+        access_control: company.company_access_control?.[0] || {
+          site_enabled: true,
+          imoveis_enabled: true,
+          dashboards_enabled: true
+        }
       })) || [];
     },
     enabled: isSuperAdmin && !permissionsLoading // Só executar se for super admin
@@ -207,6 +222,34 @@ export default function GerenciamentoContas() {
     }
   };
 
+  const handleToggleAccess = async (companyId: string, feature: 'site_enabled' | 'imoveis_enabled' | 'dashboards_enabled', currentValue: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('company_access_control')
+        .upsert({
+          company_id: companyId,
+          [feature]: !currentValue
+        }, {
+          onConflict: 'company_id'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: `Acesso ${!currentValue ? 'liberado' : 'bloqueado'} com sucesso.`
+      });
+
+      refetch();
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Erro ao alterar o controle de acesso.",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
@@ -319,13 +362,76 @@ export default function GerenciamentoContas() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Users className="w-4 h-4" />
                         <span>{company.user_count || 0} usuários</span>
                       </div>
                       <div className="text-sm text-muted-foreground">
                         Criada em: {new Date(company.created_at).toLocaleDateString('pt-BR')}
+                      </div>
+                      
+                      {/* Controles de Acesso */}
+                      <div className="border-t pt-3">
+                        <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                          <Shield className="w-4 h-4" />
+                          Controle de Acesso
+                        </h4>
+                        <div className="space-y-2">
+                          {/* Site */}
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">Site</span>
+                            <Button
+                              size="sm"
+                              variant={company.access_control?.site_enabled ? "default" : "destructive"}
+                              onClick={() => handleToggleAccess(company.id, 'site_enabled', company.access_control?.site_enabled || false)}
+                              className="h-7 px-2"
+                            >
+                              {company.access_control?.site_enabled ? (
+                                <ShieldCheck className="w-3 h-3 mr-1" />
+                              ) : (
+                                <ShieldX className="w-3 h-3 mr-1" />
+                              )}
+                              {company.access_control?.site_enabled ? 'Ativo' : 'Bloqueado'}
+                            </Button>
+                          </div>
+                          
+                          {/* Imóveis */}
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">Imóveis</span>
+                            <Button
+                              size="sm"
+                              variant={company.access_control?.imoveis_enabled ? "default" : "destructive"}
+                              onClick={() => handleToggleAccess(company.id, 'imoveis_enabled', company.access_control?.imoveis_enabled || false)}
+                              className="h-7 px-2"
+                            >
+                              {company.access_control?.imoveis_enabled ? (
+                                <ShieldCheck className="w-3 h-3 mr-1" />
+                              ) : (
+                                <ShieldX className="w-3 h-3 mr-1" />
+                              )}
+                              {company.access_control?.imoveis_enabled ? 'Ativo' : 'Bloqueado'}
+                            </Button>
+                          </div>
+                          
+                          {/* Dashboards */}
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">Dashboards</span>
+                            <Button
+                              size="sm"
+                              variant={company.access_control?.dashboards_enabled ? "default" : "destructive"}
+                              onClick={() => handleToggleAccess(company.id, 'dashboards_enabled', company.access_control?.dashboards_enabled || false)}
+                              className="h-7 px-2"
+                            >
+                              {company.access_control?.dashboards_enabled ? (
+                                <ShieldCheck className="w-3 h-3 mr-1" />
+                              ) : (
+                                <ShieldX className="w-3 h-3 mr-1" />
+                              )}
+                              {company.access_control?.dashboards_enabled ? 'Ativo' : 'Bloqueado'}
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
