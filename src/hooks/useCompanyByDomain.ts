@@ -33,10 +33,11 @@ export function useCompanyByDomain() {
       try {
         const currentDomain = window.location.hostname;
         
-        // Se estiver no domínio principal (lovable.app ou localhost), usar a primeira empresa
+        // Se estiver no domínio principal (lovable.app, lovableproject.com ou localhost), usar a primeira empresa
         const isMainDomain = currentDomain.includes('lovable.app') || 
-                           currentDomain.includes('localhost') || 
-                           currentDomain.includes('127.0.0.1');
+                             currentDomain.includes('lovableproject.com') || 
+                             currentDomain.includes('localhost') || 
+                             currentDomain.includes('127.0.0.1');
 
         let companyData = null;
 
