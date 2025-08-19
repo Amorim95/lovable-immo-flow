@@ -828,6 +828,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      is_imovel_publicly_accessible: {
+        Args: { imovel_id_param: string }
+        Returns: boolean
+      }
       is_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
