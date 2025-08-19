@@ -18,6 +18,7 @@ import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { UserRoleBadge } from "@/components/UserRoleBadge";
 import { useUserRole } from "@/hooks/useUserRole";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useCompanyAccess } from "@/hooks/useCompanyAccess";
 import { 
   LayoutList, 
   Calendar,
@@ -80,6 +81,7 @@ export function CRMSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  const { hasImoveisAccess, hasSiteAccess, hasDashboardsAccess, isLoading: accessLoading } = useCompanyAccess();
 
   const isActive = (path: string) => {
     if (path === "/" && currentPath === "/") return true;
@@ -95,13 +97,17 @@ export function CRMSidebar() {
     return `${baseClass} text-muted-foreground hover:bg-accent hover:text-accent-foreground`;
   };
 
-  // Filtrar itens do menu baseado nas permissões
+  // Filtrar itens do menu baseado nas permissões e controle de acesso da empresa
   const filteredMenuItems = menuItems.filter(item => {
-    if (loading) return true; // Mostrar todos durante carregamento
-    
+    if (loading || accessLoading) return true; // Mostrar todos durante carregamento
+
+    // Controle por feature flags
+    if (item.url === '/imoveis' && !hasImoveisAccess) return false;
+    if (item.url === '/meu-site' && !hasSiteAccess) return false;
+    if (item.url === '/dashboards' && !hasDashboardsAccess) return false;
+
     if (item.showForAll) return true;
     if (item.requireAdminOrGestor && !isAdmin && !isGestor && !isDono) return false;
-    
     return true;
   });
 

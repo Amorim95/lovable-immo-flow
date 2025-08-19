@@ -49,6 +49,7 @@ import AdminConsole from "./pages/AdminConsole";
 import Login from "./pages/Login";
 import AdminLogin from "./components/AdminLogin";
 import NotFound from "./pages/NotFound";
+import { AccessControlCheck } from "@/components/AccessControlCheck";
 
 const queryClient = new QueryClient();
 
@@ -110,9 +111,9 @@ function AppContent() {
                 <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
                 <Route path="/corretores" element={<MobileCorretores />} />
                 <Route path="/equipes" element={<MobileEquipes />} />
-                <Route path="/imoveis" element={<MobileImoveis />} />
-                <Route path="/meu-site" element={<MobileMeuSite />} />
-                <Route path="/configuracoes-site" element={<MobileConfiguracoesSite />} />
+                <Route path="/imoveis" element={<AccessControlCheck feature="imoveis"><MobileImoveis /></AccessControlCheck>} />
+                <Route path="/meu-site" element={<AccessControlCheck feature="site"><MobileMeuSite /></AccessControlCheck>} />
+                <Route path="/configuracoes-site" element={<AccessControlCheck feature="site"><MobileConfiguracoesSite /></AccessControlCheck>} />
                 <Route path="/configuracoes" element={<MobileConfiguracoes />} />
                 <Route path="/profile" element={<MobileProfile />} />
                 <Route path="/company-settings" element={<MobileCompanySettings />} />
@@ -150,9 +151,9 @@ function AppContent() {
                       <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
                       <Route path="/corretores" element={<Corretores />} />
                       <Route path="/equipes" element={<EquipesCadastradas />} />
-                      <Route path="/imoveis" element={<Imoveis />} />
-                      <Route path="/meu-site" element={<MeuSite />} />
-                      <Route path="/configuracoes-site" element={<ConfiguracoesSite />} />
+                       <Route path="/imoveis" element={<AccessControlCheck feature="imoveis"><Imoveis /></AccessControlCheck>} />
+                       <Route path="/meu-site" element={<AccessControlCheck feature="site"><MeuSite /></AccessControlCheck>} />
+                       <Route path="/configuracoes-site" element={<AccessControlCheck feature="site"><ConfiguracoesSite /></AccessControlCheck>} />
                       <Route path="/configuracoes" element={<Configuracoes />} />
                       <Route path="/gerenciamento-contas" element={<GerenciamentoContas />} />
                       <Route path="*" element={<NotFound />} />
