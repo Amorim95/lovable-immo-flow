@@ -53,13 +53,21 @@ export function useCompanyByDomain() {
           if (settings && settings.length > 0) {
             const firstSetting = settings[0];
             
-            // Construir dados da empresa a partir das configurações (evita RLS em companies)
-            companyData = {
-              id: firstSetting.company_id,
-              name: firstSetting.name || '',
-              logo_url: firstSetting.logo || null,
-              company_settings: [firstSetting]
-            };
+            // Buscar dados da empresa para obter logo_url
+            const { data: companyInfo, error: companyError } = await supabase
+              .from('companies')
+              .select('id, name, logo_url')
+              .eq('id', firstSetting.company_id)
+              .single();
+
+            if (!companyError && companyInfo) {
+              companyData = {
+                id: companyInfo.id,
+                name: companyInfo.name,
+                logo_url: companyInfo.logo_url,
+                company_settings: [firstSetting]
+              };
+            }
           }
         } else {
           // Em domínio personalizado, buscar pela configuração do domínio
@@ -75,13 +83,21 @@ export function useCompanyByDomain() {
           }
 
           if (settings && settings.company_id) {
-            // Construir dados da empresa a partir das configurações do domínio (evita RLS em companies)
-            companyData = {
-              id: settings.company_id,
-              name: settings.name || '',
-              logo_url: settings.logo || null,
-              company_settings: [settings]
-            };
+            // Buscar dados da empresa para obter logo_url
+            const { data: companyInfo, error: companyError } = await supabase
+              .from('companies')
+              .select('id, name, logo_url')
+              .eq('id', settings.company_id)
+              .single();
+
+            if (!companyError && companyInfo) {
+              companyData = {
+                id: companyInfo.id,
+                name: companyInfo.name,
+                logo_url: companyInfo.logo_url,
+                company_settings: [settings]
+              };
+            }
           }
         }
 
