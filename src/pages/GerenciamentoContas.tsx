@@ -56,7 +56,7 @@ export default function GerenciamentoContas() {
           logo_url,
           created_at,
           users!inner(count),
-          company_access_control!left(
+          company_access_control(
             site_enabled,
             imoveis_enabled,
             dashboards_enabled
@@ -69,16 +69,30 @@ export default function GerenciamentoContas() {
         throw error;
       }
 
-      // Corrigir o processamento da contagem de usuários e controle de acesso
-      return data?.map(company => ({
-        ...company,
-        user_count: Array.isArray(company.users) ? company.users[0]?.count || 0 : 0,
-        access_control: company.company_access_control?.[0] || {
-          site_enabled: true,
-          imoveis_enabled: true,
-          dashboards_enabled: true
-        }
-      })) || [];
+      // Buscar dados de controle de acesso separadamente para debug
+      const companiesWithAccess = [];
+      
+      for (const company of data || []) {
+        // Buscar controle de acesso individual
+        const { data: accessData } = await supabase
+          .from('company_access_control')
+          .select('site_enabled, imoveis_enabled, dashboards_enabled')
+          .eq('company_id', company.id)
+          .single();
+          
+        companiesWithAccess.push({
+          ...company,
+          user_count: Array.isArray(company.users) ? company.users[0]?.count || 0 : 0,
+          access_control: accessData || {
+            site_enabled: true,
+            imoveis_enabled: true,
+            dashboards_enabled: true
+          }
+        });
+      }
+      
+      console.log('Companies with access control:', companiesWithAccess);
+      return companiesWithAccess;
     },
     enabled: isSuperAdmin && !permissionsLoading // Só executar se for super admin
   });
