@@ -41,30 +41,34 @@ export function useCompanyByDomain() {
         let companyData = null;
 
         if (isMainDomain) {
-          // No domínio principal, pegar a primeira empresa ativa
-          const { data: companies, error: companiesError } = await supabase
-            .from('companies')
-            .select('id, name, logo_url')
+          // No domínio principal, buscar primeiro empresa com configurações
+          const { data: settings, error: settingsError } = await supabase
+            .from('company_settings')
+            .select('*')
             .limit(1);
 
-          if (companiesError) throw companiesError;
+          if (settingsError) throw settingsError;
           
-          if (companies && companies.length > 0) {
-            const company = companies[0];
+          if (settings && settings.length > 0) {
+            const firstSetting = settings[0];
             
-            // Buscar configurações da empresa
-            const { data: settingsData } = await supabase
-              .from('company_settings')
-              .select('*')
-              .eq('company_id', company.id)
+            // Buscar dados da empresa
+            const { data: companyInfo, error: companyError } = await supabase
+              .from('companies')
+              .select('id, name, logo_url')
+              .eq('id', firstSetting.company_id)
               .single();
 
-            companyData = {
-              id: company.id,
-              name: company.name,
-              logo_url: company.logo_url,
-              company_settings: settingsData ? [settingsData] : []
-            };
+            if (companyError) throw companyError;
+            
+            if (companyInfo) {
+              companyData = {
+                id: companyInfo.id,
+                name: companyInfo.name,
+                logo_url: companyInfo.logo_url,
+                company_settings: [firstSetting]
+              };
+            }
           }
         } else {
           // Em domínio personalizado, buscar pela configuração do domínio
