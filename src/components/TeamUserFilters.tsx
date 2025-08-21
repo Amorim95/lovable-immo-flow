@@ -59,7 +59,6 @@ export function TeamUserFilters({
       const { data: usuariosData, error: usuariosError } = await supabase
         .from('users')
         .select('id, name, email, role, equipe_id')
-        .eq('status', 'ativo')
         .order('name');
 
       if (usuariosError) {

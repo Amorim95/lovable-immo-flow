@@ -242,7 +242,9 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
               <div className="space-y-1">
                 <Label>Status do Usuário</Label>
                 <p className="text-sm text-gray-500">
-                  {formData.status === 'ativo' ? 'Usuário pode acessar o sistema' : 'Usuário não pode acessar o sistema'}
+                  {formData.status === 'ativo' 
+                    ? 'Usuário ativo no CRM'
+                    : 'Usuário inativo no CRM (pode fazer login; status indica disponibilidade)'}
                 </p>
               </div>
               <div className="flex items-center gap-2">
