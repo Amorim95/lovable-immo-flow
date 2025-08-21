@@ -56,14 +56,15 @@ export default function ImovelPublico() {
         .from('imoveis')
         .select('*')
         .eq('slug', slug)
-        .eq('publico', true)
-        .single();
+        .maybeSingle();
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          setNotFound(true);
-        }
         throw error;
+      }
+
+      if (!data) {
+        setNotFound(true);
+        return;
       }
 
       setImovel(data);
