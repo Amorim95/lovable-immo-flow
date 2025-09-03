@@ -38,14 +38,65 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Partial<Lead>>({});
   const [newActivity, setNewActivity] = useState("");
-  // Reset estados quando modal abre/fecha
+  // Reset estados quando modal abre/fecha e registrar primeira visualização
   useEffect(() => {
     if (isOpen && lead) {
       setEditMode(false);
       setFormData({});
       setNewActivity("");
+      
+      // Registrar primeira visualização se ainda não foi registrada
+      const jaVisualizou = lead.atividades.some(atividade => 
+        atividade.descricao === "Lead visualizado"
+      );
+      
+      if (!jaVisualizou) {
+        registrarPrimeiraVisualizacao();
+      }
     }
   }, [isOpen, lead?.id]);
+
+  // Função para registrar primeira visualização
+  const registrarPrimeiraVisualizacao = async () => {
+    if (!lead || !user) return;
+    
+    const activity: Atividade = {
+      id: Date.now().toString(),
+      tipo: 'observacao',
+      descricao: 'Lead visualizado',
+      data: new Date(),
+      corretor: user.name || 'Usuário não identificado'
+    };
+
+    const updatedActivities = [...lead.atividades, activity];
+
+    try {
+      // Converter atividades para o formato JSON correto
+      const atividadesJson = updatedActivities.map(atividade => ({
+        id: atividade.id,
+        tipo: atividade.tipo,
+        descricao: atividade.descricao,
+        data: atividade.data.toISOString(),
+        corretor: atividade.corretor
+      }));
+
+      const { error } = await supabase
+        .from('leads')
+        .update({ atividades: atividadesJson as any })
+        .eq('id', lead.id);
+
+      if (error) {
+        console.error('Erro ao registrar visualização:', error);
+        return;
+      }
+
+      onUpdate(lead.id, {
+        atividades: updatedActivities
+      });
+    } catch (error) {
+      console.error('Erro geral ao registrar visualização:', error);
+    }
+  };
 
   if (!lead) return null;
 

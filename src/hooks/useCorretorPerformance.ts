@@ -67,7 +67,7 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
       // 2. Buscar todos os leads no período (se especificado)
       let leadsQuery = supabase
         .from('leads')
-        .select('id, etapa, created_at, user_id, primeiro_contato_whatsapp, primeira_visualizacao');
+        .select('id, etapa, created_at, user_id, primeiro_contato_whatsapp, primeira_visualizacao, atividades');
 
       if (dateRange?.from && dateRange?.to) {
         leadsQuery = leadsQuery
@@ -111,19 +111,36 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
           tempoMedioResposta = Number((somaTempos / temposResposta.length).toFixed(1));
         }
 
-        // Calcular tempo médio de abertura (em horas)
-        const leadsComVisualizacao = userLeads.filter(lead => lead.primeira_visualizacao);
+        // Calcular tempo médio de abertura baseado na atividade "Lead visualizado" (em horas)
+        const leadsComVisualizacao = userLeads.filter(lead => {
+          if (!lead.atividades) return false;
+          const atividades = lead.atividades as any[];
+          if (!Array.isArray(atividades)) return false;
+          return atividades.some((atividade: any) => atividade.descricao === "Lead visualizado");
+        });
+        
         let tempoMedioAbertura = 0;
         
         if (leadsComVisualizacao.length > 0) {
           const temposAbertura = leadsComVisualizacao.map(lead => {
             const created = new Date(lead.created_at);
-            const visualizacao = new Date(lead.primeira_visualizacao);
+            const atividades = lead.atividades as any[];
+            
+            // Encontrar a primeira atividade de "Lead visualizado"
+            const atividadeVisualizacao = atividades?.find((atividade: any) => 
+              atividade.descricao === "Lead visualizado"
+            );
+            
+            if (!atividadeVisualizacao) return 0;
+            
+            const visualizacao = new Date(atividadeVisualizacao.data);
             return (visualizacao.getTime() - created.getTime()) / (1000 * 60 * 60); // Converter para horas
-          });
+          }).filter(tempo => tempo > 0); // Filtrar tempos válidos
           
-          const somaTemposAbertura = temposAbertura.reduce((acc, tempo) => acc + tempo, 0);
-          tempoMedioAbertura = Number((somaTemposAbertura / temposAbertura.length).toFixed(1));
+          if (temposAbertura.length > 0) {
+            const somaTemposAbertura = temposAbertura.reduce((acc, tempo) => acc + tempo, 0);
+            tempoMedioAbertura = Number((somaTemposAbertura / temposAbertura.length).toFixed(1));
+          }
         }
 
         return {
