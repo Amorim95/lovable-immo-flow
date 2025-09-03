@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { usePerformanceGeral } from "@/hooks/usePerformanceGeral";
-import { Download, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from "recharts";
+import { XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 
 const chartConfig = {
   aguardando: { label: "Aguardando", color: "#64748b" },
@@ -149,8 +149,8 @@ const PerformanceGeral = () => {
         </Card>
       </div>
 
-      {/* Gráficos Principais */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Gráfico Principal */}
+      <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Distribuição Geral por Status</CardTitle>
@@ -176,64 +176,7 @@ const PerformanceGeral = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Evolução Anual - Leads vs Vendas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <AreaChart data={evolutionData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="mes" />
-                <YAxis />
-                <Area 
-                  type="monotone" 
-                  dataKey="leads" 
-                  stackId="1" 
-                  stroke="#3b82f6" 
-                  fill="#3b82f6" 
-                  fillOpacity={0.6} 
-                  name="Leads"
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="vendas" 
-                  stackId="2" 
-                  stroke="#10b981" 
-                  fill="#10b981" 
-                  fillOpacity={0.8} 
-                  name="Vendas"
-                />
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </AreaChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
       </div>
-
-      {/* Evolução do Tempo de Resposta */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Evolução do Tempo de Resposta</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px]">
-            <LineChart data={evolutionData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="mes" />
-              <YAxis />
-              <Line 
-                type="monotone" 
-                dataKey="tempoResposta" 
-                stroke="#f97316" 
-                strokeWidth={3}
-                name="Tempo Resposta (min)"
-              />
-              <ChartTooltip content={<ChartTooltipContent />} />
-            </LineChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
 
       {/* Tabela de Análise */}
       <Card>
