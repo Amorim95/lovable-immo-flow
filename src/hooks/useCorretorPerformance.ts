@@ -9,6 +9,7 @@ interface CorretorPerformance {
   leadsRecebidos: number;
   vendasFechadas: number;
   tempoMedioResposta: number;
+  tempoMedioAbertura: number;
   conversao: number;
   aguardandoAtendimento: number;
   tentativasContato: number;
@@ -66,7 +67,7 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
       // 2. Buscar todos os leads no período (se especificado)
       let leadsQuery = supabase
         .from('leads')
-        .select('id, etapa, created_at, user_id, primeiro_contato_whatsapp');
+        .select('id, etapa, created_at, user_id, primeiro_contato_whatsapp, primeira_visualizacao');
 
       if (dateRange?.from && dateRange?.to) {
         leadsQuery = leadsQuery
@@ -110,6 +111,21 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
           tempoMedioResposta = Number((somaTempos / temposResposta.length).toFixed(1));
         }
 
+        // Calcular tempo médio de abertura (em horas)
+        const leadsComVisualizacao = userLeads.filter(lead => lead.primeira_visualizacao);
+        let tempoMedioAbertura = 0;
+        
+        if (leadsComVisualizacao.length > 0) {
+          const temposAbertura = leadsComVisualizacao.map(lead => {
+            const created = new Date(lead.created_at);
+            const visualizacao = new Date(lead.primeira_visualizacao);
+            return (visualizacao.getTime() - created.getTime()) / (1000 * 60 * 60); // Converter para horas
+          });
+          
+          const somaTemposAbertura = temposAbertura.reduce((acc, tempo) => acc + tempo, 0);
+          tempoMedioAbertura = Number((somaTemposAbertura / temposAbertura.length).toFixed(1));
+        }
+
         return {
           id: user.id,
           nome: user.name,
@@ -117,6 +133,7 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
           leadsRecebidos,
           vendasFechadas: vendas,
           tempoMedioResposta,
+          tempoMedioAbertura,
           conversao: Number(conversao.toFixed(1)),
           aguardandoAtendimento,
           tentativasContato,
@@ -132,12 +149,12 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
 
       // Calcular ranking baseado em critérios ponderados
       const corretoresComPontuacao = corretoresPerformance.map(corretor => {
-        // Critério 1: Tempo Médio de Resposta (peso 70% - quanto menor, melhor)
+        // Critério 1: Tempo de Abertura (peso 70% - quanto menor, melhor)
         // Normalizar usando tempo máximo encontrado + epsilon para evitar divisão por zero
-        const tempoMaximo = Math.max(...corretoresPerformance.map(c => c.tempoMedioResposta)) || 1;
-        const pontuacaoTempo = corretor.tempoMedioResposta > 0 
-          ? (tempoMaximo - corretor.tempoMedioResposta) / tempoMaximo * 100
-          : 0; // Se não tem tempo de resposta, pontuação 0
+        const tempoMaximo = Math.max(...corretoresPerformance.map(c => c.tempoMedioAbertura)) || 1;
+        const pontuacaoTempo = corretor.tempoMedioAbertura > 0 
+          ? (tempoMaximo - corretor.tempoMedioAbertura) / tempoMaximo * 100
+          : 0; // Se não tem tempo de abertura, pontuação 0
         
         // Critério 2: Taxa de Conversão (peso 30% - quanto maior, melhor)
         const pontuacaoConversao = corretor.conversao;

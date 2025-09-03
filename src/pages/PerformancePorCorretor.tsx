@@ -40,6 +40,7 @@ const PerformancePorCorretor = () => {
     leadsRecebidos: 0,
     vendasFechadas: 0,
     tempoMedioResposta: 0,
+    tempoMedioAbertura: 0,
     conversao: 0,
     aguardandoAtendimento: 0,
     tentativasContato: 0,
@@ -165,8 +166,8 @@ const PerformancePorCorretor = () => {
                     
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Tempo Resp.:</span>
-                        <span className="font-medium text-green-600">{corretor.tempoMedioResposta}min</span>
+                        <span className="text-gray-600">Tempo Abertura:</span>
+                        <span className="font-medium text-green-600">{corretor.tempoMedioAbertura}h</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Conversão:</span>
@@ -220,7 +221,7 @@ const PerformancePorCorretor = () => {
       </Card>
 
       {/* Métricas Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Leads Recebidos</CardTitle>
@@ -244,7 +245,16 @@ const PerformancePorCorretor = () => {
             <CardTitle className="text-lg">Tempo Médio Resposta</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-600">{corretor.tempoMedioResposta} min</div>
+            <div className="text-3xl font-bold text-purple-600">{corretor.tempoMedioResposta}h</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">Tempo de Abertura</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-orange-600">{corretor.tempoMedioAbertura}h</div>
           </CardContent>
         </Card>
 

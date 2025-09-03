@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit, MessageCircle, History, Plus, Clock, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const stageLabels = {
   'aguardando-atendimento': 'Aguardando Atendimento',
@@ -89,6 +90,18 @@ export default function LeadDetails() {
       if (!userData.user) return;
 
       const userName = userData.user.user_metadata?.name || userData.user.email || 'Usuário não identificado';
+
+      // Marcar primeira visualização se ainda não foi marcada
+      if (!leadData.primeira_visualizacao) {
+        const { error: updateError } = await supabase
+          .from('leads')
+          .update({ primeira_visualizacao: new Date().toISOString() })
+          .eq('id', leadData.id);
+        
+        if (updateError) {
+          console.error('Erro ao marcar primeira visualização:', updateError);
+        }
+      }
 
       // Verificar se já existe uma visualização recente (últimos 5 minutos) do mesmo usuário
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);

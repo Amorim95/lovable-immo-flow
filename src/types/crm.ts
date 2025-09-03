@@ -14,6 +14,7 @@ export interface Lead {
   atividades: Atividade[];
   status: 'ativo' | 'inativo';
   userId?: string;
+  primeira_visualizacao?: string;
 }
 
 export type LeadStage = 

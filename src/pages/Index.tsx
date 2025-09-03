@@ -14,6 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   LayoutList, 
   LayoutGrid,
@@ -52,7 +53,24 @@ const Index = () => {
     }
   };
 
-  const handleLeadClick = (lead: Lead) => {
+  const handleLeadClick = async (lead: Lead) => {
+    // Marcar primeira visualização se ainda não foi visualizado
+    if (!lead.primeira_visualizacao) {
+      try {
+        const { error } = await supabase
+          .from('leads')
+          .update({ primeira_visualizacao: new Date().toISOString() })
+          .eq('id', lead.id);
+        
+        if (!error) {
+          // Atualizar os dados após marcar a visualização
+          refreshLeads();
+        }
+      } catch (error) {
+        console.error('Erro ao marcar primeira visualização:', error);
+      }
+    }
+
     if (isMobile) {
       // No mobile, navegar para a tela de detalhes
       navigate(`/lead/${lead.id}`);
