@@ -149,18 +149,28 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
 
       // Calcular ranking baseado em critérios ponderados
       const corretoresComPontuacao = corretoresPerformance.map(corretor => {
-        // Critério 1: Tempo de Abertura (peso 70% - quanto menor, melhor)
-        // Normalizar usando tempo máximo encontrado + epsilon para evitar divisão por zero
-        const tempoMaximo = Math.max(...corretoresPerformance.map(c => c.tempoMedioAbertura)) || 1;
-        const pontuacaoTempo = corretor.tempoMedioAbertura > 0 
-          ? (tempoMaximo - corretor.tempoMedioAbertura) / tempoMaximo * 100
-          : 0; // Se não tem tempo de abertura, pontuação 0
+        // Critério 1: Tempo de Abertura (peso 80% - quanto menor, melhor)
+        // Para corretores sem tempo de abertura, usar pontuação 0
+        let pontuacaoTempo = 0;
+        if (corretor.tempoMedioAbertura > 0) {
+          // Usar uma escala inversa: quanto menor o tempo, maior a pontuação
+          // Máximo de 100 pontos para o mais rápido
+          const tempoMinimo = Math.min(...corretoresPerformance.filter(c => c.tempoMedioAbertura > 0).map(c => c.tempoMedioAbertura)) || 1;
+          const tempoMaximo = Math.max(...corretoresPerformance.map(c => c.tempoMedioAbertura)) || 1;
+          
+          // Escala inversa: tempo menor = pontuação maior
+          if (tempoMaximo > tempoMinimo) {
+            pontuacaoTempo = 100 - ((corretor.tempoMedioAbertura - tempoMinimo) / (tempoMaximo - tempoMinimo)) * 100;
+          } else {
+            pontuacaoTempo = 100; // Se todos têm o mesmo tempo
+          }
+        }
         
-        // Critério 2: Taxa de Conversão (peso 30% - quanto maior, melhor)
+        // Critério 2: Taxa de Conversão (peso 20% - quanto maior, melhor)
         const pontuacaoConversao = corretor.conversao;
         
-        // Pontuação final ponderada
-        const pontuacaoFinal = (pontuacaoTempo * 0.7) + (pontuacaoConversao * 0.3);
+        // Pontuação final ponderada - prioridade para velocidade de abertura
+        const pontuacaoFinal = (pontuacaoTempo * 0.8) + (pontuacaoConversao * 0.2);
         
         return {
           ...corretor,
@@ -169,9 +179,25 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
       });
 
       // Ordenar por pontuação (decrescente) e pegar top 5
+      // Primeiro critério: maior pontuação (menor tempo de abertura)
+      // Segundo critério: em caso de empate, usar conversão
       const ranking = corretoresComPontuacao
         .filter(c => c.leadsRecebidos > 0) // Só considera corretores que receberam leads
-        .sort((a, b) => b.pontuacaoFinal - a.pontuacaoFinal)
+        .sort((a, b) => {
+          // Ordenar primeiro por pontuação final (decrescente)
+          if (b.pontuacaoFinal !== a.pontuacaoFinal) {
+            return b.pontuacaoFinal - a.pontuacaoFinal;
+          }
+          // Em caso de empate, priorizar menor tempo de abertura
+          if (a.tempoMedioAbertura > 0 && b.tempoMedioAbertura > 0) {
+            return a.tempoMedioAbertura - b.tempoMedioAbertura;
+          }
+          // Se um não tem tempo, priorizar o que tem
+          if (a.tempoMedioAbertura > 0 && b.tempoMedioAbertura === 0) return -1;
+          if (b.tempoMedioAbertura > 0 && a.tempoMedioAbertura === 0) return 1;
+          // Se nenhum tem tempo, usar conversão
+          return b.conversao - a.conversao;
+        })
         .slice(0, 5);
 
       // Ordenar corretores por conversão (decrescente) para exibição geral
