@@ -173,10 +173,10 @@ const PerformancePorCorretor = () => {
                         <span className="text-gray-600">Conversão:</span>
                         <span className="font-medium text-blue-600">{corretor.conversao}%</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Leads:</span>
-                        <span className="font-medium text-gray-700">{corretor.leadsRecebidos}</span>
-                      </div>
+                       <div className="flex justify-between">
+                         <span className="text-gray-600">Tempo Médio Resposta:</span>
+                         <span className="font-medium text-purple-600">{corretor.tempoMedioResposta}h</span>
+                       </div>
                     </div>
                   </div>
                 );
