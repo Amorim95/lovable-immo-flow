@@ -105,7 +105,7 @@ const PerformanceGeral = () => {
       </Card>
 
       {/* Métricas Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Total de Leads</CardTitle>
@@ -138,15 +138,6 @@ const PerformanceGeral = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Tempo 1º Contato</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-purple-600">{performanceGeral.tempoMedioPrimeiroContato} min</div>
-            <p className="text-sm text-yellow-600 mt-1">Meta: 15 min</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Gráfico Principal */}

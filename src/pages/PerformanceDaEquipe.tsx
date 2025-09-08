@@ -122,46 +122,6 @@ const PerformanceDaEquipe = () => {
         </div>
       </div>
 
-      {/* Ranking das Equipes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>🏆 Ranking das Melhores Equipes</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {rankingEquipes.length > 0 ? rankingEquipes.map((equipeRank) => (
-              <div key={equipeRank.id} className={`p-4 rounded-lg border ${equipeRank.ranking === 1 ? 'border-yellow-400 bg-yellow-50' : equipeRank.ranking === 2 ? 'border-gray-400 bg-gray-50' : 'border-orange-400 bg-orange-50'}`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${equipeRank.ranking === 1 ? 'bg-yellow-400 text-white' : equipeRank.ranking === 2 ? 'bg-gray-400 text-white' : 'bg-orange-400 text-white'}`}>
-                      {equipeRank.ranking}
-                    </div>
-                    <h3 className="font-semibold">{equipeRank.nome}</h3>
-                  </div>
-                  <div className="flex gap-6 text-sm">
-                    <div className="text-center">
-                      <div className="font-semibold text-green-600">{equipeRank.conversao}%</div>
-                      <div className="text-gray-500">Conversão</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-semibold text-blue-600">{equipeRank.tempoMedioResposta} min</div>
-                      <div className="text-gray-500">Tempo Resp.</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-semibold text-purple-600">{equipeRank.vendas}</div>
-                      <div className="text-gray-500">Vendas</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )) : (
-              <div className="text-center text-gray-500 py-8">
-                Nenhuma equipe encontrada
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Filtros */}
       <Card>
