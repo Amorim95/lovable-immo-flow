@@ -126,14 +126,27 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
             const created = new Date(lead.created_at);
             const atividades = lead.atividades as any[];
             
-            // Encontrar a primeira atividade de "Lead visualizado"
-            const atividadeVisualizacao = atividades?.find((atividade: any) => 
+            // Encontrar todas as atividades de "Lead visualizado" e pegar a mais antiga (primeira visualização)
+            const atividadesVisualizacao = atividades?.filter((atividade: any) => 
               atividade.descricao === "Lead visualizado"
-            );
+            ).sort((a: any, b: any) => {
+              const dataA = new Date(a.data);
+              const dataB = new Date(b.data);
+              return dataA.getTime() - dataB.getTime(); // Ordenar da mais antiga para a mais recente
+            });
             
-            if (!atividadeVisualizacao) return 0;
+            if (!atividadesVisualizacao || atividadesVisualizacao.length === 0) return 0;
             
-            const visualizacao = new Date(atividadeVisualizacao.data);
+            // Pegar a primeira visualização (mais antiga)
+            const primeiraVisualizacao = atividadesVisualizacao[0];
+            const visualizacao = new Date(primeiraVisualizacao.data);
+            
+            // Validar se a data é válida
+            if (isNaN(visualizacao.getTime()) || visualizacao < created) {
+              console.warn(`Data de visualização inválida para lead ${lead.id}:`, primeiraVisualizacao.data);
+              return 0;
+            }
+            
             return (visualizacao.getTime() - created.getTime()) / (1000 * 60 * 60); // Converter para horas
           }).filter(tempo => tempo > 0); // Filtrar tempos válidos
           
