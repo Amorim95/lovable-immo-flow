@@ -204,20 +204,7 @@ export default function MobileLeads() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
-      <MobileHeader
-        title="Gestão de Leads"
-        rightElement={
-          canCreateLeads && (
-            <Button
-              size="sm"
-              onClick={() => setIsNewLeadModalOpen(true)}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-          )
-        }
-      />
+      <MobileHeader title="Gestão de Leads" />
 
       {/* Search */}
       <div className="p-4">
@@ -298,6 +285,19 @@ export default function MobileLeads() {
           </div>
         </div>
       </div>
+
+      {/* New Lead Button */}
+      {canCreateLeads && (
+        <div className="px-4 pb-4">
+          <Button
+            onClick={() => setIsNewLeadModalOpen(true)}
+            className="w-full bg-primary hover:bg-primary/90"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Novo Lead
+          </Button>
+        </div>
+      )}
 
       {/* Leads List */}
       <div className="px-4 space-y-3">
