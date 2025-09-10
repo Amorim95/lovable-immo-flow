@@ -112,7 +112,7 @@ export function CRMSidebar() {
   });
 
   return (
-    <Sidebar className={`${collapsed ? "w-20" : "w-72"} border-r bg-card`} collapsible="icon">
+    <Sidebar className={`${collapsed ? "w-20" : "w-72"} border-r bg-white dark:bg-white`} collapsible="icon">
       <div className="p-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 flex-shrink-0">

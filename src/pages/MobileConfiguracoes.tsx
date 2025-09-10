@@ -8,7 +8,8 @@ import {
   LogOut, 
   Users, 
   ChevronRight,
-  User
+  User,
+  Palette
 } from "lucide-react";
 
 export default function MobileConfiguracoes() {
@@ -31,6 +32,14 @@ export default function MobileConfiguracoes() {
       description: 'Gerencie suas informações de perfil e senha',
       icon: User,
       action: () => navigate('/profile'),
+      show: true
+    },
+    {
+      id: 'appearance',
+      title: 'Aparência',
+      description: 'Modo noturno e personalização visual',
+      icon: Palette,
+      action: () => navigate('/mobile-appearance'),
       show: true
     },
     {
