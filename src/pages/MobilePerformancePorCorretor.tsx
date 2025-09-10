@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
@@ -71,11 +71,11 @@ const MobilePerformancePorCorretor = () => {
   };
 
   // Auto-selecionar primeiro corretor
-  useState(() => {
+  useEffect(() => {
     if (corretores.length > 0 && !corretorSelecionado) {
       setCorretorSelecionado(corretores[0].id);
     }
-  });
+  }, [corretores, corretorSelecionado]);
 
   if (loading) {
     return (

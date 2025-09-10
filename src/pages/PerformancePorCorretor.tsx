@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,13 @@ const PerformancePorCorretor = () => {
 
   // Buscar dados reais do banco - sempre chamar todos os hooks
   const { corretores, selectedCorretor, rankingCorretores, loading, error } = useCorretorPerformance(corretorSelecionado, dateRange);
+
+  // Auto-selecionar primeiro corretor quando os dados carregarem
+  useEffect(() => {
+    if (corretores.length > 0 && !corretorSelecionado) {
+      setCorretorSelecionado(corretores[0].id);
+    }
+  }, [corretores, corretorSelecionado]);
 
   // Usar versão mobile em dispositivos móveis APÓS todos os hooks
   if (isMobile) {
@@ -87,12 +94,6 @@ const PerformancePorCorretor = () => {
     }
   };
 
-  // Atualizar corretor selecionado quando os dados carregarem
-  useState(() => {
-    if (corretores.length > 0 && !corretorSelecionado) {
-      setCorretorSelecionado(corretores[0].id);
-    }
-  });
 
   if (loading) {
     return (
