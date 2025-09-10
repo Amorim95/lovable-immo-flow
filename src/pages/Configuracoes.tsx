@@ -145,11 +145,7 @@ const Configuracoes = () => {
         <AccessControlWrapper
           allowCorretor={false}
           fallback={
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="aparencia" className="flex items-center gap-2">
-                <Palette className="w-4 h-4" />
-                Aparência
-              </TabsTrigger>
+            <TabsList className="grid w-full grid-cols-1">
               <TabsTrigger value="seguranca" className="flex items-center gap-2">
                 <Shield className="w-4 h-4" />
                 Acessos e Segurança
@@ -157,14 +153,10 @@ const Configuracoes = () => {
             </TabsList>
           }
         >
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="empresa" className="flex items-center gap-2">
               <Edit className="w-4 h-4" />
               Empresa
-            </TabsTrigger>
-            <TabsTrigger value="aparencia" className="flex items-center gap-2">
-              <Palette className="w-4 h-4" />
-              Aparência
             </TabsTrigger>
             <TabsTrigger value="seguranca" className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
@@ -231,33 +223,6 @@ const Configuracoes = () => {
             </Card>
           </TabsContent>
         </AccessControlWrapper>
-
-        <TabsContent value="aparencia" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="w-5 h-5" />
-                Preferências de Aparência
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-base">Modo Noturno</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Ative o tema escuro para reduzir o cansaço visual
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.isDarkMode}
-                  onCheckedChange={(checked) => 
-                    updateSettings({ isDarkMode: checked })
-                  }
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="seguranca" className="space-y-6">
           <SecuritySettings />
