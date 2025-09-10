@@ -292,7 +292,7 @@ export default function MobileLeads() {
           <Button
             size="sm"
             onClick={() => setIsNewLeadModalOpen(true)}
-            className="bg-primary hover:bg-primary/90"
+            className="bg-primary hover:bg-primary/90 px-2 py-1 text-xs h-7"
           >
             <Plus className="w-3 h-3 mr-1" />
             Novo Lead
