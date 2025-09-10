@@ -7,6 +7,8 @@ import { useEquipePerformance } from "@/hooks/useEquipePerformance";
 import { Download, Loader2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobilePerformanceDaEquipe from "./MobilePerformanceDaEquipe";
 
 const chartConfig = {
   aguardando: { label: "Aguardando", color: "#64748b" },
@@ -21,9 +23,15 @@ const chartConfig = {
 };
 
 const PerformanceDaEquipe = () => {
+  const isMobile = useIsMobile();
   const [equipeSelecionada, setEquipeSelecionada] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
+
+  // Usar versão mobile em dispositivos móveis
+  if (isMobile) {
+    return <MobilePerformanceDaEquipe />;
+  }
 
   // Calcular o range de data baseado no filtro selecionado
   const dateRange = useMemo(() => {

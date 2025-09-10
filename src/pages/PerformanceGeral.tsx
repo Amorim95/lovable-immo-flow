@@ -6,6 +6,8 @@ import { usePerformanceGeral } from "@/hooks/usePerformanceGeral";
 import { Loader2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from "recharts";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobilePerformanceGeral from "./MobilePerformanceGeral";
 
 const chartConfig = {
   aguardando: { label: "Aguardando", color: "#64748b" },
@@ -20,8 +22,14 @@ const chartConfig = {
 };
 
 const PerformanceGeral = () => {
+  const isMobile = useIsMobile();
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
+
+  // Usar versão mobile em dispositivos móveis
+  if (isMobile) {
+    return <MobilePerformanceGeral />;
+  }
 
   // Calcular o range de data baseado no filtro selecionado
   const dateRange = useMemo(() => {
