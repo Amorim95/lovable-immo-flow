@@ -276,15 +276,6 @@ export default function MobileLeads() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="px-4 pb-4">
-        <div className="bg-white rounded-lg p-4">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Total de Leads</span>
-            <span className="font-semibold text-gray-900">{convertedLeads.length}</span>
-          </div>
-        </div>
-      </div>
 
       {/* New Lead Button */}
       {canCreateLeads && (
