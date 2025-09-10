@@ -28,18 +28,18 @@ const PerformancePorCorretor = () => {
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
 
-  // Usar versão mobile em dispositivos móveis
-  if (isMobile) {
-    return <MobilePerformancePorCorretor />;
-  }
-
   // Calcular o range de data baseado no filtro selecionado
   const dateRange = useMemo(() => {
     return getDateRangeFromFilter(dateFilter, customDateRange);
   }, [dateFilter, customDateRange]);
 
-  // Buscar dados reais do banco
+  // Buscar dados reais do banco - sempre chamar todos os hooks
   const { corretores, selectedCorretor, rankingCorretores, loading, error } = useCorretorPerformance(corretorSelecionado, dateRange);
+
+  // Usar versão mobile em dispositivos móveis APÓS todos os hooks
+  if (isMobile) {
+    return <MobilePerformancePorCorretor />;
+  }
 
   const corretor = selectedCorretor || {
     id: "",
