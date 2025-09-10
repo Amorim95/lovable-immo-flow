@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutGrid, BarChart3, Settings, Home } from "lucide-react";
+import { LayoutGrid, BarChart3, Settings } from "lucide-react";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 const tabs = [
@@ -8,12 +8,6 @@ const tabs = [
     label: "Leads",
     path: "/",
     icon: LayoutGrid
-  },
-  {
-    id: "imoveis",
-    label: "Imóveis", 
-    path: "/imoveis",
-    icon: Home
   },
   {
     id: "dashboards", 
