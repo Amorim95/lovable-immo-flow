@@ -133,7 +133,7 @@ export default function MobileEquipes() {
 
   if (!canManageTeams) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
         <MobileHeader title="Equipes" />
         <div className="p-4">
           <div className="text-center py-8">
@@ -146,7 +146,7 @@ export default function MobileEquipes() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
         <MobileHeader title="Equipes" />
         <div className="p-4">
           <div className="animate-pulse space-y-4">
@@ -163,7 +163,7 @@ export default function MobileEquipes() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader
         title="Gerenciar Equipes"
         rightElement={

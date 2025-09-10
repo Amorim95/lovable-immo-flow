@@ -116,7 +116,7 @@ export default function MobileCorretores() {
 
   if (!canManageUsers) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
         <MobileHeader title="Corretores" />
         <div className="p-4">
           <div className="text-center py-8">
@@ -129,7 +129,7 @@ export default function MobileCorretores() {
 
   if (usersLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
         <MobileHeader title="Corretores" />
         <div className="p-4">
           <div className="animate-pulse space-y-4">
@@ -146,7 +146,7 @@ export default function MobileCorretores() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader
         title="Gestão de Usuários"
         rightElement={

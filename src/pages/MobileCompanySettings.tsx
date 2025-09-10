@@ -74,7 +74,7 @@ export default function MobileCompanySettings() {
 
   if (!canManageCompany) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
         <MobileHeader title="Dados da Empresa" />
         <div className="p-4">
           <div className="text-center py-8">
@@ -87,7 +87,7 @@ export default function MobileCompanySettings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
         <MobileHeader title="Dados da Empresa" />
         <div className="p-4">
           <div className="text-center py-8">
@@ -99,7 +99,7 @@ export default function MobileCompanySettings() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader title="Dados da Empresa" />
 
       <div className="p-4 space-y-6">

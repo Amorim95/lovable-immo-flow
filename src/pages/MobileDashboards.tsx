@@ -44,7 +44,7 @@ export default function MobileDashboards() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader title="Dashboards" />
 
       <div className="p-4 space-y-6">

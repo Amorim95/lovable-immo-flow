@@ -172,7 +172,7 @@ export default function MobileLeads() {
 
   if (loading || roleLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-background">
         <MobileHeader title="Gestão de Leads" />
         <div className="p-4">
           <div className="animate-pulse space-y-4">
@@ -190,7 +190,7 @@ export default function MobileLeads() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-background">
         <MobileHeader title="Gestão de Leads" />
         <div className="p-4">
           <div className="text-center py-8">
@@ -203,7 +203,7 @@ export default function MobileLeads() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader
         title="Gestão de Leads"
         rightElement={

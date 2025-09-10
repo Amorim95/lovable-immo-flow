@@ -356,7 +356,7 @@ export default function MobileImoveis() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-background">
         <MobileHeader title="Imóveis" />
         <div className="p-4">
           <div className="flex items-center justify-center h-96">
@@ -371,7 +371,7 @@ export default function MobileImoveis() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader title="Imóveis" />
       
       <div className="p-4 space-y-4">
