@@ -6,7 +6,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, MessageCircle, Calendar, User, ChevronDown } from "lucide-react";
+import { Plus, Search, MessageCircle, Calendar, User, ChevronDown, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { NewLeadModal } from "@/components/NewLeadModal";
 import { DateFilter, DateFilterOption, getDateRangeFromFilter } from "@/components/DateFilter";
@@ -46,6 +46,7 @@ export default function MobileLeads() {
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
+  const [selectedStage, setSelectedStage] = useState<string | null>(null);
   
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
 
@@ -82,6 +83,9 @@ export default function MobileLeads() {
     // Filtro de usuário
     const matchesUser = !selectedUserId || leads.find(l => l.id === lead.id)?.user_id === selectedUserId;
 
+    // Filtro de etapa
+    const matchesStage = !selectedStage || lead.etapa === selectedStage;
+
     // Filtro de data
     let matchesDate = true;
     if (dateFilter !== 'periodo-total') {
@@ -92,7 +96,7 @@ export default function MobileLeads() {
       }
     }
 
-    return matchesSearch && matchesUser && matchesDate;
+    return matchesSearch && matchesUser && matchesStage && matchesDate;
   });
 
   const handleLeadClick = (lead: Lead) => {
@@ -257,6 +261,31 @@ export default function MobileLeads() {
             selectedUserId={selectedUserId}
             onUserChange={setSelectedUserId}
           />
+          
+          <div className="flex items-center gap-2 mb-2">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Filtrar por Etapa</span>
+          </div>
+          
+          <Select
+            value={selectedStage || "todas"}
+            onValueChange={(value) => setSelectedStage(value === "todas" ? null : value)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecionar etapa" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todas">Todas as etapas</SelectItem>
+              {Object.entries(stageLabels).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${stageColors[value as keyof typeof stageColors]}`}></div>
+                    {label}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
