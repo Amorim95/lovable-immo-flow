@@ -290,10 +290,11 @@ export default function MobileLeads() {
       {canCreateLeads && (
         <div className="px-4 pb-4">
           <Button
+            size="sm"
             onClick={() => setIsNewLeadModalOpen(true)}
-            className="w-full bg-primary hover:bg-primary/90"
+            className="bg-primary hover:bg-primary/90"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-3 h-3 mr-1" />
             Novo Lead
           </Button>
         </div>
