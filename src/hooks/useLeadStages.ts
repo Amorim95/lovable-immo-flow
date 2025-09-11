@@ -68,6 +68,7 @@ export function useLeadStages() {
 
   const updateStage = async (id: string, updates: Partial<Pick<LeadStage, 'nome' | 'cor' | 'ordem'>>) => {
     try {
+      const current = stages.find(s => s.id === id);
       const { data, error } = await supabase
         .from('lead_stages')
         .update(updates)
@@ -76,6 +77,16 @@ export function useLeadStages() {
         .single();
 
       if (error) throw error;
+
+      // Se o nome mudou, atualizar todos os leads da empresa com o stage_name antigo
+      if (updates.nome && current && updates.nome !== current.nome) {
+        const companyId = getCompanyId();
+        await supabase
+          .from('leads')
+          .update({ stage_name: updates.nome })
+          .eq('stage_name', current.nome)
+          .eq('company_id', companyId);
+      }
       
       setStages(prev => prev.map(stage => 
         stage.id === id ? { ...stage, ...data } : stage
