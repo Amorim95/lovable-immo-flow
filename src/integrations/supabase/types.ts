@@ -452,6 +452,39 @@ export type Database = {
           },
         ]
       }
+      lead_stages: {
+        Row: {
+          ativo: boolean
+          company_id: string
+          cor: string
+          created_at: string
+          id: string
+          nome: string
+          ordem: number
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          company_id: string
+          cor?: string
+          created_at?: string
+          id?: string
+          nome: string
+          ordem?: number
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          company_id?: string
+          cor?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          ordem?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lead_tag_relations: {
         Row: {
           created_at: string
@@ -523,6 +556,7 @@ export type Database = {
           nome: string
           primeira_visualizacao: string | null
           primeiro_contato_whatsapp: string | null
+          stage_name: string | null
           telefone: string
           updated_at: string
           user_id: string
@@ -537,6 +571,7 @@ export type Database = {
           nome: string
           primeira_visualizacao?: string | null
           primeiro_contato_whatsapp?: string | null
+          stage_name?: string | null
           telefone: string
           updated_at?: string
           user_id?: string
@@ -551,6 +586,7 @@ export type Database = {
           nome?: string
           primeira_visualizacao?: string | null
           primeiro_contato_whatsapp?: string | null
+          stage_name?: string | null
           telefone?: string
           updated_at?: string
           user_id?: string

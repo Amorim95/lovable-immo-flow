@@ -9,6 +9,7 @@ export interface Lead {
   anuncio?: string;
   dataCriacao: Date;
   etapa: LeadStage;
+  stage_name?: string; // Novo campo para etapas customizadas
   etiquetas: LeadTag[];
   corretor: string;
   atividades: Atividade[];

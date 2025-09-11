@@ -14,12 +14,16 @@ import { useToast } from "@/hooks/use-toast";
 import { SecuritySettings } from "@/components/SecuritySettings";
 import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { supabase } from "@/integrations/supabase/client";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useNavigate } from "react-router-dom";
 
-import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun, Shield } from "lucide-react";
+import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun, Shield, Layers } from "lucide-react";
 
 const Configuracoes = () => {
   const { settings, updateSettings } = useCompany();
   const { toast } = useToast();
+  const { isAdmin } = usePermissions();
+  const navigate = useNavigate();
   const [companyName, setCompanyName] = useState(settings.name);
   const [companyLogo, setCompanyLogo] = useState<string | null>(settings.logo);
 
@@ -153,10 +157,14 @@ const Configuracoes = () => {
             </TabsList>
           }
         >
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="empresa" className="flex items-center gap-2">
               <Edit className="w-4 h-4" />
               Empresa
+            </TabsTrigger>
+            <TabsTrigger value="etapas" className="flex items-center gap-2">
+              <Layers className="w-4 h-4" />
+              Etapas
             </TabsTrigger>
             <TabsTrigger value="seguranca" className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
@@ -219,6 +227,42 @@ const Configuracoes = () => {
                   </div>
                 </div>
                 <Button className="w-full" onClick={handleSaveCompany}>Salvar Alterações</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </AccessControlWrapper>
+
+        <AccessControlWrapper
+          allowCorretor={false}
+          fallback={null}
+        >
+          <TabsContent value="etapas" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Layers className="w-5 h-5" />
+                  Configuração de Etapas dos Leads
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  Customize as etapas do seu funil de vendas. Você pode criar, editar e reordenar as etapas conforme sua necessidade.
+                </p>
+                {isAdmin ? (
+                  <Button 
+                    onClick={() => navigate('/configuracao-etapas')}
+                    className="w-full"
+                  >
+                    <Layers className="w-4 h-4 mr-2" />
+                    Gerenciar Etapas dos Leads
+                  </Button>
+                ) : (
+                  <div className="p-4 bg-muted rounded-lg text-center">
+                    <p className="text-muted-foreground">
+                      Apenas administradores podem configurar as etapas dos leads.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

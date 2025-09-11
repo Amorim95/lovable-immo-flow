@@ -3,65 +3,40 @@ import { Lead, LeadStage } from "@/types/crm";
 import { LeadCard } from "./LeadCard";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useLeadStages } from "@/hooks/useLeadStages";
 
-const stageConfig = {
-  'aguardando-atendimento': {
-    title: 'Aguardando Atendimento',
-    color: 'bg-slate-100 border-slate-200',
-    headerColor: 'bg-slate-500'
-  },
-  'tentativas-contato': {
-    title: 'Em Tentativas de Contato',
-    color: 'bg-yellow-50 border-yellow-200',
-    headerColor: 'bg-yellow-500'
-  },
-  'atendeu': {
-    title: 'Atendeu',
-    color: 'bg-blue-50 border-blue-200',
-    headerColor: 'bg-blue-500'
-  },
-  'nome-sujo': {
-    title: 'Nome Sujo',
-    color: 'bg-amber-50 border-amber-200',
-    headerColor: 'bg-amber-500'
-  },
-  'nome-limpo': {
-    title: 'Nome Limpo',
-    color: 'bg-teal-50 border-teal-200',
-    headerColor: 'bg-teal-500'
-  },
-  'visita': {
-    title: 'Visita',
-    color: 'bg-purple-50 border-purple-200',
-    headerColor: 'bg-purple-500'
-  },
-  'vendas-fechadas': {
-    title: 'Vendas Fechadas',
-    color: 'bg-green-50 border-green-200',
-    headerColor: 'bg-green-500'
-  },
-  'em-pausa': {
-    title: 'Em Pausa',
-    color: 'bg-orange-50 border-orange-200',
-    headerColor: 'bg-orange-500'
-  },
-  'descarte': {
-    title: 'Descarte',
-    color: 'bg-red-50 border-red-200',
-    headerColor: 'bg-red-500'
-  }
+// Função para converter hex para cores Tailwind
+const getColorClasses = (hexColor: string) => {
+  // Converte hex para HSL e gera classes de cor
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substr(0, 2), 16) / 255;
+  const g = parseInt(hex.substr(2, 2), 16) / 255;
+  const b = parseInt(hex.substr(4, 2), 16) / 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  
+  // Gera classes baseadas na luminosidade
+  const isLight = l > 0.5;
+  
+  return {
+    color: `border-2 border-gray-200 bg-gray-50`,
+    headerColor: hexColor
+  };
 };
 
 interface KanbanBoardProps {
   leads: (Lead & { userId?: string })[];
   onLeadUpdate: (leadId: string, updates: Partial<Lead>) => void;
   onLeadClick: (lead: Lead) => void;
-  onCreateLead?: (stage: LeadStage) => void; // Nova prop para criar lead em etapa específica
+  onCreateLead?: (stageName: string) => void; // Agora recebe nome da etapa customizada
   onOptimisticUpdate?: (leadId: string, updates: Partial<Lead>) => void;
 }
 
 export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, onOptimisticUpdate }: KanbanBoardProps) {
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
+  const { stages, loading } = useLeadStages();
 
   const handleDragStart = (e: React.DragEvent, lead: Lead) => {
     e.dataTransfer.setData('application/json', JSON.stringify(lead));
@@ -74,13 +49,13 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e: React.DragEvent, targetStage: LeadStage) => {
+  const handleDrop = (e: React.DragEvent, targetStageName: string) => {
     e.preventDefault();
     
     try {
       const leadData = JSON.parse(e.dataTransfer.getData('application/json'));
-      if (leadData && leadData.etapa !== targetStage) {
-        onLeadUpdate(leadData.id, { etapa: targetStage });
+      if (leadData && leadData.stage_name !== targetStageName) {
+        onLeadUpdate(leadData.id, { stage_name: targetStageName });
       }
     } catch (error) {
       console.error('Erro no drag and drop:', error);
@@ -89,26 +64,54 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
     setDraggedLead(null);
   };
 
-  const getLeadsByStage = (stage: LeadStage) => {
-    return leads.filter(lead => lead.etapa === stage);
+  const getLeadsByStage = (stageName: string) => {
+    return leads.filter(lead => lead.stage_name === stageName || (!lead.stage_name && lead.etapa === getOldStageMapping(stageName)));
   };
+
+  // Mapear etapas antigas para as novas para compatibilidade
+  const getOldStageMapping = (stageName: string): LeadStage => {
+    const mappings: Record<string, LeadStage> = {
+      'Aguardando Atendimento': 'aguardando-atendimento',
+      'Em Tentativas de Contato': 'tentativas-contato',
+      'Atendeu': 'atendeu',
+      'Nome Sujo': 'nome-sujo',
+      'Nome Limpo': 'nome-limpo',
+      'Visita': 'visita',
+      'Vendas Fechadas': 'vendas-fechadas',
+      'Em Pausa': 'em-pausa',
+      'Descarte': 'descarte'
+    };
+    return mappings[stageName] || 'aguardando-atendimento';
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p>Carregando etapas...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex gap-6 overflow-x-auto pb-6 custom-scrollbar">
-      {Object.entries(stageConfig).map(([stage, config]) => {
-        const stageLeads = getLeadsByStage(stage as LeadStage);
+      {stages.map((stage) => {
+        const stageLeads = getLeadsByStage(stage.nome);
+        const colorClasses = getColorClasses(stage.cor);
         
         return (
           <div
-            key={stage}
-            className={`kanban-column min-w-80 ${config.color} border-2 rounded-xl p-4`}
+            key={stage.id}
+            className={`kanban-column min-w-80 ${colorClasses.color} rounded-xl p-4`}
             onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, stage as LeadStage)}
+            onDrop={(e) => handleDrop(e, stage.nome)}
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${config.headerColor}`} />
-                <h3 className="font-semibold text-gray-800">{config.title}</h3>
+                <div 
+                  className="w-3 h-3 rounded-full border"
+                  style={{ backgroundColor: colorClasses.headerColor }}
+                />
+                <h3 className="font-semibold text-gray-800">{stage.nome}</h3>
                 <span className="bg-white text-gray-600 text-sm px-2 py-1 rounded-full font-medium">
                   {stageLeads.length}
                 </span>
@@ -117,8 +120,8 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                 variant="ghost" 
                 size="sm" 
                 className="h-8 w-8 p-0"
-                onClick={() => onCreateLead?.(stage as LeadStage)}
-                title={`Adicionar lead em ${config.title}`}
+                onClick={() => onCreateLead?.(stage.nome)}
+                title={`Adicionar lead em ${stage.nome}`}
               >
                 <Plus className="w-4 h-4" />
               </Button>

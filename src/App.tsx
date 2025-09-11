@@ -50,6 +50,7 @@ import AdminConsole from "./pages/AdminConsole";
 import Login from "./pages/Login";
 import AdminLogin from "./components/AdminLogin";
 import NotFound from "./pages/NotFound";
+import ConfiguracaoEtapas from "./pages/ConfiguracaoEtapas";
 import { AccessControlCheck } from "@/components/AccessControlCheck";
 
 const queryClient = new QueryClient();
@@ -156,9 +157,10 @@ function AppContent() {
                        <Route path="/imoveis" element={<AccessControlCheck feature="imoveis"><Imoveis /></AccessControlCheck>} />
                        <Route path="/meu-site" element={<AccessControlCheck feature="site"><MeuSite /></AccessControlCheck>} />
                        <Route path="/configuracoes-site" element={<AccessControlCheck feature="site"><ConfiguracoesSite /></AccessControlCheck>} />
-                      <Route path="/configuracoes" element={<Configuracoes />} />
-                      <Route path="/gerenciamento-contas" element={<GerenciamentoContas />} />
-                      <Route path="*" element={<NotFound />} />
+                       <Route path="/configuracoes" element={<Configuracoes />} />
+                       <Route path="/configuracao-etapas" element={<ConfiguracaoEtapas />} />
+                       <Route path="/gerenciamento-contas" element={<GerenciamentoContas />} />
+                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </main>
                 </div>
