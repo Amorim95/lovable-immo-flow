@@ -35,7 +35,7 @@ const MobilePerformanceGeral = () => {
 
   const { performanceGeral, loading, error } = usePerformanceGeral(dateRange);
 
-  // Criar dados de status dinâmicos baseados nas etapas da empresa
+  // Criar dados de status dinâmicos e config baseados nas etapas da empresa
   const dadosStatus = stages.map(stage => {
     const { color } = getStageIcon(stage.nome);
     return {
@@ -44,6 +44,16 @@ const MobilePerformanceGeral = () => {
       color
     };
   });
+
+  // Criar config dinâmico para os gráficos
+  const chartConfig = stages.reduce((config, stage) => {
+    const { color } = getStageIcon(stage.nome);
+    config[stage.nome.toLowerCase().replace(/\s+/g, '')] = {
+      label: stage.nome,
+      color
+    };
+    return config;
+  }, {} as Record<string, { label: string; color: string }>);
 
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
     setDateFilter(option);
@@ -145,8 +155,8 @@ const MobilePerformanceGeral = () => {
             <CardTitle className="text-base">Distribuição por Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[200px]">
-              <PieChart width={300} height={200}>
+            <ChartContainer config={chartConfig} className="h-[200px]">
+              <PieChart>
                 <Pie
                   data={dadosStatus}
                   cx="50%"
@@ -160,7 +170,7 @@ const MobilePerformanceGeral = () => {
                 </Pie>
                 <ChartTooltip content={<ChartTooltipContent />} />
               </PieChart>
-            </div>
+            </ChartContainer>
           </CardContent>
         </Card>
 

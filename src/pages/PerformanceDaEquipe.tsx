@@ -57,7 +57,7 @@ const PerformanceDaEquipe = () => {
     leadsPorEtapa: {}
   };
 
-  // Criar dados de status dinâmicos baseados nas etapas da empresa
+  // Criar dados de status dinâmicos e config baseados nas etapas da empresa
   const dadosStatus = stages.map(stage => {
     const { color } = getStageIcon(stage.nome);
     return {
@@ -66,6 +66,16 @@ const PerformanceDaEquipe = () => {
       color
     };
   });
+
+  // Criar config dinâmico para os gráficos
+  const chartConfig = stages.reduce((config, stage) => {
+    const { color } = getStageIcon(stage.nome);
+    config[stage.nome.toLowerCase().replace(/\s+/g, '')] = {
+      label: stage.nome,
+      color
+    };
+    return config;
+  }, {} as Record<string, { label: string; color: string }>);
 
   const dadosComparacao = [
     { metric: "Tempo Resposta", value: equipe.tempoMedioResposta, meta: 15, unit: "min" },
@@ -210,8 +220,8 @@ const PerformanceDaEquipe = () => {
             <CardTitle>Distribuição de Leads por Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <PieChart width={400} height={300}>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <PieChart>
                 <Pie
                   data={dadosStatus}
                   cx="50%"
@@ -226,7 +236,7 @@ const PerformanceDaEquipe = () => {
                 </Pie>
                 <ChartTooltip content={<ChartTooltipContent />} />
               </PieChart>
-            </div>
+            </ChartContainer>
           </CardContent>
         </Card>
 
@@ -235,8 +245,8 @@ const PerformanceDaEquipe = () => {
             <CardTitle>Performance vs Meta</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <BarChart width={400} height={300} data={dadosComparacao}>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <BarChart data={dadosComparacao}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="metric" />
                 <YAxis />
@@ -244,7 +254,7 @@ const PerformanceDaEquipe = () => {
                 <Bar dataKey="meta" fill="#e5e7eb" name="Meta" />
                 <ChartTooltip content={<ChartTooltipContent />} />
               </BarChart>
-            </div>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
@@ -255,8 +265,8 @@ const PerformanceDaEquipe = () => {
           <CardTitle>Evolução dos Leads por Mês</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
-            <LineChart width={600} height={300} data={dadosEvolutivos}>
+          <ChartContainer config={chartConfig} className="h-[300px]">
+            <LineChart data={dadosEvolutivos}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="mes" />
               <YAxis />
@@ -264,7 +274,7 @@ const PerformanceDaEquipe = () => {
               <Line type="monotone" dataKey="vendas" stroke="#10b981" name="Vendas" />
               <ChartTooltip content={<ChartTooltipContent />} />
             </LineChart>
-          </div>
+          </ChartContainer>
         </CardContent>
       </Card>
 

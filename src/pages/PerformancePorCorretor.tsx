@@ -65,7 +65,7 @@ const PerformancePorCorretor = () => {
     leadsPorEtapa: {}
   };
 
-  // Criar dados de status dinâmicos baseados nas etapas da empresa
+  // Criar dados de status dinâmicos e config baseados nas etapas da empresa
   const dadosStatus = stages.map(stage => {
     const { color } = getStageIcon(stage.nome);
     return {
@@ -74,6 +74,16 @@ const PerformancePorCorretor = () => {
       color
     };
   });
+
+  // Criar config dinâmico para os gráficos
+  const chartConfig = stages.reduce((config, stage) => {
+    const { color } = getStageIcon(stage.nome);
+    config[stage.nome.toLowerCase().replace(/\s+/g, '')] = {
+      label: stage.nome,
+      color
+    };
+    return config;
+  }, {} as Record<string, { label: string; color: string }>);
 
   const dadosBarras = [
     { metric: "Tempo Resposta", value: corretor.tempoMedioResposta, unit: "min" },
@@ -275,8 +285,8 @@ const PerformancePorCorretor = () => {
             <CardTitle>Distribuição de Leads por Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <PieChart width={400} height={300}>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <PieChart>
                 <Pie
                   data={dadosStatus}
                   cx="50%"
@@ -291,7 +301,7 @@ const PerformancePorCorretor = () => {
                 </Pie>
                 <ChartTooltip content={<ChartTooltipContent />} />
               </PieChart>
-            </div>
+            </ChartContainer>
           </CardContent>
         </Card>
 
@@ -300,15 +310,15 @@ const PerformancePorCorretor = () => {
             <CardTitle>Métricas de Performance</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px]">
-              <BarChart width={400} height={300} data={dadosBarras}>
+            <ChartContainer config={chartConfig} className="h-[300px]">
+              <BarChart data={dadosBarras}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="metric" />
                 <YAxis />
                 <Bar dataKey="value" fill="#3b82f6" />
                 <ChartTooltip content={<ChartTooltipContent />} />
               </BarChart>
-            </div>
+            </ChartContainer>
           </CardContent>
         </Card>
       </div>
