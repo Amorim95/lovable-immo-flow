@@ -120,9 +120,6 @@ const MobilePerformanceGeral = () => {
                 </div>
                 <TrendingUp className="w-8 h-8 text-primary" />
               </div>
-              <p className="text-xs text-green-600 mt-1">
-                {performanceGeral.crescimentoMensal >= 0 ? '+' : ''}{performanceGeral.crescimentoMensal}% vs mês anterior
-              </p>
             </CardContent>
           </Card>
 

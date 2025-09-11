@@ -133,9 +133,6 @@ const PerformanceGeral = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-600">{performanceGeral.leadsTotais}</div>
-            <p className="text-sm text-green-600 mt-1">
-              {performanceGeral.crescimentoMensal >= 0 ? '+' : ''}{performanceGeral.crescimentoMensal}% vs mês anterior
-            </p>
           </CardContent>
         </Card>
         
@@ -145,7 +142,6 @@ const PerformanceGeral = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-orange-600">{performanceGeral.tempoMedioResposta} min</div>
-            <p className="text-sm text-green-600 mt-1">-2 min vs meta</p>
           </CardContent>
         </Card>
 
@@ -155,7 +151,6 @@ const PerformanceGeral = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">{performanceGeral.conversaoGeral}%</div>
-            <p className="text-sm text-green-600 mt-1">+0.8% vs mês anterior</p>
           </CardContent>
         </Card>
 

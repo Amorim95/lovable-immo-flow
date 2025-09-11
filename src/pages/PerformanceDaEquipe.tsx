@@ -291,7 +291,7 @@ const PerformanceDaEquipe = () => {
                   <th className="text-left py-3 px-4 font-medium">Status</th>
                   <th className="text-right py-3 px-4 font-medium">Quantidade</th>
                   <th className="text-right py-3 px-4 font-medium">Percentual</th>
-                  <th className="text-right py-3 px-4 font-medium">Variação</th>
+                  
                 </tr>
               </thead>
               <tbody>
@@ -307,9 +307,6 @@ const PerformanceDaEquipe = () => {
                     <td className="text-right py-3 px-4 font-medium">{item.value}</td>
                     <td className="text-right py-3 px-4">
                       {equipe.leadsTotais > 0 ? ((item.value / equipe.leadsTotais) * 100).toFixed(1) : '0.0'}%
-                    </td>
-                    <td className="text-right py-3 px-4 text-green-600">
-                      +{(Math.random() * 10).toFixed(1)}%
                     </td>
                   </tr>
                 ))}
