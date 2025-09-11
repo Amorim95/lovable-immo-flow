@@ -65,18 +65,18 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
   };
 
   const getLeadsByStage = (stageName: string) => {
-    return leads.filter(lead => {
-      // Priorizar stage_name se existir, senão usar mapeamento de etapa antiga
-      if (lead.stage_name) {
-        return lead.stage_name === stageName;
-      }
-      // Fallback para compatibilidade com leads antigos
-      return lead.etapa === getOldStageMapping(stageName);
+    const mapped = getOldStageMapping(stageName);
+    return leads.filter((lead) => {
+      // Se já usa o novo sistema, filtra apenas por stage_name
+      if (lead.stage_name) return lead.stage_name === stageName;
+      // Caso contrário, só usa fallback se a etapa fizer parte do conjunto antigo
+      if (!mapped) return false; // etapa customizada recém-criada deve vir vazia
+      return lead.etapa === mapped;
     });
   };
 
-  // Mapear etapas antigas para as novas para compatibilidade (só quando stage_name não existe)
-  const getOldStageMapping = (stageName: string): LeadStage => {
+  // Mapear apenas nomes antigos conhecidos para manter compatibilidade
+  const getOldStageMapping = (stageName: string): LeadStage | null => {
     const mappings: Record<string, LeadStage> = {
       'Aguardando Atendimento': 'aguardando-atendimento',
       'Em Tentativas de Contato': 'tentativas-contato',
@@ -86,9 +86,9 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
       'Visita': 'visita',
       'Vendas Fechadas': 'vendas-fechadas',
       'Em Pausa': 'em-pausa',
-      'Descarte': 'descarte'
+      'Descarte': 'descarte',
     };
-    return mappings[stageName] || 'aguardando-atendimento';
+    return mappings[stageName] ?? null;
   };
 
   if (loading) {
