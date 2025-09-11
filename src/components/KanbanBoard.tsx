@@ -65,13 +65,22 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
   };
 
   const getLeadsByStage = (stageName: string) => {
-    const mapped = getOldStageMapping(stageName);
+    const currentStage = stages.find(s => s.nome === stageName);
+    
     return leads.filter((lead) => {
-      // Se já usa o novo sistema, filtra apenas por stage_name
-      if (lead.stage_name) return lead.stage_name === stageName;
-      // Caso contrário, só usa fallback se a etapa fizer parte do conjunto antigo
-      if (!mapped) return false; // etapa customizada recém-criada deve vir vazia
-      return lead.etapa === mapped;
+      // Se tem stage_name, usar exata correspondência
+      if (lead.stage_name) {
+        return lead.stage_name === stageName;
+      }
+      
+      // Se não tem stage_name mas a etapa atual tem legacy_key, fazer correspondência
+      if (currentStage?.legacy_key && lead.etapa === currentStage.legacy_key) {
+        return true;
+      }
+      
+      // Fallback para compatibilidade (só para etapas antigas conhecidas)
+      const oldMapping = getOldStageMapping(stageName);
+      return oldMapping && lead.etapa === oldMapping;
     });
   };
 

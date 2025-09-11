@@ -10,6 +10,7 @@ export interface LeadStage {
   ordem: number;
   ativo: boolean;
   company_id: string;
+  legacy_key?: string;
 }
 
 export function useLeadStages() {

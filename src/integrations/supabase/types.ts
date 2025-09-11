@@ -459,6 +459,7 @@ export type Database = {
           cor: string
           created_at: string
           id: string
+          legacy_key: string | null
           nome: string
           ordem: number
           updated_at: string
@@ -469,6 +470,7 @@ export type Database = {
           cor?: string
           created_at?: string
           id?: string
+          legacy_key?: string | null
           nome: string
           ordem?: number
           updated_at?: string
@@ -479,6 +481,7 @@ export type Database = {
           cor?: string
           created_at?: string
           id?: string
+          legacy_key?: string | null
           nome?: string
           ordem?: number
           updated_at?: string
