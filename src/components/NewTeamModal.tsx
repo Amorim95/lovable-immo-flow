@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useCompanyFilter } from "@/hooks/useCompanyFilter";
 
 interface NewTeamModalProps {
   isOpen: boolean;
@@ -31,6 +32,8 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
   const [searchResponsavel, setSearchResponsavel] = useState('');
   const [searchCorretores, setSearchCorretores] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const { getCompanyId } = useCompanyFilter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +56,8 @@ export function NewTeamModal({ isOpen, onClose, onCreateTeam, corretores }: NewT
         .insert({
           nome: formData.nome,
           responsavel_id: formData.responsavelId === 'none' ? null : formData.responsavelId || null,
-          responsavel_nome: responsavel?.nome || null
+          responsavel_nome: responsavel?.nome || null,
+          company_id: getCompanyId()
         })
         .select('*')
         .single();

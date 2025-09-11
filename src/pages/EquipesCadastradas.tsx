@@ -14,11 +14,13 @@ import {
 import { useNavigate } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useCompanyFilter } from '@/hooks/useCompanyFilter';
 
 // Dados serão carregados do banco de dados
 
 const EquipesCadastradas = () => {
   const navigate = useNavigate();
+  const { getCompanyId } = useCompanyFilter();
   const [equipes, setEquipes] = useState<Equipe[]>([]);
   const [corretores, setCorretores] = useState<Corretor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -104,7 +106,8 @@ const EquipesCadastradas = () => {
         .insert({
           nome: teamData.nome,
           responsavel_id: teamData.responsavelId,
-          responsavel_nome: teamData.responsavelNome
+          responsavel_nome: teamData.responsavelNome,
+          company_id: getCompanyId()
         })
         .select()
         .single();
