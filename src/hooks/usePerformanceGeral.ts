@@ -1,21 +1,14 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLeadStages } from './useLeadStages';
 
 interface PerformanceGeral {
   leadsTotais: number;
   tempoMedioResposta: number;
   tempoMedioPrimeiroContato: number;
   conversaoGeral: number;
-  aguardandoAtendimento: number;
-  tentativasContato: number;
-  atendeu: number;
-  nomeSujo: number;
-  nomeLimpo: number;
-  visita: number;
-  vendasFechadas: number;
-  pausa: number;
-  descarte: number;
+  leadsPorEtapa: { [key: string]: number };
   crescimentoMensal: number;
 }
 
@@ -33,20 +26,13 @@ interface DateRange {
 
 export function usePerformanceGeral(dateRange?: DateRange) {
   const { user } = useAuth();
+  const { stages } = useLeadStages();
   const [performanceGeral, setPerformanceGeral] = useState<PerformanceGeral>({
     leadsTotais: 0,
     tempoMedioResposta: 0,
     tempoMedioPrimeiroContato: 0,
     conversaoGeral: 0,
-    aguardandoAtendimento: 0,
-    tentativasContato: 0,
-    atendeu: 0,
-    nomeSujo: 0,
-    nomeLimpo: 0,
-    visita: 0,
-    vendasFechadas: 0,
-    pausa: 0,
-    descarte: 0,
+    leadsPorEtapa: {},
     crescimentoMensal: 0
   });
   const [evolutionData, setEvolutionData] = useState<EvolutionData[]>([]);
@@ -54,9 +40,9 @@ export function usePerformanceGeral(dateRange?: DateRange) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || stages.length === 0) return;
     loadPerformanceGeral();
-  }, [user, dateRange]);
+  }, [user, dateRange, stages]);
 
   const loadPerformanceGeral = async () => {
     if (!user) return;
@@ -68,7 +54,7 @@ export function usePerformanceGeral(dateRange?: DateRange) {
       // 1. Buscar todos os leads no período
       let leadsQuery = supabase
         .from('leads')
-        .select('id, etapa, created_at, user_id, primeiro_contato_whatsapp');
+        .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp');
 
       if (dateRange?.from && dateRange?.to) {
         leadsQuery = leadsQuery
@@ -82,15 +68,33 @@ export function usePerformanceGeral(dateRange?: DateRange) {
 
       // 2. Calcular métricas gerais
       const leadsTotais = leadsData?.length || 0;
-      const aguardandoAtendimento = leadsData?.filter(lead => lead.etapa === 'aguardando-atendimento').length || 0;
-      const tentativasContato = leadsData?.filter(lead => lead.etapa === 'tentativas-contato').length || 0;
-      const atendeu = leadsData?.filter(lead => lead.etapa === 'atendeu').length || 0;
-      const nomeSujo = leadsData?.filter(lead => lead.etapa === 'nome-sujo').length || 0;
-      const nomeLimpo = leadsData?.filter(lead => lead.etapa === 'nome-limpo').length || 0;
-      const visita = leadsData?.filter(lead => lead.etapa === 'visita').length || 0;
-      const vendas = leadsData?.filter(lead => lead.etapa === 'vendas-fechadas').length || 0;
-      const pausa = leadsData?.filter(lead => lead.etapa === 'em-pausa').length || 0;
-      const descarte = leadsData?.filter(lead => lead.etapa === 'descarte').length || 0;
+      
+      // Calcular leads por etapa usando as etapas dinâmicas
+      const leadsPorEtapa: { [key: string]: number } = {};
+      stages.forEach(stage => {
+        const count = leadsData?.filter(lead => {
+          if (lead.stage_name) {
+            return lead.stage_name === stage.nome;
+          }
+          // Fallback para compatibilidade
+          return stage.legacy_key && lead.etapa === stage.legacy_key;
+        }).length || 0;
+        leadsPorEtapa[stage.nome] = count;
+      });
+      
+      // Encontrar etapa de vendas/sucesso da empresa
+      const vendaStage = stages.find(s => 
+        s.nome.toLowerCase().includes('venda') || 
+        s.nome.toLowerCase().includes('fechada') ||
+        s.legacy_key === 'vendas-fechadas'
+      );
+      
+      const vendas = leadsData?.filter(lead => {
+        if (lead.stage_name && vendaStage) {
+          return lead.stage_name === vendaStage.nome;
+        }
+        return lead.etapa === 'vendas-fechadas';
+      }).length || 0;
 
       const conversaoGeral = leadsTotais > 0 ? (vendas / leadsTotais) * 100 : 0;
       
@@ -134,15 +138,7 @@ export function usePerformanceGeral(dateRange?: DateRange) {
         tempoMedioResposta,
         tempoMedioPrimeiroContato,
         conversaoGeral: Number(conversaoGeral.toFixed(1)),
-        aguardandoAtendimento,
-        tentativasContato,
-        atendeu,
-        nomeSujo,
-        nomeLimpo,
-        visita,
-        vendasFechadas: vendas,
-        pausa,
-        descarte,
+        leadsPorEtapa,
         crescimentoMensal: Number(crescimentoMensal.toFixed(1))
       });
 

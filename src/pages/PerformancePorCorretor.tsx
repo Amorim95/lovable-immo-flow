@@ -4,26 +4,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { useCorretorPerformance } from "@/hooks/useCorretorPerformance";
+import { useLeadStages } from "@/hooks/useLeadStages";
 import { CalendarIcon, Download, Loader2, Trophy, Medal, Award } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobilePerformancePorCorretor from "./MobilePerformancePorCorretor";
 
-const chartConfig = {
-  aguardando: { label: "Aguardando", color: "#64748b" },
-  tentativas: { label: "Tentativas", color: "#eab308" },
-  atendeu: { label: "Atendeu", color: "#3b82f6" },
-  nomeSujo: { label: "Nome Sujo", color: "#f59e0b" },
-  nomeLimpo: { label: "Nome Limpo", color: "#14b8a6" },
-  visita: { label: "Visita", color: "#8b5cf6" },
-  vendas: { label: "Vendas", color: "#10b981" },
-  pausa: { label: "Pausa", color: "#f97316" },
-  descarte: { label: "Descarte", color: "#ef4444" }
+// Function to get stage icon and color
+const getStageIcon = (stageName: string) => {
+  const lowerName = stageName.toLowerCase();
+  if (lowerName.includes('aguardando')) return { color: '#64748b' };
+  if (lowerName.includes('tentativa')) return { color: '#eab308' };
+  if (lowerName.includes('atendeu')) return { color: '#3b82f6' };
+  if (lowerName.includes('sujo')) return { color: '#f59e0b' };
+  if (lowerName.includes('limpo')) return { color: '#14b8a6' };
+  if (lowerName.includes('visita')) return { color: '#8b5cf6' };
+  if (lowerName.includes('venda') || lowerName.includes('fechada')) return { color: '#10b981' };
+  if (lowerName.includes('pausa')) return { color: '#f97316' };
+  if (lowerName.includes('descarte')) return { color: '#ef4444' };
+  return { color: '#6b7280' };
 };
 
 const PerformancePorCorretor = () => {
   const isMobile = useIsMobile();
+  const { stages } = useLeadStages();
   const [corretorSelecionado, setCorretorSelecionado] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
@@ -57,28 +62,18 @@ const PerformancePorCorretor = () => {
     tempoMedioResposta: 0,
     tempoMedioAbertura: 0,
     conversao: 0,
-    aguardandoAtendimento: 0,
-    tentativasContato: 0,
-    atendeu: 0,
-    nomeSujo: 0,
-    nomeLimpo: 0,
-    visita: 0,
-    vendas: 0,
-    pausa: 0,
-    descarte: 0
+    leadsPorEtapa: {}
   };
 
-  const dadosStatus = [
-    { name: "Aguardando", value: corretor.aguardandoAtendimento, color: chartConfig.aguardando.color },
-    { name: "Tentativas", value: corretor.tentativasContato, color: chartConfig.tentativas.color },
-    { name: "Atendeu", value: corretor.atendeu, color: chartConfig.atendeu.color },
-    { name: "Nome Sujo", value: corretor.nomeSujo, color: chartConfig.nomeSujo.color },
-    { name: "Nome Limpo", value: corretor.nomeLimpo, color: chartConfig.nomeLimpo.color },
-    { name: "Visita", value: corretor.visita, color: chartConfig.visita.color },
-    { name: "Vendas", value: corretor.vendas, color: chartConfig.vendas.color },
-    { name: "Pausa", value: corretor.pausa, color: chartConfig.pausa.color },
-    { name: "Descarte", value: corretor.descarte, color: chartConfig.descarte.color }
-  ];
+  // Criar dados de status dinâmicos baseados nas etapas da empresa
+  const dadosStatus = stages.map(stage => {
+    const { color } = getStageIcon(stage.nome);
+    return {
+      name: stage.nome,
+      value: corretor.leadsPorEtapa[stage.nome] || 0,
+      color
+    };
+  });
 
   const dadosBarras = [
     { metric: "Tempo Resposta", value: corretor.tempoMedioResposta, unit: "min" },
@@ -280,8 +275,8 @@ const PerformancePorCorretor = () => {
             <CardTitle>Distribuição de Leads por Status</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <PieChart>
+            <div className="h-[300px]">
+              <PieChart width={400} height={300}>
                 <Pie
                   data={dadosStatus}
                   cx="50%"
@@ -296,7 +291,7 @@ const PerformancePorCorretor = () => {
                 </Pie>
                 <ChartTooltip content={<ChartTooltipContent />} />
               </PieChart>
-            </ChartContainer>
+            </div>
           </CardContent>
         </Card>
 
@@ -305,15 +300,15 @@ const PerformancePorCorretor = () => {
             <CardTitle>Métricas de Performance</CardTitle>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px]">
-              <BarChart data={dadosBarras}>
+            <div className="h-[300px]">
+              <BarChart width={400} height={300} data={dadosBarras}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="metric" />
                 <YAxis />
                 <Bar dataKey="value" fill="#3b82f6" />
                 <ChartTooltip content={<ChartTooltipContent />} />
               </BarChart>
-            </ChartContainer>
+            </div>
           </CardContent>
         </Card>
       </div>

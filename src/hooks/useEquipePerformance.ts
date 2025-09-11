@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLeadStages } from './useLeadStages';
 
 interface EquipePerformance {
   id: string;
@@ -10,15 +11,7 @@ interface EquipePerformance {
   vendas: number;
   tempoMedioResposta: number;
   conversao: number;
-  aguardandoAtendimento: number;
-  tentativasContato: number;
-  atendeu: number;
-  nomeSujo: number;
-  nomeLimpo: number;
-  visita: number;
-  vendasFechadas: number;
-  pausa: number;
-  descarte: number;
+  leadsPorEtapa: { [key: string]: number };
   ranking?: number;
 }
 
@@ -29,6 +22,7 @@ interface DateRange {
 
 export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
   const { user } = useAuth();
+  const { stages } = useLeadStages();
   const [equipes, setEquipes] = useState<EquipePerformance[]>([]);
   const [selectedEquipe, setSelectedEquipe] = useState<EquipePerformance | null>(null);
   const [rankingEquipes, setRankingEquipes] = useState<EquipePerformance[]>([]);
@@ -36,9 +30,9 @@ export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || stages.length === 0) return;
     loadEquipePerformance();
-  }, [user, dateRange]);
+  }, [user, dateRange, stages]);
 
   useEffect(() => {
     if (equipeId && equipes.length > 0) {
@@ -74,7 +68,7 @@ export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
       // 3. Buscar todos os leads no período
       let leadsQuery = supabase
         .from('leads')
-        .select('id, etapa, created_at, user_id, primeiro_contato_whatsapp');
+        .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp');
 
       if (dateRange?.from && dateRange?.to) {
         leadsQuery = leadsQuery
@@ -97,15 +91,46 @@ export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
         ) || [];
 
         const leadsTotais = equipeLeads.length;
-        const aguardandoAtendimento = equipeLeads.filter(lead => lead.etapa === 'aguardando-atendimento').length;
-        const tentativasContato = equipeLeads.filter(lead => lead.etapa === 'tentativas-contato').length;
-        const atendeu = equipeLeads.filter(lead => lead.etapa === 'atendeu').length;
-        const nomeSujo = equipeLeads.filter(lead => lead.etapa === 'nome-sujo').length;
-        const nomeLimpo = equipeLeads.filter(lead => lead.etapa === 'nome-limpo').length;
-        const visita = equipeLeads.filter(lead => lead.etapa === 'visita').length;
-        const vendas = equipeLeads.filter(lead => lead.etapa === 'vendas-fechadas').length;
-        const pausa = equipeLeads.filter(lead => lead.etapa === 'em-pausa').length;
-        const descarte = equipeLeads.filter(lead => lead.etapa === 'descarte').length;
+        
+        // Calcular leads por etapa usando as etapas dinâmicas
+        const leadsPorEtapa: { [key: string]: number } = {};
+        stages.forEach(stage => {
+          const count = equipeLeads.filter(lead => {
+            if (lead.stage_name) {
+              return lead.stage_name === stage.nome;
+            }
+            // Fallback para compatibilidade
+            return stage.legacy_key && lead.etapa === stage.legacy_key;
+          }).length;
+          leadsPorEtapa[stage.nome] = count;
+        });
+        
+        // Encontrar etapa de vendas/sucesso da empresa
+        const vendaStage = stages.find(s => 
+          s.nome.toLowerCase().includes('venda') || 
+          s.nome.toLowerCase().includes('fechada') ||
+          s.legacy_key === 'vendas-fechadas'
+        );
+        
+        const vendas = equipeLeads.filter(lead => {
+          if (lead.stage_name && vendaStage) {
+            return lead.stage_name === vendaStage.nome;
+          }
+          return lead.etapa === 'vendas-fechadas';
+        }).length;
+        
+        // Encontrar etapa de visita da empresa
+        const visitaStage = stages.find(s => 
+          s.nome.toLowerCase().includes('visita') ||
+          s.legacy_key === 'visita'
+        );
+        
+        const visitas = equipeLeads.filter(lead => {
+          if (lead.stage_name && visitaStage) {
+            return lead.stage_name === visitaStage.nome;
+          }
+          return lead.etapa === 'visita';
+        }).length;
 
         const conversao = leadsTotais > 0 ? (vendas / leadsTotais) * 100 : 0;
         
@@ -128,19 +153,11 @@ export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
           id: equipe.id,
           nome: equipe.nome,
           leadsTotais,
-          visitas: visita,
+          visitas,
           vendas,
           tempoMedioResposta,
           conversao: Number(conversao.toFixed(1)),
-          aguardandoAtendimento,
-          tentativasContato,
-          atendeu,
-          nomeSujo,
-          nomeLimpo,
-          visita,
-          vendasFechadas: vendas,
-          pausa,
-          descarte
+          leadsPorEtapa
         };
       }) || [];
 
