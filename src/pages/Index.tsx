@@ -85,8 +85,9 @@ const Index = () => {
     refreshLeads();
   };
 
-  const handleCreateLeadInStage = (stage: Lead['etapa']) => {
-    setNewLeadStage(stage);
+  const handleCreateLeadInStage = (stageName: string) => {
+    // Por enquanto, manter criação com etapa padrão; futuras melhorias: suportar stage_name customizado
+    setNewLeadStage('aguardando-atendimento');
     setIsNewLeadModalOpen(true);
   };
 
@@ -110,6 +111,7 @@ const Index = () => {
     anuncio: 'Não especificado',
     dataCriacao: new Date(lead.created_at),
     etapa: lead.etapa as Lead['etapa'],
+    stage_name: lead.stage_name,
     etiquetas: lead.lead_tag_relations?.map(rel => rel.lead_tags?.nome as Lead['etiquetas'][0]).filter(Boolean) || [],
     corretor: lead.user?.name || 'Não atribuído',
     atividades: (Array.isArray(lead.atividades) ? lead.atividades : []).map((atividade: any) => ({
