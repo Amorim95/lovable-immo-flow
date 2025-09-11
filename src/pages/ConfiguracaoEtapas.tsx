@@ -35,28 +35,6 @@ export default function ConfiguracaoEtapas() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Como funciona</CardTitle>
-          <CardDescription>
-            As etapas dos leads são personalizáveis por empresa. Você pode:
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ul className="list-disc list-inside space-y-2 text-sm">
-            <li>Criar novas etapas com nomes personalizados</li>
-            <li>Definir cores específicas para cada etapa</li>
-            <li>Reordenar as etapas arrastando e soltando</li>
-            <li>Editar nomes e cores das etapas existentes</li>
-            <li>Remover etapas que não são mais necessárias</li>
-          </ul>
-          <p className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
-            <strong>Importante:</strong> As alterações feitas aqui afetam apenas sua empresa. 
-            Outras empresas mantêm suas próprias configurações de etapas.
-          </p>
-        </CardContent>
-      </Card>
-
       <LeadStagesManager />
     </div>
   );
