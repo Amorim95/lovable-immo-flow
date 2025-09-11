@@ -65,10 +65,17 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
   };
 
   const getLeadsByStage = (stageName: string) => {
-    return leads.filter(lead => lead.stage_name === stageName || (!lead.stage_name && lead.etapa === getOldStageMapping(stageName)));
+    return leads.filter(lead => {
+      // Priorizar stage_name se existir, senão usar mapeamento de etapa antiga
+      if (lead.stage_name) {
+        return lead.stage_name === stageName;
+      }
+      // Fallback para compatibilidade com leads antigos
+      return lead.etapa === getOldStageMapping(stageName);
+    });
   };
 
-  // Mapear etapas antigas para as novas para compatibilidade
+  // Mapear etapas antigas para as novas para compatibilidade (só quando stage_name não existe)
   const getOldStageMapping = (stageName: string): LeadStage => {
     const mappings: Record<string, LeadStage> = {
       'Aguardando Atendimento': 'aguardando-atendimento',
