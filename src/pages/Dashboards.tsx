@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
+import { useLeadStages } from "@/hooks/useLeadStages";
 import { useUserRole } from "@/hooks/useUserRole";
 import { 
   Calendar,
@@ -22,6 +23,7 @@ const Dashboards = () => {
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
   const { isAdmin, isGestor } = useUserRole();
+  const { stages } = useLeadStages();
 
   // Calcular o range de data baseado no filtro selecionado
   const dateRange = useMemo(() => {
@@ -33,6 +35,16 @@ const Dashboards = () => {
 
   // Verificar se o usuário pode ver "Performance do Corretor"
   const canViewCorretorPerformance = isAdmin || isGestor;
+
+  // Função para obter ícone e cor com base no nome da etapa
+  const getStageIcon = (stageName: string) => {
+    const lowerName = stageName.toLowerCase();
+    if (lowerName.includes('aguardando')) return { icon: Clock, color: 'yellow' };
+    if (lowerName.includes('visita')) return { icon: CalendarCheck, color: 'purple' };
+    if (lowerName.includes('venda') || lowerName.includes('fechada')) return { icon: TrendingUp, color: 'green' };
+    if (lowerName.includes('contato') || lowerName.includes('tentativa')) return { icon: UserCheck, color: 'blue' };
+    return { icon: LayoutList, color: 'gray' };
+  };
 
 
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
@@ -79,7 +91,8 @@ const Dashboards = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Total de Leads sempre fica primeiro */}
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <LayoutList className="w-5 h-5 text-blue-600" />
@@ -88,37 +101,29 @@ const Dashboards = () => {
                   <div className="text-2xl font-bold text-blue-900">{metrics.totalLeads}</div>
                 </div>
 
-                <div className="bg-yellow-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="w-5 h-5 text-yellow-600" />
-                    <span className="text-sm font-medium text-yellow-600">Aguardando</span>
-                  </div>
-                  <div className="text-2xl font-bold text-yellow-900">{metrics.leadsAguardando}</div>
-                </div>
+                {/* Etapas dinâmicas baseadas na configuração da empresa */}
+                {stages.slice(0, 3).map(stage => {
+                  const { icon: Icon, color } = getStageIcon(stage.nome);
+                  const colorClasses = {
+                    yellow: { bg: 'bg-yellow-50', text: 'text-yellow-600', bold: 'text-yellow-900' },
+                    purple: { bg: 'bg-purple-50', text: 'text-purple-600', bold: 'text-purple-900' },
+                    green: { bg: 'bg-green-50', text: 'text-green-600', bold: 'text-green-900' },
+                    blue: { bg: 'bg-blue-50', text: 'text-blue-600', bold: 'text-blue-900' },
+                    gray: { bg: 'bg-gray-50', text: 'text-gray-600', bold: 'text-gray-900' }
+                  }[color] || { bg: 'bg-gray-50', text: 'text-gray-600', bold: 'text-gray-900' };
 
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CalendarCheck className="w-5 h-5 text-purple-600" />
-                    <span className="text-sm font-medium text-purple-600">Visitas Agendadas</span>
-                  </div>
-                  <div className="text-2xl font-bold text-purple-900">{metrics.visitasAgendadas}</div>
-                </div>
-
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-5 h-5 text-green-600" />
-                    <span className="text-sm font-medium text-green-600">Vendas Fechadas</span>
-                  </div>
-                  <div className="text-2xl font-bold text-green-900">{metrics.vendasFechadas}</div>
-                </div>
-
-                <div className="bg-orange-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <UserCheck className="w-5 h-5 text-orange-600" />
-                    <span className="text-sm font-medium text-orange-600">Tempo Médio</span>
-                  </div>
-                  <div className="text-2xl font-bold text-orange-900">{metrics.tempoMedioAtendimento}min</div>
-                </div>
+                  return (
+                    <div key={stage.id} className={`${colorClasses.bg} p-4 rounded-lg`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon className={`w-5 h-5 ${colorClasses.text}`} />
+                        <span className={`text-sm font-medium ${colorClasses.text} truncate`}>{stage.nome}</span>
+                      </div>
+                      <div className={`text-2xl font-bold ${colorClasses.bold}`}>
+                        {metrics.leadsPorEtapa[stage.nome] || 0}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </>
           )}

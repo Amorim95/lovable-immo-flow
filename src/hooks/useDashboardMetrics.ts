@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLeadStages } from './useLeadStages';
 
 interface DashboardMetrics {
   totalLeads: number;
-  leadsAguardando: number;
-  visitasAgendadas: number;
-  vendasFechadas: number;
+  leadsPorEtapa: { [key: string]: number };
   tempoMedioAtendimento: number;
   melhorCorretor: {
     nome: string;
@@ -27,11 +26,10 @@ interface DateRange {
 
 export function useDashboardMetrics(dateRange?: DateRange) {
   const { user } = useAuth();
+  const { stages } = useLeadStages();
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     totalLeads: 0,
-    leadsAguardando: 0,
-    visitasAgendadas: 0,
-    vendasFechadas: 0,
+    leadsPorEtapa: {},
     tempoMedioAtendimento: 0,
     melhorCorretor: {
       nome: 'N/A',
@@ -48,9 +46,9 @@ export function useDashboardMetrics(dateRange?: DateRange) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || stages.length === 0) return;
     loadMetrics();
-  }, [user, dateRange]);
+  }, [user, dateRange, stages]);
 
   const loadMetrics = async () => {
     if (!user) return;
@@ -68,16 +66,26 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       // 1. Total de Leads
       const { data: leadsData, error: leadsError } = await supabase
         .from('leads')
-        .select('id, etapa, created_at, user_id, primeiro_contato_whatsapp')
+        .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
         .gte('created_at', dateRange?.from?.toISOString() || '1900-01-01')
         .lte('created_at', dateRange?.to?.toISOString() || '2100-01-01');
 
       if (leadsError) throw leadsError;
 
       const totalLeads = leadsData?.length || 0;
-      const leadsAguardando = leadsData?.filter(lead => lead.etapa === 'aguardando-atendimento').length || 0;
-      const visitasAgendadas = leadsData?.filter(lead => lead.etapa === 'visita').length || 0;
-      const vendasFechadas = leadsData?.filter(lead => lead.etapa === 'vendas-fechadas').length || 0;
+
+      // Calcular leads por etapa baseado nas etapas customizadas
+      const leadsPorEtapa: { [key: string]: number } = {};
+      stages.forEach(stage => {
+        const count = leadsData?.filter(lead => {
+          if (lead.stage_name) {
+            return lead.stage_name === stage.nome;
+          }
+          // Fallback para compatibilidade
+          return stage.legacy_key && lead.etapa === stage.legacy_key;
+        }).length || 0;
+        leadsPorEtapa[stage.nome] = count;
+      });
 
       // 2. Buscar dados dos usuários para análise por corretor
       const { data: usersData, error: usersError } = await supabase
@@ -90,7 +98,20 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       // 3. Calcular métricas por corretor
       const corretorMetrics = usersData?.map(user => {
         const userLeads = leadsData?.filter(lead => lead.user_id === user.id) || [];
-        const userVendas = userLeads.filter(lead => lead.etapa === 'vendas-fechadas').length;
+        // Encontrar etapa de vendas/sucesso da empresa
+        const vendaStage = stages.find(s => 
+          s.nome.toLowerCase().includes('venda') || 
+          s.nome.toLowerCase().includes('fechada') ||
+          s.legacy_key === 'vendas-fechadas'
+        );
+        
+        const userVendas = userLeads.filter(lead => {
+          if (lead.stage_name && vendaStage) {
+            return lead.stage_name === vendaStage.nome;
+          }
+          return lead.etapa === 'vendas-fechadas';
+        }).length;
+        
         const taxaConversao = userLeads.length > 0 ? (userVendas / userLeads.length) * 100 : 0;
         
         return {
@@ -131,6 +152,19 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       }, equipeMetrics[0] || { nome: 'N/A', totalLeads: 0 });
 
       // 5. Calcular conversão geral e crescimento real
+      const vendaStage = stages.find(s => 
+        s.nome.toLowerCase().includes('venda') || 
+        s.nome.toLowerCase().includes('fechada') ||
+        s.legacy_key === 'vendas-fechadas'
+      );
+      
+      const vendasFechadas = leadsData?.filter(lead => {
+        if (lead.stage_name && vendaStage) {
+          return lead.stage_name === vendaStage.nome;
+        }
+        return lead.etapa === 'vendas-fechadas';
+      }).length || 0;
+      
       const conversaoGeral = totalLeads > 0 ? (vendasFechadas / totalLeads) * 100 : 0;
       
       // Calcular crescimento comparando com período anterior
@@ -178,9 +212,7 @@ export function useDashboardMetrics(dateRange?: DateRange) {
 
       setMetrics({
         totalLeads,
-        leadsAguardando,
-        visitasAgendadas,
-        vendasFechadas,
+        leadsPorEtapa,
         tempoMedioAtendimento,
         melhorCorretor: {
           nome: melhorCorretor.name || 'N/A',
