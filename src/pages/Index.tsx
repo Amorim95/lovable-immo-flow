@@ -7,6 +7,7 @@ import { ListView } from "@/components/ListView";
 import { LeadModal } from "@/components/LeadModal";
 import { NewLeadModal } from "@/components/NewLeadModal";
 import { TeamUserFilters } from "@/components/TeamUserFilters";
+import { TagFilter } from "@/components/TagFilter";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -37,6 +38,7 @@ const Index = () => {
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
   // Permitir criação de leads para todos os usuários autenticados
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor || isDono);
@@ -158,7 +160,19 @@ const Index = () => {
       }
     }
 
-    return matchesSearch && matchesDate && matchesUser && matchesTeam;
+    // Filtro por etiquetas
+    let matchesTags = true;
+    if (selectedTagIds.length > 0) {
+      const originalLead = leads.find(l => l.id === lead.id);
+      if (originalLead?.lead_tag_relations) {
+        const leadTagIds = originalLead.lead_tag_relations.map((relation: any) => relation.tag_id);
+        matchesTags = selectedTagIds.some(tagId => leadTagIds.includes(tagId));
+      } else {
+        matchesTags = false;
+      }
+    }
+
+    return matchesSearch && matchesDate && matchesUser && matchesTeam && matchesTags;
   });
 
   if (loading || roleLoading) {
@@ -267,6 +281,12 @@ const Index = () => {
                 selectedUserId={selectedUserId}
               />
             )}
+            {/* Filtro de Etiquetas */}
+            <TagFilter
+              selectedTagIds={selectedTagIds}
+              onTagChange={setSelectedTagIds}
+              className="w-64"
+            />
           </div>
         </div>
       </div>

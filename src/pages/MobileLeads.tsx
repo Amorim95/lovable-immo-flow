@@ -4,9 +4,10 @@ import { Lead } from "@/types/crm";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { MobileHeader } from "@/components/MobileHeader";
+import { TagFilter } from "@/components/TagFilter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, MessageCircle, Calendar, User, ChevronDown, Filter } from "lucide-react";
+import { Plus, Search, MessageCircle, Calendar, User, ChevronDown, Filter, Tag } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { NewLeadModal } from "@/components/NewLeadModal";
 import { DateFilter, DateFilterOption, getDateRangeFromFilter } from "@/components/DateFilter";
@@ -47,6 +48,7 @@ export default function MobileLeads() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
 
@@ -86,6 +88,18 @@ export default function MobileLeads() {
     // Filtro de etapa
     const matchesStage = !selectedStage || lead.etapa === selectedStage;
 
+    // Filtro de etiquetas
+    let matchesTags = true;
+    if (selectedTagIds.length > 0) {
+      const originalLead = leads.find(l => l.id === lead.id);
+      if (originalLead?.lead_tag_relations) {
+        const leadTagIds = originalLead.lead_tag_relations.map((relation: any) => relation.tag_id);
+        matchesTags = selectedTagIds.some(tagId => leadTagIds.includes(tagId));
+      } else {
+        matchesTags = false;
+      }
+    }
+
     // Filtro de data
     let matchesDate = true;
     if (dateFilter !== 'periodo-total') {
@@ -96,7 +110,7 @@ export default function MobileLeads() {
       }
     }
 
-    return matchesSearch && matchesUser && matchesStage && matchesDate;
+    return matchesSearch && matchesUser && matchesStage && matchesDate && matchesTags;
   });
 
   const handleLeadClick = (lead: Lead) => {
@@ -273,6 +287,16 @@ export default function MobileLeads() {
               ))}
             </SelectContent>
           </Select>
+          
+          <div className="flex items-center gap-2 mb-2 mt-4">
+            <Tag className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">Filtrar por Etiquetas</span>
+          </div>
+          
+          <TagFilter
+            selectedTagIds={selectedTagIds}
+            onTagChange={setSelectedTagIds}
+          />
         </div>
       </div>
 
