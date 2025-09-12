@@ -6,7 +6,7 @@ export function DynamicPWAUpdater() {
 
   useEffect(() => {
     const updatePWAIcons = () => {
-      const iconUrl = settings.logo || '/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png';
+      const iconUrl = settings.logo || '/lovable-uploads/default-crm-logo.png';
       
       // Update favicon
       const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
