@@ -146,6 +146,70 @@ const MobilePerformanceGeral = () => {
           </div>
         </div>
 
+        {/* Seção de Etiquetas */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Métricas de Etiquetas</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {Object.keys(performanceGeral.totalPorEtiqueta).length > 0 ? (
+              <>
+                {Object.entries(performanceGeral.totalPorEtiqueta).map(([etiqueta, total]) => (
+                  <div key={etiqueta} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                    <span className="text-sm font-medium">{etiqueta}</span>
+                    <div className="text-right">
+                      <div className="text-lg font-bold">{total}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {performanceGeral.leadsTotais > 0 ? ((total / performanceGeral.leadsTotais) * 100).toFixed(1) : '0.0'}%
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </>
+            ) : (
+              <div className="text-center py-4 text-muted-foreground text-sm">
+                Nenhuma etiqueta encontrada
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Tabela de Etiquetas por Etapa - Mobile Friendly */}
+        {Object.keys(performanceGeral.totalPorEtiqueta).length > 0 && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Etiquetas por Etapa</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="space-y-2">
+                {stages.map(stage => {
+                  const etapaData = performanceGeral.etiquetasPorEtapa[stage.nome] || {};
+                  const totalEtapa = performanceGeral.leadsPorEtapa[stage.nome] || 0;
+                  const hasEtiquetas = Object.values(etapaData).some(v => v > 0);
+                  
+                  if (!hasEtiquetas) return null;
+                  
+                  return (
+                    <div key={stage.id} className="p-3 border-b last:border-b-0">
+                      <div className="font-medium text-sm mb-2">{stage.nome}</div>
+                      <div className="space-y-1">
+                        {Object.entries(etapaData).map(([etiqueta, count]) => (
+                          count > 0 && (
+                            <div key={etiqueta} className="flex justify-between text-xs">
+                              <span className="text-muted-foreground">{etiqueta}</span>
+                              <span className="font-medium">{count}</span>
+                            </div>
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Gráfico de Pizza Compacto */}
         <Card>
           <CardHeader className="pb-3">

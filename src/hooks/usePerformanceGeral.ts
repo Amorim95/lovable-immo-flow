@@ -10,6 +10,8 @@ interface PerformanceGeral {
   conversaoGeral: number;
   leadsPorEtapa: { [key: string]: number };
   crescimentoMensal: number;
+  etiquetasPorEtapa: { [etapa: string]: { [etiqueta: string]: number } };
+  totalPorEtiqueta: { [etiqueta: string]: number };
 }
 
 interface EvolutionData {
@@ -33,7 +35,9 @@ export function usePerformanceGeral(dateRange?: DateRange) {
     tempoMedioPrimeiroContato: 0,
     conversaoGeral: 0,
     leadsPorEtapa: {},
-    crescimentoMensal: 0
+    crescimentoMensal: 0,
+    etiquetasPorEtapa: {},
+    totalPorEtiqueta: {}
   });
   const [evolutionData, setEvolutionData] = useState<EvolutionData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,10 +55,25 @@ export function usePerformanceGeral(dateRange?: DateRange) {
       setLoading(true);
       setError(null);
 
-      // 1. Buscar todos os leads no período
+      // 1. Buscar todos os leads no período com suas etiquetas
       let leadsQuery = supabase
         .from('leads')
-        .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp');
+        .select(`
+          id, 
+          etapa, 
+          stage_name, 
+          created_at, 
+          user_id, 
+          primeiro_contato_whatsapp,
+          lead_tag_relations (
+            tag_id,
+            lead_tags (
+              id,
+              nome,
+              cor
+            )
+          )
+        `);
 
       if (dateRange?.from && dateRange?.to) {
         leadsQuery = leadsQuery
@@ -115,10 +134,49 @@ export function usePerformanceGeral(dateRange?: DateRange) {
         tempoMedioPrimeiroContato = tempoMedioResposta; // Mesmo valor pois é o primeiro contato
       }
 
-      // 3. Calcular crescimento mensal (comparar com mês anterior se possível)
+      // 3. Calcular métricas de etiquetas
+      const etiquetasPorEtapa: { [etapa: string]: { [etiqueta: string]: number } } = {};
+      const totalPorEtiqueta: { [etiqueta: string]: number } = {};
+
+      // Inicializar estrutura para todas as etapas
+      stages.forEach(stage => {
+        etiquetasPorEtapa[stage.nome] = {};
+      });
+
+      // Processar cada lead e suas etiquetas
+      leadsData?.forEach(lead => {
+        const etapaNome = lead.stage_name || 
+          stages.find(s => s.legacy_key === lead.etapa)?.nome || 
+          lead.etapa;
+
+        if (etapaNome && lead.lead_tag_relations) {
+          lead.lead_tag_relations.forEach((relation: any) => {
+            if (relation.lead_tags) {
+              const etiquetaNome = relation.lead_tags.nome;
+              
+              // Contar por etapa
+              if (!etiquetasPorEtapa[etapaNome]) {
+                etiquetasPorEtapa[etapaNome] = {};
+              }
+              if (!etiquetasPorEtapa[etapaNome][etiquetaNome]) {
+                etiquetasPorEtapa[etapaNome][etiquetaNome] = 0;
+              }
+              etiquetasPorEtapa[etapaNome][etiquetaNome]++;
+
+              // Contar total geral
+              if (!totalPorEtiqueta[etiquetaNome]) {
+                totalPorEtiqueta[etiquetaNome] = 0;
+              }
+              totalPorEtiqueta[etiquetaNome]++;
+            }
+          });
+        }
+      });
+
+      // 4. Calcular crescimento mensal (comparar com mês anterior se possível)
       const crescimentoMensal = Math.random() * 20 - 5; // Simulado
 
-      // 4. Gerar dados de evolução mensal
+      // 5. Gerar dados de evolução mensal
       const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
       const evolutionData: EvolutionData[] = meses.map((mes, index) => {
         // Usar dados reais se disponível, senão simular baseado nos dados atuais
@@ -139,7 +197,9 @@ export function usePerformanceGeral(dateRange?: DateRange) {
         tempoMedioPrimeiroContato,
         conversaoGeral: Number(conversaoGeral.toFixed(1)),
         leadsPorEtapa,
-        crescimentoMensal: Number(crescimentoMensal.toFixed(1))
+        crescimentoMensal: Number(crescimentoMensal.toFixed(1)),
+        etiquetasPorEtapa,
+        totalPorEtiqueta
       });
 
       setEvolutionData(evolutionData);
