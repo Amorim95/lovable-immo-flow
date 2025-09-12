@@ -12,6 +12,8 @@ interface EquipePerformance {
   tempoMedioResposta: number;
   conversao: number;
   leadsPorEtapa: { [key: string]: number };
+  etiquetasPorEtapa: { [etapa: string]: { [etiqueta: string]: number } };
+  totalPorEtiqueta: { [etiqueta: string]: number };
   ranking?: number;
 }
 
@@ -65,10 +67,25 @@ export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
 
       if (usersError) throw usersError;
 
-      // 3. Buscar todos os leads no período
+      // 3. Buscar todos os leads no período com suas etiquetas
       let leadsQuery = supabase
         .from('leads')
-        .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp');
+        .select(`
+          id, 
+          etapa, 
+          stage_name, 
+          created_at, 
+          user_id, 
+          primeiro_contato_whatsapp,
+          lead_tag_relations (
+            tag_id,
+            lead_tags (
+              id,
+              nome,
+              cor
+            )
+          )
+        `);
 
       if (dateRange?.from && dateRange?.to) {
         leadsQuery = leadsQuery
@@ -149,6 +166,45 @@ export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
           tempoMedioResposta = Number((somaTempos / temposResposta.length).toFixed(1));
         }
 
+        // Calcular métricas de etiquetas para esta equipe
+        const etiquetasPorEtapa: { [etapa: string]: { [etiqueta: string]: number } } = {};
+        const totalPorEtiqueta: { [etiqueta: string]: number } = {};
+
+        // Inicializar estrutura para todas as etapas
+        stages.forEach(stage => {
+          etiquetasPorEtapa[stage.nome] = {};
+        });
+
+        // Processar cada lead da equipe e suas etiquetas
+        equipeLeads.forEach(lead => {
+          const etapaNome = lead.stage_name || 
+            stages.find(s => s.legacy_key === lead.etapa)?.nome || 
+            lead.etapa;
+
+          if (etapaNome && lead.lead_tag_relations) {
+            lead.lead_tag_relations.forEach((relation: any) => {
+              if (relation.lead_tags) {
+                const etiquetaNome = relation.lead_tags.nome;
+                
+                // Contar por etapa
+                if (!etiquetasPorEtapa[etapaNome]) {
+                  etiquetasPorEtapa[etapaNome] = {};
+                }
+                if (!etiquetasPorEtapa[etapaNome][etiquetaNome]) {
+                  etiquetasPorEtapa[etapaNome][etiquetaNome] = 0;
+                }
+                etiquetasPorEtapa[etapaNome][etiquetaNome]++;
+
+                // Contar total geral
+                if (!totalPorEtiqueta[etiquetaNome]) {
+                  totalPorEtiqueta[etiquetaNome] = 0;
+                }
+                totalPorEtiqueta[etiquetaNome]++;
+              }
+            });
+          }
+        });
+
         return {
           id: equipe.id,
           nome: equipe.nome,
@@ -157,7 +213,9 @@ export function useEquipePerformance(equipeId?: string, dateRange?: DateRange) {
           vendas,
           tempoMedioResposta,
           conversao: Number(conversao.toFixed(1)),
-          leadsPorEtapa
+          leadsPorEtapa,
+          etiquetasPorEtapa,
+          totalPorEtiqueta
         };
       }) || [];
 
