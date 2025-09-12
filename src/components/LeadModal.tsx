@@ -21,10 +21,12 @@ import {
   User, 
   Edit,
   Calendar,
-  Copy
+  Copy,
+  Tag
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { TagSelector } from "./TagSelector";
 
 interface LeadModalProps {
   lead: Lead | null;
@@ -285,26 +287,90 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
     }
   };
 
+  const handleTagsChange = async (newTags: any[]) => {
+    try {
+      // Primeiro, remove todas as tags existentes do lead
+      const { error: deleteError } = await supabase
+        .from('lead_tag_relations')
+        .delete()
+        .eq('lead_id', lead.id);
+
+      if (deleteError) {
+        console.error('Erro ao remover tags existentes:', deleteError);
+        toast.error('Erro ao atualizar etiquetas');
+        return;
+      }
+
+      // Depois, adiciona as novas tags se houver alguma
+      if (newTags.length > 0) {
+        // Buscar os IDs das tags pelo nome
+        const { data: tagData, error: tagError } = await supabase
+          .from('lead_tags')
+          .select('id, nome')
+          .in('nome', newTags);
+
+        if (tagError) {
+          console.error('Erro ao buscar tags:', tagError);
+          toast.error('Erro ao buscar etiquetas');
+          return;
+        }
+
+        // Criar os relacionamentos
+        const relations = tagData.map(tag => ({
+          lead_id: lead.id,
+          tag_id: tag.id
+        }));
+
+        const { error: insertError } = await supabase
+          .from('lead_tag_relations')
+          .insert(relations);
+
+        if (insertError) {
+          console.error('Erro ao inserir tags:', insertError);
+          toast.error('Erro ao atualizar etiquetas');
+          return;
+        }
+      }
+
+      onUpdate(lead.id, { etiquetas: newTags });
+      toast.success('Etiquetas atualizadas!');
+    } catch (error) {
+      console.error('Erro geral:', error);
+      toast.error('Erro ao atualizar etiquetas');
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
         <div className="max-h-full">
           <DialogHeader className="sticky top-0 bg-background z-10 pb-4">
-            <DialogTitle className="flex items-center gap-2">
-              <User className="w-5 h-5" />
-              {editMode ? (
-                <div className="flex gap-2 flex-1">
-                  <Input
-                    value={formData.nome ?? lead.nome}
-                    onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                    placeholder="Nome do lead"
-                    className="flex-1"
-                  />
-                </div>
-              ) : (
-                lead.nome
-              )}
-            </DialogTitle>
+            <div className="flex items-start justify-between gap-4">
+              <DialogTitle className="flex items-center gap-2 flex-1">
+                <User className="w-5 h-5" />
+                {editMode ? (
+                  <div className="flex gap-2 flex-1">
+                    <Input
+                      value={formData.nome ?? lead.nome}
+                      onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                      placeholder="Nome do lead"
+                      className="flex-1"
+                    />
+                  </div>
+                ) : (
+                  lead.nome
+                )}
+              </DialogTitle>
+              
+              {/* Tags no topo direito */}
+              <div className="flex-shrink-0 max-w-xs">
+                <TagSelector
+                  selectedTags={lead.etiquetas || []}
+                  onTagsChange={handleTagsChange}
+                  variant="compact"
+                />
+              </div>
+            </div>
           </DialogHeader>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
