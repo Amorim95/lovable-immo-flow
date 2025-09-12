@@ -42,33 +42,28 @@ export function useCompanyByDomain() {
         let companyData = null;
 
         if (isMainDomain) {
-          // No domínio principal, buscar primeiro empresa com configurações
-          const { data: settings, error: settingsError } = await supabase
-            .from('company_settings')
-            .select('*')
-            .limit(1);
-
-          if (settingsError) throw settingsError;
-          
-          if (settings && settings.length > 0) {
-            const firstSetting = settings[0];
-            
-            // Buscar dados da empresa para obter logo_url
-            const { data: companyInfo, error: companyError } = await supabase
-              .from('companies')
-              .select('id, name, logo_url')
-              .eq('id', firstSetting.company_id)
-              .single();
-
-            if (!companyError && companyInfo) {
-              companyData = {
-                id: companyInfo.id,
-                name: companyInfo.name,
-                logo_url: companyInfo.logo_url,
-                company_settings: [firstSetting]
-              };
-            }
-          }
+          // No domínio principal, usar configurações padrão do CRM
+          companyData = {
+            id: 'default',
+            name: 'Meu CRM.Imob',
+            logo_url: '/lovable-uploads/default-crm-logo.png',
+            company_settings: [{
+              site_title: 'Meu CRM.Imob - O CRM especialista para o mercado imobiliário',
+              site_description: 'Sistema completo de gestão de leads para corretores e imobiliárias',
+              site_phone: '',
+              site_email: '',
+              site_address: '',
+              site_whatsapp: '',
+              site_facebook: '',
+              site_instagram: '',
+              site_about: 'O CRM especialista para o mercado imobiliário.',
+              site_horario_semana: '8:00 às 18:00',
+              site_horario_sabado: '8:00 às 14:00',
+              site_horario_domingo: 'Fechado',
+              site_observacoes_horario: '*Atendimento via WhatsApp 24 horas',
+              custom_domain: null,
+            }]
+          };
         } else {
           // Em domínio personalizado, buscar pela configuração do domínio
           const { data: settings, error: settingsError } = await supabase
