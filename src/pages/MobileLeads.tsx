@@ -13,6 +13,7 @@ import { NewLeadModal } from "@/components/NewLeadModal";
 import { DateFilter, DateFilterOption, getDateRangeFromFilter } from "@/components/DateFilter";
 import { UserFilter } from "@/components/UserFilter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getTagColor } from "@/lib/utils";
 
 const stageColors = {
   'aguardando-atendimento': 'bg-slate-100 text-slate-800',
@@ -377,20 +378,29 @@ export default function MobileLeads() {
                   <span>{lead.dataCriacao.toLocaleDateString('pt-BR')}</span>
                 </div>
                 
-                {/* Tags discretas */}
+                {/* Tags com cores corretas */}
                 {lead.etiquetas && lead.etiquetas.length > 0 && (
-                  <div className="flex flex-wrap gap-1 max-w-[120px]">
-                    {lead.etiquetas.slice(0, 2).map((etiqueta, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] bg-blue-100 text-blue-800 font-medium"
-                      >
-                        {etiqueta.length > 8 ? `${etiqueta.substring(0, 8)}...` : etiqueta}
-                      </span>
-                    ))}
-                    {lead.etiquetas.length > 2 && (
-                      <span className="text-[10px] text-gray-400 font-medium">+{lead.etiquetas.length - 2}</span>
-                    )}
+                  <div className="flex flex-wrap gap-1 max-w-full mt-2 justify-end">
+                    {lead.etiquetas.map((etiqueta, index) => {
+                      const isQualified = etiqueta === 'Lead Qualificado Pela IA';
+                      return (
+                        <span
+                          key={index}
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            isQualified 
+                              ? 'text-black dark:text-black' 
+                              : 'text-white dark:text-black'
+                          }`}
+                          style={{
+                            backgroundColor: isQualified 
+                              ? 'hsl(var(--tag-qualified))' 
+                              : 'hsl(var(--tag-default))'
+                          }}
+                        >
+                          {etiqueta}
+                        </span>
+                      );
+                    })}
                   </div>
                 )}
               </div>
