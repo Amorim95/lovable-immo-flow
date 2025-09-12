@@ -33,6 +33,10 @@ const tagConfig: Record<LeadTag, { label: string; className: string }> = {
   'aprovado': {
     label: 'Aprovado',
     className: 'tag-aprovado'
+  },
+  'Lead Qualificado': {
+    label: 'Lead Qualificado',
+    className: 'tag-qualificado'
   }
 };
 

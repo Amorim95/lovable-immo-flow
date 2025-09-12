@@ -33,7 +33,8 @@ export type LeadTag =
   | 'tentando-financiamento'
   | 'parou-responder'
   | 'cpf-restricao'
-  | 'aprovado';
+  | 'aprovado'
+  | 'Lead Qualificado';
 
 export interface Atividade {
   id: string;

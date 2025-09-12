@@ -21,8 +21,22 @@ interface TagSelectorProps {
 // Mapeamento de cores padrão para compatibilidade
 const getTagColor = (nome: string, dbColor?: string) => {
   if (dbColor) {
-    // Se temos cor do banco, usar ela (assumindo formato hex)
-    return `border-2 text-white`;
+    // Se é um gradiente, retornar configuração especial
+    if (dbColor.startsWith('linear-gradient')) {
+      return {
+        background: dbColor,
+        color: '#FFFFFF',
+        textShadow: '0 1px 2px rgba(0,0,0,0.7)',
+        fontWeight: '600',
+        border: 'none'
+      };
+    }
+    // Cor sólida do banco
+    return {
+      backgroundColor: dbColor,
+      color: '#FFFFFF',
+      border: 'none'
+    };
   }
   
   // Fallback para cores hardcoded
@@ -33,7 +47,7 @@ const getTagColor = (nome: string, dbColor?: string) => {
     'aprovado': 'bg-green-100 text-green-800 border-green-200'
   };
   
-  return colorMap[nome] || 'bg-gray-100 text-gray-800 border-gray-200';
+  return { className: colorMap[nome] || 'bg-gray-100 text-gray-800 border-gray-200' };
 };
 
 export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }: TagSelectorProps) {
@@ -55,7 +69,8 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
       'tentando-financiamento': 'Tentando Financiamento',
       'parou-responder': 'Parou de Responder',
       'cpf-restricao': 'CPF Restrição',
-      'aprovado': 'Aprovado'
+      'aprovado': 'Aprovado',
+      'Lead Qualificado': 'Lead Qualificado'
     };
     return displayNames[tagName] || tagName;
   };
@@ -65,17 +80,24 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
       {/* Etiquetas selecionadas */}
       <div className="flex flex-wrap gap-1 min-h-[32px] p-2 border rounded-md bg-gray-50">
         {selectedTags.length > 0 ? (
-          selectedTags.map((tag) => (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className={`text-xs ${getTagColor(tag)} cursor-pointer hover:opacity-80`}
-              onClick={() => handleTagToggle(tag)}
-            >
-              {getTagDisplayName(tag)}
-              <span className="ml-1 text-xs">✕</span>
-            </Badge>
-          ))
+          selectedTags.map((tag) => {
+            // Find the tag in available tags to get its database color
+            const availableTag = availableTags.find(t => t.nome === tag);
+            const colorStyle = getTagColor(tag, availableTag?.cor);
+            
+            return (
+              <Badge
+                key={tag}
+                variant="secondary"
+                className={`text-xs cursor-pointer hover:opacity-80 ${colorStyle.className || ''}`}
+                style={colorStyle.className ? undefined : colorStyle}
+                onClick={() => handleTagToggle(tag)}
+              >
+                {getTagDisplayName(tag)}
+                <span className="ml-1 text-xs">✕</span>
+              </Badge>
+            );
+          })
         ) : (
           <span className="text-gray-400 text-sm">Nenhuma etiqueta selecionada</span>
         )}
@@ -115,8 +137,8 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
                     >
                       <Badge
                         variant="secondary"
-                        className={`text-xs ${getTagColor(tag.nome, tag.cor)}`}
-                        style={{ backgroundColor: tag.cor }}
+                        className={`text-xs ${getTagColor(tag.nome, tag.cor).className || ''}`}
+                        style={getTagColor(tag.nome, tag.cor).className ? undefined : getTagColor(tag.nome, tag.cor)}
                       >
                         {getTagDisplayName(tag.nome)}
                       </Badge>
