@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, MessageCircle, History, Plus, Clock, Copy } from "lucide-react";
+import { Edit, MessageCircle, History, Plus, Clock, Copy, Tag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { TagSelector } from "@/components/TagSelector";
 
 const stageLabels = {
   'aguardando-atendimento': 'Aguardando Atendimento',
@@ -327,14 +328,35 @@ export default function LeadDetails() {
         showBackButton
         onBack={() => navigate('/')}
         rightElement={
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsEditing(!isEditing)}
-            className="p-2"
-          >
-            <Edit className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Tags discretas no header */}
+            {lead.etiquetas && lead.etiquetas.length > 0 && (
+              <div className="flex items-center gap-1 mr-2">
+                <Tag className="w-3 h-3 text-gray-400" />
+                <div className="flex gap-1">
+                  {lead.etiquetas.slice(0, 2).map((etiqueta, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] bg-blue-100 text-blue-800 font-medium"
+                    >
+                      {etiqueta.length > 6 ? `${etiqueta.substring(0, 6)}...` : etiqueta}
+                    </span>
+                  ))}
+                  {lead.etiquetas.length > 2 && (
+                    <span className="text-[9px] text-gray-400">+{lead.etiquetas.length - 2}</span>
+                  )}
+                </div>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsEditing(!isEditing)}
+              className="p-2"
+            >
+              <Edit className="w-5 h-5" />
+            </Button>
+          </div>
         }
       />
 
