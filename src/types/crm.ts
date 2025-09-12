@@ -30,10 +30,6 @@ export type LeadStage =
   | 'descarte';
 
 export type LeadTag = 
-  | 'tentando-financiamento'
-  | 'parou-responder'
-  | 'cpf-restricao'
-  | 'aprovado'
   | 'Lead Qualificado';
 
 export interface Atividade {

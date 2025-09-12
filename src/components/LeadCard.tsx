@@ -18,22 +18,6 @@ interface LeadCardProps {
 }
 
 const tagConfig: Record<LeadTag, { label: string; className: string }> = {
-  'tentando-financiamento': {
-    label: 'Tentando Financiamento',
-    className: 'tag-financiamento'
-  },
-  'parou-responder': {
-    label: 'Parou de Responder',
-    className: 'tag-sem-resposta'  
-  },
-  'cpf-restricao': {
-    label: 'CPF Restrição',
-    className: 'tag-cpf-restricao'
-  },
-  'aprovado': {
-    label: 'Aprovado',
-    className: 'tag-aprovado'
-  },
   'Lead Qualificado': {
     label: 'Lead Qualificado',
     className: 'tag-qualificado'
