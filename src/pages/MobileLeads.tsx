@@ -92,10 +92,16 @@ export default function MobileLeads() {
     let matchesTags = true;
     if (selectedTagIds.length > 0) {
       const originalLead = leads.find(l => l.id === lead.id);
+      console.log('Filtrando por tags - Lead:', lead.nome, 'selectedTagIds:', selectedTagIds);
+      console.log('Original lead tag relations:', originalLead?.lead_tag_relations);
+      
       if (originalLead?.lead_tag_relations) {
-        const leadTagIds = originalLead.lead_tag_relations.map((relation: any) => relation.tag_id);
+        const leadTagIds = originalLead.lead_tag_relations.map((relation: any) => relation.lead_tags?.id).filter(Boolean);
+        console.log('Lead tag IDs:', leadTagIds);
         matchesTags = selectedTagIds.some(tagId => leadTagIds.includes(tagId));
+        console.log('Matches tags:', matchesTags);
       } else {
+        console.log('Lead não tem tag relations');
         matchesTags = false;
       }
     }
