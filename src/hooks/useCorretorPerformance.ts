@@ -13,6 +13,8 @@ interface CorretorPerformance {
   tempoMedioAbertura: number;
   conversao: number;
   leadsPorEtapa: { [key: string]: number };
+  etiquetasPorEtapa: { [etapa: string]: { [etiqueta: string]: number } };
+  totalPorEtiqueta: { [etiqueta: string]: number };
 }
 
 interface DateRange {
@@ -58,10 +60,27 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
 
       if (usersError) throw usersError;
 
-      // 2. Buscar todos os leads no período (se especificado)
+      // 2. Buscar todos os leads no período com suas etiquetas (se especificado)
       let leadsQuery = supabase
         .from('leads')
-        .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp, primeira_visualizacao, atividades');
+        .select(`
+          id, 
+          etapa, 
+          stage_name, 
+          created_at, 
+          user_id, 
+          primeiro_contato_whatsapp, 
+          primeira_visualizacao, 
+          atividades,
+          lead_tag_relations (
+            tag_id,
+            lead_tags (
+              id,
+              nome,
+              cor
+            )
+          )
+        `);
 
       if (dateRange?.from && dateRange?.to) {
         leadsQuery = leadsQuery
@@ -168,6 +187,45 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
           }
         }
 
+        // Calcular métricas de etiquetas para este corretor
+        const etiquetasPorEtapa: { [etapa: string]: { [etiqueta: string]: number } } = {};
+        const totalPorEtiqueta: { [etiqueta: string]: number } = {};
+
+        // Inicializar estrutura para todas as etapas
+        stages.forEach(stage => {
+          etiquetasPorEtapa[stage.nome] = {};
+        });
+
+        // Processar cada lead do corretor e suas etiquetas
+        userLeads.forEach(lead => {
+          const etapaNome = lead.stage_name || 
+            stages.find(s => s.legacy_key === lead.etapa)?.nome || 
+            lead.etapa;
+
+          if (etapaNome && lead.lead_tag_relations) {
+            lead.lead_tag_relations.forEach((relation: any) => {
+              if (relation.lead_tags) {
+                const etiquetaNome = relation.lead_tags.nome;
+                
+                // Contar por etapa
+                if (!etiquetasPorEtapa[etapaNome]) {
+                  etiquetasPorEtapa[etapaNome] = {};
+                }
+                if (!etiquetasPorEtapa[etapaNome][etiquetaNome]) {
+                  etiquetasPorEtapa[etapaNome][etiquetaNome] = 0;
+                }
+                etiquetasPorEtapa[etapaNome][etiquetaNome]++;
+
+                // Contar total geral
+                if (!totalPorEtiqueta[etiquetaNome]) {
+                  totalPorEtiqueta[etiquetaNome] = 0;
+                }
+                totalPorEtiqueta[etiquetaNome]++;
+              }
+            });
+          }
+        });
+
         return {
           id: user.id,
           nome: user.name,
@@ -177,7 +235,9 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
           tempoMedioResposta,
           tempoMedioAbertura,
           conversao: Number(conversao.toFixed(1)),
-          leadsPorEtapa
+          leadsPorEtapa,
+          etiquetasPorEtapa,
+          totalPorEtiqueta
         };
       }) || [];
 

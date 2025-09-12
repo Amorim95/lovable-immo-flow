@@ -62,7 +62,9 @@ const PerformancePorCorretor = () => {
     tempoMedioResposta: 0,
     tempoMedioAbertura: 0,
     conversao: 0,
-    leadsPorEtapa: {}
+    leadsPorEtapa: {},
+    etiquetasPorEtapa: {},
+    totalPorEtiqueta: {}
   };
 
   // Criar dados de status dinâmicos e config baseados nas etapas da empresa
@@ -322,6 +324,119 @@ const PerformancePorCorretor = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Seção de Métricas de Etiquetas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Card com Total por Etiqueta */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Total de Etiquetas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {Object.entries(corretor.totalPorEtiqueta || {}).map(([etiqueta, total]) => (
+                <div key={etiqueta} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                  <span className="font-medium">{etiqueta}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold">{total}</span>
+                    <span className="text-sm text-gray-500">
+                      ({corretor.leadsRecebidos > 0 ? ((total / corretor.leadsRecebidos) * 100).toFixed(1) : '0.0'}%)
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {Object.keys(corretor.totalPorEtiqueta || {}).length === 0 && (
+                <div className="text-gray-500 text-center py-4">
+                  Nenhuma etiqueta encontrada para este corretor no período selecionado
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card com Gráfico de Etiquetas */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Distribuição de Etiquetas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {Object.keys(corretor.totalPorEtiqueta || {}).length > 0 ? (
+              <ChartContainer config={{}} className="h-[250px]">
+                <PieChart>
+                  <Pie
+                    data={Object.entries(corretor.totalPorEtiqueta || {}).map(([nome, valor]) => ({
+                      name: nome,
+                      value: valor,
+                      color: nome === 'Lead Qualificado Pela IA' 
+                        ? 'linear-gradient(135deg, #FFD700, #FFA500)' 
+                        : '#000000'
+                    }))}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    dataKey="value"
+                    label={({ name, value }) => `${name}: ${value}`}
+                  >
+                    {Object.entries(corretor.totalPorEtiqueta || {}).map(([nome], index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={nome === 'Lead Qualificado Pela IA' ? '#FFD700' : '#000000'} 
+                      />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ChartContainer>
+            ) : (
+              <div className="text-gray-500 text-center py-8">
+                Nenhum dado de etiqueta para exibir
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tabela Detalhada de Etiquetas por Etapa */}
+      {Object.keys(corretor.totalPorEtiqueta || {}).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Etiquetas por Etapa</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4 font-medium">Etapa</th>
+                    {Object.keys(corretor.totalPorEtiqueta || {}).map(etiqueta => (
+                      <th key={etiqueta} className="text-center py-3 px-4 font-medium">{etiqueta}</th>
+                    ))}
+                    <th className="text-right py-3 px-4 font-medium">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stages.map(stage => {
+                    const etapaData = corretor.etiquetasPorEtapa?.[stage.nome] || {};
+                    const totalEtapa = corretor.leadsPorEtapa[stage.nome] || 0;
+                    
+                    return (
+                      <tr key={stage.id} className="border-b hover:bg-gray-50">
+                        <td className="py-3 px-4 font-medium">{stage.nome}</td>
+                        {Object.keys(corretor.totalPorEtiqueta || {}).map(etiqueta => (
+                          <td key={etiqueta} className="text-center py-3 px-4">
+                            {etapaData[etiqueta] || 0}
+                          </td>
+                        ))}
+                        <td className="text-right py-3 px-4 font-medium">{totalEtapa}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Tabela Detalhada */}
       <Card>
