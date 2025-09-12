@@ -8,6 +8,7 @@ import { useLeadStages } from "@/hooks/useLeadStages";
 import { CalendarIcon, Download, Loader2, Trophy, Medal, Award } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
+import { getTagColor } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobilePerformancePorCorretor from "./MobilePerformancePorCorretor";
 
@@ -380,7 +381,7 @@ const PerformancePorCorretor = () => {
                     {Object.entries(corretor.totalPorEtiqueta || {}).map(([nome], index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={nome === 'Lead Qualificado Pela IA' ? '#FFD700' : '#000000'} 
+                        fill={getTagColor(nome)} 
                       />
                     ))}
                   </Pie>

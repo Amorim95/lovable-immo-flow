@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getTagColor } from "@/lib/utils";
 import MobilePerformanceGeral from "./MobilePerformanceGeral";
 
 // Function to get stage icon and color
@@ -211,7 +212,7 @@ const PerformanceGeral = () => {
                     {Object.entries(performanceGeral.totalPorEtiqueta).map(([nome], index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={nome === 'Lead Qualificado Pela IA' ? '#FFD700' : '#000000'} 
+                        fill={getTagColor(nome)} 
                       />
                     ))}
                   </Pie>
