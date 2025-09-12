@@ -59,7 +59,7 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
 
   const getTagDisplayName = (tagName: string) => {
     const displayNames: Record<string, string> = {
-      'Lead Qualificado': 'Lead Qualificado',
+      'Lead Qualificado Pela IA': 'Lead Qualificado Pela IA',
       'Não Qualificado': 'Não Qualificado'
     };
     return displayNames[tagName] || tagName;

@@ -18,8 +18,8 @@ interface LeadCardProps {
 }
 
 const tagConfig: Record<LeadTag, { label: string; className: string }> = {
-  'Lead Qualificado': {
-    label: 'Lead Qualificado',
+  'Lead Qualificado Pela IA': {
+    label: 'Lead Qualificado Pela IA',
     className: 'tag-qualificado'
   },
   'Não Qualificado': {

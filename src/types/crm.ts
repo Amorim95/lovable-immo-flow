@@ -30,7 +30,7 @@ export type LeadStage =
   | 'descarte';
 
 export type LeadTag = 
-  | 'Lead Qualificado'
+  | 'Lead Qualificado Pela IA'
   | 'Não Qualificado';
 
 export interface Atividade {
