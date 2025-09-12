@@ -21,6 +21,10 @@ const tagConfig: Record<LeadTag, { label: string; className: string }> = {
   'Lead Qualificado': {
     label: 'Lead Qualificado',
     className: 'tag-qualificado'
+  },
+  'Não Qualificado': {
+    label: 'Não Qualificado',
+    className: 'tag-nao-qualificado'
   }
 };
 
