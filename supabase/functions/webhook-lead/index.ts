@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
 
     // Verificar duplicatas (como antes)
     const { data: duplicateCheck, error: duplicateError } = await supabase
-      .rpc('check_duplicate_lead', { _telefone: leadData.telefone, _time_window_minutes: 5 });
+      .rpc('check_duplicate_lead', { _telefone: leadData.telefone, _time_window_minutes: 1 });
 
     if (duplicateError) {
       console.error('Erro ao verificar duplicatas:', duplicateError);
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: 'Lead duplicado', 
-          message: `Um lead com o telefone ${leadData.telefone} já foi registrado nos últimos 5 minutos.` 
+           message: `Um lead com o telefone ${leadData.telefone} já foi registrado no último minuto.`
         }),
         { 
           status: 409, 
@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
         return new Response(
           JSON.stringify({ 
             error: 'Lead duplicado', 
-            message: `Um lead com o telefone ${leadData.telefone} já foi registrado nos últimos 5 minutos.` 
+            message: `Um lead com o telefone ${leadData.telefone} já foi registrado no último minuto.` 
           }),
           { 
             status: 409, 
