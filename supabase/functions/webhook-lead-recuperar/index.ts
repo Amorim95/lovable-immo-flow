@@ -94,6 +94,15 @@ serve(async (req) => {
       );
     }
 
+    // First, check if there's a custom "Recuperar" stage for this company
+    const { data: recuperarStage } = await supabase
+      .from('lead_stages')
+      .select('nome')
+      .eq('company_id', companyId)
+      .eq('nome', 'Recuperar')
+      .eq('ativo', true)
+      .single();
+
     // Create lead using safe function with "Recuperar" identifier
     const { data: leadResult } = await supabase.rpc('create_lead_safe', {
       _nome: leadData.nome,
@@ -111,6 +120,26 @@ serve(async (req) => {
     const isDuplicate = leadResult[0].is_duplicate;
 
     console.log('Lead para recuperar criado/encontrado:', { leadId, isDuplicate });
+
+    // Update lead to "Recuperar" stage
+    let updateData: any = {};
+    
+    if (recuperarStage) {
+      // Use custom stage if exists
+      updateData.etapa = 'aguardando-atendimento'; // Keep default etapa
+      updateData.stage_name = 'Recuperar'; // Set custom stage name
+    } else {
+      // Use stage_name for "Recuperar"  
+      updateData.stage_name = 'Recuperar';
+    }
+
+    // Update the lead with the correct stage
+    await supabase
+      .from('leads')
+      .update(updateData)
+      .eq('id', leadId);
+
+    console.log('Lead atualizado para etapa Recuperar:', leadId);
 
     // Add the specific tag for "Recuperar" leads
     const tagId = 'e169ffc5-5574-4a7c-8c06-15bec4b59b63';
