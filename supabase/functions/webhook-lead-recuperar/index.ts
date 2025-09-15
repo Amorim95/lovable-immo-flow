@@ -54,18 +54,27 @@ serve(async (req) => {
       );
     }
 
-    // Get company_id (use provided or get first active company)
-    let companyId = leadData.company_id;
-    if (!companyId) {
-      const { data: companies } = await supabase
-        .from('companies')
-        .select('id')
-        .order('created_at', { ascending: true })
-        .limit(1);
-      
-      if (companies && companies.length > 0) {
-        companyId = companies[0].id;
-      }
+    // IMPORTANTE: Esta função é exclusiva para a empresa específica
+    const EMPRESA_RECUPERAR_ID = 'c95541d9-3e6a-4fc1-8d64-c5a6d5f7c9b6';
+    const companyId = EMPRESA_RECUPERAR_ID;
+
+    // Validar se a empresa existe
+    const { data: company } = await supabase
+      .from('companies')
+      .select('id')
+      .eq('id', companyId)
+      .single();
+
+    if (!company) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Empresa não encontrada ou não autorizada para esta função' 
+        }),
+        { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
 
     // Get next user for round-robin assignment
