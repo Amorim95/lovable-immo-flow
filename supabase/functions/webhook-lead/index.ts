@@ -99,7 +99,14 @@ Deno.serve(async (req) => {
 
     console.log('Usuário selecionado:', nextUser.id);
 
-    // Usar função robusta que previne race conditions
+    // Usar função robusta que previne race conditions com log detalhado
+    console.log('Iniciando criação de lead com dados:', { 
+      nome: leadData.nome, 
+      telefone: leadData.telefone, 
+      companyId, 
+      userId: nextUser.id 
+    });
+
     const { data: leadResult, error: leadError } = await supabase
       .rpc('create_lead_safe', {
         _nome: leadData.nome,
@@ -110,8 +117,10 @@ Deno.serve(async (req) => {
       })
       .maybeSingle();
 
+    console.log('Resultado da função create_lead_safe:', { leadResult, leadError });
+
     if (leadError) {
-      console.error('Erro ao criar lead:', leadError);
+      console.error('Erro na função create_lead_safe:', leadError);
       return new Response(
         JSON.stringify({ error: 'Erro ao criar lead', details: leadError.message }),
         { 
@@ -122,9 +131,9 @@ Deno.serve(async (req) => {
     }
 
     if (!leadResult) {
-      console.error('Resultado inesperado da função create_lead_safe');
+      console.error('Função create_lead_safe retornou resultado vazio');
       return new Response(
-        JSON.stringify({ error: 'Erro interno ao criar lead' }),
+        JSON.stringify({ error: 'Erro interno - resultado vazio da função' }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -132,18 +141,22 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Resultado da criação do lead:', leadResult);
+    console.log('Lead processado:', leadResult);
 
-    // Se é duplicata, retornar sucesso mas informar
+    // Se é duplicata, retornar sucesso sem criar novo lead
     if (leadResult.is_duplicate) {
-      console.log(`Lead duplicado ignorado: ${leadResult.message}`);
+      console.log(`Lead duplicado detectado - retornando lead existente: ${leadResult.lead_id}`);
       
       // Buscar dados do lead existente para retornar
-      const { data: existingLead } = await supabase
+      const { data: existingLead, error: existingError } = await supabase
         .from('leads')
         .select('*, users!leads_user_id_fkey(name)')
         .eq('id', leadResult.lead_id)
         .maybeSingle();
+
+      if (existingError) {
+        console.error('Erro ao buscar lead existente:', existingError);
+      }
 
       return new Response(
         JSON.stringify({ 
@@ -163,19 +176,30 @@ Deno.serve(async (req) => {
     }
 
     // Lead criado com sucesso - buscar dados completos
-    const { data: newLead } = await supabase
+    console.log('Lead criado com sucesso - buscando dados completos');
+    const { data: newLead, error: newLeadError } = await supabase
       .from('leads')
       .select('*, users!leads_user_id_fkey(name)')
       .eq('id', leadResult.lead_id)
       .maybeSingle();
 
+    if (newLeadError) {
+      console.error('Erro ao buscar dados do lead criado:', newLeadError);
+    }
+
     // Atualizar ultimo_lead_recebido do usuário que recebeu o lead
-    await supabase
+    console.log('Atualizando ultimo_lead_recebido do usuário:', nextUser.id);
+    const { error: updateUserError } = await supabase
       .from('users')
       .update({ ultimo_lead_recebido: new Date().toISOString() })
       .eq('id', nextUser.id);
+
+    if (updateUserError) {
+      console.error('Erro ao atualizar ultimo_lead_recebido:', updateUserError);
+    }
     
     // Adicionar etiqueta "Lead Qualificado pela IA" ao lead criado
+    console.log('Adicionando etiqueta ao lead:', leadResult.lead_id);
     const { error: tagError } = await supabase
       .from('lead_tag_relations')
       .insert({
@@ -186,10 +210,11 @@ Deno.serve(async (req) => {
     if (tagError) {
       console.error('Erro ao adicionar etiqueta ao lead:', tagError);
     } else {
-      console.log('Etiqueta "Lead Qualificado pela IA" adicionada ao lead:', leadResult.lead_id);
+      console.log('Etiqueta "Lead Qualificado pela IA" adicionada com sucesso');
     }
 
-    console.log('Lead criado com sucesso:', newLead);
+    console.log('Processo completo - retornando resposta de sucesso');
+    console.log('Lead final:', newLead);
 
     return new Response(
       JSON.stringify({ 
