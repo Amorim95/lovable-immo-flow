@@ -37,7 +37,7 @@ serve(async (req) => {
 
     // Parse request body
     const leadData: LeadVivazData = await req.json();
-    console.log('Dados recebidos para Vivaz Imóveis:', leadData);
+    console.log('Dados recebidos para Zona Norte Rafael Vivaz:', leadData);
 
     // Validate required fields
     if (!leadData.nome || !leadData.telefone) {
@@ -53,7 +53,7 @@ serve(async (req) => {
       );
     }
 
-    // IMPORTANTE: Esta função é exclusiva para a Vivaz Imóveis - Rafael Lopes
+    // IMPORTANTE: Esta função é exclusiva para a Vivaz Imóveis - Rafael Lopes - Equipe ZONA NORTE
     const EMPRESA_VIVAZ_ID = 'a74befa3-7bb0-4f17-9b11-7bfff9bf0ce6';
     const companyId = EMPRESA_VIVAZ_ID;
 
@@ -76,17 +76,20 @@ serve(async (req) => {
       );
     }
 
-    console.log('Empresa validada:', company.name);
+    console.log('Empresa validada para Zona Norte Rafael Vivaz:', company.name);
 
-    // Get next user for round-robin assignment
-    const { data: nextUser } = await supabase.rpc('get_next_user_round_robin', {
-      _company_id: companyId
-    });
+    // Buscar a equipe ZONA NORTE
+    const { data: equipeZonaNorte } = await supabase
+      .from('equipes')
+      .select('id, nome')
+      .eq('company_id', companyId)
+      .eq('nome', 'ZONA NORTE')
+      .single();
 
-    if (!nextUser) {
+    if (!equipeZonaNorte) {
       return new Response(
         JSON.stringify({ 
-          error: 'Nenhum usuário ativo disponível para atribuição na Vivaz Imóveis' 
+          error: 'Equipe ZONA NORTE não encontrada na Vivaz Imóveis' 
         }),
         { 
           status: 400, 
@@ -95,7 +98,32 @@ serve(async (req) => {
       );
     }
 
-    console.log('Usuário selecionado para receber o lead:', nextUser);
+    console.log('Equipe ZONA NORTE encontrada:', equipeZonaNorte.nome);
+
+    // Buscar usuários ativos da equipe ZONA NORTE, ordenados por último lead recebido
+    const { data: usuarios } = await supabase
+      .from('users')
+      .select('id, name, ultimo_lead_recebido')
+      .eq('company_id', companyId)
+      .eq('equipe_id', equipeZonaNorte.id)
+      .eq('status', 'ativo')
+      .order('ultimo_lead_recebido', { ascending: true, nullsFirst: true })
+      .limit(1);
+
+    if (!usuarios || usuarios.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Nenhum usuário ativo disponível na equipe ZONA NORTE da Vivaz Imóveis' 
+        }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const nextUser = usuarios[0].id;
+    console.log('Usuário da equipe ZONA NORTE selecionado para receber o lead:', usuarios[0].name, nextUser);
 
     // Create lead using safe function
     const { data: leadResult } = await supabase.rpc('create_lead_safe', {
@@ -113,7 +141,7 @@ serve(async (req) => {
     const leadId = leadResult[0].lead_id;
     const isDuplicate = leadResult[0].is_duplicate;
 
-    console.log('Lead para Vivaz Imóveis criado/encontrado:', { leadId, isDuplicate });
+    console.log('Lead Zona Norte Rafael Vivaz criado/encontrado:', { leadId, isDuplicate });
 
     // Update user's last lead received timestamp
     await supabase
@@ -121,7 +149,7 @@ serve(async (req) => {
       .update({ ultimo_lead_recebido: new Date().toISOString() })
       .eq('id', nextUser);
 
-    console.log('Timestamp de último lead atualizado para usuário:', nextUser);
+    console.log('Timestamp de último lead atualizado para usuário da ZONA NORTE:', nextUser);
 
     // Get complete lead data to return
     const { data: completeLeadData } = await supabase
@@ -148,9 +176,10 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         lead: completeLeadData,
-        company: company.name,
-        message: isDuplicate ? 'Lead Vivaz Imóveis já existia' : 'Lead Vivaz Imóveis criado com sucesso',
-        isDuplicate
+        company: `${company.name} - Equipe ZONA NORTE`,
+        message: isDuplicate ? 'Lead Zona Norte Rafael Vivaz já existia' : 'Lead Zona Norte Rafael Vivaz criado com sucesso',
+        isDuplicate,
+        team: 'ZONA NORTE'
       }),
       { 
         status: 200, 
@@ -159,7 +188,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Erro no webhook Vivaz Imóveis:', error);
+    console.error('Erro no webhook Zona Norte Rafael Vivaz:', error);
     return new Response(
       JSON.stringify({ 
         error: 'Erro interno do servidor',
