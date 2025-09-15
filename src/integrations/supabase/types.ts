@@ -842,6 +842,20 @@ export type Database = {
         Args: { _telefone: string; _time_window_minutes?: number }
         Returns: boolean
       }
+      create_lead_safe: {
+        Args: {
+          _company_id?: string
+          _dados_adicionais?: string
+          _nome: string
+          _telefone: string
+          _user_id?: string
+        }
+        Returns: {
+          is_duplicate: boolean
+          lead_id: string
+          message: string
+        }[]
+      }
       crypt_password: {
         Args: { password: string }
         Returns: string

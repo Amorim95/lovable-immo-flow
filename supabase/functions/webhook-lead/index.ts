@@ -49,26 +49,6 @@ Deno.serve(async (req) => {
 
     console.log('Dados recebidos no webhook:', leadData);
 
-    // Verificar duplicatas com uma janela muito pequena para prevenir race conditions
-    const { data: duplicateCheck, error: duplicateError } = await supabase
-      .rpc('check_duplicate_lead', { _telefone: leadData.telefone, _time_window_minutes: 1 });
-
-    if (duplicateError) {
-      console.error('Erro ao verificar duplicatas:', duplicateError);
-    } else if (duplicateCheck) {
-      console.log(`Lead duplicado detectado para telefone: ${leadData.telefone}`);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Lead duplicado', 
-          message: `Um lead com o telefone ${leadData.telefone} já foi registrado no último minuto.` 
-        }),
-        { 
-          status: 409, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
     // Determinar empresa e usuário de destino
     let companyId = leadData.company_id;
     
@@ -119,61 +99,19 @@ Deno.serve(async (req) => {
 
     console.log('Usuário selecionado:', nextUser.id);
 
-    // Criar o lead COM user_id definido (para evitar problemas de trigger)
-    const { data: newLead, error: leadError } = await supabase
-      .from('leads')
-      .insert({
-        nome: leadData.nome,
-        telefone: leadData.telefone,
-        dados_adicionais: leadData.dados_adicionais || null,
-        etapa: 'aguardando-atendimento',
-        atividades: [],
-        company_id: companyId,
-        user_id: nextUser.id // Definindo diretamente para evitar trigger
+    // Usar função robusta que previne race conditions
+    const { data: leadResult, error: leadError } = await supabase
+      .rpc('create_lead_safe', {
+        _nome: leadData.nome,
+        _telefone: leadData.telefone,
+        _dados_adicionais: leadData.dados_adicionais || null,
+        _company_id: companyId,
+        _user_id: nextUser.id
       })
-      .select('*, users!leads_user_id_fkey(name)')
       .maybeSingle();
-
-    // Atualizar ultimo_lead_recebido do usuário que recebeu o lead
-    if (!leadError && newLead) {
-      await supabase
-        .from('users')
-        .update({ ultimo_lead_recebido: new Date().toISOString() })
-        .eq('id', nextUser.id);
-      
-      // Adicionar etiqueta "Lead Qualificado pela IA" ao lead criado
-      const { error: tagError } = await supabase
-        .from('lead_tag_relations')
-        .insert({
-          lead_id: newLead.id,
-          tag_id: '89b0d175-7ac8-44b3-9f47-dec34353ccac'
-        });
-      
-      if (tagError) {
-        console.error('Erro ao adicionar etiqueta ao lead:', tagError);
-        // Não falhar o webhook por causa da etiqueta, apenas logar o erro
-      } else {
-        console.log('Etiqueta "Lead Qualificado pela IA" adicionada ao lead:', newLead.id);
-      }
-    }
 
     if (leadError) {
       console.error('Erro ao criar lead:', leadError);
-      
-      // Verificar se é erro de duplicação
-      if (leadError.code === 'P0001' && leadError.message.includes('Lead duplicado detectado')) {
-        return new Response(
-          JSON.stringify({ 
-            error: 'Lead duplicado', 
-            message: `Um lead com o telefone ${leadData.telefone} já foi registrado no último minuto.` 
-          }),
-          { 
-            status: 409, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
-      }
-      
       return new Response(
         JSON.stringify({ error: 'Erro ao criar lead', details: leadError.message }),
         { 
@@ -181,6 +119,74 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
+    }
+
+    if (!leadResult) {
+      console.error('Resultado inesperado da função create_lead_safe');
+      return new Response(
+        JSON.stringify({ error: 'Erro interno ao criar lead' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    console.log('Resultado da criação do lead:', leadResult);
+
+    // Se é duplicata, retornar sucesso mas informar
+    if (leadResult.is_duplicate) {
+      console.log(`Lead duplicado ignorado: ${leadResult.message}`);
+      
+      // Buscar dados do lead existente para retornar
+      const { data: existingLead } = await supabase
+        .from('leads')
+        .select('*, users!leads_user_id_fkey(name)')
+        .eq('id', leadResult.lead_id)
+        .maybeSingle();
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          duplicate: true,
+          message: leadResult.message,
+          lead: existingLead,
+          assigned_user: {
+            id: existingLead?.user_id,
+            name: existingLead?.users?.name || 'Usuário não encontrado'
+          }
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Lead criado com sucesso - buscar dados completos
+    const { data: newLead } = await supabase
+      .from('leads')
+      .select('*, users!leads_user_id_fkey(name)')
+      .eq('id', leadResult.lead_id)
+      .maybeSingle();
+
+    // Atualizar ultimo_lead_recebido do usuário que recebeu o lead
+    await supabase
+      .from('users')
+      .update({ ultimo_lead_recebido: new Date().toISOString() })
+      .eq('id', nextUser.id);
+    
+    // Adicionar etiqueta "Lead Qualificado pela IA" ao lead criado
+    const { error: tagError } = await supabase
+      .from('lead_tag_relations')
+      .insert({
+        lead_id: leadResult.lead_id,
+        tag_id: '89b0d175-7ac8-44b3-9f47-dec34353ccac'
+      });
+    
+    if (tagError) {
+      console.error('Erro ao adicionar etiqueta ao lead:', tagError);
+    } else {
+      console.log('Etiqueta "Lead Qualificado pela IA" adicionada ao lead:', leadResult.lead_id);
     }
 
     console.log('Lead criado com sucesso:', newLead);
