@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
 
     console.log('Dados recebidos no webhook:', leadData);
 
-    // Verificar duplicatas (como antes)
+    // Verificar duplicatas com uma janela muito pequena para prevenir race conditions
     const { data: duplicateCheck, error: duplicateError } = await supabase
       .rpc('check_duplicate_lead', { _telefone: leadData.telefone, _time_window_minutes: 1 });
 
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           error: 'Lead duplicado', 
-           message: `Um lead com o telefone ${leadData.telefone} já foi registrado no último minuto.`
+          message: `Um lead com o telefone ${leadData.telefone} já foi registrado no último minuto.` 
         }),
         { 
           status: 409, 
