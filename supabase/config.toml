@@ -50,5 +50,8 @@ verify_jwt = false
 [functions.webhook-lead-recuperar]
 verify_jwt = false
 
+[functions.webhook-lead-vivaz]
+verify_jwt = false
+
 [functions.create-company]
 verify_jwt = true
