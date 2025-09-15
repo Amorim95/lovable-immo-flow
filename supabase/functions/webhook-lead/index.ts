@@ -140,6 +140,21 @@ Deno.serve(async (req) => {
         .from('users')
         .update({ ultimo_lead_recebido: new Date().toISOString() })
         .eq('id', nextUser.id);
+      
+      // Adicionar etiqueta "Lead Qualificado pela IA" ao lead criado
+      const { error: tagError } = await supabase
+        .from('lead_tag_relations')
+        .insert({
+          lead_id: newLead.id,
+          tag_id: '89b0d175-7ac8-44b3-9f47-dec34353ccac'
+        });
+      
+      if (tagError) {
+        console.error('Erro ao adicionar etiqueta ao lead:', tagError);
+        // Não falhar o webhook por causa da etiqueta, apenas logar o erro
+      } else {
+        console.log('Etiqueta "Lead Qualificado pela IA" adicionada ao lead:', newLead.id);
+      }
     }
 
     if (leadError) {
