@@ -50,6 +50,7 @@ export default function MobileLeads() {
   const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
   
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
 
@@ -242,68 +243,87 @@ export default function MobileLeads() {
 
       {/* Filtros */}
       <div className="px-4 pb-4">
-        <div className="bg-white rounded-lg p-4 space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Calendar className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Períodos</span>
-          </div>
-          
-          <DateFilter
-            value={dateFilter}
-            onValueChange={(option, customRange) => {
-              setDateFilter(option);
-              if (customRange) {
-                setCustomDateRange(customRange);
-              }
-            }}
-            customRange={customDateRange}
-            className="w-full"
-          />
-          
-          <div className="flex items-center gap-2 mb-2">
-            <User className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Filtrar por Usuário</span>
-          </div>
-          
-          <UserFilter
-            selectedUserId={selectedUserId}
-            onUserChange={setSelectedUserId}
-          />
-          
-          <div className="flex items-center gap-2 mb-2">
-            <Filter className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Filtrar por Etapa</span>
-          </div>
-          
-          <Select
-            value={selectedStage || "todas"}
-            onValueChange={(value) => setSelectedStage(value === "todas" ? null : value)}
+        <div className="bg-white rounded-lg p-4">
+          {/* Botão para expandir/minimizar filtros */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setFiltersExpanded(!filtersExpanded)}
+            className="w-full justify-between mb-4"
           >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Selecionar etapa" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="todas">Todas as etapas</SelectItem>
-              {Object.entries(stageLabels).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  <div className="flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full ${stageColors[value as keyof typeof stageColors]}`}></div>
-                    {label}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <div className="flex items-center gap-2 mb-2 mt-4">
-            <Tag className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Filtrar por Etiquetas</span>
-          </div>
-          
-          <TagFilter
-            selectedTagIds={selectedTagIds}
-            onTagChange={setSelectedTagIds}
-          />
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4" />
+              <span className="text-sm font-medium">Filtros</span>
+            </div>
+            <ChevronDown className={`w-4 h-4 transition-transform ${filtersExpanded ? 'rotate-180' : ''}`} />
+          </Button>
+
+          {/* Conteúdo dos filtros */}
+          {filtersExpanded && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Períodos</span>
+              </div>
+              
+              <DateFilter
+                value={dateFilter}
+                onValueChange={(option, customRange) => {
+                  setDateFilter(option);
+                  if (customRange) {
+                    setCustomDateRange(customRange);
+                  }
+                }}
+                customRange={customDateRange}
+                className="w-full"
+              />
+              
+              <div className="flex items-center gap-2 mb-2">
+                <User className="w-4 h-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Filtrar por Usuário</span>
+              </div>
+              
+              <UserFilter
+                selectedUserId={selectedUserId}
+                onUserChange={setSelectedUserId}
+              />
+              
+              <div className="flex items-center gap-2 mb-2">
+                <Filter className="w-4 h-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Filtrar por Etapa</span>
+              </div>
+              
+              <Select
+                value={selectedStage || "todas"}
+                onValueChange={(value) => setSelectedStage(value === "todas" ? null : value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecionar etapa" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas as etapas</SelectItem>
+                  {Object.entries(stageLabels).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${stageColors[value as keyof typeof stageColors]}`}></div>
+                        {label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <div className="flex items-center gap-2 mb-2 mt-4">
+                <Tag className="w-4 h-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Filtrar por Etiquetas</span>
+              </div>
+              
+              <TagFilter
+                selectedTagIds={selectedTagIds}
+                onTagChange={setSelectedTagIds}
+              />
+            </div>
+          )}
         </div>
       </div>
 
