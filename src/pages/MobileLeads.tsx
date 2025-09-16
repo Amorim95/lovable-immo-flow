@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lead } from "@/types/crm";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
@@ -7,13 +7,14 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { TagFilter } from "@/components/TagFilter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, MessageCircle, Calendar, User, ChevronDown, Filter, Tag } from "lucide-react";
+import { Plus, Search, MessageCircle, Calendar, User, ChevronDown, Filter, Tag, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { NewLeadModal } from "@/components/NewLeadModal";
 import { DateFilter, DateFilterOption, getDateRangeFromFilter } from "@/components/DateFilter";
 import { UserFilter } from "@/components/UserFilter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getTagColor } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 const stageColors = {
   'aguardando-atendimento': 'bg-slate-100 text-slate-800',
@@ -39,6 +40,12 @@ const stageLabels = {
   'descarte': 'Descarte'
 };
 
+interface Equipe {
+  id: string;
+  nome: string;
+  responsavel_nome: string | null;
+}
+
 export default function MobileLeads() {
   const navigate = useNavigate();
   const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
@@ -51,8 +58,31 @@ export default function MobileLeads() {
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [equipes, setEquipes] = useState<Equipe[]>([]);
   
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
+
+  useEffect(() => {
+    loadEquipes();
+  }, []);
+
+  const loadEquipes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('equipes')
+        .select('id, nome, responsavel_nome')
+        .order('nome');
+
+      if (error) {
+        console.error('Error loading equipes:', error);
+      } else {
+        setEquipes(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading equipes:', error);
+    }
+  };
 
   // Converter dados do Supabase para formato da interface
   const convertedLeads: Lead[] = leads.map(lead => ({
@@ -87,6 +117,17 @@ export default function MobileLeads() {
     // Filtro de usuário
     const matchesUser = !selectedUserId || leads.find(l => l.id === lead.id)?.user_id === selectedUserId;
 
+    // Filtro de equipe
+    let matchesTeam = true;
+    if (selectedTeamId) {
+      const originalLead = leads.find(l => l.id === lead.id);
+      if (originalLead?.user?.equipe_id) {
+        matchesTeam = originalLead.user.equipe_id === selectedTeamId;
+      } else {
+        matchesTeam = false;
+      }
+    }
+
     // Filtro de etapa
     const matchesStage = !selectedStage || lead.etapa === selectedStage;
 
@@ -118,7 +159,7 @@ export default function MobileLeads() {
       }
     }
 
-    return matchesSearch && matchesUser && matchesStage && matchesDate && matchesTags;
+    return matchesSearch && matchesUser && matchesTeam && matchesStage && matchesDate && matchesTags;
   });
 
   const handleLeadClick = (lead: Lead) => {
@@ -287,6 +328,35 @@ export default function MobileLeads() {
                 selectedUserId={selectedUserId}
                 onUserChange={setSelectedUserId}
               />
+              
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="w-4 h-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Filtrar por Equipe</span>
+              </div>
+              
+              <Select
+                value={selectedTeamId || "todas"}
+                onValueChange={(value) => setSelectedTeamId(value === "todas" ? null : value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecionar equipe" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todas">Todas as equipes</SelectItem>
+                  {equipes.map((equipe) => (
+                    <SelectItem key={equipe.id} value={equipe.id}>
+                      <div className="flex flex-col text-left">
+                        <span className="font-medium">{equipe.nome}</span>
+                        {equipe.responsavel_nome && (
+                          <span className="text-xs text-muted-foreground">
+                            Resp: {equipe.responsavel_nome}
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               
               <div className="flex items-center gap-2 mb-2">
                 <Filter className="w-4 h-4 text-gray-500" />
