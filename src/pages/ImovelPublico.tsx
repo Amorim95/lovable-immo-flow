@@ -150,7 +150,7 @@ export default function ImovelPublico() {
           <div className="flex items-center gap-3 mb-2">
             <div className="w-8 h-8 flex-shrink-0">
               <img 
-                src={settings.logo || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
+                src={settings.logo || "/lovable-uploads/default-crm-logo.png"} 
                 alt={`${settings.name} Logo`} 
                 className="w-full h-full object-contain"
               />

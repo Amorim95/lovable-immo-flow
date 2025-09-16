@@ -26,7 +26,7 @@ export default function Contato() {
             
             <div className="flex-1 flex justify-center">
               <img 
-                src={settings.logo || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
+                src={settings.logo || "/lovable-uploads/default-crm-logo.png"} 
                 alt={settings.name} 
                 className="h-12 w-auto" 
               />

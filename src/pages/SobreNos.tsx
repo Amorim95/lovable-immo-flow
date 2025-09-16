@@ -25,7 +25,7 @@ export default function SobreNos() {
             
             <div className="absolute left-1/2 transform -translate-x-1/2">
               <img 
-                src={settings.logo || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
+                src={settings.logo || "/lovable-uploads/default-crm-logo.png"} 
                 alt={settings.name} 
                 className="h-12 w-auto"
               />

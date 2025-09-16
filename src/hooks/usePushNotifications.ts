@@ -120,8 +120,8 @@ export function usePushNotifications() {
       navigator.serviceWorker.ready.then((registration) => {
         registration.showNotification('Click Imóveis', {
           body: 'Acabou de chegar um Lead para você!',
-          icon: '/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png',
-          badge: '/lovable-uploads/09f7e1e7-f952-404f-8533-120ee54a68cd.png',
+          icon: '/lovable-uploads/default-crm-logo.png',
+          badge: '/lovable-uploads/default-crm-logo.png',
           data: {
             url: '/',
             leadId: leadData.id

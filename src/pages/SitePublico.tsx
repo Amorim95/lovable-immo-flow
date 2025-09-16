@@ -262,7 +262,7 @@ export default function SitePublico() {
             
             <div className="flex justify-center">
               <img 
-                src={company?.logo_url || "/lovable-uploads/3ebecda3-d067-45fc-8317-a3481a6aed5a.png"} 
+                src={company?.logo_url || "/lovable-uploads/default-crm-logo.png"} 
                 alt={company?.name} 
                 className="h-20 w-auto" 
               />
