@@ -167,11 +167,8 @@ serve(async (req) => {
       }
     }
 
-    // Update user's last lead received timestamp
-    await supabase
-      .from('users')
-      .update({ ultimo_lead_recebido: new Date().toISOString() })
-      .eq('id', nextUser);
+    // Timestamp já foi atualizado atomicamente pela função get_next_user_round_robin
+    // Não precisamos atualizar novamente aqui
 
     // Get complete lead data to return
     const { data: completeLeadData } = await supabase
