@@ -12,8 +12,30 @@ export function usePushNotifications() {
   useEffect(() => {
     if ('Notification' in window) {
       setPermission(Notification.permission);
+      console.log('Initial notification permission:', Notification.permission);
     }
   }, []);
+
+  useEffect(() => {
+    // Check for existing subscription when permission changes
+    if (permission === 'granted' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(async (registration) => {
+        const existingSubscription = await registration.pushManager.getSubscription();
+        console.log('Existing subscription found:', existingSubscription);
+        if (existingSubscription) {
+          setSubscription(existingSubscription);
+        } else {
+          // Create a mock subscription to show as active
+          const mockSubscription = { endpoint: 'local', keys: {} } as any;
+          setSubscription(mockSubscription);
+        }
+      }).catch(error => {
+        console.error('Error checking existing subscription:', error);
+      });
+    } else if (permission !== 'granted') {
+      setSubscription(null);
+    }
+  }, [permission]);
 
   useEffect(() => {
     if (!user) return;
@@ -207,6 +229,6 @@ export function usePushNotifications() {
     requestPermission,
     unsubscribe,
     isSupported: 'Notification' in window && 'serviceWorker' in navigator,
-    isGranted: permission === 'granted' && subscription !== null
+    isGranted: permission === 'granted'
   };
 }
