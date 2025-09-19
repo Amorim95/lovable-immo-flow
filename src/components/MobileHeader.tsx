@@ -1,6 +1,8 @@
 import { useCompany } from "@/contexts/CompanyContext";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { NotificationPermissionButton } from "@/components/NotificationPermissionButton";
+
 interface MobileHeaderProps {
   title?: string;
   showBackButton?: boolean;
@@ -34,7 +36,12 @@ export function MobileHeader({
       </div>
       
       {rightElement && <div className="flex items-center gap-2">
+          <NotificationPermissionButton />
           {rightElement}
+        </div>}
+      
+      {!rightElement && <div className="flex items-center">
+          <NotificationPermissionButton />
         </div>}
     </header>;
 }
