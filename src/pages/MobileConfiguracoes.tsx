@@ -9,10 +9,8 @@ import {
   Users, 
   ChevronRight,
   User,
-  Palette,
-  Bell
+  Palette
 } from "lucide-react";
-import { NotificationPermissionButton } from "@/components/NotificationPermissionButton";
 
 export default function MobileConfiguracoes() {
   const { user, logout } = useAuth();
@@ -106,22 +104,6 @@ export default function MobileConfiguracoes() {
               </div>
             );
           })}
-        </div>
-
-        {/* Notifications Section */}
-        <div className="bg-white rounded-lg p-4 shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                <Bell className="w-5 h-5 text-gray-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-gray-900">Notificações</h3>
-                <p className="text-sm text-gray-500 mt-1">Receba alertas quando novos leads forem atribuídos</p>
-              </div>
-            </div>
-            <NotificationPermissionButton />
-          </div>
         </div>
 
         {/* Logout Button */}

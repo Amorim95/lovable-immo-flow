@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, User, Mail, Phone, Lock, Save } from 'lucide-react';
+import { Shield, User, Mail, Phone, Lock, Save, Bell } from 'lucide-react';
+import { NotificationPermissionButton } from '@/components/NotificationPermissionButton';
 
 export function SecuritySettings() {
   const { user, updateProfile, changePassword } = useAuth();
@@ -241,6 +242,45 @@ export function SecuritySettings() {
               <Lock className="w-4 h-4 mr-2" />
               {isUpdatingPassword ? 'Alterando...' : 'Alterar Senha'}
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Notificações */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5" />
+              Notificações
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div>
+                <h4 className="font-medium text-gray-900">Notificações Push</h4>
+                <p className="text-sm text-gray-600 mt-1">
+                  Receba alertas em tempo real quando novos leads forem atribuídos a você
+                </p>
+              </div>
+              
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Bell className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Alertas de Leads</p>
+                    <p className="text-sm text-gray-600">Seja notificado instantaneamente</p>
+                  </div>
+                </div>
+                <NotificationPermissionButton />
+              </div>
+              
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  As notificações funcionam mesmo quando o aplicativo está fechado ou minimizado.
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
