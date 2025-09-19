@@ -45,15 +45,6 @@ export default function MobileConfiguracoes() {
       show: true
     },
     {
-      id: 'notifications',
-      title: 'Notificações',
-      description: 'Ativar notificações push para novos leads',
-      icon: Bell,
-      action: () => {},
-      show: true,
-      isNotification: true
-    },
-    {
       id: 'company',
       title: 'Dados da Empresa',
       description: 'Informações e configurações da empresa',
@@ -110,15 +101,27 @@ export default function MobileConfiguracoes() {
                       <p className="text-sm text-gray-500 mt-1">{item.description}</p>
                     </div>
                   </div>
-                  {item.isNotification ? (
-                    <NotificationPermissionButton />
-                  ) : (
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
-                  )}
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
                 </div>
               </div>
             );
           })}
+        </div>
+
+        {/* Notifications Section */}
+        <div className="bg-white rounded-lg p-4 shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <Bell className="w-5 h-5 text-gray-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-medium text-gray-900">Notificações</h3>
+                <p className="text-sm text-gray-500 mt-1">Receba alertas quando novos leads forem atribuídos</p>
+              </div>
+            </div>
+            <NotificationPermissionButton />
+          </div>
         </div>
 
         {/* Logout Button */}
