@@ -9,8 +9,10 @@ import {
   Users, 
   ChevronRight,
   User,
-  Palette
+  Palette,
+  Bell
 } from "lucide-react";
+import { NotificationPermissionButton } from "@/components/NotificationPermissionButton";
 
 export default function MobileConfiguracoes() {
   const { user, logout } = useAuth();
@@ -41,6 +43,15 @@ export default function MobileConfiguracoes() {
       icon: Palette,
       action: () => navigate('/mobile-appearance'),
       show: true
+    },
+    {
+      id: 'notifications',
+      title: 'Notificações',
+      description: 'Ativar notificações push para novos leads',
+      icon: Bell,
+      action: () => {},
+      show: true,
+      isNotification: true
     },
     {
       id: 'company',
@@ -99,7 +110,11 @@ export default function MobileConfiguracoes() {
                       <p className="text-sm text-gray-500 mt-1">{item.description}</p>
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
+                  {item.isNotification ? (
+                    <NotificationPermissionButton />
+                  ) : (
+                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                  )}
                 </div>
               </div>
             );
