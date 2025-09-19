@@ -78,28 +78,43 @@ export function usePushNotifications() {
   const subscribeToPush = async () => {
     try {
       const registration = await navigator.serviceWorker.ready;
+      console.log('Service Worker ready for push subscription');
       
       // Check if already subscribed
       const existingSubscription = await registration.pushManager.getSubscription();
       if (existingSubscription) {
+        console.log('Already subscribed to push notifications');
         setSubscription(existingSubscription);
         return existingSubscription;
       }
 
-      // Create new subscription
-      const newSubscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: null // For testing, we'll use local notifications
-      });
+      // For now, we'll just create a minimal subscription for local notifications
+      // In production, you would need a proper VAPID key
+      try {
+        const newSubscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: null
+        });
 
-      setSubscription(newSubscription);
-      console.log('Push subscription created:', newSubscription);
-      
-      return newSubscription;
+        setSubscription(newSubscription);
+        console.log('Push subscription created:', newSubscription);
+        
+        return newSubscription;
+      } catch (subscriptionError) {
+        console.log('Push subscription failed, using local notifications only:', subscriptionError);
+        // Create a mock subscription for local notifications
+        const mockSubscription = { endpoint: 'local', keys: {} } as any;
+        setSubscription(mockSubscription);
+        return mockSubscription;
+      }
     } catch (error) {
       console.error('Error subscribing to push notifications:', error);
-      toast.error('Erro ao configurar notificações push');
-      return null;
+      toast.error('Erro ao configurar notificações push. Usando notificações locais.');
+      
+      // Fallback to local notifications only
+      const mockSubscription = { endpoint: 'local', keys: {} } as any;
+      setSubscription(mockSubscription);
+      return mockSubscription;
     }
   };
 
@@ -116,10 +131,12 @@ export function usePushNotifications() {
     }
 
     try {
+      console.log('Showing local notification for lead:', leadData);
+      
       // Use the service worker to show the notification
       navigator.serviceWorker.ready.then((registration) => {
-        registration.showNotification('Click Imóveis', {
-          body: 'Acabou de chegar um Lead para você!',
+        registration.showNotification('Novo Lead - Click Imóveis', {
+          body: `Novo lead recebido: ${leadData.name || 'Lead sem nome'}`,
           icon: '/lovable-uploads/default-crm-logo.png',
           badge: '/lovable-uploads/default-crm-logo.png',
           data: {
@@ -137,11 +154,33 @@ export function usePushNotifications() {
             }
           ],
           requireInteraction: true,
-          tag: 'lead-notification'
+          tag: 'lead-notification',
+          vibrate: [200, 100, 200],
+          silent: false
         } as NotificationOptions);
+      }).catch((error) => {
+        console.error('Error showing notification via service worker:', error);
+        
+        // Fallback to direct notification API
+        new Notification('Novo Lead - Click Imóveis', {
+          body: `Novo lead recebido: ${leadData.name || 'Lead sem nome'}`,
+          icon: '/lovable-uploads/default-crm-logo.png',
+          tag: 'lead-notification'
+        });
       });
     } catch (error) {
       console.error('Error showing notification:', error);
+      
+      // Last fallback - try direct notification
+      try {
+        new Notification('Novo Lead - Click Imóveis', {
+          body: `Novo lead recebido: ${leadData.name || 'Lead sem nome'}`,
+          icon: '/lovable-uploads/default-crm-logo.png',
+          tag: 'lead-notification'
+        });
+      } catch (fallbackError) {
+        console.error('All notification methods failed:', fallbackError);
+      }
     }
   };
 
