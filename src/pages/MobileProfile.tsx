@@ -4,8 +4,9 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Lock, ChevronRight } from "lucide-react";
+import { User, Lock, ChevronRight, Bell } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { NotificationPermissionButton } from "@/components/NotificationPermissionButton";
 
 export default function MobileProfile() {
   const { user } = useAuth();
@@ -132,6 +133,24 @@ export default function MobileProfile() {
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
+            </div>
+          </div>
+          
+          {/* Seção de Notificações */}
+          <div className="bg-white rounded-lg p-4 shadow-sm border">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Bell className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-gray-900">Notificações</h3>
+                  <p className="text-sm text-gray-500">Receba alertas quando novos leads forem atribuídos</p>
+                </div>
+              </div>
+              <div className="ml-2">
+                <NotificationPermissionButton />
+              </div>
             </div>
           </div>
         </div>
