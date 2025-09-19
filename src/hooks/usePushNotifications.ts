@@ -146,15 +146,19 @@ export function usePushNotifications() {
   };
 
   const unsubscribe = async () => {
-    if (subscription) {
-      try {
+    try {
+      // If there's an active subscription, unsubscribe from it
+      if (subscription) {
         await subscription.unsubscribe();
         setSubscription(null);
-        toast.success('Notificações desativadas');
-      } catch (error) {
-        console.error('Error unsubscribing:', error);
-        toast.error('Erro ao desativar notificações');
       }
+      
+      // Note: We cannot programmatically revoke notification permission
+      // The user needs to do this manually in their browser settings
+      toast.success('Notificações desativadas. Para revogar completamente as permissões, acesse as configurações do seu navegador.');
+    } catch (error) {
+      console.error('Error unsubscribing:', error);
+      toast.error('Erro ao desativar notificações');
     }
   };
 
@@ -164,6 +168,6 @@ export function usePushNotifications() {
     requestPermission,
     unsubscribe,
     isSupported: 'Notification' in window && 'serviceWorker' in navigator,
-    isGranted: permission === 'granted'
+    isGranted: permission === 'granted' && subscription !== null
   };
 }
