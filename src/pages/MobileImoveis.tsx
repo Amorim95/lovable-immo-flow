@@ -117,6 +117,22 @@ export default function MobileImoveis() {
         return;
       }
 
+      // Buscar company_id do usuário
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('company_id')
+        .eq('id', userId)
+        .single();
+
+      if (userError || !userData?.company_id) {
+        toast({
+          title: "Erro",
+          description: "Erro ao identificar empresa do usuário",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Função para extrair apenas números do preço para o banco
       const precoNumerico = parseFloat(formData.preco.replace(/[^\d,]/g, '').replace(',', '.'));
 
@@ -136,6 +152,7 @@ export default function MobileImoveis() {
         portaria_24h: formData.portaria_24h,
         portao_eletronico: formData.portao_eletronico,
         user_id: userId,
+        company_id: userData.company_id,
       };
 
       if (selectedImovel) {
