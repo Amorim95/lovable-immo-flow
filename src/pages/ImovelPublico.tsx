@@ -6,43 +6,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Imovel, ImovelMidia } from "@/types/crm";
-import { useCompany } from "@/contexts/CompanyContext";
-import { useAuth } from "@/contexts/AuthContext";
+
+interface CompanySettings {
+  name: string;
+  logo: string | null;
+  phone?: string;
+}
 
 export default function ImovelPublico() {
   const { slug } = useParams<{ slug: string }>();
-  const { settings } = useCompany();
-  const { user } = useAuth();
   const [imovel, setImovel] = useState<Imovel | null>(null);
   const [midias, setMidias] = useState<ImovelMidia[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [userPhone, setUserPhone] = useState<string>('');
+  const [companySettings, setCompanySettings] = useState<CompanySettings>({
+    name: '',
+    logo: null
+  });
 
-  useEffect(() => {
-    if (user) {
-      fetchUserPhone();
-    }
-  }, [user]);
-
-  const fetchUserPhone = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('telefone')
-        .eq('id', user.id)
-        .single();
-
-      if (!error && data?.telefone) {
-        setUserPhone(data.telefone);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar telefone do usuário:', error);
-    }
-  };
 
   useEffect(() => {
     if (slug) {
@@ -68,6 +50,27 @@ export default function ImovelPublico() {
       }
 
       setImovel(data);
+
+      // Buscar configurações da empresa
+      if (data.company_id) {
+        const { data: companyData } = await supabase
+          .from('companies')
+          .select('name, logo_url')
+          .eq('id', data.company_id)
+          .single();
+
+        const { data: settingsData } = await supabase
+          .from('company_settings')
+          .select('site_phone')
+          .eq('company_id', data.company_id)
+          .maybeSingle();
+
+        setCompanySettings({
+          name: companyData?.name || '',
+          logo: companyData?.logo_url || null,
+          phone: settingsData?.site_phone || ''
+        });
+      }
 
       // Buscar mídias do imóvel
       const { data: midiaData, error: midiaError } = await supabase
@@ -102,7 +105,7 @@ export default function ImovelPublico() {
     const message = encodeURIComponent(
       `Olá! Tenho interesse no imóvel: ${imovel?.endereco} - ${formatPrice(imovel?.preco || 0)}`
     );
-    const phoneNumber = userPhone ? userPhone.replace(/\D/g, '') : '';
+    const phoneNumber = companySettings.phone ? companySettings.phone.replace(/\D/g, '') : '';
     const whatsappUrl = phoneNumber ? `https://wa.me/55${phoneNumber}?text=${message}` : `https://wa.me/?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -150,12 +153,12 @@ export default function ImovelPublico() {
           <div className="flex items-center gap-3 mb-2">
             <div className="w-8 h-8 flex-shrink-0">
               <img 
-                src={settings.logo || "/lovable-uploads/default-crm-logo.png"} 
-                alt={`${settings.name} Logo`} 
+                src={companySettings.logo || "/lovable-uploads/default-crm-logo.png"} 
+                alt={`${companySettings.name} Logo`} 
                 className="w-full h-full object-contain"
               />
             </div>
-            <span className="text-xl font-bold text-primary">{settings.name}</span>
+            <span className="text-xl font-bold text-primary">{companySettings.name}</span>
           </div>
           <h1 className="text-3xl font-bold">{formatPrice(imovel.preco)}</h1>
           <div className="flex items-center gap-1 text-muted-foreground">
@@ -356,6 +359,20 @@ export default function ImovelPublico() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Botão de Contato via WhatsApp */}
+            {companySettings.phone && (
+              <Card>
+                <CardContent className="p-4">
+                  <Button 
+                    onClick={handleWhatsAppContact}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    Entre em contato via WhatsApp
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
           </div>
         </div>
