@@ -535,14 +535,6 @@ export default function Imoveis() {
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleView(imovel)}
-                    title="Ver detalhes do imóvel"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
                   {(isAdmin || isGestor || isDono) && (
                     <Button
                       size="sm"
