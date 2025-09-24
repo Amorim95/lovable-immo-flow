@@ -60,8 +60,10 @@ export function DateFilter({ value, customRange, onValueChange, className, avail
 
   const handleDateRangeChange = (range: { from?: Date; to?: Date }) => {
     setDateRange(range);
-    if (range.from && range.to) {
-      onValueChange('personalizado', { from: range.from, to: range.to });
+    if (range.from) {
+      // Se só tem from (um dia selecionado), usar o mesmo dia como to mas no final do dia
+      const to = range.to || new Date(range.from.getTime() + 24 * 60 * 60 * 1000 - 1);
+      onValueChange('personalizado', { from: range.from, to });
     }
   };
 
