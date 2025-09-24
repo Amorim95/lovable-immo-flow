@@ -512,7 +512,7 @@ export default function Imoveis() {
       {/* Imóveis Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredImoveis.map((imovel) => (
-          <Card key={imovel.id} className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleView(imovel)}>
+          <Card key={imovel.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -522,7 +522,15 @@ export default function Imoveis() {
                     <span>{imovel.localizacao}</span>
                   </div>
                 </div>
-                <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleView(imovel)}
+                    title="Ver detalhes do imóvel"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
                   {(isAdmin || isGestor || isDono) && (
                     <Button
                       size="sm"
