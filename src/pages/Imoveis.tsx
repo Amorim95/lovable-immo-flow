@@ -8,12 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useCompanyFilter } from "@/hooks/useCompanyFilter";
 import { Imovel, ImovelMidia } from "@/types/crm";
 import ImovelFormModal from "@/components/ImovelFormModal";
 
 export default function Imoveis() {
   const navigate = useNavigate();
   const { isAdmin, isGestor, isDono } = useUserRole();
+  const { addCompanyFilter } = useCompanyFilter();
   const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -43,10 +45,15 @@ export default function Imoveis() {
 
   const fetchImoveisCallback = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('imoveis')
         .select('*')
         .order('created_at', { ascending: false });
+
+      // Filtrar por empresa
+      query = addCompanyFilter(query);
+      
+      const { data, error } = await query;
 
       if (error) throw error;
       setImoveis(data || []);
@@ -60,7 +67,7 @@ export default function Imoveis() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [addCompanyFilter]);
 
   useEffect(() => {
     fetchImoveisCallback();
@@ -68,10 +75,15 @@ export default function Imoveis() {
 
   // Função para recarregar a lista após operações
   const refreshImoveis = useCallback(async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('imoveis')
       .select('*')
       .order('created_at', { ascending: false });
+
+    // Filtrar por empresa
+    query = addCompanyFilter(query);
+    
+    const { data, error } = await query;
 
     if (error) {
       console.error('Erro ao recarregar imóveis:', error);
@@ -79,7 +91,7 @@ export default function Imoveis() {
     }
     
     setImoveis(data || []);
-  }, []);
+  }, [addCompanyFilter]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
