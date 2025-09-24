@@ -64,6 +64,43 @@ const ImovelFormModal = memo(({
     setFormData(prev => ({ ...prev, [field]: value }));
   }, [setFormData]);
 
+  // Função para formatar o preço em moeda brasileira
+  const formatCurrency = useCallback((value: string) => {
+    // Remove todos os caracteres não numéricos
+    const numericValue = value.replace(/\D/g, '');
+    
+    if (!numericValue) return '';
+    
+    // Converte para número e divide por 100 para ter decimais
+    const numberValue = parseInt(numericValue) / 100;
+    
+    // Formata como moeda brasileira
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(numberValue);
+  }, []);
+
+  const handlePriceChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    const formattedValue = formatCurrency(inputValue);
+    updateField('preco', formattedValue);
+  }, [formatCurrency, updateField]);
+
+  const handleCondominioChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    const formattedValue = formatCurrency(inputValue);
+    updateField('condominio', formattedValue);
+  }, [formatCurrency, updateField]);
+
+  const handleIptuChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    const formattedValue = formatCurrency(inputValue);
+    updateField('iptu', formattedValue);
+  }, [formatCurrency, updateField]);
+
   if (!isOpen) return null;
 
   return (
@@ -144,7 +181,7 @@ const ImovelFormModal = memo(({
                 id="preco"
                 type="text"
                 value={formData.preco}
-                onChange={(e) => updateField('preco', e.target.value)}
+                onChange={handlePriceChange}
                 onFocus={(e) => {
                   setTimeout(() => {
                     const input = e.target as HTMLInputElement;
@@ -152,11 +189,7 @@ const ImovelFormModal = memo(({
                     input.setSelectionRange(length, length);
                   }, 0);
                 }}
-                onClick={(e) => {
-                  const input = e.target as HTMLInputElement;
-                  input.setSelectionRange(input.selectionStart || 0, input.selectionStart || 0);
-                }}
-                placeholder="Ex: 450000 ou R$ 450.000"
+                placeholder="R$ 0,00"
                 required
                 autoComplete="off"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -231,11 +264,10 @@ const ImovelFormModal = memo(({
               <Label htmlFor="condominio">Condomínio</Label>
               <input
                 id="condominio"
-                type="number"
-                step="0.01"
+                type="text"
                 value={formData.condominio}
-                onChange={(e) => updateField('condominio', e.target.value)}
-                placeholder="0.00"
+                onChange={handleCondominioChange}
+                placeholder="R$ 0,00"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
@@ -244,11 +276,10 @@ const ImovelFormModal = memo(({
               <Label htmlFor="iptu">IPTU</Label>
               <input
                 id="iptu"
-                type="number"
-                step="0.01"
+                type="text"
                 value={formData.iptu}
-                onChange={(e) => updateField('iptu', e.target.value)}
-                placeholder="0.00"
+                onChange={handleIptuChange}
+                placeholder="R$ 0,00"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>

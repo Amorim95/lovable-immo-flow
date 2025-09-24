@@ -144,9 +144,10 @@ export default function Imoveis() {
         return;
       }
 
-      // Função para extrair apenas números do preço para o banco
+      // Função para extrair apenas números dos valores monetários formatados
       const extractPrice = (priceString: string): number => {
-        const numericValue = priceString.replace(/[^\d.,]/g, '').replace(',', '.');
+        // Remove "R$", pontos, vírgulas e espaços, mantendo apenas números
+        const numericValue = priceString.replace(/[R$\s.]/g, '').replace(',', '.');
         return parseFloat(numericValue) || 0;
       };
 
@@ -156,8 +157,8 @@ export default function Imoveis() {
         endereco: formData.endereco,
         descricao: formData.descricao,
         quartos: formData.quartos ? parseInt(formData.quartos) : null,
-        condominio: formData.condominio ? parseFloat(formData.condominio) : null,
-        iptu: formData.iptu ? parseFloat(formData.iptu) : null,
+        condominio: formData.condominio ? extractPrice(formData.condominio) : null,
+        iptu: formData.iptu ? extractPrice(formData.iptu) : null,
         banheiros: formData.banheiros ? parseInt(formData.banheiros) : null,
         vaga_carro: formData.vaga_carro,
         aceita_animais: formData.aceita_animais,
@@ -358,14 +359,25 @@ export default function Imoveis() {
 
   const handleEdit = (imovel: Imovel) => {
     setSelectedImovel(imovel);
+    
+    // Formatar valores monetários para edição
+    const formatCurrencyForEdit = (price: number) => {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(price);
+    };
+    
     setFormData({
-      preco: imovel.preco?.toString() || "", // Preserva formatação existente
+      preco: formatCurrencyForEdit(imovel.preco || 0),
       localizacao: imovel.localizacao,
       endereco: imovel.endereco,
       descricao: imovel.descricao,
       quartos: imovel.quartos?.toString() || "",
-      condominio: imovel.condominio?.toString() || "",
-      iptu: imovel.iptu?.toString() || "",
+      condominio: imovel.condominio ? formatCurrencyForEdit(imovel.condominio) : "",
+      iptu: imovel.iptu ? formatCurrencyForEdit(imovel.iptu) : "",
       banheiros: imovel.banheiros?.toString() || "",
       vaga_carro: imovel.vaga_carro,
       aceita_animais: imovel.aceita_animais,
