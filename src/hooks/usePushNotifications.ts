@@ -107,36 +107,82 @@ export function usePushNotifications() {
       if (existingSubscription) {
         console.log('Already subscribed to push notifications');
         setSubscription(existingSubscription);
+        await saveSubscriptionToSupabase(existingSubscription);
         return existingSubscription;
       }
 
-      // For now, we'll just create a minimal subscription for local notifications
-      // In production, you would need a proper VAPID key
+      // VAPID Public Key - SUBSTITUA PELA SUA CHAVE PÚBLICA VAPID
+      // Gere em: https://vapidkeys.com/ ou executando: npx web-push generate-vapid-keys
+      const vapidPublicKey = 'COLE_SUA_VAPID_PUBLIC_KEY_AQUI';
+      
+      // Converter VAPID key para Uint8Array
+      const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+
       try {
         const newSubscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: null
+          applicationServerKey: convertedVapidKey
         });
 
         setSubscription(newSubscription);
         console.log('Push subscription created:', newSubscription);
         
+        // Salvar subscription no Supabase
+        await saveSubscriptionToSupabase(newSubscription);
+        
         return newSubscription;
       } catch (subscriptionError) {
-        console.log('Push subscription failed, using local notifications only:', subscriptionError);
-        // Create a mock subscription for local notifications
-        const mockSubscription = { endpoint: 'local', keys: {} } as any;
-        setSubscription(mockSubscription);
-        return mockSubscription;
+        console.log('Push subscription failed:', subscriptionError);
+        toast.error('Erro ao criar subscrição push');
+        return null;
       }
     } catch (error) {
       console.error('Error subscribing to push notifications:', error);
-      toast.error('Erro ao configurar notificações push. Usando notificações locais.');
+      toast.error('Erro ao configurar notificações push');
+      return null;
+    }
+  };
+
+  // Helper function to convert VAPID key
+  const urlBase64ToUint8Array = (base64String: string) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
+  const saveSubscriptionToSupabase = async (subscription: PushSubscription) => {
+    if (!user) return;
+
+    try {
+      const subscriptionJson = subscription.toJSON();
       
-      // Fallback to local notifications only
-      const mockSubscription = { endpoint: 'local', keys: {} } as any;
-      setSubscription(mockSubscription);
-      return mockSubscription;
+      const { error } = await supabase
+        .from('push_subscriptions')
+        .upsert({
+          user_id: user.id,
+          subscription: subscriptionJson as any,
+          user_agent: navigator.userAgent
+        } as any, {
+          onConflict: 'user_id'
+        });
+
+      if (error) {
+        console.error('Error saving subscription to Supabase:', error);
+        toast.error('Erro ao salvar subscrição');
+      } else {
+        console.log('Subscription saved to Supabase successfully');
+      }
+    } catch (error) {
+      console.error('Error saving subscription:', error);
     }
   };
 
@@ -214,9 +260,15 @@ export function usePushNotifications() {
         setSubscription(null);
       }
       
-      // Note: We cannot programmatically revoke notification permission
-      // The user needs to do this manually in their browser settings
-      toast.success('Notificações desativadas. Para revogar completamente as permissões, acesse as configurações do seu navegador.');
+      // Remover do Supabase
+      if (user) {
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('user_id', user.id);
+      }
+      
+      toast.success('Notificações desativadas.');
     } catch (error) {
       console.error('Error unsubscribing:', error);
       toast.error('Erro ao desativar notificações');

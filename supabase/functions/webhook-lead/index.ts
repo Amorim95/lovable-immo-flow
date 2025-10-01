@@ -213,6 +213,30 @@ Deno.serve(async (req) => {
       console.log('Etiqueta "Lead Qualificado pela IA" adicionada com sucesso');
     }
 
+    // Enviar notificação push para o usuário
+    console.log('Enviando notificação push para o usuário:', nextUser.id);
+    try {
+      const notificationResponse = await supabase.functions.invoke('send-push-notification', {
+        body: {
+          userId: nextUser.id,
+          title: 'Novo Lead - Click Imóveis',
+          body: `Novo lead recebido: ${leadData.nome}`,
+          data: {
+            leadId: leadResult.lead_id,
+            url: '/'
+          }
+        }
+      });
+
+      if (notificationResponse.error) {
+        console.error('Erro ao enviar notificação push:', notificationResponse.error);
+      } else {
+        console.log('Notificação push enviada com sucesso');
+      }
+    } catch (notificationError) {
+      console.error('Erro ao invocar função de notificação:', notificationError);
+    }
+
     console.log('Processo completo - retornando resposta de sucesso');
     console.log('Lead final:', newLead);
 
