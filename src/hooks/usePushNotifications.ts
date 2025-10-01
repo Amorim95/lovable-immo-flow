@@ -111,9 +111,8 @@ export function usePushNotifications() {
         return existingSubscription;
       }
 
-      // VAPID Public Key - SUBSTITUA PELA SUA CHAVE PÚBLICA VAPID
-      // Gere em: https://vapidkeys.com/ ou executando: npx web-push generate-vapid-keys
-      const vapidPublicKey = 'COLE_SUA_VAPID_PUBLIC_KEY_AQUI';
+      // VAPID Public Key configurada
+      const vapidPublicKey = 'BIg_KLSu6147INg13uGEJ8UjqkyE8znNi6w_07qOOSo_onLFg6G2ZAy79JabaUjRLHK6EopySZu928H1eggLY-0';
       
       // Converter VAPID key para Uint8Array
       const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
