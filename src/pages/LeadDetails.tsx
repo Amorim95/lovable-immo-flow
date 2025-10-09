@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, MessageCircle, History, Plus, Clock, Copy, Tag } from "lucide-react";
+import { Edit, MessageCircle, History, Plus, Clock, Copy, Tag, Trash2 } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TagSelector } from "@/components/TagSelector";
@@ -35,6 +36,8 @@ export default function LeadDetails() {
   const [lead, setLead] = useState<Lead | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showActivities, setShowActivities] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -302,6 +305,38 @@ export default function LeadDetails() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!lead) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke('delete-lead', {
+        body: { leadId: lead.id }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Lead deletado",
+        description: "O lead foi removido com sucesso."
+      });
+      
+      navigate('/');
+    } catch (error) {
+      console.error('Erro ao deletar lead:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao deletar lead. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
   if (!lead) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -327,7 +362,7 @@ export default function LeadDetails() {
         title={lead.nome}
         showBackButton
         onBack={() => navigate('/')}
-        rightElement={
+          rightElement={
           <div className="flex items-center gap-2">
             {/* Tags discretas no header */}
             {lead.etiquetas && lead.etiquetas.length > 0 && (
@@ -348,6 +383,14 @@ export default function LeadDetails() {
                 </div>
               </div>
             )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowDeleteDialog(true)}
+              className="p-2 text-red-600 hover:bg-red-50"
+            >
+              <Trash2 className="w-5 h-5" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -537,6 +580,35 @@ export default function LeadDetails() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deletar Lead</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja deletar o lead <strong>{lead.nome}</strong>?
+              <br /><br />
+              Esta ação é irreversível e irá remover:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Todas as atividades registradas</li>
+                <li>Todos os relacionamentos com tags</li>
+                <li>Todos os logs associados</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? 'Deletando...' : 'Deletar Lead'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
