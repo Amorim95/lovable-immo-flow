@@ -133,7 +133,7 @@ export function MobileEditUsuarioModal({ corretor, isOpen, onClose, onUpdateCorr
     try {
       // Chamar a Edge Function para deletar o usuário
       const { error } = await supabase.functions.invoke('delete-user', {
-        body: { user_id: corretor.id }
+        body: { userId: corretor.id }
       });
 
       if (error) {
