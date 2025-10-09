@@ -3,6 +3,9 @@ project_id = "loxpoehsddfearnzcdla"
 [functions.sync-all-users-to-auth]
 verify_jwt = true
 
+[functions.reset-user-password]
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
