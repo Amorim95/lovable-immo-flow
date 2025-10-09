@@ -562,7 +562,7 @@ export type Database = {
           stage_name: string | null
           telefone: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           atividades?: Json | null
@@ -577,7 +577,7 @@ export type Database = {
           stage_name?: string | null
           telefone: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Update: {
           atividades?: Json | null
@@ -592,7 +592,7 @@ export type Database = {
           stage_name?: string | null
           telefone?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
