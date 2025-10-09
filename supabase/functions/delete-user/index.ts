@@ -85,11 +85,22 @@ Deno.serve(async (req) => {
 
     console.log(`Usuário a deletar: ${userToDelete.name} (${userToDelete.email})`);
 
-    // 1. Os leads permanecerão no sistema mas ficarão órfãos (sem user_id válido)
-    // Isso é intencional para preservar o histórico de leads
-    console.log('Leads do usuário ficarão órfãos após exclusão');
+    // 1. PRIMEIRO: Deletar do Supabase Auth (antes de tudo)
+    // Isso garante que o email ficará disponível para reuso
+    const { error: authDeleteError } = await supabaseClient.auth.admin.deleteUser(userId);
+    
+    if (authDeleteError) {
+      console.log('Aviso ao deletar do auth.users:', authDeleteError.message);
+      // Não falha a operação se o usuário não existir no auth
+    } else {
+      console.log('Usuário deletado do auth.users');
+    }
 
-    // 2. Deletar logs do usuário
+    // 2. Os leads permanecerão no sistema mas ficarão órfãos (user_id = NULL)
+    // Isso é intencional para preservar o histórico de leads
+    console.log('Leads do usuário ficarão órfãos após exclusão (user_id = NULL)');
+
+    // 3. Deletar logs do usuário
     const { error: logsError } = await supabaseClient
       .from('logs')
       .delete()
@@ -101,7 +112,7 @@ Deno.serve(async (req) => {
       console.log('Logs deletados');
     }
 
-    // 3. Deletar permissões do usuário
+    // 4. Deletar permissões do usuário
     const { error: permissionsError } = await supabaseClient
       .from('permissions')
       .delete()
@@ -113,7 +124,7 @@ Deno.serve(async (req) => {
       console.log('Permissões deletadas');
     }
 
-    // 4. Deletar subscrições push do usuário
+    // 5. Deletar subscrições push do usuário
     const { error: subscriptionsError } = await supabaseClient
       .from('push_subscriptions')
       .delete()
@@ -123,15 +134,6 @@ Deno.serve(async (req) => {
       console.error('Erro ao deletar subscrições:', subscriptionsError);
     } else {
       console.log('Subscrições deletadas');
-    }
-
-    // 5. Tentar deletar do Supabase Auth (pode não existir)
-    const { error: authDeleteError } = await supabaseClient.auth.admin.deleteUser(userId);
-    
-    if (authDeleteError) {
-      console.log('Usuário não existe no auth.users (esperado):', authDeleteError.message);
-    } else {
-      console.log('Usuário deletado do auth.users');
     }
 
     // 6. Deletar da tabela users usando service role (bypassa RLS)
