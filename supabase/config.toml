@@ -1,7 +1,7 @@
 project_id = "loxpoehsddfearnzcdla"
 
 [functions.sync-all-users-to-auth]
-verify_jwt = false
+verify_jwt = true
 
 [api]
 enabled = true

@@ -14,6 +14,7 @@ import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import { PWALifecycle } from "@/components/PWALifecycle";
 import { PushNotificationManager } from "@/components/PushNotificationManager";
 import { DynamicPWAUpdater } from "@/components/DynamicPWAUpdater";
+import { AutoSyncUsers } from "@/components/AutoSyncUsers";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useCompany } from "@/contexts/CompanyContext";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -86,6 +87,7 @@ function AppContent() {
   
   return (
     <>
+      <AutoSyncUsers />
       <OnboardingSteps isOpen={showOnboarding} onComplete={completeOnboarding} />
       <Routes>
       <Route path="/login" element={<Login />} />
