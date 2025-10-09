@@ -85,33 +85,9 @@ Deno.serve(async (req) => {
 
     console.log(`Usuário a deletar: ${userToDelete.name} (${userToDelete.email})`);
 
-    // 1. Reatribuir leads deste usuário para outro corretor ativo da mesma empresa
-    const { data: activeUsers } = await supabaseClient
-      .from('users')
-      .select('id')
-      .eq('company_id', userToDelete.company_id)
-      .eq('status', 'ativo')
-      .neq('id', userId)
-      .limit(1);
-
-    if (activeUsers && activeUsers.length > 0) {
-      const newUserId = activeUsers[0].id;
-      console.log(`Reatribuindo leads para usuário ${newUserId}`);
-      
-      const { error: reassignError } = await supabaseClient
-        .from('leads')
-        .update({ user_id: newUserId })
-        .eq('user_id', userId);
-
-      if (reassignError) {
-        console.error('Erro ao reatribuir leads:', reassignError);
-        // Continuar mesmo com erro na reatribuição
-      } else {
-        console.log('Leads reatribuídos com sucesso');
-      }
-    } else {
-      console.log('Nenhum corretor ativo encontrado, leads não serão reatribuídos');
-    }
+    // 1. Os leads permanecerão no sistema mas ficarão órfãos (sem user_id válido)
+    // Isso é intencional para preservar o histórico de leads
+    console.log('Leads do usuário ficarão órfãos após exclusão');
 
     // 2. Deletar permissões do usuário
     const { error: permissionsError } = await supabaseClient
