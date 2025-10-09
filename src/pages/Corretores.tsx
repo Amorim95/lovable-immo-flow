@@ -223,6 +223,42 @@ const Corretores = () => {
     ));
   };
 
+  const handleSyncToAuth = async (corretorId: string, corretorEmail: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error('Você precisa estar autenticado');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('sync-user-to-auth', {
+        body: { userId: corretorId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (error) {
+        console.error('Erro ao sincronizar:', error);
+        toast.error(`Erro: ${error.message}`);
+        return;
+      }
+
+      if (data.alreadyExists) {
+        toast.info('Usuário já existe no sistema de autenticação');
+      } else {
+        toast.success(`Usuário sincronizado! Senha temporária: ${data.temporaryPassword}`);
+      }
+
+      // Recarregar dados
+      loadData();
+    } catch (error) {
+      console.error('Erro ao sincronizar usuário:', error);
+      toast.error('Erro ao sincronizar usuário');
+    }
+  };
+
   const handleEditClick = (corretor: Corretor) => {
     setSelectedCorretor(corretor);
     setShowEditModal(true);
@@ -438,7 +474,20 @@ const Corretores = () => {
                     </div>
                   )}
 
-                  <div className="flex gap-2 pt-3">
+                  <div className="flex flex-col gap-2 pt-3">
+                    <AccessControlWrapper requireAdmin>
+                      <Button 
+                        variant="secondary" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => handleSyncToAuth(corretor.id, corretor.email)}
+                      >
+                        <Settings className="w-3 h-3 mr-1" />
+                        Sincronizar Login
+                      </Button>
+                    </AccessControlWrapper>
+
+                    <div className="flex gap-2">
                     <AccessControlWrapper allowCorretor={false}>
                       <Button 
                         variant="outline" 
@@ -460,6 +509,7 @@ const Corretores = () => {
                         {corretor.status === 'ativo' ? 'Inativar' : 'Ativar'}
                       </Button>
                     </AccessControlWrapper>
+                    </div>
                   </div>
                 </div>
               </CardContent>
