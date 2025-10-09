@@ -89,7 +89,19 @@ Deno.serve(async (req) => {
     // Isso é intencional para preservar o histórico de leads
     console.log('Leads do usuário ficarão órfãos após exclusão');
 
-    // 2. Deletar permissões do usuário
+    // 2. Deletar logs do usuário
+    const { error: logsError } = await supabaseClient
+      .from('logs')
+      .delete()
+      .eq('user_id', userId);
+
+    if (logsError) {
+      console.error('Erro ao deletar logs:', logsError);
+    } else {
+      console.log('Logs deletados');
+    }
+
+    // 3. Deletar permissões do usuário
     const { error: permissionsError } = await supabaseClient
       .from('permissions')
       .delete()
@@ -101,7 +113,7 @@ Deno.serve(async (req) => {
       console.log('Permissões deletadas');
     }
 
-    // 3. Deletar subscrições push do usuário
+    // 4. Deletar subscrições push do usuário
     const { error: subscriptionsError } = await supabaseClient
       .from('push_subscriptions')
       .delete()
@@ -113,7 +125,7 @@ Deno.serve(async (req) => {
       console.log('Subscrições deletadas');
     }
 
-    // 4. Tentar deletar do Supabase Auth (pode não existir)
+    // 5. Tentar deletar do Supabase Auth (pode não existir)
     const { error: authDeleteError } = await supabaseClient.auth.admin.deleteUser(userId);
     
     if (authDeleteError) {
@@ -122,7 +134,7 @@ Deno.serve(async (req) => {
       console.log('Usuário deletado do auth.users');
     }
 
-    // 5. Deletar da tabela users usando service role (bypassa RLS)
+    // 6. Deletar da tabela users usando service role (bypassa RLS)
     const { error: deleteError } = await supabaseClient
       .from('users')
       .delete()
