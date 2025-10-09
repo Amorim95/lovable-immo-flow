@@ -16,7 +16,6 @@ import {
   Edit,
   Users
 } from "lucide-react";
-import { SyncUsersButton } from "@/components/SyncUsersButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
@@ -258,18 +257,12 @@ const Corretores = () => {
           </div>
           
           <div className="flex flex-col gap-2">
-            <div className="flex gap-2">
-              <AccessControlWrapper requireAdmin>
-                <SyncUsersButton />
-              </AccessControlWrapper>
-              
-              <AccessControlWrapper requireAdmin>
-                <Button className="bg-primary hover:bg-primary/90" onClick={() => setShowNewModal(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Novo Usuário
-                </Button>
-              </AccessControlWrapper>
-            </div>
+            <AccessControlWrapper requireAdmin>
+              <Button className="bg-primary hover:bg-primary/90" onClick={() => setShowNewModal(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Usuário
+              </Button>
+            </AccessControlWrapper>
             
             <AccessControlWrapper requireAdmin>
               <Button variant="outline" onClick={() => navigate('/equipes')}>
