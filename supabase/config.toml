@@ -67,3 +67,6 @@ verify_jwt = true
 
 [functions.sync-user-to-auth]
 verify_jwt = true
+
+[functions.activate-user]
+verify_jwt = true
