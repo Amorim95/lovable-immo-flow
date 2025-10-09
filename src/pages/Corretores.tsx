@@ -259,38 +259,6 @@ const Corretores = () => {
     }
   };
 
-  const handleActivateUser = async (corretorId: string, corretorNome: string) => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast.error('Você precisa estar autenticado');
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke('activate-user', {
-        body: { userId: corretorId },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-
-      if (error) {
-        console.error('Erro ao ativar:', error);
-        toast.error(`Erro: ${error.message}`);
-        return;
-      }
-
-      toast.success(`${corretorNome} ativado com sucesso!`);
-
-      // Recarregar dados
-      loadData();
-    } catch (error) {
-      console.error('Erro ao ativar usuário:', error);
-      toast.error('Erro ao ativar usuário');
-    }
-  };
-
   const handleEditClick = (corretor: Corretor) => {
     setSelectedCorretor(corretor);
     setShowEditModal(true);
@@ -518,20 +486,6 @@ const Corretores = () => {
                         Sincronizar Login
                       </Button>
                     </AccessControlWrapper>
-
-                    {corretor.status === 'inativo' && (
-                      <AccessControlWrapper requireAdmin>
-                        <Button 
-                          variant="default" 
-                          size="sm" 
-                          className="w-full bg-green-600 hover:bg-green-700"
-                          onClick={() => handleActivateUser(corretor.id, corretor.nome)}
-                        >
-                          <User className="w-3 h-3 mr-1" />
-                          Ativar Usuário
-                        </Button>
-                      </AccessControlWrapper>
-                    )}
 
                     <div className="flex gap-2">
                     <AccessControlWrapper allowCorretor={false}>
