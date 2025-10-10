@@ -68,7 +68,8 @@ export function useDashboardMetrics(dateRange?: DateRange) {
         .from('leads')
         .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
         .gte('created_at', dateRange?.from?.toISOString() || '1900-01-01')
-        .lte('created_at', dateRange?.to?.toISOString() || '2100-01-01');
+        .lte('created_at', dateRange?.to?.toISOString() || '2100-01-01')
+        .limit(10000); // Aumentar limite para carregar todos os leads
 
       if (leadsError) throw leadsError;
 
@@ -188,7 +189,8 @@ export function useDashboardMetrics(dateRange?: DateRange) {
         .from('leads')
         .select('id')
         .gte('created_at', startDatePreviousPeriod.toISOString())
-        .lte('created_at', endDatePreviousPeriod.toISOString());
+        .lte('created_at', endDatePreviousPeriod.toISOString())
+        .limit(10000); // Aumentar limite para carregar todos os leads
       
       const leadsPeriodoAnterior = leadsPreviousPeriod?.length || 0;
       const crescimento = leadsPeriodoAnterior > 0 

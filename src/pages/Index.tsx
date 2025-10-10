@@ -205,9 +205,6 @@ const Index = () => {
     );
   }
 
-  console.log('📊 Total de leads convertidos:', convertedLeads.length);
-  console.log('📊 Total de leads brutos do hook:', leads.length);
-  
   const totalLeads = convertedLeads.length;
   const leadsHoje = convertedLeads.filter(lead => {
     const hoje = new Date();

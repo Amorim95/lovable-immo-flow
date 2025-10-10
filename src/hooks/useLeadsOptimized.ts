@@ -81,7 +81,6 @@ export function useLeadsOptimized() {
         return;
       }
 
-      console.log('✅ Leads carregados do banco:', data?.length || 0);
       setLeads(data || []);
     } catch (error) {
       console.error('Error loading leads:', error);

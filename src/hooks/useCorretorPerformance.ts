@@ -88,6 +88,9 @@ export function useCorretorPerformance(corretorId?: string, dateRange?: DateRang
           .lte('created_at', dateRange.to.toISOString());
       }
 
+      // Adicionar limite para carregar todos os leads
+      leadsQuery = leadsQuery.limit(10000);
+
       const { data: leadsData, error: leadsError } = await leadsQuery;
 
       if (leadsError) throw leadsError;
