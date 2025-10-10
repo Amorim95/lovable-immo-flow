@@ -57,16 +57,18 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       setLoading(true);
       setError(null);
 
-      // Construir filtro de data se fornecido
-      let dateFilter = '';
-      if (dateRange?.from && dateRange?.to) {
-        dateFilter = `and created_at >= '${dateRange.from.toISOString()}' and created_at <= '${dateRange.to.toISOString()}'`;
+      // Buscar company_id do usuário
+      const { data: companyId } = await supabase.rpc('get_user_company_id');
+
+      if (!companyId) {
+        throw new Error('Empresa não encontrada');
       }
 
       // 1. Total de Leads
       let leadsQuery = supabase
         .from('leads')
         .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
+        .eq('company_id', companyId)
         .limit(10000);
 
       // Aplicar filtro de data apenas se houver dateRange
@@ -79,9 +81,6 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       const { data: leadsData, error: leadsError } = await leadsQuery;
 
       if (leadsError) throw leadsError;
-
-      console.log('🔍 Dashboard - Leads carregados:', leadsData?.length || 0);
-      console.log('🔍 Dashboard - Filtro aplicado:', dateRange ? 'SIM' : 'NÃO (Período Total)');
 
       const totalLeads = leadsData?.length || 0;
 
@@ -198,6 +197,7 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       let previousPeriodQuery = supabase
         .from('leads')
         .select('id')
+        .eq('company_id', companyId)
         .limit(10000);
 
       // Aplicar filtro de data do período anterior apenas se houver dateRange
