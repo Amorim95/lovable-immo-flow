@@ -91,16 +91,7 @@ const Dashboards = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Total de Leads sempre fica primeiro */}
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <LayoutList className="w-5 h-5 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-600">Total de Leads</span>
-                  </div>
-                  <div className="text-2xl font-bold text-blue-900">{metrics.totalLeads}</div>
-                </div>
-
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Etapas dinâmicas baseadas na configuração da empresa */}
                 {stages.slice(0, 3).map(stage => {
                   const { icon: Icon, color } = getStageIcon(stage.nome);
