@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Lock, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Lock, CheckCircle2, Loader2 } from 'lucide-react';
 
 const ResetPassword = () => {
-  const { updatePassword } = useAuth();
+  const { updatePassword, session } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -18,6 +18,8 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasValidSession, setHasValidSession] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [passwordStrength, setPasswordStrength] = useState({
     hasMinLength: false,
     hasLetter: false,
@@ -32,6 +34,32 @@ const ResetPassword = () => {
       hasNumber: /[0-9]/.test(password)
     });
   }, [formData.password]);
+
+  useEffect(() => {
+    // Verificar se há uma sessão válida de recuperação de senha
+    const checkSession = async () => {
+      if (!session) {
+        // Aguardar 1 segundo para o session ser estabelecido
+        setTimeout(() => {
+          if (!session) {
+            toast({
+              title: "Link inválido ou expirado",
+              description: "Por favor, solicite um novo link de recuperação de senha.",
+              variant: "destructive"
+            });
+            setTimeout(() => {
+              navigate('/login');
+            }, 2000);
+          }
+        }, 1000);
+      } else {
+        setHasValidSession(true);
+        setCheckingSession(false);
+      }
+    };
+
+    checkSession();
+  }, [session, navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +115,23 @@ const ResetPassword = () => {
 
     setIsLoading(false);
   };
+
+  // Se ainda está verificando a sessão
+  if (checkingSession && !hasValidSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-400 mx-auto" />
+          <p className="text-white/70">Verificando link de recuperação...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se não tem sessão válida, não renderizar o formulário
+  if (!hasValidSession) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden">
