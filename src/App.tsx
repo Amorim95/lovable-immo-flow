@@ -52,6 +52,7 @@ import Login from "./pages/Login";
 import AdminLogin from "./components/AdminLogin";
 import NotFound from "./pages/NotFound";
 import ConfiguracaoEtapas from "./pages/ConfiguracaoEtapas";
+import ResetPassword from "./pages/ResetPassword";
 import { AccessControlCheck } from "@/components/AccessControlCheck";
 
 const queryClient = new QueryClient();
@@ -91,6 +92,7 @@ function AppContent() {
       <OnboardingSteps isOpen={showOnboarding} onComplete={completeOnboarding} />
       <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       
       {/* Área de gestão exclusiva (sem sidebar) */}
       <Route path="/admin" element={<ProtectedRoute><AdminConsole /></ProtectedRoute>} />

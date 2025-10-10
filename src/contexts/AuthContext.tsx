@@ -20,6 +20,8 @@ interface AuthContextType {
   loading: boolean;
   updateProfile: (data: Partial<AppUser>) => Promise<{ success: boolean; error?: string }>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+  resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
+  updatePassword: (newPassword: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -202,6 +204,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'Erro interno do servidor' };
+    }
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: 'Erro interno do servidor' };
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -210,7 +244,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout,
       loading,
       updateProfile,
-      changePassword
+      changePassword,
+      resetPassword,
+      updatePassword
     }}>
       {children}
     </AuthContext.Provider>

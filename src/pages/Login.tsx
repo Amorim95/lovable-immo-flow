@@ -8,9 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const Login = () => {
-  const { login, user, loading } = useAuth();
+  const { login, user, loading, resetPassword } = useAuth();
   const { settings } = useCompany();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -19,6 +26,9 @@ const Login = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [isSendingReset, setIsSendingReset] = useState(false);
 
   // Redirecionar se já estiver logado
   if (user && !loading) {
@@ -58,10 +68,41 @@ const Login = () => {
   };
 
   const handleForgotPassword = () => {
-    toast({
-      title: "Link enviado",
-      description: "Se o email existir, você receberá um link para redefinir a senha.",
-    });
+    setShowForgotPasswordDialog(true);
+  };
+
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!resetEmail || !resetEmail.includes('@')) {
+      toast({
+        title: "Email inválido",
+        description: "Por favor, insira um email válido.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSendingReset(true);
+
+    const result = await resetPassword(resetEmail);
+
+    if (result.success) {
+      toast({
+        title: "Email enviado!",
+        description: "Se o email existir, você receberá um link para redefinir a senha.",
+      });
+      setShowForgotPasswordDialog(false);
+      setResetEmail('');
+    } else {
+      toast({
+        title: "Erro ao enviar email",
+        description: result.error || "Tente novamente mais tarde.",
+        variant: "destructive"
+      });
+    }
+
+    setIsSendingReset(false);
   };
 
   if (loading) {
@@ -156,6 +197,42 @@ const Login = () => {
           </form>
         </div>
       </div>
+
+      {/* Dialog de recuperação de senha */}
+      <Dialog open={showForgotPasswordDialog} onOpenChange={setShowForgotPasswordDialog}>
+        <DialogContent className="sm:max-w-md bg-slate-800 border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Recuperar Senha</DialogTitle>
+            <DialogDescription className="text-white/70">
+              Digite seu email cadastrado para receber o link de recuperação.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="reset-email" className="text-white/80">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 h-4 w-4" />
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-white/40"
+                  required
+                />
+              </div>
+            </div>
+            <Button 
+              type="submit" 
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+              disabled={isSendingReset}
+            >
+              {isSendingReset ? 'Enviando...' : 'Enviar Link de Recuperação'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
