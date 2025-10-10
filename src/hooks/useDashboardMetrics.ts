@@ -60,16 +60,16 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       // Buscar company_id do usuário
       const { data: companyId } = await supabase.rpc('get_user_company_id');
 
-      if (!companyId) {
-        throw new Error('Empresa não encontrada');
-      }
-
       // 1. Total de Leads
       let leadsQuery = supabase
         .from('leads')
         .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
-        .eq('company_id', companyId)
         .limit(10000);
+
+      // Aplicar filtro de empresa apenas se não for super-admin
+      if (companyId) {
+        leadsQuery = leadsQuery.eq('company_id', companyId);
+      }
 
       // Aplicar filtro de data apenas se houver dateRange
       if (dateRange?.from && dateRange?.to) {
@@ -98,10 +98,17 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       });
 
       // 2. Buscar dados dos usuários para análise por corretor
-      const { data: usersData, error: usersError } = await supabase
+      let usersQuery = supabase
         .from('users')
         .select('id, name, equipe_id')
         .eq('status', 'ativo');
+
+      // Aplicar filtro de empresa apenas se não for super-admin
+      if (companyId) {
+        usersQuery = usersQuery.eq('company_id', companyId);
+      }
+
+      const { data: usersData, error: usersError } = await usersQuery;
 
       if (usersError) throw usersError;
 
@@ -197,8 +204,12 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       let previousPeriodQuery = supabase
         .from('leads')
         .select('id')
-        .eq('company_id', companyId)
         .limit(10000);
+
+      // Aplicar filtro de empresa apenas se não for super-admin
+      if (companyId) {
+        previousPeriodQuery = previousPeriodQuery.eq('company_id', companyId);
+      }
 
       // Aplicar filtro de data do período anterior apenas se houver dateRange
       if (dateRange?.from && dateRange?.to) {
