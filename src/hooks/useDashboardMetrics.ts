@@ -64,14 +64,24 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       }
 
       // 1. Total de Leads
-      const { data: leadsData, error: leadsError } = await supabase
+      let leadsQuery = supabase
         .from('leads')
         .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
-        .gte('created_at', dateRange?.from?.toISOString() || '1900-01-01')
-        .lte('created_at', dateRange?.to?.toISOString() || '2100-01-01')
-        .limit(10000); // Aumentar limite para carregar todos os leads
+        .limit(10000);
+
+      // Aplicar filtro de data apenas se houver dateRange
+      if (dateRange?.from && dateRange?.to) {
+        leadsQuery = leadsQuery
+          .gte('created_at', dateRange.from.toISOString())
+          .lte('created_at', dateRange.to.toISOString());
+      }
+
+      const { data: leadsData, error: leadsError } = await leadsQuery;
 
       if (leadsError) throw leadsError;
+
+      console.log('🔍 Dashboard - Leads carregados:', leadsData?.length || 0);
+      console.log('🔍 Dashboard - Filtro aplicado:', dateRange ? 'SIM' : 'NÃO (Período Total)');
 
       const totalLeads = leadsData?.length || 0;
 
@@ -185,12 +195,19 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       }
       
       // Buscar leads do período anterior
-      const { data: leadsPreviousPeriod } = await supabase
+      let previousPeriodQuery = supabase
         .from('leads')
         .select('id')
-        .gte('created_at', startDatePreviousPeriod.toISOString())
-        .lte('created_at', endDatePreviousPeriod.toISOString())
-        .limit(10000); // Aumentar limite para carregar todos os leads
+        .limit(10000);
+
+      // Aplicar filtro de data do período anterior apenas se houver dateRange
+      if (dateRange?.from && dateRange?.to) {
+        previousPeriodQuery = previousPeriodQuery
+          .gte('created_at', startDatePreviousPeriod.toISOString())
+          .lte('created_at', endDatePreviousPeriod.toISOString());
+      }
+
+      const { data: leadsPreviousPeriod } = await previousPeriodQuery;
       
       const leadsPeriodoAnterior = leadsPreviousPeriod?.length || 0;
       const crescimento = leadsPeriodoAnterior > 0 
