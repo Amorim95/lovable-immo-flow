@@ -70,7 +70,8 @@ export function useLeadsOptimized() {
             )
           )
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(10000); // Aumentar limite para carregar todos os leads
 
       const { data, error } = await query;
 

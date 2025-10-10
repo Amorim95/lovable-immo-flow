@@ -66,7 +66,8 @@ export function useLeadsAccess() {
             )
           )
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(10000);
 
       // Filtrar por company_id se não for super admin
       if (!user.is_super_admin && user.company_id) {
