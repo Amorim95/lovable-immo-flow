@@ -55,38 +55,57 @@ export function usePerformanceGeral(dateRange?: DateRange) {
       setLoading(true);
       setError(null);
 
-      // 1. Buscar todos os leads no período com suas etiquetas
-      let leadsQuery = supabase
-        .from('leads')
-        .select(`
-          id, 
-          etapa, 
-          stage_name, 
-          created_at, 
-          user_id, 
-          primeiro_contato_whatsapp,
-          lead_tag_relations (
-            tag_id,
-            lead_tags (
-              id,
-              nome,
-              cor
-            )
-          )
-        `);
+      // 1. Buscar todos os leads no período com suas etiquetas usando paginação automática
+      let allLeads: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      if (dateRange?.from && dateRange?.to) {
-        leadsQuery = leadsQuery
-          .gte('created_at', dateRange.from.toISOString())
-          .lte('created_at', dateRange.to.toISOString());
+      while (hasMore) {
+        let leadsQuery = supabase
+          .from('leads')
+          .select(`
+            id, 
+            etapa, 
+            stage_name, 
+            created_at, 
+            user_id, 
+            primeiro_contato_whatsapp,
+            lead_tag_relations (
+              tag_id,
+              lead_tags (
+                id,
+                nome,
+                cor
+              )
+            )
+          `)
+          .order('created_at', { ascending: false })
+          .range(from, from + pageSize - 1);
+
+        if (dateRange?.from && dateRange?.to) {
+          leadsQuery = leadsQuery
+            .gte('created_at', dateRange.from.toISOString())
+            .lte('created_at', dateRange.to.toISOString());
+        }
+
+        const { data, error: leadsError } = await leadsQuery;
+
+        if (leadsError) throw leadsError;
+
+        if (!data || data.length === 0) break;
+
+        allLeads = [...allLeads, ...data];
+
+        if (data.length < pageSize) {
+          hasMore = false;
+        } else {
+          from += pageSize;
+        }
       }
 
-      // Adicionar limite para carregar todos os leads
-      leadsQuery = leadsQuery.limit(10000);
-
-      const { data: leadsData, error: leadsError } = await leadsQuery;
-
-      if (leadsError) throw leadsError;
+      const leadsData = allLeads;
+      console.log(`Performance Geral: Total de leads carregados: ${leadsData.length}`);
 
       // 2. Calcular métricas gerais
       const leadsTotais = leadsData?.length || 0;
