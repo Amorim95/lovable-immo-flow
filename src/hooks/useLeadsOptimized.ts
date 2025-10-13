@@ -48,40 +48,60 @@ export function useLeadsOptimized() {
       setLoading(true);
       setError(null);
 
-      let query = supabase
-        .from('leads')
-        .select(`
-          id,
-          nome,
-          telefone,
-          dados_adicionais,
-          etapa,
-          stage_name,
-          created_at,
-          updated_at,
-          user_id,
-          atividades,
-          user:users(name, equipe_id),
-          lead_tag_relations(
-            lead_tags(
-              id,
-              nome,
-              cor
+      // Implementar paginação automática para carregar TODOS os leads
+      let allLeads: LeadsData[] = [];
+      let from = 0;
+      const pageSize = 1000; // Limite máximo do Supabase por query
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('leads')
+          .select(`
+            id,
+            nome,
+            telefone,
+            dados_adicionais,
+            etapa,
+            stage_name,
+            created_at,
+            updated_at,
+            user_id,
+            atividades,
+            user:users(name, equipe_id),
+            lead_tag_relations(
+              lead_tags(
+                id,
+                nome,
+                cor
+              )
             )
-          )
-        `)
-        .order('created_at', { ascending: false })
-        .limit(10000); // Aumentar limite para carregar todos os leads
+          `)
+          .order('created_at', { ascending: false })
+          .range(from, from + pageSize - 1);
 
-      const { data, error } = await query;
+        if (error) {
+          console.error('Error loading leads:', error);
+          setError('Erro ao carregar leads');
+          return;
+        }
 
-      if (error) {
-        console.error('Error loading leads:', error);
-        setError('Erro ao carregar leads');
-        return;
+        if (!data || data.length === 0) {
+          break;
+        }
+
+        allLeads = [...allLeads, ...data];
+
+        // Se retornou menos que o pageSize, chegamos ao fim
+        if (data.length < pageSize) {
+          hasMore = false;
+        } else {
+          from += pageSize;
+        }
       }
 
-      setLeads(data || []);
+      console.log(`Total de leads carregados: ${allLeads.length}`);
+      setLeads(allLeads);
     } catch (error) {
       console.error('Error loading leads:', error);
       setError('Erro interno ao carregar leads');
