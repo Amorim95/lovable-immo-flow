@@ -20,6 +20,7 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasValidSession, setHasValidSession] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
   const [passwordStrength, setPasswordStrength] = useState({
     hasMinLength: false,
     hasLetter: false,
@@ -36,22 +37,26 @@ const ResetPassword = () => {
   }, [formData.password]);
 
   useEffect(() => {
-    // Verificar se há uma sessão válida de recuperação de senha
+    // Verificar se há uma sessão válida de recuperação de senha com múltiplas tentativas
     const checkSession = async () => {
       if (!session) {
-        // Aguardar 1 segundo para o session ser estabelecido
-        setTimeout(() => {
-          if (!session) {
-            toast({
-              title: "Link inválido ou expirado",
-              description: "Por favor, solicite um novo link de recuperação de senha.",
-              variant: "destructive"
-            });
-            setTimeout(() => {
-              navigate('/login');
-            }, 2000);
-          }
-        }, 1000);
+        // Tentar até 5 vezes com intervalo de 1 segundo entre cada tentativa
+        if (retryCount < 5) {
+          const timeoutId = setTimeout(() => {
+            setRetryCount(prev => prev + 1);
+          }, 1000);
+          return () => clearTimeout(timeoutId);
+        } else {
+          // Após 5 tentativas (5 segundos), mostrar erro
+          toast({
+            title: "Link inválido ou expirado",
+            description: "O link de recuperação expirou ou é inválido. Links são válidos por 60 minutos. Por favor, solicite um novo link.",
+            variant: "destructive"
+          });
+          setTimeout(() => {
+            navigate('/login');
+          }, 3000);
+        }
       } else {
         setHasValidSession(true);
         setCheckingSession(false);
@@ -59,7 +64,7 @@ const ResetPassword = () => {
     };
 
     checkSession();
-  }, [session, navigate, toast]);
+  }, [session, navigate, toast, retryCount]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,6 +128,8 @@ const ResetPassword = () => {
         <div className="text-center space-y-4">
           <Loader2 className="h-12 w-12 animate-spin text-blue-400 mx-auto" />
           <p className="text-white/70">Verificando link de recuperação...</p>
+          <p className="text-white/50 text-sm">Tentativa {retryCount + 1} de 5</p>
+          <p className="text-white/40 text-xs">Links de recuperação são válidos por 60 minutos</p>
         </div>
       </div>
     );
