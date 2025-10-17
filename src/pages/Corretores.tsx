@@ -14,7 +14,8 @@ import {
   User,
   Phone,
   Edit,
-  Users
+  Users,
+  Key
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -227,6 +228,32 @@ const Corretores = () => {
     setShowEditModal(true);
   };
 
+  const handleResetPassword = async (corretor: Corretor) => {
+    try {
+      const newPassword = 'Click@2024';
+      
+      const { data, error } = await supabase.functions.invoke('reset-user-password', {
+        body: {
+          email: corretor.email,
+          newPassword: newPassword
+        }
+      });
+
+      if (error) {
+        console.error('Erro ao resetar senha:', error);
+        toast.error('Erro ao resetar senha do usuário');
+        return;
+      }
+
+      toast.success(`Senha resetada com sucesso! Nova senha: ${newPassword}`, {
+        duration: 10000
+      });
+    } catch (error) {
+      console.error('Erro ao resetar senha:', error);
+      toast.error('Erro ao resetar senha');
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -437,26 +464,40 @@ const Corretores = () => {
                     </div>
                   )}
 
-                  <div className="flex gap-2 pt-3">
-                    <AccessControlWrapper allowCorretor={false}>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="flex-1"
-                        onClick={() => handleEditClick(corretor)}
-                      >
-                        <Edit className="w-3 h-3 mr-1" />
-                        Editar
-                      </Button>
-                    </AccessControlWrapper>
+                  <div className="flex flex-col gap-2 pt-3">
+                    <div className="flex gap-2">
+                      <AccessControlWrapper allowCorretor={false}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => handleEditClick(corretor)}
+                        >
+                          <Edit className="w-3 h-3 mr-1" />
+                          Editar
+                        </Button>
+                      </AccessControlWrapper>
+                      
+                      <AccessControlWrapper requireAdmin>
+                        <Button 
+                          variant={corretor.status === 'ativo' ? 'destructive' : 'default'}
+                          size="sm"
+                          onClick={() => toggleStatus(corretor.id)}
+                        >
+                          {corretor.status === 'ativo' ? 'Inativar' : 'Ativar'}
+                        </Button>
+                      </AccessControlWrapper>
+                    </div>
                     
                     <AccessControlWrapper requireAdmin>
                       <Button 
-                        variant={corretor.status === 'ativo' ? 'destructive' : 'default'}
+                        variant="secondary" 
                         size="sm"
-                        onClick={() => toggleStatus(corretor.id)}
+                        className="w-full"
+                        onClick={() => handleResetPassword(corretor)}
                       >
-                        {corretor.status === 'ativo' ? 'Inativar' : 'Ativar'}
+                        <Key className="w-3 h-3 mr-1" />
+                        Resetar Senha
                       </Button>
                     </AccessControlWrapper>
                   </div>
