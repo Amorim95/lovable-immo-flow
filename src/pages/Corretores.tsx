@@ -14,8 +14,7 @@ import {
   User,
   Phone,
   Edit,
-  Users,
-  Key
+  Users
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -228,31 +227,6 @@ const Corretores = () => {
     setShowEditModal(true);
   };
 
-  const handleResetPassword = async (corretor: Corretor) => {
-    try {
-      const newPassword = 'Click@2024';
-      
-      const { data, error } = await supabase.functions.invoke('reset-user-password', {
-        body: {
-          email: corretor.email,
-          newPassword: newPassword
-        }
-      });
-
-      if (error) {
-        console.error('Erro ao resetar senha:', error);
-        toast.error('Erro ao resetar senha do usuário');
-        return;
-      }
-
-      toast.success(`Senha resetada com sucesso! Nova senha: ${newPassword}`, {
-        duration: 10000
-      });
-    } catch (error) {
-      console.error('Erro ao resetar senha:', error);
-      toast.error('Erro ao resetar senha');
-    }
-  };
 
   if (loading) {
     return (
@@ -488,18 +462,6 @@ const Corretores = () => {
                         </Button>
                       </AccessControlWrapper>
                     </div>
-                    
-                    <AccessControlWrapper requireAdmin>
-                      <Button 
-                        variant="secondary" 
-                        size="sm"
-                        className="w-full"
-                        onClick={() => handleResetPassword(corretor)}
-                      >
-                        <Key className="w-3 h-3 mr-1" />
-                        Resetar Senha
-                      </Button>
-                    </AccessControlWrapper>
                   </div>
                 </div>
               </CardContent>

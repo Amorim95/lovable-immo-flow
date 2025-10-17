@@ -6,7 +6,7 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Users, Mail, Phone, Settings, Filter, Key } from "lucide-react";
+import { Plus, Search, Users, Mail, Phone, Settings, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { UserRoleBadge } from "@/components/UserRoleBadge";
 import { NewCorretorModal } from "@/components/NewCorretorModal";
@@ -107,32 +107,6 @@ export default function MobileCorretores() {
     setIsEditModalOpen(true);
   };
 
-  const handleResetPassword = async (e: React.MouseEvent, corretor: Corretor) => {
-    e.stopPropagation();
-    try {
-      const newPassword = 'Click@2024';
-      
-      const { data, error } = await supabase.functions.invoke('reset-user-password', {
-        body: {
-          email: corretor.email,
-          newPassword: newPassword
-        }
-      });
-
-      if (error) {
-        console.error('Erro ao resetar senha:', error);
-        toast.error('Erro ao resetar senha do usuário');
-        return;
-      }
-
-      toast.success(`Senha resetada com sucesso! Nova senha: ${newPassword}`, {
-        duration: 10000
-      });
-    } catch (error) {
-      console.error('Erro ao resetar senha:', error);
-      toast.error('Erro ao resetar senha');
-    }
-  };
 
   const handleUpdateCorretor = (corretorId: string, updates: any) => {
     refetchUsers();
@@ -319,18 +293,6 @@ export default function MobileCorretores() {
                     </div>
                   )}
                 </div>
-                
-                {isAdmin && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={(e) => handleResetPassword(e, corretor)}
-                  >
-                    <Key className="w-3 h-3 mr-1" />
-                    Resetar Senha
-                  </Button>
-                )}
               </div>
               
               {/* Indicador visual de que é clicável */}
