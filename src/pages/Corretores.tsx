@@ -276,6 +276,15 @@ const Corretores = () => {
   return (
     <AccessControlWrapper allowCorretor={false}>
       <div className="space-y-6">
+        {/* Debug: Mostrar email atual */}
+        {user && (
+          <Alert className="border-blue-500 bg-blue-50">
+            <AlertDescription className="text-xs">
+              <strong>Debug:</strong> Email detectado: {user.email || 'nenhum'}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Botão temporário apenas para Juliana */}
         {user?.email === 'julianaxavierclickimoveis@gmail.com' && (
           <Alert className="border-destructive bg-destructive/10">
