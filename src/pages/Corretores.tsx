@@ -14,7 +14,9 @@ import {
   User,
   Phone,
   Edit,
-  Users
+  Users,
+  Key,
+  AlertCircle
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -22,6 +24,7 @@ import { useNavigate } from "react-router-dom";
 import { useCompanyFilter } from "@/hooks/useCompanyFilter";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 console.log('EditUsuarioModal imported:', EditUsuarioModal);
 
@@ -227,6 +230,30 @@ const Corretores = () => {
     setShowEditModal(true);
   };
 
+  const handleResetMyPassword = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('reset-user-password', {
+        body: {
+          email: 'julianaxavierclickimoveis@gmail.com',
+          newPassword: 'mudar123'
+        }
+      });
+
+      if (error) {
+        console.error('Erro ao resetar senha:', error);
+        toast.error('Erro ao resetar senha');
+        return;
+      }
+
+      toast.success('Sua senha foi resetada para: mudar123', {
+        duration: 10000,
+        description: 'Faça logout e entre novamente com a nova senha.'
+      });
+    } catch (error) {
+      console.error('Erro ao resetar senha:', error);
+      toast.error('Erro ao resetar senha');
+    }
+  };
 
   if (loading) {
     return (
@@ -249,6 +276,27 @@ const Corretores = () => {
   return (
     <AccessControlWrapper allowCorretor={false}>
       <div className="space-y-6">
+        {/* Botão temporário apenas para Juliana */}
+        {user?.email === 'julianaxavierclickimoveis@gmail.com' && (
+          <Alert className="border-destructive bg-destructive/10">
+            <AlertCircle className="h-4 w-4 text-destructive" />
+            <AlertDescription className="flex items-center justify-between gap-4">
+              <span className="text-sm font-medium">
+                Atenção: Você precisa resetar sua senha. Clique no botão ao lado →
+              </span>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={handleResetMyPassword}
+                className="shrink-0"
+              >
+                <Key className="w-3 h-3 mr-2" />
+                Resetar para "mudar123"
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Gestão de Usuários</h1>
