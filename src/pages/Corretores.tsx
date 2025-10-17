@@ -276,35 +276,24 @@ const Corretores = () => {
   return (
     <AccessControlWrapper allowCorretor={false}>
       <div className="space-y-6">
-        {/* Debug: Mostrar email atual */}
-        {user && (
-          <Alert className="border-blue-500 bg-blue-50">
-            <AlertDescription className="text-xs">
-              <strong>Debug:</strong> Email detectado: {user.email || 'nenhum'}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Botão temporário apenas para Juliana */}
-        {user?.email === 'julianaxavierclickimoveis@gmail.com' && (
-          <Alert className="border-destructive bg-destructive/10">
-            <AlertCircle className="h-4 w-4 text-destructive" />
-            <AlertDescription className="flex items-center justify-between gap-4">
-              <span className="text-sm font-medium">
-                Atenção: Você precisa resetar sua senha. Clique no botão ao lado →
-              </span>
-              <Button 
-                variant="destructive" 
-                size="sm"
-                onClick={handleResetMyPassword}
-                className="shrink-0"
-              >
-                <Key className="w-3 h-3 mr-2" />
-                Resetar para "mudar123"
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
+        {/* Botão para resetar senha da Juliana - visível para todos */}
+        <Alert className="border-destructive bg-destructive/10">
+          <AlertCircle className="h-4 w-4 text-destructive" />
+          <AlertDescription className="flex items-center justify-between gap-4">
+            <span className="text-sm font-medium">
+              Resetar senha da Juliana (julianaxavierclickimoveis@gmail.com)
+            </span>
+            <Button 
+              variant="destructive" 
+              size="sm"
+              onClick={handleResetMyPassword}
+              className="shrink-0"
+            >
+              <Key className="w-3 h-3 mr-2" />
+              Resetar para "mudar123"
+            </Button>
+          </AlertDescription>
+        </Alert>
 
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
