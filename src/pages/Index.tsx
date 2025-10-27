@@ -8,6 +8,7 @@ import { LeadModal } from "@/components/LeadModal";
 import { NewLeadModal } from "@/components/NewLeadModal";
 import { TeamUserFilters } from "@/components/TeamUserFilters";
 import { TagFilter } from "@/components/TagFilter";
+import { StageFilter } from "@/components/StageFilter";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -39,6 +40,7 @@ const Index = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [selectedStageKey, setSelectedStageKey] = useState<string | null>(null);
 
   // Permitir criação de leads para todos os usuários autenticados
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor || isDono);
@@ -178,7 +180,13 @@ const Index = () => {
       }
     }
 
-    return matchesSearch && matchesDate && matchesUser && matchesTeam && matchesTags;
+    // Filtro por etapa (apenas no modo lista)
+    let matchesStage = true;
+    if (selectedStageKey && viewMode === 'list') {
+      matchesStage = lead.etapa === selectedStageKey;
+    }
+
+    return matchesSearch && matchesDate && matchesUser && matchesTeam && matchesTags && matchesStage;
   });
 
   if (loading || roleLoading) {
@@ -293,6 +301,14 @@ const Index = () => {
               onTagChange={setSelectedTagIds}
               className="w-64"
             />
+            {/* Filtro de Etapas - Apenas no modo lista */}
+            {viewMode === 'list' && (
+              <StageFilter
+                selectedStageKey={selectedStageKey}
+                onStageChange={setSelectedStageKey}
+                className="w-64"
+              />
+            )}
           </div>
         </div>
       </div>
