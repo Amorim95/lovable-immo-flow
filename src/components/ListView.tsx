@@ -15,7 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TagSelector } from "@/components/TagSelector";
 import { LeadTransferModal } from "@/components/LeadTransferModal";
 import { useUserRole } from "@/hooks/useUserRole";
-import { Phone, ArrowRightLeft } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Phone, ArrowRightLeft, Users, X } from "lucide-react";
 
 interface ListViewProps {
   leads: (Lead & { userId?: string })[];
@@ -50,12 +51,13 @@ const stageColors = {
 
 export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate }: ListViewProps) {
   const { isAdmin, isGestor } = useUserRole();
+  const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
   const [transferModalData, setTransferModalData] = useState<{
     isOpen: boolean;
-    leadId: string;
-    leadName: string;
-    currentOwnerId: string;
-    currentOwnerName: string;
+    leadIds: string[];
+    leadNames: string[];
+    currentOwnerIds: string[];
+    currentOwnerNames: string[];
   } | null>(null);
   
   const canTransfer = isAdmin || isGestor;
@@ -144,47 +146,101 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
     if (canTransfer) {
       setTransferModalData({
         isOpen: true,
-        leadId: lead.id,
-        leadName: lead.nome,
-        currentOwnerId: lead.userId || lead.id,
-        currentOwnerName: lead.corretor
+        leadIds: [lead.id],
+        leadNames: [lead.nome],
+        currentOwnerIds: [lead.userId || lead.id],
+        currentOwnerNames: [lead.corretor]
       });
     }
   };
 
   const handleTransferComplete = (newUserId?: string, newUserName?: string) => {
     if (transferModalData && newUserId && newUserName && onOptimisticUpdate) {
-      onOptimisticUpdate(transferModalData.leadId, { 
-        userId: newUserId, 
-        corretor: newUserName 
+      // Atualizar todos os leads transferidos
+      transferModalData.leadIds.forEach(leadId => {
+        onOptimisticUpdate(leadId, { 
+          userId: newUserId, 
+          corretor: newUserName 
+        });
       });
     }
     setTransferModalData(null);
+    setSelectedLeadIds([]); // Limpar seleção após transferência
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedLeadIds(leads.map(lead => lead.id));
+    } else {
+      setSelectedLeadIds([]);
+    }
+  };
+
+  const handleSelectLead = (leadId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedLeadIds(prev => [...prev, leadId]);
+    } else {
+      setSelectedLeadIds(prev => prev.filter(id => id !== leadId));
+    }
+  };
+
+  const handleBulkTransfer = () => {
+    const selectedLeads = leads.filter(lead => selectedLeadIds.includes(lead.id));
+    setTransferModalData({
+      isOpen: true,
+      leadIds: selectedLeads.map(lead => lead.id),
+      leadNames: selectedLeads.map(lead => lead.nome),
+      currentOwnerIds: selectedLeads.map(lead => lead.userId || lead.id),
+      currentOwnerNames: selectedLeads.map(lead => lead.corretor)
+    });
+  };
+
+  const isAllSelected = leads.length > 0 && selectedLeadIds.length === leads.length;
+
   return (
-    <div className="bg-white rounded-lg border shadow-sm">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>Telefone</TableHead>
-            <TableHead>Dados Adicionais</TableHead>
-            <TableHead>Etapa</TableHead>
-            <TableHead>Etiquetas</TableHead>
-            <TableHead>Corretor</TableHead>
-            <TableHead>Data</TableHead>
-            <TableHead>Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {leads.map((lead) => (
-            <TableRow
-              key={lead.id}
-              className="cursor-pointer hover:bg-gray-50"
-              onClick={() => onLeadClick(lead)}
-            >
-              <TableCell className="font-medium">{lead.nome}</TableCell>
+    <>
+      <div className="bg-white rounded-lg border shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {canTransfer && (
+                <TableHead className="w-12">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Selecionar todos"
+                  />
+                </TableHead>
+              )}
+              <TableHead>Nome</TableHead>
+              <TableHead>Telefone</TableHead>
+              <TableHead>Dados Adicionais</TableHead>
+              <TableHead>Etapa</TableHead>
+              <TableHead>Etiquetas</TableHead>
+              <TableHead>Corretor</TableHead>
+              <TableHead>Data</TableHead>
+              <TableHead>Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {leads.map((lead) => (
+              <TableRow
+                key={lead.id}
+                className={`cursor-pointer hover:bg-gray-50 transition-colors ${
+                  selectedLeadIds.includes(lead.id) ? 'bg-primary/5 hover:bg-primary/10' : ''
+                }`}
+                onClick={() => onLeadClick(lead)}
+              >
+                {canTransfer && (
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selectedLeadIds.includes(lead.id)}
+                      onCheckedChange={(checked) => handleSelectLead(lead.id, checked as boolean)}
+                      aria-label={`Selecionar ${lead.nome}`}
+                    />
+                  </TableCell>
+                )}
+                <TableCell className="font-medium">{lead.nome}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   <span>{lead.telefone}</span>
@@ -239,18 +295,55 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
         </TableBody>
       </Table>
       
-      {/* Modal de Transferência */}
-      {transferModalData && (
-        <LeadTransferModal
-          isOpen={transferModalData.isOpen}
-          onClose={() => setTransferModalData(null)}
-          leadId={transferModalData.leadId}
-          leadName={transferModalData.leadName}
-          currentOwnerId={transferModalData.currentOwnerId}
-          currentOwnerName={transferModalData.currentOwnerName}
-          onTransferComplete={handleTransferComplete}
-        />
+        {/* Modal de Transferência */}
+        {transferModalData && (
+          <LeadTransferModal
+            isOpen={transferModalData.isOpen}
+            onClose={() => {
+              setTransferModalData(null);
+              setSelectedLeadIds([]);
+            }}
+            leadIds={transferModalData.leadIds}
+            leadNames={transferModalData.leadNames}
+            currentOwnerIds={transferModalData.currentOwnerIds}
+            currentOwnerNames={transferModalData.currentOwnerNames}
+            onTransferComplete={handleTransferComplete}
+          />
+        )}
+      </div>
+
+      {/* Barra de Ações Flutuante */}
+      {canTransfer && selectedLeadIds.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-primary text-primary-foreground p-4 shadow-lg z-50 animate-in slide-in-from-bottom duration-300">
+          <div className="container mx-auto flex items-center justify-between max-w-7xl">
+            <div className="flex items-center gap-4">
+              <Users className="w-5 h-5" />
+              <span className="font-semibold">
+                {selectedLeadIds.length} lead{selectedLeadIds.length !== 1 ? 's' : ''} selecionado{selectedLeadIds.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="secondary" 
+                size="sm"
+                onClick={() => setSelectedLeadIds([])}
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancelar
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={handleBulkTransfer}
+                className="bg-white text-primary hover:bg-white/90"
+              >
+                <ArrowRightLeft className="w-4 h-4 mr-2" />
+                Transferir Lead{selectedLeadIds.length !== 1 ? 's' : ''}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
-    </div>
+    </>
   );
 }

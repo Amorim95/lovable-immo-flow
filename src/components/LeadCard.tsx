@@ -226,10 +226,10 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
       <LeadTransferModal
         isOpen={isTransferModalOpen}
         onClose={() => setIsTransferModalOpen(false)}
-        leadId={lead.id}
-        leadName={lead.nome}
-        currentOwnerId={userId || lead.id}
-        currentOwnerName={lead.corretor}
+        leadIds={[lead.id]}
+        leadNames={[lead.nome]}
+        currentOwnerIds={[userId || lead.id]}
+        currentOwnerNames={[lead.corretor]}
         onTransferComplete={handleTransferComplete}
       />
     </Card>

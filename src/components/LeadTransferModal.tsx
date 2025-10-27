@@ -20,20 +20,20 @@ interface User {
 interface LeadTransferModalProps {
   isOpen: boolean;
   onClose: () => void;
-  leadId: string;
-  leadName: string;
-  currentOwnerId: string;
-  currentOwnerName: string;
+  leadIds: string[];
+  leadNames: string[];
+  currentOwnerIds: string[];
+  currentOwnerNames: string[];
   onTransferComplete: (newUserId?: string, newUserName?: string) => void;
 }
 
 export function LeadTransferModal({
   isOpen,
   onClose,
-  leadId,
-  leadName,
-  currentOwnerId,
-  currentOwnerName,
+  leadIds,
+  leadNames,
+  currentOwnerIds,
+  currentOwnerNames,
   onTransferComplete
 }: LeadTransferModalProps) {
   const [users, setUsers] = useState<User[]>([]);
@@ -51,20 +51,20 @@ export function LeadTransferModal({
   }, [isOpen]);
 
   useEffect(() => {
-    // Filtrar usuários baseado no termo de busca
+    // Filtrar usuários baseado no termo de busca (excluir proprietários atuais)
     if (searchTerm.trim() === '') {
-      setFilteredUsers(users.filter(user => user.id !== currentOwnerId));
+      setFilteredUsers(users.filter(user => !currentOwnerIds.includes(user.id)));
     } else {
       setFilteredUsers(
         users.filter(user => 
-          user.id !== currentOwnerId && (
+          !currentOwnerIds.includes(user.id) && (
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase())
           )
         )
       );
     }
-  }, [searchTerm, users, currentOwnerId]);
+  }, [searchTerm, users, currentOwnerIds]);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -93,18 +93,50 @@ export function LeadTransferModal({
     if (!selectedUserId) return;
 
     setTransferring(true);
+    const totalLeads = leadIds.length;
+    let successCount = 0;
+    let failedLeads: string[] = [];
+
     try {
-      const { error } = await supabase
-        .from('leads')
-        .update({ user_id: selectedUserId })
-        .eq('id', leadId);
+      // Transferir todos os leads em paralelo
+      const transferPromises = leadIds.map(async (leadId, index) => {
+        try {
+          const { error } = await supabase
+            .from('leads')
+            .update({ user_id: selectedUserId })
+            .eq('id', leadId);
 
-      if (error) throw error;
-
-      toast({
-        title: 'Lead transferido',
-        description: `Lead "${leadName}" foi transferido com sucesso.`,
+          if (error) {
+            failedLeads.push(leadNames[index]);
+            throw error;
+          }
+          successCount++;
+        } catch (error) {
+          console.error(`Erro ao transferir lead ${leadNames[index]}:`, error);
+        }
       });
+
+      await Promise.all(transferPromises);
+
+      // Feedback baseado no resultado
+      if (successCount === totalLeads) {
+        toast({
+          title: 'Transferência concluída',
+          description: `${totalLeads} lead${totalLeads !== 1 ? 's' : ''} transferido${totalLeads !== 1 ? 's' : ''} com sucesso.`,
+        });
+      } else if (successCount > 0) {
+        toast({
+          title: 'Transferência parcial',
+          description: `${successCount} de ${totalLeads} leads transferidos. ${failedLeads.length} falharam: ${failedLeads.join(', ')}`,
+          variant: 'destructive'
+        });
+      } else {
+        toast({
+          title: 'Erro na transferência',
+          description: 'Não foi possível transferir nenhum lead.',
+          variant: 'destructive'
+        });
+      }
 
       // Encontrar o nome do novo usuário selecionado
       const newUser = users.find(u => u.id === selectedUserId);
@@ -114,10 +146,10 @@ export function LeadTransferModal({
         onTransferComplete(selectedUserId, newUser?.name || 'Novo Corretor');
       }, 500);
     } catch (error) {
-      console.error('Erro ao transferir lead:', error);
+      console.error('Erro geral ao transferir leads:', error);
       toast({
         title: 'Erro na transferência',
-        description: 'Não foi possível transferir o lead. Tente novamente.',
+        description: 'Ocorreu um erro inesperado. Tente novamente.',
         variant: 'destructive'
       });
     } finally {
@@ -154,11 +186,24 @@ export function LeadTransferModal({
         onMouseDown={(e) => e.stopPropagation()}
       >
         <DialogHeader>
-          <DialogTitle>Transferir Lead</DialogTitle>
-          <div className="text-sm text-muted-foreground">
-            Lead: <strong>{leadName}</strong>
-            <br />
-            Proprietário atual: <strong>{currentOwnerName}</strong>
+          <DialogTitle>
+            Transferir {leadIds.length} Lead{leadIds.length !== 1 ? 's' : ''}
+          </DialogTitle>
+          <div className="text-sm text-muted-foreground space-y-2">
+            {leadIds.length === 1 ? (
+              <>
+                <div>Lead: <strong>{leadNames[0]}</strong></div>
+                <div>Proprietário atual: <strong>{currentOwnerNames[0]}</strong></div>
+              </>
+            ) : (
+              <div className="max-h-24 overflow-y-auto space-y-1 border rounded-md p-2 bg-muted/30">
+                {leadNames.map((name, idx) => (
+                  <div key={idx} className="text-xs">
+                    • {name} <span className="text-muted-foreground">({currentOwnerNames[idx]})</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </DialogHeader>
 
@@ -268,7 +313,7 @@ export function LeadTransferModal({
                 Transferindo...
               </>
             ) : (
-              'Transferir Lead'
+              `Transferir ${leadIds.length} Lead${leadIds.length !== 1 ? 's' : ''}`
             )}
           </Button>
         </DialogFooter>
