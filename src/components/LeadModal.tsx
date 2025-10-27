@@ -30,6 +30,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { TagSelector } from "./TagSelector";
+import { useLeadStages } from "@/hooks/useLeadStages";
 
 interface LeadModalProps {
   lead: Lead | null;
@@ -41,6 +42,7 @@ interface LeadModalProps {
 export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { stages, loading: stagesLoading } = useLeadStages();
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Partial<Lead>>({});
   const [newActivity, setNewActivity] = useState("");
@@ -434,22 +436,25 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
               <div className="space-y-4">
                 <h4 className="font-medium text-gray-700">Etapa do Lead</h4>
                 <Select
-                  value={lead.etapa}
-                  onValueChange={(value) => onUpdate(lead.id, { etapa: value as Lead['etapa'] })}
+                  value={lead.stage_name || lead.etapa}
+                  onValueChange={(value) => onUpdate(lead.id, { stage_name: value })}
+                  disabled={stagesLoading}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue />
+                    <SelectValue placeholder={stagesLoading ? "Carregando etapas..." : "Selecione uma etapa"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="aguardando-atendimento">Aguardando Atendimento</SelectItem>
-                    <SelectItem value="tentativas-contato">Em Tentativas de Contato</SelectItem>
-                    <SelectItem value="atendeu">Atendeu</SelectItem>
-                    <SelectItem value="nome-sujo">Nome Sujo</SelectItem>
-                    <SelectItem value="nome-limpo">Nome Limpo</SelectItem>
-                    <SelectItem value="visita">Visita</SelectItem>
-                    <SelectItem value="vendas-fechadas">Vendas Fechadas</SelectItem>
-                    <SelectItem value="em-pausa">Em Pausa</SelectItem>
-                    <SelectItem value="descarte">Descarte</SelectItem>
+                    {stages.map((stage) => (
+                      <SelectItem key={stage.id} value={stage.nome}>
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: stage.cor }}
+                          />
+                          {stage.nome}
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
