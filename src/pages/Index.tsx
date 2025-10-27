@@ -184,7 +184,12 @@ const Index = () => {
     let matchesStage = true;
     if (selectedStageKey && viewMode === 'list') {
       const leadStageKey = lead.stage_name || lead.etapa;
-      matchesStage = leadStageKey === selectedStageKey;
+      
+      if (leadStageKey && selectedStageKey) {
+        matchesStage = leadStageKey === selectedStageKey;
+      } else {
+        matchesStage = false;
+      }
     }
 
     return matchesSearch && matchesDate && matchesUser && matchesTeam && matchesTags && matchesStage;

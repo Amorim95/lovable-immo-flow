@@ -55,8 +55,19 @@ export function StageFilter({ selectedStageKey, onStageChange, className }: Stag
     return (
       <div className={cn("w-full", className)}>
         <Button variant="outline" disabled className="w-full justify-start">
-          <Filter className="mr-2 h-4 w-4" />
+          <Filter className="mr-2 h-4 w-4 animate-spin" />
           Carregando etapas...
+        </Button>
+      </div>
+    );
+  }
+
+  if (!loading && availableStages.length === 0) {
+    return (
+      <div className={cn("w-full", className)}>
+        <Button variant="outline" disabled className="w-full justify-start">
+          <Filter className="mr-2 h-4 w-4" />
+          Nenhuma etapa disponível
         </Button>
       </div>
     );

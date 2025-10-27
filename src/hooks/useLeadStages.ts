@@ -21,9 +21,18 @@ export function useLeadStages() {
   const loadStages = async () => {
     try {
       setLoading(true);
+      const companyId = getCompanyId();
+      
+      if (!companyId) {
+        console.warn('Company ID não encontrado, usando etapas padrão');
+        setStages([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('lead_stages')
         .select('*')
+        .eq('company_id', companyId)
         .eq('ativo', true)
         .order('ordem');
 
@@ -32,6 +41,7 @@ export function useLeadStages() {
     } catch (error) {
       console.error('Erro ao carregar etapas:', error);
       toast.error('Erro ao carregar etapas dos leads');
+      setStages([]);
     } finally {
       setLoading(false);
     }
@@ -150,7 +160,7 @@ export function useLeadStages() {
 
   useEffect(() => {
     loadStages();
-  }, []);
+  }, [getCompanyId()]);
 
   return {
     stages,
