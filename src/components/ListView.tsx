@@ -168,14 +168,6 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
     setSelectedLeadIds([]); // Limpar seleção após transferência
   };
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedLeadIds(leads.map(lead => lead.id));
-    } else {
-      setSelectedLeadIds([]);
-    }
-  };
-
   const handleSelectLead = (leadId: string, checked: boolean) => {
     if (checked) {
       setSelectedLeadIds(prev => [...prev, leadId]);
@@ -195,8 +187,6 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
     });
   };
 
-  const isAllSelected = leads.length > 0 && selectedLeadIds.length === leads.length;
-
   return (
     <>
       <div className="bg-white rounded-lg border shadow-sm">
@@ -205,11 +195,6 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
             <TableRow>
               {canTransfer && (
                 <TableHead className="w-12">
-                  <Checkbox
-                    checked={isAllSelected}
-                    onCheckedChange={handleSelectAll}
-                    aria-label="Selecionar todos"
-                  />
                 </TableHead>
               )}
               <TableHead>Nome</TableHead>
