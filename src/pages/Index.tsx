@@ -183,7 +183,8 @@ const Index = () => {
     // Filtro por etapa (apenas no modo lista)
     let matchesStage = true;
     if (selectedStageKey && viewMode === 'list') {
-      matchesStage = lead.etapa === selectedStageKey;
+      const leadStageKey = lead.stage_name || lead.etapa;
+      matchesStage = leadStageKey === selectedStageKey;
     }
 
     return matchesSearch && matchesDate && matchesUser && matchesTeam && matchesTags && matchesStage;

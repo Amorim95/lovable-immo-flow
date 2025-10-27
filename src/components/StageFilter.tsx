@@ -31,7 +31,7 @@ export function StageFilter({ selectedStageKey, onStageChange, className }: Stag
   // Usar etapas customizadas se disponíveis, caso contrário usar as padrão
   const availableStages = stages.length > 0 
     ? stages.map(stage => ({
-        key: stage.legacy_key || stage.nome.toLowerCase().replace(/\s+/g, '-'),
+        key: stage.legacy_key || stage.nome,
         nome: stage.nome,
         cor: stage.cor
       }))
