@@ -5,7 +5,6 @@ import { FileDown, FileSpreadsheet } from "lucide-react";
 import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { DateFilter, DateFilterOption, getDateRangeFromFilter } from "@/components/DateFilter";
 import { UserFilter } from "@/components/UserFilter";
-import { TagFilter } from "@/components/TagFilter";
 import { MultiStageFilter } from "@/components/MultiStageFilter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRepiquesExport } from "@/hooks/useRepiquesExport";
@@ -31,7 +30,6 @@ export default function MobileRepiques() {
   const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedEquipeId, setSelectedEquipeId] = useState<string | null>(null);
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedStageNames, setSelectedStageNames] = useState<string[]>([]);
 
   // Buscar equipes
@@ -90,18 +88,9 @@ export default function MobileRepiques() {
         return false;
       }
       
-      // Filtro de tags
-      if (selectedTagIds.length > 0) {
-        const leadTagIds = lead.lead_tag_relations?.map(rel => rel.tag_id) || [];
-        const hasMatchingTag = selectedTagIds.some(tagId => leadTagIds.includes(tagId));
-        if (!hasMatchingTag) {
-          return false;
-        }
-      }
-      
       return true;
     });
-  }, [leads, dateFilter, customDateRange, selectedEquipeId, selectedUserId, selectedStageNames, selectedTagIds]);
+  }, [leads, dateFilter, customDateRange, selectedEquipeId, selectedUserId, selectedStageNames]);
 
   const handleExportExcel = async () => {
     if (filteredLeads.length === 0) {
@@ -123,7 +112,6 @@ export default function MobileRepiques() {
         selectedEquipeId,
         selectedUserId,
         selectedStageNames,
-        selectedTagIds
       },
       filename: `${filename}.xlsx`
     });
@@ -149,7 +137,6 @@ export default function MobileRepiques() {
         selectedEquipeId,
         selectedUserId,
         selectedStageNames,
-        selectedTagIds
       },
       filename: `${filename}.pdf`
     });
@@ -238,14 +225,6 @@ export default function MobileRepiques() {
                 <MultiStageFilter 
                   selectedStageNames={selectedStageNames}
                   onStageChange={setSelectedStageNames}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Etiquetas</label>
-                <TagFilter 
-                  selectedTagIds={selectedTagIds}
-                  onTagChange={setSelectedTagIds}
                 />
               </div>
             </CardContent>
