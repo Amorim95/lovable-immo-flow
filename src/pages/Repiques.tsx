@@ -161,12 +161,12 @@ export default function Repiques() {
               
               <div className="space-y-2">
                 <label className="text-sm font-medium">Equipe</label>
-                <Select value={selectedEquipeId || ""} onValueChange={(value) => setSelectedEquipeId(value || null)}>
+                <Select value={selectedEquipeId || "all"} onValueChange={(value) => setSelectedEquipeId(value === "all" ? null : value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Todas as equipes" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas as equipes</SelectItem>
+                    <SelectItem value="all">Todas as equipes</SelectItem>
                     {equipes.map((equipe) => (
                       <SelectItem key={equipe.id} value={equipe.id}>
                         {equipe.nome}
