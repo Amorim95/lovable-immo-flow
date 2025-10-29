@@ -5,13 +5,17 @@ import autoTable from 'jspdf-autotable';
 export interface LeadExport {
   nome: string;
   telefone: string;
+  created_at: string;
+  stage_name?: string;
 }
 
 export const exportToExcel = (leads: LeadExport[], filename: string) => {
-  // Preparar dados (apenas nome e telefone)
+  // Preparar dados com todos os campos
   const data = leads.map(lead => ({
     Nome: lead.nome,
-    Telefone: lead.telefone
+    Telefone: lead.telefone,
+    'Data de Criação': new Date(lead.created_at).toLocaleString('pt-BR'),
+    Etapa: lead.stage_name || 'Sem etapa'
   }));
   
   // Criar workbook
@@ -22,7 +26,9 @@ export const exportToExcel = (leads: LeadExport[], filename: string) => {
   // Ajustar largura das colunas
   ws['!cols'] = [
     { wch: 30 }, // Nome
-    { wch: 20 }  // Telefone
+    { wch: 20 }, // Telefone
+    { wch: 18 }, // Data de Criação
+    { wch: 20 }  // Etapa
   ];
   
   // Download
@@ -44,10 +50,15 @@ export const exportToPDF = (leads: LeadExport[], filename: string, companyName: 
   // Tabela
   autoTable(doc, {
     startY: 45,
-    head: [['Nome', 'Telefone']],
-    body: leads.map(lead => [lead.nome, lead.telefone]),
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [59, 130, 246] }, // Azul primário
+    head: [['Nome', 'Telefone', 'Data de Criação', 'Etapa']],
+    body: leads.map(lead => [
+      lead.nome, 
+      lead.telefone,
+      new Date(lead.created_at).toLocaleString('pt-BR'),
+      lead.stage_name || 'Sem etapa'
+    ]),
+    styles: { fontSize: 8 },
+    headStyles: { fillColor: [59, 130, 246] },
     margin: { top: 45 }
   });
   
