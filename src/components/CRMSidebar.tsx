@@ -25,7 +25,8 @@ import {
   Users,
   Settings,
   Building2,
-  Globe
+  Globe,
+  FileDown
 } from "lucide-react";
 
 const menuItems = [
@@ -55,6 +56,13 @@ const menuItems = [
     url: "/corretores", 
     icon: Users,
     description: "Gestão de usuários",
+    requireAdminOrGestor: true
+  },
+  { 
+    title: "Repiques", 
+    url: "/repiques", 
+    icon: FileDown,
+    description: "Exportação de leads",
     requireAdminOrGestor: true
   },
   { 

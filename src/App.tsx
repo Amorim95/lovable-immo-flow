@@ -53,6 +53,8 @@ import AdminLogin from "./components/AdminLogin";
 import NotFound from "./pages/NotFound";
 import ConfiguracaoEtapas from "./pages/ConfiguracaoEtapas";
 import ResetPassword from "./pages/ResetPassword";
+import Repiques from "./pages/Repiques";
+import MobileRepiques from "./pages/MobileRepiques";
 import { AccessControlCheck } from "@/components/AccessControlCheck";
 
 const queryClient = new QueryClient();
@@ -117,6 +119,7 @@ function AppContent() {
                 <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
                 <Route path="/corretores" element={<MobileCorretores />} />
                 <Route path="/equipes" element={<MobileEquipes />} />
+                <Route path="/repiques" element={<MobileRepiques />} />
                 <Route path="/imoveis" element={<AccessControlCheck feature="imoveis"><MobileImoveis /></AccessControlCheck>} />
                 <Route path="/meu-site" element={<AccessControlCheck feature="site"><MobileMeuSite /></AccessControlCheck>} />
                 <Route path="/configuracoes-site" element={<AccessControlCheck feature="site"><MobileConfiguracoesSite /></AccessControlCheck>} />
@@ -158,6 +161,7 @@ function AppContent() {
                       <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
                       <Route path="/corretores" element={<Corretores />} />
                       <Route path="/equipes" element={<EquipesCadastradas />} />
+                      <Route path="/repiques" element={<Repiques />} />
                        <Route path="/imoveis" element={<AccessControlCheck feature="imoveis"><Imoveis /></AccessControlCheck>} />
                        <Route path="/meu-site" element={<AccessControlCheck feature="site"><MeuSite /></AccessControlCheck>} />
                        <Route path="/configuracoes-site" element={<AccessControlCheck feature="site"><ConfiguracoesSite /></AccessControlCheck>} />
