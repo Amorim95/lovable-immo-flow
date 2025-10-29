@@ -229,6 +229,54 @@ export type Database = {
           },
         ]
       }
+      export_history: {
+        Row: {
+          company_id: string
+          created_at: string
+          export_type: string
+          filename: string
+          filters_applied: Json | null
+          id: string
+          total_leads: number
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          export_type: string
+          filename: string
+          filters_applied?: Json | null
+          id?: string
+          total_leads: number
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          export_type?: string
+          filename?: string
+          filters_applied?: Json | null
+          id?: string
+          total_leads?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "export_history_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "export_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       imoveis: {
         Row: {
           aceita_animais: boolean | null
@@ -878,14 +926,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_invite_users: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
-      can_view_all_leads: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      can_invite_users: { Args: { _user_id: string }; Returns: boolean }
+      can_view_all_leads: { Args: { _user_id: string }; Returns: boolean }
       check_duplicate_lead: {
         Args: { _telefone: string; _time_window_minutes?: number }
         Returns: boolean
@@ -904,50 +946,25 @@ export type Database = {
           message: string
         }[]
       }
-      crypt_password: {
-        Args: { password: string }
-        Returns: string
-      }
-      get_current_user_company_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_next_user_round_robin: {
-        Args: Record<PropertyKey, never> | { _company_id?: string }
-        Returns: string
-      }
-      get_user_company_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      is_admin: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
-      is_admin_or_dono: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
-      is_admin_or_owner: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      crypt_password: { Args: { password: string }; Returns: string }
+      get_current_user_company_id: { Args: never; Returns: string }
+      get_next_user_round_robin:
+        | { Args: { _company_id?: string }; Returns: string }
+        | { Args: never; Returns: string }
+      get_user_company_id: { Args: never; Returns: string }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_admin_or_dono: { Args: { _user_id: string }; Returns: boolean }
+      is_admin_or_owner: { Args: { _user_id: string }; Returns: boolean }
       is_imovel_publicly_accessible: {
         Args: { imovel_id_param: string }
         Returns: boolean
       }
-      is_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_super_admin: { Args: never; Returns: boolean }
       user_role_check: {
         Args: { _company_id: string; _user_id: string }
         Returns: string
       }
-      validate_email: {
-        Args: { email_input: string }
-        Returns: boolean
-      }
+      validate_email: { Args: { email_input: string }; Returns: boolean }
       verify_password: {
         Args: { hash: string; password: string }
         Returns: boolean

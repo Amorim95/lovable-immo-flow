@@ -10,6 +10,7 @@ import { MultiStageFilter } from "@/components/MultiStageFilter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRepiquesExport } from "@/hooks/useRepiquesExport";
 import { exportToExcel, exportToPDF } from "@/utils/exportHelpers";
+import { saveExportHistory } from "@/utils/saveExportHistory";
 import { useCompany } from "@/contexts/CompanyContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -109,7 +110,7 @@ export default function Repiques() {
     });
   }, [leads, dateFilter, customDateRange, selectedEquipeId, selectedUserId, selectedStageNames, selectedTagIds]);
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (filteredLeads.length === 0) {
       toast.error("Nenhum lead encontrado para exportar");
       return;
@@ -118,9 +119,24 @@ export default function Repiques() {
     const filename = `repiques_${new Date().toISOString().split('T')[0]}`;
     exportToExcel(filteredLeads, filename);
     toast.success(`${filteredLeads.length} leads exportados para Excel`);
+    
+    // Salvar histórico
+    await saveExportHistory({
+      exportType: 'excel',
+      totalLeads: filteredLeads.length,
+      filtersApplied: {
+        dateFilter,
+        customDateRange,
+        selectedEquipeId,
+        selectedUserId,
+        selectedStageNames,
+        selectedTagIds
+      },
+      filename: `${filename}.xlsx`
+    });
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (filteredLeads.length === 0) {
       toast.error("Nenhum lead encontrado para exportar");
       return;
@@ -129,6 +145,21 @@ export default function Repiques() {
     const filename = `repiques_${new Date().toISOString().split('T')[0]}`;
     exportToPDF(filteredLeads, filename, settings?.name || 'CRM');
     toast.success(`${filteredLeads.length} leads exportados para PDF`);
+    
+    // Salvar histórico
+    await saveExportHistory({
+      exportType: 'pdf',
+      totalLeads: filteredLeads.length,
+      filtersApplied: {
+        dateFilter,
+        customDateRange,
+        selectedEquipeId,
+        selectedUserId,
+        selectedStageNames,
+        selectedTagIds
+      },
+      filename: `${filename}.pdf`
+    });
   };
 
   const handleDateChange = (option: DateFilterOption, customRange?: { from: Date; to: Date }) => {
@@ -267,12 +298,14 @@ export default function Repiques() {
                   <TableRow>
                     <TableHead>Nome</TableHead>
                     <TableHead>Telefone</TableHead>
+                    <TableHead>Data de Criação</TableHead>
+                    <TableHead>Etapa</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredLeads.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={2} className="text-center text-muted-foreground">
+                      <TableCell colSpan={4} className="text-center text-muted-foreground">
                         Nenhum lead encontrado com os filtros selecionados
                       </TableCell>
                     </TableRow>
@@ -281,6 +314,8 @@ export default function Repiques() {
                       <TableRow key={lead.id}>
                         <TableCell>{lead.nome}</TableCell>
                         <TableCell>{lead.telefone}</TableCell>
+                        <TableCell>{new Date(lead.created_at).toLocaleString('pt-BR')}</TableCell>
+                        <TableCell>{lead.stage_name || 'Sem etapa'}</TableCell>
                       </TableRow>
                     ))
                   )}

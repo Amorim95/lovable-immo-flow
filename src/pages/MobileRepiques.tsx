@@ -10,6 +10,7 @@ import { MultiStageFilter } from "@/components/MultiStageFilter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRepiquesExport } from "@/hooks/useRepiquesExport";
 import { exportToExcel, exportToPDF } from "@/utils/exportHelpers";
+import { saveExportHistory } from "@/utils/saveExportHistory";
 import { useCompany } from "@/contexts/CompanyContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -102,7 +103,7 @@ export default function MobileRepiques() {
     });
   }, [leads, dateFilter, customDateRange, selectedEquipeId, selectedUserId, selectedStageNames, selectedTagIds]);
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (filteredLeads.length === 0) {
       toast.error("Nenhum lead encontrado para exportar");
       return;
@@ -111,9 +112,24 @@ export default function MobileRepiques() {
     const filename = `repiques_${new Date().toISOString().split('T')[0]}`;
     exportToExcel(filteredLeads, filename);
     toast.success(`${filteredLeads.length} leads exportados para Excel`);
+    
+    // Salvar histórico
+    await saveExportHistory({
+      exportType: 'excel',
+      totalLeads: filteredLeads.length,
+      filtersApplied: {
+        dateFilter,
+        customDateRange,
+        selectedEquipeId,
+        selectedUserId,
+        selectedStageNames,
+        selectedTagIds
+      },
+      filename: `${filename}.xlsx`
+    });
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (filteredLeads.length === 0) {
       toast.error("Nenhum lead encontrado para exportar");
       return;
@@ -122,6 +138,21 @@ export default function MobileRepiques() {
     const filename = `repiques_${new Date().toISOString().split('T')[0]}`;
     exportToPDF(filteredLeads, filename, settings?.name || 'CRM');
     toast.success(`${filteredLeads.length} leads exportados para PDF`);
+    
+    // Salvar histórico
+    await saveExportHistory({
+      exportType: 'pdf',
+      totalLeads: filteredLeads.length,
+      filtersApplied: {
+        dateFilter,
+        customDateRange,
+        selectedEquipeId,
+        selectedUserId,
+        selectedStageNames,
+        selectedTagIds
+      },
+      filename: `${filename}.pdf`
+    });
   };
 
   const handleDateChange = (option: DateFilterOption, customRange?: { from: Date; to: Date }) => {
@@ -259,9 +290,15 @@ export default function MobileRepiques() {
               ) : (
                 <div className="space-y-3">
                   {filteredLeads.slice(0, 50).map((lead) => (
-                    <div key={lead.id} className="p-3 border rounded-lg">
+                    <div key={lead.id} className="p-3 border rounded-lg space-y-1">
                       <p className="font-medium">{lead.nome}</p>
                       <p className="text-sm text-muted-foreground">{lead.telefone}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(lead.created_at).toLocaleString('pt-BR')}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {lead.stage_name || 'Sem etapa'}
+                      </p>
                     </div>
                   ))}
                   {filteredLeads.length > 50 && (
