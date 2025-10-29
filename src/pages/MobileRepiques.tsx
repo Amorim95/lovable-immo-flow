@@ -30,6 +30,7 @@ export default function MobileRepiques() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedEquipeId, setSelectedEquipeId] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
 
   // Buscar equipes
   const { data: equipes = [] } = useQuery({
@@ -42,6 +43,21 @@ export default function MobileRepiques() {
       
       if (error) throw error;
       return data as Equipe[];
+    }
+  });
+
+  // Buscar etapas
+  const { data: stages = [] } = useQuery({
+    queryKey: ['lead_stages'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lead_stages')
+        .select('id, nome')
+        .eq('ativo', true)
+        .order('ordem');
+      
+      if (error) throw error;
+      return data;
     }
   });
 
@@ -67,6 +83,11 @@ export default function MobileRepiques() {
         return false;
       }
       
+      // Filtro de etapa
+      if (selectedStageId && lead.stage_name !== selectedStageId) {
+        return false;
+      }
+      
       // Filtro de tags
       if (selectedTagIds.length > 0) {
         const leadTagIds = lead.lead_tag_relations?.map(rel => rel.tag_id) || [];
@@ -78,7 +99,7 @@ export default function MobileRepiques() {
       
       return true;
     });
-  }, [leads, dateFilter, customDateRange, selectedEquipeId, selectedUserId, selectedTagIds]);
+  }, [leads, dateFilter, customDateRange, selectedEquipeId, selectedUserId, selectedStageId, selectedTagIds]);
 
   const handleExportExcel = () => {
     if (filteredLeads.length === 0) {
@@ -178,6 +199,23 @@ export default function MobileRepiques() {
                   selectedUserId={selectedUserId}
                   onUserChange={setSelectedUserId}
                 />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Etapa</label>
+                <Select value={selectedStageId || "all"} onValueChange={(value) => setSelectedStageId(value === "all" ? null : value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todas as etapas" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as etapas</SelectItem>
+                    {stages.map((stage) => (
+                      <SelectItem key={stage.id} value={stage.nome}>
+                        {stage.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2">

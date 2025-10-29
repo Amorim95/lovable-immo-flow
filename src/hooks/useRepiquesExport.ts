@@ -8,6 +8,7 @@ export interface LeadExportData {
   telefone: string;
   created_at: string;
   user_id?: string;
+  stage_name?: string;
   user?: {
     name: string;
     equipe_id?: string;
@@ -39,6 +40,7 @@ export function useRepiquesExport() {
           telefone,
           created_at,
           user_id,
+          stage_name,
           user:users!leads_user_id_fkey(name, equipe_id)
         `)
         .order('created_at', { ascending: false });
