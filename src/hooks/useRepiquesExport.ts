@@ -31,40 +31,63 @@ export function useRepiquesExport() {
       setLoading(true);
       setError(null);
 
-      // Query principal (SEM lead_tag_relations)
-      let query = supabase
-        .from('leads')
-        .select(`
-          id,
-          nome,
-          telefone,
-          created_at,
-          user_id,
-          stage_name,
-          user:users!leads_user_id_fkey(name, equipe_id)
-        `, { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .limit(50000); // Aumentar limite para buscar todos os leads
+      // Buscar TODOS os leads usando paginação
+      const allLeads: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      // Filtrar por company_id (RLS já garante isso, mas adicionar explicitamente)
-      if (!user.is_super_admin && user.company_id) {
-        query = query.eq('company_id', user.company_id);
+      while (hasMore) {
+        let query = supabase
+          .from('leads')
+          .select(`
+            id,
+            nome,
+            telefone,
+            created_at,
+            user_id,
+            stage_name,
+            user:users!leads_user_id_fkey(name, equipe_id)
+          `, { count: 'exact' })
+          .order('created_at', { ascending: false })
+          .range(from, from + pageSize - 1);
+
+        // Filtrar por company_id
+        if (!user.is_super_admin && user.company_id) {
+          query = query.eq('company_id', user.company_id);
+        }
+
+        const { data, error: queryError, count } = await query;
+
+        if (queryError) throw queryError;
+
+        if (data && data.length > 0) {
+          allLeads.push(...data);
+          from += pageSize;
+          
+          // Verificar se há mais dados
+          if (count && allLeads.length >= count) {
+            hasMore = false;
+          }
+          if (data.length < pageSize) {
+            hasMore = false;
+          }
+        } else {
+          hasMore = false;
+        }
       }
 
-      const { data: leadsData, error: leadsError, count } = await query;
-
-      if (leadsError) throw leadsError;
-
-      console.log('Total de leads carregados:', leadsData?.length, 'de', count);
+      console.log('Total de leads carregados:', allLeads.length);
 
       // Buscar tags separadamente (não bloqueia se falhar)
       let leadTagMap: Record<string, string[]> = {};
       
       try {
+        // Buscar tags também com paginação se necessário
         const { data: tagRelations } = await supabase
           .from('lead_tag_relations')
           .select('lead_id, tag_id')
-          .in('lead_id', leadsData?.map(l => l.id) || []);
+          .in('lead_id', allLeads.map(l => l.id));
         
         // Criar mapa lead_id -> [tag_ids]
         tagRelations?.forEach(rel => {
@@ -79,7 +102,7 @@ export function useRepiquesExport() {
       }
 
       // Combinar dados
-      const enrichedLeads = (leadsData || []).map(lead => ({
+      const enrichedLeads = allLeads.map(lead => ({
         ...lead,
         lead_tag_relations: (leadTagMap[lead.id] || []).map(tag_id => ({ tag_id }))
       }));
