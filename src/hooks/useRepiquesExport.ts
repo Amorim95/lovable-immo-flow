@@ -30,6 +30,7 @@ export function useRepiquesExport() {
       setLoading(true);
       setError(null);
 
+      // Query principal (SEM lead_tag_relations)
       let query = supabase
         .from('leads')
         .select(`
@@ -38,8 +39,7 @@ export function useRepiquesExport() {
           telefone,
           created_at,
           user_id,
-          user:users!leads_user_id_fkey(name, equipe_id),
-          lead_tag_relations(tag_id)
+          user:users!leads_user_id_fkey(name, equipe_id)
         `)
         .order('created_at', { ascending: false });
 
@@ -48,11 +48,38 @@ export function useRepiquesExport() {
         query = query.eq('company_id', user.company_id);
       }
 
-      const { data, error } = await query;
+      const { data: leadsData, error: leadsError } = await query;
 
-      if (error) throw error;
+      if (leadsError) throw leadsError;
 
-      setLeads(data || []);
+      // Buscar tags separadamente (não bloqueia se falhar)
+      let leadTagMap: Record<string, string[]> = {};
+      
+      try {
+        const { data: tagRelations } = await supabase
+          .from('lead_tag_relations')
+          .select('lead_id, tag_id')
+          .in('lead_id', leadsData?.map(l => l.id) || []);
+        
+        // Criar mapa lead_id -> [tag_ids]
+        tagRelations?.forEach(rel => {
+          if (!leadTagMap[rel.lead_id]) {
+            leadTagMap[rel.lead_id] = [];
+          }
+          leadTagMap[rel.lead_id].push(rel.tag_id);
+        });
+      } catch (tagError) {
+        console.warn('Erro ao carregar tags (não crítico):', tagError);
+        // Continua mesmo se tags falharem
+      }
+
+      // Combinar dados
+      const enrichedLeads = (leadsData || []).map(lead => ({
+        ...lead,
+        lead_tag_relations: (leadTagMap[lead.id] || []).map(tag_id => ({ tag_id }))
+      }));
+
+      setLeads(enrichedLeads);
     } catch (error) {
       console.error('Error loading leads:', error);
       setError('Erro ao carregar leads');
