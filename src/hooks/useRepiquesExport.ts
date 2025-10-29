@@ -42,17 +42,20 @@ export function useRepiquesExport() {
           user_id,
           stage_name,
           user:users!leads_user_id_fkey(name, equipe_id)
-        `)
-        .order('created_at', { ascending: false });
+        `, { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .limit(50000); // Aumentar limite para buscar todos os leads
 
       // Filtrar por company_id (RLS já garante isso, mas adicionar explicitamente)
       if (!user.is_super_admin && user.company_id) {
         query = query.eq('company_id', user.company_id);
       }
 
-      const { data: leadsData, error: leadsError } = await query;
+      const { data: leadsData, error: leadsError, count } = await query;
 
       if (leadsError) throw leadsError;
+
+      console.log('Total de leads carregados:', leadsData?.length, 'de', count);
 
       // Buscar tags separadamente (não bloqueia se falhar)
       let leadTagMap: Record<string, string[]> = {};
