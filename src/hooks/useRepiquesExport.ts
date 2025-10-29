@@ -15,6 +15,9 @@ export interface LeadExportData {
   };
   lead_tag_relations?: {
     tag_id: string;
+    lead_tags?: {
+      nome: string;
+    };
   }[];
 }
 
@@ -80,21 +83,24 @@ export function useRepiquesExport() {
       console.log('Total de leads carregados:', allLeads.length);
 
       // Buscar tags separadamente (não bloqueia se falhar)
-      let leadTagMap: Record<string, string[]> = {};
+      let leadTagMap: Record<string, Array<{ tag_id: string; lead_tags?: { nome: string } }>> = {};
       
       try {
         // Buscar tags também com paginação se necessário
         const { data: tagRelations } = await supabase
           .from('lead_tag_relations')
-          .select('lead_id, tag_id')
+          .select('lead_id, tag_id, lead_tags(nome)')
           .in('lead_id', allLeads.map(l => l.id));
         
-        // Criar mapa lead_id -> [tag_ids]
+        // Criar mapa lead_id -> [tag_relations]
         tagRelations?.forEach(rel => {
           if (!leadTagMap[rel.lead_id]) {
             leadTagMap[rel.lead_id] = [];
           }
-          leadTagMap[rel.lead_id].push(rel.tag_id);
+          leadTagMap[rel.lead_id].push({
+            tag_id: rel.tag_id,
+            lead_tags: rel.lead_tags
+          });
         });
       } catch (tagError) {
         console.warn('Erro ao carregar tags (não crítico):', tagError);
@@ -104,7 +110,7 @@ export function useRepiquesExport() {
       // Combinar dados
       const enrichedLeads = allLeads.map(lead => ({
         ...lead,
-        lead_tag_relations: (leadTagMap[lead.id] || []).map(tag_id => ({ tag_id }))
+        lead_tag_relations: leadTagMap[lead.id] || []
       }));
 
       setLeads(enrichedLeads);

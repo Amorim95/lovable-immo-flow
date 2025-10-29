@@ -117,7 +117,11 @@ export default function Repiques() {
     }
     
     const filename = `repiques_${new Date().toISOString().split('T')[0]}`;
-    exportToExcel(filteredLeads, filename);
+    const leadsWithTags = filteredLeads.map(lead => ({
+      ...lead,
+      tags: lead.lead_tag_relations?.map(rel => rel.lead_tags?.nome).filter(Boolean).join(', ') || undefined
+    }));
+    exportToExcel(leadsWithTags, filename);
     toast.success(`${filteredLeads.length} leads exportados para Excel`);
     
     // Salvar histórico
@@ -143,7 +147,11 @@ export default function Repiques() {
     }
     
     const filename = `repiques_${new Date().toISOString().split('T')[0]}`;
-    exportToPDF(filteredLeads, filename, settings?.name || 'CRM');
+    const leadsWithTags = filteredLeads.map(lead => ({
+      ...lead,
+      tags: lead.lead_tag_relations?.map(rel => rel.lead_tags?.nome).filter(Boolean).join(', ') || undefined
+    }));
+    exportToPDF(leadsWithTags, filename, settings?.name || 'CRM');
     toast.success(`${filteredLeads.length} leads exportados para PDF`);
     
     // Salvar histórico
@@ -300,24 +308,29 @@ export default function Repiques() {
                     <TableHead>Telefone</TableHead>
                     <TableHead>Data de Criação</TableHead>
                     <TableHead>Etapa</TableHead>
+                    <TableHead>Etiquetas</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredLeads.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">
                         Nenhum lead encontrado com os filtros selecionados
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredLeads.slice(0, 100).map((lead) => (
-                      <TableRow key={lead.id}>
-                        <TableCell>{lead.nome}</TableCell>
-                        <TableCell>{lead.telefone}</TableCell>
-                        <TableCell>{new Date(lead.created_at).toLocaleString('pt-BR')}</TableCell>
-                        <TableCell>{lead.stage_name || 'Sem etapa'}</TableCell>
-                      </TableRow>
-                    ))
+                    filteredLeads.slice(0, 100).map((lead) => {
+                      const tagNames = lead.lead_tag_relations?.map(rel => rel.lead_tags?.nome).filter(Boolean).join(', ') || 'Sem etiquetas';
+                      return (
+                        <TableRow key={lead.id}>
+                          <TableCell>{lead.nome}</TableCell>
+                          <TableCell>{lead.telefone}</TableCell>
+                          <TableCell>{new Date(lead.created_at).toLocaleString('pt-BR')}</TableCell>
+                          <TableCell>{lead.stage_name || 'Sem etapa'}</TableCell>
+                          <TableCell>{tagNames}</TableCell>
+                        </TableRow>
+                      );
+                    })
                   )}
                 </TableBody>
               </Table>

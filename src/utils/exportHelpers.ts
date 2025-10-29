@@ -7,6 +7,7 @@ export interface LeadExport {
   telefone: string;
   created_at: string;
   stage_name?: string;
+  tags?: string;
 }
 
 export const exportToExcel = (leads: LeadExport[], filename: string) => {
@@ -15,7 +16,8 @@ export const exportToExcel = (leads: LeadExport[], filename: string) => {
     Nome: lead.nome,
     Telefone: lead.telefone,
     'Data de Criação': new Date(lead.created_at).toLocaleString('pt-BR'),
-    Etapa: lead.stage_name || 'Sem etapa'
+    Etapa: lead.stage_name || 'Sem etapa',
+    Etiquetas: lead.tags || 'Sem etiquetas'
   }));
   
   // Criar workbook
@@ -28,7 +30,8 @@ export const exportToExcel = (leads: LeadExport[], filename: string) => {
     { wch: 30 }, // Nome
     { wch: 20 }, // Telefone
     { wch: 18 }, // Data de Criação
-    { wch: 20 }  // Etapa
+    { wch: 20 }, // Etapa
+    { wch: 30 }  // Etiquetas
   ];
   
   // Download
@@ -50,14 +53,15 @@ export const exportToPDF = (leads: LeadExport[], filename: string, companyName: 
   // Tabela
   autoTable(doc, {
     startY: 45,
-    head: [['Nome', 'Telefone', 'Data de Criação', 'Etapa']],
+    head: [['Nome', 'Telefone', 'Data de Criação', 'Etapa', 'Etiquetas']],
     body: leads.map(lead => [
       lead.nome, 
       lead.telefone,
       new Date(lead.created_at).toLocaleString('pt-BR'),
-      lead.stage_name || 'Sem etapa'
+      lead.stage_name || 'Sem etapa',
+      lead.tags || 'Sem etiquetas'
     ]),
-    styles: { fontSize: 8 },
+    styles: { fontSize: 7 },
     headStyles: { fillColor: [59, 130, 246] },
     margin: { top: 45 }
   });
