@@ -6,6 +6,7 @@ import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { DateFilter, DateFilterOption, getDateRangeFromFilter } from "@/components/DateFilter";
 import { UserFilter } from "@/components/UserFilter";
 import { TagFilter } from "@/components/TagFilter";
+import { MultiStageFilter } from "@/components/MultiStageFilter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRepiquesExport } from "@/hooks/useRepiquesExport";
 import { exportToExcel, exportToPDF } from "@/utils/exportHelpers";
@@ -37,7 +38,7 @@ export default function Repiques() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedEquipeId, setSelectedEquipeId] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
-  const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
+  const [selectedStageNames, setSelectedStageNames] = useState<string[]>([]);
 
   // Buscar equipes
   const { data: equipes = [] } = useQuery({
@@ -90,8 +91,8 @@ export default function Repiques() {
         return false;
       }
       
-      // Filtro de etapa
-      if (selectedStageId && lead.stage_name !== selectedStageId) {
+      // Filtro de etapas
+      if (selectedStageNames.length > 0 && !selectedStageNames.includes(lead.stage_name || '')) {
         return false;
       }
       
@@ -106,7 +107,7 @@ export default function Repiques() {
       
       return true;
     });
-  }, [leads, dateFilter, customDateRange, selectedEquipeId, selectedUserId, selectedStageId, selectedTagIds]);
+  }, [leads, dateFilter, customDateRange, selectedEquipeId, selectedUserId, selectedStageNames, selectedTagIds]);
 
   const handleExportExcel = () => {
     if (filteredLeads.length === 0) {
@@ -208,20 +209,11 @@ export default function Repiques() {
               </div>
               
               <div className="space-y-2">
-                <label className="text-sm font-medium">Etapa</label>
-                <Select value={selectedStageId || "all"} onValueChange={(value) => setSelectedStageId(value === "all" ? null : value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Todas as etapas" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas as etapas</SelectItem>
-                    {stages.map((stage) => (
-                      <SelectItem key={stage.id} value={stage.nome}>
-                        {stage.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium">Etapas</label>
+                <MultiStageFilter 
+                  selectedStageNames={selectedStageNames}
+                  onStageChange={setSelectedStageNames}
+                />
               </div>
             </div>
 
