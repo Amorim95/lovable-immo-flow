@@ -567,7 +567,7 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
               <div className="flex-1">
                 <ScrollArea className="h-[400px]">
                   <div className="space-y-3 pr-4">
-                    {lead.atividades.map((atividade) => (
+                    {[...lead.atividades].reverse().map((atividade) => (
                       <div key={atividade.id} className="p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
                           <Calendar className="w-3 h-3 text-gray-500" />

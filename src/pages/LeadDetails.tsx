@@ -558,7 +558,7 @@ export default function LeadDetails() {
             {/* Lista de Atividades */}
             <div className="space-y-3">
               {lead.atividades && lead.atividades.length > 0 ? (
-                lead.atividades.map((atividade, index) => (
+                [...lead.atividades].reverse().map((atividade, index) => (
                   <div key={index} className="border-l-2 border-blue-200 pl-4 py-2">
                     <div className="flex items-start gap-2">
                       <Clock className="w-4 h-4 text-gray-400 mt-1" />
