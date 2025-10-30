@@ -22,10 +22,8 @@ import {
   Edit,
   Calendar,
   Copy,
-  Tag,
-  Trash2
+  Tag
 } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -46,8 +44,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Partial<Lead>>({});
   const [newActivity, setNewActivity] = useState("");
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   // Reset estados quando modal abre/fecha e registrar primeira visualização
   useEffect(() => {
     if (isOpen && lead) {
@@ -348,30 +344,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
     }
   };
 
-  const handleDelete = async () => {
-    if (!lead) return;
-    
-    setIsDeleting(true);
-    try {
-      const { error } = await supabase.functions.invoke('delete-lead', {
-        body: { leadId: lead.id }
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success('Lead deletado com sucesso!');
-      onClose();
-      window.location.reload(); // Recarregar a página para atualizar a lista
-    } catch (error) {
-      console.error('Erro ao deletar lead:', error);
-      toast.error('Erro ao deletar lead. Tente novamente.');
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteDialog(false);
-    }
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -411,25 +383,14 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
             <div className="lg:col-span-2 space-y-6">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">Dados do Lead</h3>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowDeleteDialog(true)}
-                    className="text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Deletar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setEditMode(!editMode)}
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    {editMode ? 'Cancelar' : 'Editar'}
-                  </Button>
-                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditMode(!editMode)}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  {editMode ? 'Cancelar' : 'Editar'}
+                </Button>
               </div>
 
               {/* Etapa do Lead */}
@@ -594,35 +555,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
             </div>
           </div>
         </div>
-
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Deletar Lead</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tem certeza que deseja deletar o lead <strong>{lead.nome}</strong>?
-                <br /><br />
-                Esta ação é irreversível e irá remover:
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Todas as atividades registradas ({lead.atividades.length})</li>
-                  <li>Todos os relacionamentos com tags</li>
-                  <li>Todos os logs associados</li>
-                </ul>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                {isDeleting ? 'Deletando...' : 'Deletar Lead'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </DialogContent>
     </Dialog>
   );
