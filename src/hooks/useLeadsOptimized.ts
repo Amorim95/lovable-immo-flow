@@ -165,7 +165,10 @@ export function useLeadsOptimized() {
       if (updates.nome !== undefined) supabaseUpdates.nome = updates.nome;
       if (updates.telefone !== undefined) supabaseUpdates.telefone = updates.telefone;
       if (updates.dadosAdicionais !== undefined) supabaseUpdates.dados_adicionais = updates.dadosAdicionais;
-      if (updates.etapa !== undefined) supabaseUpdates.etapa = updates.etapa;
+      if (updates.etapa !== undefined) {
+        supabaseUpdates.etapa = updates.etapa;
+        supabaseUpdates.stage_name = updates.etapa; // Sincronizar automaticamente com etapa
+      }
       if (updates.stage_name !== undefined) supabaseUpdates.stage_name = updates.stage_name;
       if (updates.userId !== undefined) supabaseUpdates.user_id = updates.userId;
       
