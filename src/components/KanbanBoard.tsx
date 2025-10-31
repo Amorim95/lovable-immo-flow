@@ -94,27 +94,11 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
         return true;
       }
       
-      // Fallback compatibilidade com mapeamento antigo
-      const oldMapping = getOldStageMapping(stageName);
-      return oldMapping && lead.etapa === oldMapping;
+      
+      return false;
     });
   };
 
-  // Mapear apenas nomes antigos conhecidos para manter compatibilidade
-  const getOldStageMapping = (stageName: string): LeadStage | null => {
-    const mappings: Record<string, LeadStage> = {
-      'Aguardando Atendimento': 'aguardando-atendimento',
-      'Em Tentativas de Contato': 'tentativas-contato',
-      'Atendeu': 'atendeu',
-      'Nome Sujo': 'nome-sujo',
-      'Nome Limpo': 'nome-limpo',
-      'Visita': 'visita',
-      'Vendas Fechadas': 'vendas-fechadas',
-      'Em Pausa': 'em-pausa',
-      'Descarte': 'descarte',
-    };
-    return mappings[stageName] ?? null;
-  };
 
   if (loading) {
     return (
