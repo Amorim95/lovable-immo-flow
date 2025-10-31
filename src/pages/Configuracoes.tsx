@@ -18,12 +18,14 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { useNavigate } from "react-router-dom";
 
 import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun, Shield, Layers, RefreshCw } from "lucide-react";
+import { useLeadStages } from "@/hooks/useLeadStages";
 
 const Configuracoes = () => {
   const { settings, updateSettings } = useCompany();
   const { toast } = useToast();
   const { isAdmin } = usePermissions();
   const navigate = useNavigate();
+  const { stages } = useLeadStages();
   const [companyName, setCompanyName] = useState(settings.name);
   const [companyLogo, setCompanyLogo] = useState<string | null>(settings.logo);
 
@@ -141,43 +143,42 @@ const Configuracoes = () => {
   const handleSyncStageNames = async () => {
     setIsSyncing(true);
     try {
-      // Buscar TODOS os leads e filtrar no client
-      const { data: allLeads, error: allError } = await supabase
+      // 1. Buscar todos os leads
+      const { data: allLeads, error: leadsError } = await supabase
         .from('leads')
-        .select('id, etapa, stage_name');
+        .select('id, etapa, stage_name, company_id');
 
-      if (allError) throw allError;
+      if (leadsError) throw leadsError;
 
-      // Filtrar leads que precisam ser sincronizados
-      const toUpdate = allLeads?.filter(lead => lead.stage_name !== lead.etapa) || [];
+      // 2. Atualizar cada lead com o NOME customizado da etapa
+      let successCount = 0;
+      for (const lead of allLeads || []) {
+        const matchingStage = stages?.find(s => s.legacy_key === lead.etapa);
+        
+        if (matchingStage && lead.stage_name !== matchingStage.nome) {
+          const { error } = await supabase
+            .from('leads')
+            .update({ 
+              stage_name: matchingStage.nome,  // Nome customizado
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', lead.id);
 
-      if (toUpdate.length === 0) {
+          if (!error) successCount++;
+        }
+      }
+
+      if (successCount === 0) {
         toast({
           title: "Já está sincronizado",
           description: "Todos os leads já estão com stage_name atualizado!",
         });
-        setIsSyncing(false);
-        return;
+      } else {
+        toast({
+          title: "Sincronização concluída",
+          description: `${successCount} leads sincronizados com sucesso!`,
+        });
       }
-
-      // Atualizar cada lead individualmente
-      let successCount = 0;
-      for (const lead of toUpdate) {
-        const { error } = await supabase
-          .from('leads')
-          .update({ 
-            stage_name: lead.etapa,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', lead.id);
-
-        if (!error) successCount++;
-      }
-
-      toast({
-        title: "Sincronização concluída",
-        description: `${successCount} de ${toUpdate.length} leads foram sincronizados com sucesso!`,
-      });
     } catch (error) {
       console.error('Erro ao sincronizar stage_name:', error);
       toast({

@@ -68,19 +68,28 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
     const currentStage = stages.find(s => s.nome === stageName);
     
     return leads.filter((lead) => {
-      // Filtro duplo: aceitar stage_name customizado OU legacy_key
-      if (lead.stage_name) {
-        if (lead.stage_name === stageName || lead.stage_name === currentStage?.legacy_key) {
+      // Prioridade 1: Correspondência EXATA com nome customizado
+      if (lead.stage_name === stageName) {
+        return true;
+      }
+      
+      // Prioridade 2: Correspondência com legacy_key (apenas se não bateu no nome)
+      if (currentStage?.legacy_key && lead.stage_name === currentStage.legacy_key) {
+        // ⚠️ GARANTIR que não bate com NENHUM outro nome de etapa
+        const matchesOtherStageName = stages.some(s => s.nome === lead.stage_name);
+        if (!matchesOtherStageName) {
           return true;
         }
       }
       
-      // Se não tem stage_name mas a etapa atual tem legacy_key, fazer correspondência
-      if (currentStage?.legacy_key && lead.etapa === currentStage.legacy_key) {
+      // Prioridade 3: Fallback para etapa (apenas se stage_name vazio ou null)
+      if ((!lead.stage_name || lead.stage_name === '') && 
+          currentStage?.legacy_key && 
+          lead.etapa === currentStage.legacy_key) {
         return true;
       }
       
-      // Fallback para compatibilidade (só para etapas antigas conhecidas)
+      // Fallback compatibilidade com mapeamento antigo
       const oldMapping = getOldStageMapping(stageName);
       return oldMapping && lead.etapa === oldMapping;
     });
