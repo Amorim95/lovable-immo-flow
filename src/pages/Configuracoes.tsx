@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useNavigate } from "react-router-dom";
 
-import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun, Shield, Layers } from "lucide-react";
+import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun, Shield, Layers, RefreshCw } from "lucide-react";
 
 const Configuracoes = () => {
   const { settings, updateSettings } = useCompany();
@@ -136,6 +136,60 @@ const Configuracoes = () => {
     });
   };
 
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const handleSyncStageNames = async () => {
+    setIsSyncing(true);
+    try {
+      // Buscar TODOS os leads e filtrar no client
+      const { data: allLeads, error: allError } = await supabase
+        .from('leads')
+        .select('id, etapa, stage_name');
+
+      if (allError) throw allError;
+
+      // Filtrar leads que precisam ser sincronizados
+      const toUpdate = allLeads?.filter(lead => lead.stage_name !== lead.etapa) || [];
+
+      if (toUpdate.length === 0) {
+        toast({
+          title: "Já está sincronizado",
+          description: "Todos os leads já estão com stage_name atualizado!",
+        });
+        setIsSyncing(false);
+        return;
+      }
+
+      // Atualizar cada lead individualmente
+      let successCount = 0;
+      for (const lead of toUpdate) {
+        const { error } = await supabase
+          .from('leads')
+          .update({ 
+            stage_name: lead.etapa,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', lead.id);
+
+        if (!error) successCount++;
+      }
+
+      toast({
+        title: "Sincronização concluída",
+        description: `${successCount} de ${toUpdate.length} leads foram sincronizados com sucesso!`,
+      });
+    } catch (error) {
+      console.error('Erro ao sincronizar stage_name:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível sincronizar. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -249,13 +303,32 @@ const Configuracoes = () => {
                   Customize as etapas do seu funil de vendas. Você pode criar, editar e reordenar as etapas conforme sua necessidade.
                 </p>
                 {isAdmin ? (
-                  <Button 
-                    onClick={() => navigate('/configuracao-etapas')}
-                    className="w-full"
-                  >
-                    <Layers className="w-4 h-4 mr-2" />
-                    Gerenciar Etapas dos Leads
-                  </Button>
+                  <>
+                    <Button 
+                      onClick={() => navigate('/configuracao-etapas')}
+                      className="w-full"
+                    >
+                      <Layers className="w-4 h-4 mr-2" />
+                      Gerenciar Etapas dos Leads
+                    </Button>
+                    
+                    <div className="pt-4 border-t">
+                      <h4 className="font-medium mb-2">Sincronização de Etapas</h4>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        Use esta função para sincronizar o campo stage_name com etapa em todos os leads. 
+                        Útil após mudanças nas configurações de etapas.
+                      </p>
+                      <Button 
+                        onClick={handleSyncStageNames}
+                        disabled={isSyncing}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+                        {isSyncing ? 'Sincronizando...' : 'Sincronizar Stage Names'}
+                      </Button>
+                    </div>
+                  </>
                 ) : (
                   <div className="p-4 bg-muted rounded-lg text-center">
                     <p className="text-muted-foreground">
