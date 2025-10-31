@@ -75,9 +75,14 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
       
       // Prioridade 2: Correspondência com legacy_key (apenas se não bateu no nome)
       if (currentStage?.legacy_key && lead.stage_name === currentStage.legacy_key) {
-        // ⚠️ GARANTIR que não bate com NENHUM outro nome de etapa
-        const matchesOtherStageName = stages.some(s => s.nome === lead.stage_name);
-        if (!matchesOtherStageName) {
+        // ⚠️ GARANTIR que esse lead não pertence a OUTRA etapa
+        const belongsToOtherStage = stages.some(s => 
+          s.id !== currentStage.id && (
+            s.nome === lead.stage_name ||           // Bate com nome customizado de outra etapa
+            s.legacy_key === lead.stage_name        // Bate com legacy_key de outra etapa
+          )
+        );
+        if (!belongsToOtherStage) {
           return true;
         }
       }
