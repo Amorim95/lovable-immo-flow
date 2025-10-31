@@ -68,9 +68,11 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
     const currentStage = stages.find(s => s.nome === stageName);
     
     return leads.filter((lead) => {
-      // Se tem stage_name, usar exata correspondência
+      // Filtro duplo: aceitar stage_name customizado OU legacy_key
       if (lead.stage_name) {
-        return lead.stage_name === stageName;
+        if (lead.stage_name === stageName || lead.stage_name === currentStage?.legacy_key) {
+          return true;
+        }
       }
       
       // Se não tem stage_name mas a etapa atual tem legacy_key, fazer correspondência
