@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lead } from "@/types/crm";
 import { KanbanBoard } from "@/components/KanbanBoard";
@@ -12,6 +12,7 @@ import { StageFilter } from "@/components/StageFilter";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ const Index = () => {
   const { user } = useAuth();
   const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
   const { isAdmin, isGestor, isCorretor, isDono, loading: roleLoading } = useUserRole();
+  const { managedTeamId, loading: teamLoading } = useManagerTeam();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -41,6 +43,13 @@ const Index = () => {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedStageKey, setSelectedStageKey] = useState<string | null>(null);
+
+  // Pré-selecionar equipe gerenciada automaticamente
+  useEffect(() => {
+    if (!teamLoading && managedTeamId && !selectedTeamId) {
+      setSelectedTeamId(managedTeamId);
+    }
+  }, [teamLoading, managedTeamId, selectedTeamId]);
 
   // Permitir criação de leads para todos os usuários autenticados
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor || isDono);
@@ -195,7 +204,7 @@ const Index = () => {
     return matchesSearch && matchesDate && matchesUser && matchesTeam && matchesTags && matchesStage;
   });
 
-  if (loading || roleLoading) {
+  if (loading || roleLoading || teamLoading) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">

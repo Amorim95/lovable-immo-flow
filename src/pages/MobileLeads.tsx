@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Lead } from "@/types/crm";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { MobileHeader } from "@/components/MobileHeader";
 import { TagFilter } from "@/components/TagFilter";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ export default function MobileLeads() {
   const navigate = useNavigate();
   const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
+  const { managedTeamId, loading: teamLoading } = useManagerTeam();
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
@@ -62,6 +64,13 @@ export default function MobileLeads() {
   const [equipes, setEquipes] = useState<Equipe[]>([]);
   
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
+
+  // Pré-selecionar equipe gerenciada automaticamente
+  useEffect(() => {
+    if (!teamLoading && managedTeamId && !selectedTeamId) {
+      setSelectedTeamId(managedTeamId);
+    }
+  }, [teamLoading, managedTeamId, selectedTeamId]);
 
   useEffect(() => {
     loadEquipes();
@@ -233,7 +242,7 @@ export default function MobileLeads() {
     await updateLeadOptimistic(leadId, { etapa: newStage });
   };
 
-  if (loading || roleLoading) {
+  if (loading || roleLoading || teamLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-background">
         <MobileHeader title="Gestão de Leads" />
