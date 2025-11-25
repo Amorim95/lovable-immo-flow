@@ -65,6 +65,9 @@ verify_jwt = false
 [functions.webhook-lead-vivaz-zona-leste]
 verify_jwt = false
 
+[functions.webhook-lead-araujo-broker]
+verify_jwt = false
+
 [functions.create-company]
 verify_jwt = true
 
