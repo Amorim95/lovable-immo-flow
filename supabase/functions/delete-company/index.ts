@@ -117,51 +117,75 @@ Deno.serve(async (req) => {
 
     console.log('Company found:', company.name);
 
-    // Delete related data first (in correct order to avoid foreign key constraints)
+    // Get all lead IDs for this company first
+    const { data: companyLeads } = await supabase
+      .from('leads')
+      .select('id')
+      .eq('company_id', companyId);
     
-    // 1. Delete lead_tag_relations for leads of this company
-    const { error: leadTagRelError } = await supabase
-      .from('lead_tag_relations')
-      .delete()
-      .in('lead_id', 
-        supabase
-          .from('leads')
-          .select('id')
-          .eq('company_id', companyId)
-      );
+    const leadIds = companyLeads?.map(l => l.id) || [];
+    console.log(`Found ${leadIds.length} leads to process`);
 
-    if (leadTagRelError) {
-      console.log('Error deleting lead tag relations:', leadTagRelError);
+    // Get all imovel IDs for this company
+    const { data: companyImoveis } = await supabase
+      .from('imoveis')
+      .select('id')
+      .eq('company_id', companyId);
+    
+    const imovelIds = companyImoveis?.map(i => i.id) || [];
+    console.log(`Found ${imovelIds.length} imoveis to process`);
+
+    // Get all user IDs for this company
+    const { data: companyUsers } = await supabase
+      .from('users')
+      .select('id')
+      .eq('company_id', companyId);
+    
+    const userIds = companyUsers?.map(u => u.id) || [];
+    console.log(`Found ${userIds.length} users to process`);
+
+    // Delete related data in correct order
+
+    // 1. Delete lead_tag_relations for leads of this company
+    if (leadIds.length > 0) {
+      const { error: leadTagRelError } = await supabase
+        .from('lead_tag_relations')
+        .delete()
+        .in('lead_id', leadIds);
+
+      if (leadTagRelError) {
+        console.log('Error deleting lead tag relations:', leadTagRelError);
+      } else {
+        console.log('Deleted lead tag relations');
+      }
     }
 
     // 2. Delete lead_campaign relations
-    const { error: leadCampaignError } = await supabase
-      .from('lead_campaign')
-      .delete()
-      .in('lead_id', 
-        supabase
-          .from('leads')
-          .select('id')
-          .eq('company_id', companyId)
-      );
+    if (leadIds.length > 0) {
+      const { error: leadCampaignError } = await supabase
+        .from('lead_campaign')
+        .delete()
+        .in('lead_id', leadIds);
 
-    if (leadCampaignError) {
-      console.log('Error deleting lead campaign relations:', leadCampaignError);
+      if (leadCampaignError) {
+        console.log('Error deleting lead campaign relations:', leadCampaignError);
+      } else {
+        console.log('Deleted lead campaign relations');
+      }
     }
 
     // 3. Delete lead_queue entries
-    const { error: leadQueueError } = await supabase
-      .from('lead_queue')
-      .delete()
-      .in('lead_id', 
-        supabase
-          .from('leads')
-          .select('id')
-          .eq('company_id', companyId)
-      );
+    if (leadIds.length > 0) {
+      const { error: leadQueueError } = await supabase
+        .from('lead_queue')
+        .delete()
+        .in('lead_id', leadIds);
 
-    if (leadQueueError) {
-      console.log('Error deleting lead queue entries:', leadQueueError);
+      if (leadQueueError) {
+        console.log('Error deleting lead queue entries:', leadQueueError);
+      } else {
+        console.log('Deleted lead queue entries');
+      }
     }
 
     // 4. Delete leads
@@ -172,21 +196,22 @@ Deno.serve(async (req) => {
 
     if (leadsError) {
       console.log('Error deleting leads:', leadsError);
+    } else {
+      console.log('Deleted leads');
     }
 
     // 5. Delete imovel_midias for imoveis of this company
-    const { error: imovelMidiasError } = await supabase
-      .from('imovel_midias')
-      .delete()
-      .in('imovel_id', 
-        supabase
-          .from('imoveis')
-          .select('id')
-          .eq('company_id', companyId)
-      );
+    if (imovelIds.length > 0) {
+      const { error: imovelMidiasError } = await supabase
+        .from('imovel_midias')
+        .delete()
+        .in('imovel_id', imovelIds);
 
-    if (imovelMidiasError) {
-      console.log('Error deleting imovel midias:', imovelMidiasError);
+      if (imovelMidiasError) {
+        console.log('Error deleting imovel midias:', imovelMidiasError);
+      } else {
+        console.log('Deleted imovel midias');
+      }
     }
 
     // 6. Delete imoveis
@@ -197,6 +222,8 @@ Deno.serve(async (req) => {
 
     if (imoveisError) {
       console.log('Error deleting imoveis:', imoveisError);
+    } else {
+      console.log('Deleted imoveis');
     }
 
     // 7. Delete metas
@@ -207,6 +234,8 @@ Deno.serve(async (req) => {
 
     if (metasError) {
       console.log('Error deleting metas:', metasError);
+    } else {
+      console.log('Deleted metas');
     }
 
     // 8. Delete logs
@@ -217,21 +246,22 @@ Deno.serve(async (req) => {
 
     if (logsError) {
       console.log('Error deleting logs:', logsError);
+    } else {
+      console.log('Deleted logs');
     }
 
     // 9. Delete permissions for users of this company
-    const { error: permissionsError } = await supabase
-      .from('permissions')
-      .delete()
-      .in('user_id', 
-        supabase
-          .from('users')
-          .select('id')
-          .eq('company_id', companyId)
-      );
+    if (userIds.length > 0) {
+      const { error: permissionsError } = await supabase
+        .from('permissions')
+        .delete()
+        .in('user_id', userIds);
 
-    if (permissionsError) {
-      console.log('Error deleting permissions:', permissionsError);
+      if (permissionsError) {
+        console.log('Error deleting permissions:', permissionsError);
+      } else {
+        console.log('Deleted permissions');
+      }
     }
 
     // 10. Delete equipes
@@ -242,6 +272,8 @@ Deno.serve(async (req) => {
 
     if (equipesError) {
       console.log('Error deleting equipes:', equipesError);
+    } else {
+      console.log('Deleted equipes');
     }
 
     // 11. Delete company_settings
@@ -252,9 +284,11 @@ Deno.serve(async (req) => {
 
     if (settingsError) {
       console.log('Error deleting company settings:', settingsError);
+    } else {
+      console.log('Deleted company settings');
     }
 
-    // 11.5. Delete company_access_control
+    // 12. Delete company_access_control
     const { error: accessControlError } = await supabase
       .from('company_access_control')
       .delete()
@@ -262,9 +296,11 @@ Deno.serve(async (req) => {
 
     if (accessControlError) {
       console.log('Error deleting company access control:', accessControlError);
+    } else {
+      console.log('Deleted company access control');
     }
 
-    // 11.6. Delete lead_stages
+    // 13. Delete lead_stages
     const { error: leadStagesError } = await supabase
       .from('lead_stages')
       .delete()
@@ -272,9 +308,11 @@ Deno.serve(async (req) => {
 
     if (leadStagesError) {
       console.log('Error deleting lead stages:', leadStagesError);
+    } else {
+      console.log('Deleted lead stages');
     }
 
-    // 12. Delete users from this company
+    // 14. Delete users from this company
     const { error: usersError } = await supabase
       .from('users')
       .delete()
@@ -282,9 +320,11 @@ Deno.serve(async (req) => {
 
     if (usersError) {
       console.log('Error deleting users:', usersError);
+    } else {
+      console.log('Deleted users');
     }
 
-    // 13. Finally, delete the company
+    // 15. Finally, delete the company
     const { error: deleteError } = await supabase
       .from('companies')
       .delete()
