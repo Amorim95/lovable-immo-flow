@@ -254,6 +254,26 @@ Deno.serve(async (req) => {
       console.log('Error deleting company settings:', settingsError);
     }
 
+    // 11.5. Delete company_access_control
+    const { error: accessControlError } = await supabase
+      .from('company_access_control')
+      .delete()
+      .eq('company_id', companyId);
+
+    if (accessControlError) {
+      console.log('Error deleting company access control:', accessControlError);
+    }
+
+    // 11.6. Delete lead_stages
+    const { error: leadStagesError } = await supabase
+      .from('lead_stages')
+      .delete()
+      .eq('company_id', companyId);
+
+    if (leadStagesError) {
+      console.log('Error deleting lead stages:', leadStagesError);
+    }
+
     // 12. Delete users from this company
     const { error: usersError } = await supabase
       .from('users')

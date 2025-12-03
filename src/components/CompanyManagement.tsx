@@ -96,6 +96,7 @@ export function CompanyManagement() {
 
       // Chamar a edge function para deletar a empresa
       const { data, error } = await supabase.functions.invoke('delete-company', {
+        method: 'DELETE',
         body: { companyId }
       });
 
