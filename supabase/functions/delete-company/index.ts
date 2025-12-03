@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
 
     console.log('Super admin verified');
 
-    if (req.method !== 'DELETE') {
+    if (req.method !== 'POST' && req.method !== 'DELETE') {
       return new Response(
         JSON.stringify({ error: 'Method not allowed' }),
         { 

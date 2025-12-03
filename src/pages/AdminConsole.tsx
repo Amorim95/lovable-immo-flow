@@ -129,7 +129,7 @@ export default function AdminConsole() {
   async function handleDelete(companyId: string, name: string) {
     if (!confirm(`Deletar a empresa "${name}"? Esta ação é irreversível.`)) return;
     try {
-      const { error } = await supabase.functions.invoke("delete-company", { method: 'DELETE', body: { companyId } });
+      const { error } = await supabase.functions.invoke("delete-company", { body: { companyId } });
       if (error) throw error;
       toast({ title: "Empresa deletada", description: `\"${name}\" removida com sucesso.` });
       companiesQuery.refetch();
