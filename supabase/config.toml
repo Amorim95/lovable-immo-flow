@@ -71,6 +71,9 @@ verify_jwt = false
 [functions.webhook-lead-mays-imob]
 verify_jwt = false
 
+[functions.webhook-lead-janaina-vidalete]
+verify_jwt = false
+
 [functions.create-company]
 verify_jwt = true
 

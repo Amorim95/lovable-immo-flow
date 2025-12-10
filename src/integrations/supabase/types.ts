@@ -949,8 +949,8 @@ export type Database = {
       crypt_password: { Args: { password: string }; Returns: string }
       get_current_user_company_id: { Args: never; Returns: string }
       get_next_user_round_robin:
-        | { Args: { _company_id?: string }; Returns: string }
         | { Args: never; Returns: string }
+        | { Args: { _company_id?: string }; Returns: string }
       get_user_company_id: { Args: never; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_admin_or_dono: { Args: { _user_id: string }; Returns: boolean }
