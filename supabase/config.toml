@@ -79,3 +79,6 @@ verify_jwt = true
 
 [functions.delete-user]
 verify_jwt = true
+
+[functions.webhook-lead-click-imoveis]
+verify_jwt = false
