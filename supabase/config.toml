@@ -82,3 +82,6 @@ verify_jwt = true
 
 [functions.webhook-lead-click-imoveis]
 verify_jwt = false
+
+[functions.webhook-lead-click-imoveis-nao-qualificado]
+verify_jwt = false
