@@ -1,104 +1,118 @@
 
-## Plano: Criar Edge Function webhook-lead-click-imoveis
+# Plano: Corrigir Reload Automático ao Retornar para a Aba
 
-### Objetivo
-Criar uma nova Edge Function dedicada para a empresa **Click Imóveis** que:
-1. Recebe leads via webhook
-2. Distribui entre os corretores ativos usando round-robin
-3. Adiciona automaticamente a etiqueta **"Lead Qualificado Pela IA"**
-4. Envia notificação push para o corretor
+## Problema Identificado
 
-### IDs Fixos
-| Recurso | ID |
-|---------|-----|
-| Click Imóveis | `c95541d9-3e6a-4fc1-8d64-c5a6d5f7c9b6` |
-| Tag "Lead Qualificado Pela IA" | `89b0d175-7ac8-44b3-9f47-dec34353ccac` |
+A aplicação recarrega automaticamente quando o usuário sai da aba (deixa em segundo plano) e retorna. Isso acontece por três razões:
 
-### Arquivos a Criar/Modificar
+1. **Service Worker força reload**: O listener `controllerchange` em `PWALifecycle.tsx` executa `window.location.reload()` quando o Service Worker é atualizado
+2. **AuthContext limpa cache na inicialização**: Toda vez que o componente monta, ele apaga o `localStorage` e `sessionStorage`
+3. **Estados não persistidos**: Filtros e preferências do usuário são armazenados apenas em memória (useState)
 
-#### 1. Criar `supabase/functions/webhook-lead-click-imoveis/index.ts`
-```text
-Estrutura da Edge Function:
-├── CORS headers
-├── Validação do método POST
-├── Parse do payload JSON (nome, telefone, dados_adicionais)
-├── Buscar próximo usuário ativo da Click Imóveis (round-robin)
-├── Criar lead via create_lead_safe RPC
-├── Adicionar etiqueta "Lead Qualificado Pela IA"
-├── Atualizar ultimo_lead_recebido do usuário
-├── Enviar notificação push
-└── Retornar resposta de sucesso
-```
+## Solução Proposta
 
-#### 2. Atualizar `supabase/config.toml`
-Adicionar configuração para a nova função:
-```toml
-[functions.webhook-lead-click-imoveis]
-verify_jwt = false
-```
+### Etapa 1: Remover reload automático do Service Worker
 
-### Payload Esperado
-```json
-{
-  "nome": "Nome do Lead",
-  "telefone": "21999999999",
-  "dados_adicionais": "Informações extras (opcional)"
-}
-```
+Modificar `src/components/PWALifecycle.tsx` para não forçar reload automático, apenas notificar o usuário sobre atualizações disponíveis.
 
-### URL do Webhook (após deploy)
-```
-https://loxpoehsddfearnzcdla.supabase.co/functions/v1/webhook-lead-click-imoveis
-```
-
-### Fluxo de Funcionamento
-1. Sistema externo envia POST com dados do lead
-2. Edge function valida campos obrigatórios (nome, telefone)
-3. Busca próximo corretor ativo da Click Imóveis (round-robin)
-4. Cria lead usando `create_lead_safe` (previne duplicatas)
-5. Adiciona tag "Lead Qualificado Pela IA"
-6. Atualiza `ultimo_lead_recebido` do corretor
-7. Envia notificação push para o corretor
-8. Retorna JSON com sucesso e dados do lead
-
-### Diferença do webhook-lead atual
-O `webhook-lead` atual já atende a Click Imóveis, mas esta nova função:
-- É dedicada exclusivamente para Click Imóveis
-- Usa IDs hardcoded (mais performático)
-- Facilita rastreamento de logs separado
-- Permite customizações futuras específicas
-
-### Seção Técnica
-
-A implementação seguirá o padrão das edge functions existentes (`webhook-lead-janaina-vidalete`, `webhook-lead-mays-imob`):
-
+**Antes:**
 ```typescript
-// Constantes fixas
-const CLICK_IMOVEIS_COMPANY_ID = 'c95541d9-3e6a-4fc1-8d64-c5a6d5f7c9b6';
-const TAG_LEAD_QUALIFICADO_IA_ID = '89b0d175-7ac8-44b3-9f47-dec34353ccac';
-
-// Round-robin: buscar usuário com ultimo_lead_recebido mais antigo
-const { data: nextUser } = await supabase
-  .from('users')
-  .select('id, name')
-  .eq('company_id', CLICK_IMOVEIS_COMPANY_ID)
-  .eq('status', 'ativo')
-  .order('ultimo_lead_recebido', { ascending: true, nullsFirst: true })
-  .limit(1)
-  .single();
-
-// Criar lead com proteção contra duplicatas
-const { data: leadResult } = await supabase.rpc('create_lead_safe', {
-  _nome: body.nome,
-  _telefone: telefoneLimpo,
-  _dados_adicionais: body.dados_adicionais,
-  _company_id: CLICK_IMOVEIS_COMPANY_ID,
-  _user_id: nextUser.id
-});
-
-// Adicionar etiqueta
-await supabase.from('lead_tag_relations').insert({
-  lead_id: leadResult.lead_id,
-  tag_id: TAG_LEAD_QUALIFICADO_IA_ID
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+  window.location.reload();
 });
 ```
+
+**Depois:**
+```typescript
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+  console.log('Service Worker atualizado - nova versão disponível');
+  // Não forçar reload automático
+});
+```
+
+### Etapa 2: Manter cache do usuário entre inicializações
+
+Modificar `src/contexts/AuthContext.tsx` para usar o cache local enquanto valida a sessão em background.
+
+**Antes:**
+```typescript
+useEffect(() => {
+  localStorage.removeItem('crm_user');
+  sessionStorage.clear();
+  // ...
+}, []);
+```
+
+**Depois:**
+```typescript
+useEffect(() => {
+  // Tentar restaurar usuário do cache local PRIMEIRO
+  const cachedUser = localStorage.getItem('crm_user');
+  if (cachedUser) {
+    try {
+      setUser(JSON.parse(cachedUser));
+    } catch (e) {
+      localStorage.removeItem('crm_user');
+    }
+  }
+  
+  // Depois validar sessão em background
+  // ...
+}, []);
+```
+
+### Etapa 3 (Opcional): Persistir preferências do usuário
+
+Criar um hook `usePersistedState` para salvar filtros e modo de visualização no localStorage.
+
+Modificar `src/pages/Index.tsx` para usar estados persistidos:
+- `viewMode` - persistir escolha kanban/lista
+- `dateFilter` - persistir filtro de data selecionado
+- `selectedTeamId` - persistir equipe selecionada
+
+---
+
+## Detalhes Técnicos
+
+### Arquivos a modificar:
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/components/PWALifecycle.tsx` | Remover `window.location.reload()` do listener `controllerchange` |
+| `src/contexts/AuthContext.tsx` | Usar cache local primeiro, depois validar em background |
+| `src/pages/Index.tsx` | (Opcional) Persistir estados de filtros no localStorage |
+
+### Fluxo após a correção:
+
+```text
+Usuário sai da aba
+        |
+        v
+Retorna para a aba
+        |
+        v
+Service Worker não força reload
+        |
+        v
+AuthContext usa cache local
+        |
+        v
+Estados mantidos em memória
+        |
+        v
+Usuário continua de onde parou
+```
+
+---
+
+## Resultado Esperado
+
+- Ao sair e retornar à aba, a página mantém o estado atual
+- Não há mais reload automático ao retornar
+- A experiência do usuário é suave e contínua
+- Atualizações do PWA são notificadas mas não forçam reload
+
+## Risco
+
+- **Baixo**: As alterações são pontuais e não afetam a lógica de autenticação
+- A sessão continua sendo validada em background para segurança
