@@ -36,8 +36,8 @@ export function PWALifecycle() {
 
           // Listen for controlling service worker changes
           navigator.serviceWorker.addEventListener('controllerchange', () => {
-            // Service worker updated, reload the page
-            window.location.reload();
+            // Service worker updated - apenas logar, não forçar reload
+            console.log('Service Worker atualizado - nova versão disponível');
           });
 
         } catch (error) {
