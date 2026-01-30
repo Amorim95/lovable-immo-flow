@@ -185,45 +185,73 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       const conversaoGeral = totalLeads > 0 ? (vendasFechadas / totalLeads) * 100 : 0;
       
       // Calcular crescimento comparando com período anterior
-      const periodoDays = dateRange?.from && dateRange?.to 
-        ? Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24))
-        : 30; // Default 30 dias
-      
-      const startDatePreviousPeriod = new Date();
-      const endDatePreviousPeriod = new Date();
+      // Para período total: comparar últimos 30 dias vs 30 dias anteriores
+      // Para período específico: comparar período selecionado vs período anterior equivalente
+      let crescimento = 0;
       
       if (dateRange?.from && dateRange?.to) {
-        startDatePreviousPeriod.setTime(dateRange.from.getTime() - (periodoDays * 24 * 60 * 60 * 1000));
-        endDatePreviousPeriod.setTime(dateRange.to.getTime() - (periodoDays * 24 * 60 * 60 * 1000));
-      } else {
-        startDatePreviousPeriod.setDate(startDatePreviousPeriod.getDate() - 60);
-        endDatePreviousPeriod.setDate(endDatePreviousPeriod.getDate() - 30);
-      }
-      
-      // Buscar leads do período anterior
-      let previousPeriodQuery = supabase
-        .from('leads')
-        .select('id')
-        .limit(10000);
-
-      // Aplicar filtro de empresa apenas se não for super-admin
-      if (companyId) {
-        previousPeriodQuery = previousPeriodQuery.eq('company_id', companyId);
-      }
-
-      // Aplicar filtro de data do período anterior apenas se houver dateRange
-      if (dateRange?.from && dateRange?.to) {
-        previousPeriodQuery = previousPeriodQuery
+        // Período específico selecionado
+        const periodoDays = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+        
+        const startDatePreviousPeriod = new Date(dateRange.from.getTime() - (periodoDays * 24 * 60 * 60 * 1000));
+        const endDatePreviousPeriod = new Date(dateRange.to.getTime() - (periodoDays * 24 * 60 * 60 * 1000));
+        
+        let previousPeriodQuery = supabase
+          .from('leads')
+          .select('id')
           .gte('created_at', startDatePreviousPeriod.toISOString())
-          .lte('created_at', endDatePreviousPeriod.toISOString());
-      }
+          .lte('created_at', endDatePreviousPeriod.toISOString())
+          .limit(10000);
 
-      const { data: leadsPreviousPeriod } = await previousPeriodQuery;
-      
-      const leadsPeriodoAnterior = leadsPreviousPeriod?.length || 0;
-      const crescimento = leadsPeriodoAnterior > 0 
-        ? ((totalLeads - leadsPeriodoAnterior) / leadsPeriodoAnterior) * 100 
-        : totalLeads > 0 ? 100 : 0;
+        if (companyId) {
+          previousPeriodQuery = previousPeriodQuery.eq('company_id', companyId);
+        }
+
+        const { data: leadsPreviousPeriod } = await previousPeriodQuery;
+        const leadsPeriodoAnterior = leadsPreviousPeriod?.length || 0;
+        
+        crescimento = leadsPeriodoAnterior > 0 
+          ? ((totalLeads - leadsPeriodoAnterior) / leadsPeriodoAnterior) * 100 
+          : totalLeads > 0 ? 100 : 0;
+      } else {
+        // Período total: comparar últimos 30 dias vs 30 dias anteriores
+        const now = new Date();
+        const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+        const sixtyDaysAgo = new Date(now.getTime() - (60 * 24 * 60 * 60 * 1000));
+        
+        // Leads dos últimos 30 dias
+        let recentQuery = supabase
+          .from('leads')
+          .select('id')
+          .gte('created_at', thirtyDaysAgo.toISOString())
+          .limit(10000);
+        
+        if (companyId) {
+          recentQuery = recentQuery.eq('company_id', companyId);
+        }
+        
+        const { data: recentLeads } = await recentQuery;
+        const leadsRecentes = recentLeads?.length || 0;
+        
+        // Leads de 30-60 dias atrás
+        let previousQuery = supabase
+          .from('leads')
+          .select('id')
+          .gte('created_at', sixtyDaysAgo.toISOString())
+          .lt('created_at', thirtyDaysAgo.toISOString())
+          .limit(10000);
+        
+        if (companyId) {
+          previousQuery = previousQuery.eq('company_id', companyId);
+        }
+        
+        const { data: previousLeads } = await previousQuery;
+        const leadsPeriodoAnterior = previousLeads?.length || 0;
+        
+        crescimento = leadsPeriodoAnterior > 0 
+          ? ((leadsRecentes - leadsPeriodoAnterior) / leadsPeriodoAnterior) * 100 
+          : leadsRecentes > 0 ? 100 : 0;
+      }
 
       // 6. Calcular tempo médio de resposta real (em horas)
       const leadsComTempo = leadsData?.filter(lead => lead.primeiro_contato_whatsapp) || [];
