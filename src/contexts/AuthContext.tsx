@@ -32,9 +32,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Limpar qualquer cache local ao inicializar
-    localStorage.removeItem('crm_user');
-    sessionStorage.clear();
+    // Tentar restaurar usuário do cache local PRIMEIRO para evitar flash de loading
+    const cachedUser = localStorage.getItem('crm_user');
+    if (cachedUser) {
+      try {
+        const parsed = JSON.parse(cachedUser);
+        setUser(parsed);
+      } catch (e) {
+        localStorage.removeItem('crm_user');
+      }
+    }
     
     // Setup auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
