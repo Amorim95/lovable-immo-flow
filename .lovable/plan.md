@@ -1,118 +1,159 @@
 
-# Plano: Corrigir Reload Automático ao Retornar para a Aba
+# Plano: Corrigir Contagem de Leads no Dashboard
 
 ## Problema Identificado
 
-A aplicação recarrega automaticamente quando o usuário sai da aba (deixa em segundo plano) e retorna. Isso acontece por três razões:
+O Dashboard mostra números incorretos de leads porque a query no `useDashboardMetrics.ts` usa `.limit(10000)` mas o **Supabase retorna no máximo 1000 rows por query** por padrão.
 
-1. **Service Worker força reload**: O listener `controllerchange` em `PWALifecycle.tsx` executa `window.location.reload()` quando o Service Worker é atualizado
-2. **AuthContext limpa cache na inicialização**: Toda vez que o componente monta, ele apaga o `localStorage` e `sessionStorage`
-3. **Estados não persistidos**: Filtros e preferências do usuário são armazenados apenas em memória (useState)
+**Evidências:**
+- Total de leads no banco: **5.964**
+- Leads da Click Imóveis: **5.519**
+- Dashboard mostra apenas ~700 leads (limite do Supabase atingido)
+- Kanban usa paginação e mostra corretamente: 738 em "Recuperar"
 
-## Solução Proposta
+## Causa Raiz
 
-### Etapa 1: Remover reload automático do Service Worker
+| Componente | Método de Query | Resultado |
+|------------|-----------------|-----------|
+| Kanban (`useLeadsOptimized`) | Loop de paginação com `range()` | Carrega TODOS os leads |
+| Dashboard (`useDashboardMetrics`) | `.limit(10000)` simples | Truncado em 1000 pelo Supabase |
 
-Modificar `src/components/PWALifecycle.tsx` para não forçar reload automático, apenas notificar o usuário sobre atualizações disponíveis.
-
-**Antes:**
 ```typescript
-navigator.serviceWorker.addEventListener('controllerchange', () => {
-  window.location.reload();
-});
+// Dashboard atual (INCORRETO)
+const { data: leadsData } = await supabase
+  .from('leads')
+  .select('...')
+  .limit(10000); // Supabase ignora e retorna max 1000
+
+// Kanban (CORRETO)
+while (hasMore) {
+  const { data } = await supabase
+    .from('leads')
+    .select('...')
+    .range(from, from + pageSize - 1);
+  // ... continua paginando
+}
 ```
 
-**Depois:**
-```typescript
-navigator.serviceWorker.addEventListener('controllerchange', () => {
-  console.log('Service Worker atualizado - nova versão disponível');
-  // Não forçar reload automático
-});
-```
+## Solução
 
-### Etapa 2: Manter cache do usuário entre inicializações
-
-Modificar `src/contexts/AuthContext.tsx` para usar o cache local enquanto valida a sessão em background.
-
-**Antes:**
-```typescript
-useEffect(() => {
-  localStorage.removeItem('crm_user');
-  sessionStorage.clear();
-  // ...
-}, []);
-```
-
-**Depois:**
-```typescript
-useEffect(() => {
-  // Tentar restaurar usuário do cache local PRIMEIRO
-  const cachedUser = localStorage.getItem('crm_user');
-  if (cachedUser) {
-    try {
-      setUser(JSON.parse(cachedUser));
-    } catch (e) {
-      localStorage.removeItem('crm_user');
-    }
-  }
-  
-  // Depois validar sessão em background
-  // ...
-}, []);
-```
-
-### Etapa 3 (Opcional): Persistir preferências do usuário
-
-Criar um hook `usePersistedState` para salvar filtros e modo de visualização no localStorage.
-
-Modificar `src/pages/Index.tsx` para usar estados persistidos:
-- `viewMode` - persistir escolha kanban/lista
-- `dateFilter` - persistir filtro de data selecionado
-- `selectedTeamId` - persistir equipe selecionada
+Implementar a mesma lógica de paginação do `useLeadsOptimized` no hook `useDashboardMetrics`.
 
 ---
 
 ## Detalhes Técnicos
 
-### Arquivos a modificar:
+### Arquivo a modificar:
+`src/hooks/useDashboardMetrics.ts`
 
-| Arquivo | Alteração |
-|---------|-----------|
-| `src/components/PWALifecycle.tsx` | Remover `window.location.reload()` do listener `controllerchange` |
-| `src/contexts/AuthContext.tsx` | Usar cache local primeiro, depois validar em background |
-| `src/pages/Index.tsx` | (Opcional) Persistir estados de filtros no localStorage |
+### Alterações:
 
-### Fluxo após a correção:
+**1. Adicionar paginação na busca de leads (linhas 63-81)**
+
+Substituir:
+```typescript
+let leadsQuery = supabase
+  .from('leads')
+  .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
+  .limit(10000);
+
+if (companyId) {
+  leadsQuery = leadsQuery.eq('company_id', companyId);
+}
+
+if (dateRange?.from && dateRange?.to) {
+  leadsQuery = leadsQuery
+    .gte('created_at', dateRange.from.toISOString())
+    .lte('created_at', dateRange.to.toISOString());
+}
+
+const { data: leadsData, error: leadsError } = await leadsQuery;
+```
+
+Por:
+```typescript
+// Implementar paginação para buscar TODOS os leads
+let allLeads: any[] = [];
+let from = 0;
+const pageSize = 1000;
+let hasMore = true;
+
+while (hasMore) {
+  let leadsQuery = supabase
+    .from('leads')
+    .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
+    .order('created_at', { ascending: false })
+    .range(from, from + pageSize - 1);
+
+  if (companyId) {
+    leadsQuery = leadsQuery.eq('company_id', companyId);
+  }
+
+  if (dateRange?.from && dateRange?.to) {
+    leadsQuery = leadsQuery
+      .gte('created_at', dateRange.from.toISOString())
+      .lte('created_at', dateRange.to.toISOString());
+  }
+
+  const { data, error } = await leadsQuery;
+  
+  if (error) throw error;
+  if (!data || data.length === 0) break;
+
+  allLeads = [...allLeads, ...data];
+
+  if (data.length < pageSize) {
+    hasMore = false;
+  } else {
+    from += pageSize;
+  }
+}
+
+const leadsData = allLeads;
+```
+
+**2. Aplicar mesma correção nas queries de crescimento (linhas 221-232 e 245-275)**
+
+As queries de comparação de período anterior também precisam de paginação para garantir contagens corretas.
+
+---
+
+## Fluxo Corrigido
 
 ```text
-Usuário sai da aba
-        |
-        v
-Retorna para a aba
-        |
-        v
-Service Worker não força reload
-        |
-        v
-AuthContext usa cache local
-        |
-        v
-Estados mantidos em memória
-        |
-        v
-Usuário continua de onde parou
+Dashboard carrega
+       |
+       v
+Loop de paginação
+  (1000 em 1000)
+       |
+       v
+Carrega TODOS os leads
+  (5519 para Click Imóveis)
+       |
+       v
+Conta por etapa
+       |
+       v
+Números batem com Kanban
 ```
 
 ---
 
 ## Resultado Esperado
 
-- Ao sair e retornar à aba, a página mantém o estado atual
-- Não há mais reload automático ao retornar
-- A experiência do usuário é suave e contínua
-- Atualizações do PWA são notificadas mas não forçam reload
+Após a correção:
+- "Recuperar": 738 leads (igual ao Kanban)
+- "Aguardando Atendimento": 292 leads (igual ao Kanban)
+- "Em Tentativas de Contato": 2897 leads (igual ao Kanban)
+
+## Arquivos Modificados
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/hooks/useDashboardMetrics.ts` | Implementar paginação automática igual ao Kanban |
 
 ## Risco
 
-- **Baixo**: As alterações são pontuais e não afetam a lógica de autenticação
-- A sessão continua sendo validada em background para segurança
+- **Baixo**: Apenas altera a forma de buscar dados, sem impacto na lógica de cálculo
+- **Performance**: Pode aumentar levemente o tempo de carregamento para empresas com muitos leads, mas é necessário para garantir precisão dos dados
