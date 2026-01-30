@@ -60,27 +60,47 @@ export function useDashboardMetrics(dateRange?: DateRange) {
       // Buscar company_id do usuário
       const { data: companyId } = await supabase.rpc('get_user_company_id');
 
-      // 1. Total de Leads
-      let leadsQuery = supabase
-        .from('leads')
-        .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
-        .limit(10000);
+      // 1. Total de Leads - Com paginação para buscar TODOS
+      let allLeads: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      // Aplicar filtro de empresa apenas se não for super-admin
-      if (companyId) {
-        leadsQuery = leadsQuery.eq('company_id', companyId);
+      while (hasMore) {
+        let leadsQuery = supabase
+          .from('leads')
+          .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
+          .order('created_at', { ascending: false })
+          .range(from, from + pageSize - 1);
+
+        // Aplicar filtro de empresa apenas se não for super-admin
+        if (companyId) {
+          leadsQuery = leadsQuery.eq('company_id', companyId);
+        }
+
+        // Aplicar filtro de data apenas se houver dateRange
+        if (dateRange?.from && dateRange?.to) {
+          leadsQuery = leadsQuery
+            .gte('created_at', dateRange.from.toISOString())
+            .lte('created_at', dateRange.to.toISOString());
+        }
+
+        const { data, error } = await leadsQuery;
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        allLeads = [...allLeads, ...data];
+
+        if (data.length < pageSize) {
+          hasMore = false;
+        } else {
+          from += pageSize;
+        }
       }
 
-      // Aplicar filtro de data apenas se houver dateRange
-      if (dateRange?.from && dateRange?.to) {
-        leadsQuery = leadsQuery
-          .gte('created_at', dateRange.from.toISOString())
-          .lte('created_at', dateRange.to.toISOString());
-      }
-
-      const { data: leadsData, error: leadsError } = await leadsQuery;
-
-      if (leadsError) throw leadsError;
+      const leadsData = allLeads;
+      console.log(`Dashboard: Total de leads carregados: ${leadsData.length}`);
 
       const totalLeads = leadsData?.length || 0;
 
@@ -218,19 +238,36 @@ export function useDashboardMetrics(dateRange?: DateRange) {
         const startDatePreviousPeriod = new Date(dateRange.from.getTime() - (periodoDays * 24 * 60 * 60 * 1000));
         const endDatePreviousPeriod = new Date(dateRange.to.getTime() - (periodoDays * 24 * 60 * 60 * 1000));
         
-        let previousPeriodQuery = supabase
-          .from('leads')
-          .select('id')
-          .gte('created_at', startDatePreviousPeriod.toISOString())
-          .lte('created_at', endDatePreviousPeriod.toISOString())
-          .limit(10000);
+        // Buscar leads do período anterior com paginação
+        let previousPeriodLeads: any[] = [];
+        let prevFrom = 0;
+        let prevHasMore = true;
 
-        if (companyId) {
-          previousPeriodQuery = previousPeriodQuery.eq('company_id', companyId);
+        while (prevHasMore) {
+          let previousPeriodQuery = supabase
+            .from('leads')
+            .select('id')
+            .gte('created_at', startDatePreviousPeriod.toISOString())
+            .lte('created_at', endDatePreviousPeriod.toISOString())
+            .range(prevFrom, prevFrom + pageSize - 1);
+
+          if (companyId) {
+            previousPeriodQuery = previousPeriodQuery.eq('company_id', companyId);
+          }
+
+          const { data } = await previousPeriodQuery;
+          if (!data || data.length === 0) break;
+
+          previousPeriodLeads = [...previousPeriodLeads, ...data];
+
+          if (data.length < pageSize) {
+            prevHasMore = false;
+          } else {
+            prevFrom += pageSize;
+          }
         }
 
-        const { data: leadsPreviousPeriod } = await previousPeriodQuery;
-        const leadsPeriodoAnterior = leadsPreviousPeriod?.length || 0;
+        const leadsPeriodoAnterior = previousPeriodLeads.length;
         
         crescimento = leadsPeriodoAnterior > 0 
           ? ((totalLeads - leadsPeriodoAnterior) / leadsPeriodoAnterior) * 100 
@@ -241,34 +278,66 @@ export function useDashboardMetrics(dateRange?: DateRange) {
         const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
         const sixtyDaysAgo = new Date(now.getTime() - (60 * 24 * 60 * 60 * 1000));
         
-        // Leads dos últimos 30 dias
-        let recentQuery = supabase
-          .from('leads')
-          .select('id')
-          .gte('created_at', thirtyDaysAgo.toISOString())
-          .limit(10000);
-        
-        if (companyId) {
-          recentQuery = recentQuery.eq('company_id', companyId);
+        // Leads dos últimos 30 dias com paginação
+        let recentLeads: any[] = [];
+        let recentFrom = 0;
+        let recentHasMore = true;
+
+        while (recentHasMore) {
+          let recentQuery = supabase
+            .from('leads')
+            .select('id')
+            .gte('created_at', thirtyDaysAgo.toISOString())
+            .range(recentFrom, recentFrom + pageSize - 1);
+          
+          if (companyId) {
+            recentQuery = recentQuery.eq('company_id', companyId);
+          }
+          
+          const { data } = await recentQuery;
+          if (!data || data.length === 0) break;
+
+          recentLeads = [...recentLeads, ...data];
+
+          if (data.length < pageSize) {
+            recentHasMore = false;
+          } else {
+            recentFrom += pageSize;
+          }
         }
+
+        const leadsRecentes = recentLeads.length;
         
-        const { data: recentLeads } = await recentQuery;
-        const leadsRecentes = recentLeads?.length || 0;
-        
-        // Leads de 30-60 dias atrás
-        let previousQuery = supabase
-          .from('leads')
-          .select('id')
-          .gte('created_at', sixtyDaysAgo.toISOString())
-          .lt('created_at', thirtyDaysAgo.toISOString())
-          .limit(10000);
-        
-        if (companyId) {
-          previousQuery = previousQuery.eq('company_id', companyId);
+        // Leads de 30-60 dias atrás com paginação
+        let previousLeads: any[] = [];
+        let prevFrom = 0;
+        let prevHasMore = true;
+
+        while (prevHasMore) {
+          let previousQuery = supabase
+            .from('leads')
+            .select('id')
+            .gte('created_at', sixtyDaysAgo.toISOString())
+            .lt('created_at', thirtyDaysAgo.toISOString())
+            .range(prevFrom, prevFrom + pageSize - 1);
+          
+          if (companyId) {
+            previousQuery = previousQuery.eq('company_id', companyId);
+          }
+          
+          const { data } = await previousQuery;
+          if (!data || data.length === 0) break;
+
+          previousLeads = [...previousLeads, ...data];
+
+          if (data.length < pageSize) {
+            prevHasMore = false;
+          } else {
+            prevFrom += pageSize;
+          }
         }
-        
-        const { data: previousLeads } = await previousQuery;
-        const leadsPeriodoAnterior = previousLeads?.length || 0;
+
+        const leadsPeriodoAnterior = previousLeads.length;
         
         crescimento = leadsPeriodoAnterior > 0 
           ? ((leadsRecentes - leadsPeriodoAnterior) / leadsPeriodoAnterior) * 100 
