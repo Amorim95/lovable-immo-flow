@@ -84,15 +84,37 @@ export function useDashboardMetrics(dateRange?: DateRange) {
 
       const totalLeads = leadsData?.length || 0;
 
-      // Calcular leads por etapa baseado nas etapas customizadas
+      // Calcular leads por etapa usando mesma lógica do Kanban
       const leadsPorEtapa: { [key: string]: number } = {};
       stages.forEach(stage => {
         const count = leadsData?.filter(lead => {
-          if (lead.stage_name) {
-            return lead.stage_name === stage.nome;
+          // Prioridade 1: Correspondência EXATA com nome customizado
+          if (lead.stage_name === stage.nome) {
+            return true;
           }
-          // Fallback para compatibilidade
-          return stage.legacy_key && lead.etapa === stage.legacy_key;
+          
+          // Prioridade 2: Correspondência com legacy_key (apenas se não bateu no nome)
+          if (stage.legacy_key && lead.stage_name === stage.legacy_key) {
+            // Garantir que esse lead não pertence a OUTRA etapa
+            const belongsToOtherStage = stages.some(s => 
+              s.id !== stage.id && (
+                s.nome === lead.stage_name ||
+                s.legacy_key === lead.stage_name
+              )
+            );
+            if (!belongsToOtherStage) {
+              return true;
+            }
+          }
+          
+          // Prioridade 3: Fallback para etapa (apenas se stage_name vazio ou null)
+          if ((!lead.stage_name || lead.stage_name === '') && 
+              stage.legacy_key && 
+              lead.etapa === stage.legacy_key) {
+            return true;
+          }
+          
+          return false;
         }).length || 0;
         leadsPorEtapa[stage.nome] = count;
       });
