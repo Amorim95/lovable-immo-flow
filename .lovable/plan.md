@@ -1,111 +1,74 @@
 
 
-# Plano: Frases Motivacionais Rotativas Diárias
+# Plano: Mover Frase Motivacional para Após o Botão
 
 ## Objetivo
 
-Implementar um sistema que exibe uma frase motivacional diferente a cada dia, mudando às 7:35 da manhã. Quando chegar na última frase da lista, volta para a primeira.
+Reposicionar o texto motivacional diário para aparecer logo depois do botão "Novo Lead", em vez de no topo da página como título.
 
-## Lista de Frases (47 frases)
-
-Todas as frases fornecidas serão armazenadas em ordem e rotacionarão diariamente.
-
-## Lógica de Rotação
+## Layout Atual
 
 ```text
-Dia 1 (7:35) → "Quem age antes, fecha antes."
-Dia 2 (7:35) → "Meta não é pressão, é direção."
-...
-Dia 47 (7:35) → "Quem não desiste, fecha."
-Dia 48 (7:35) → "Quem age antes, fecha antes." (volta ao início)
+┌────────────────────────────────────────────────────┐
+│ "Meta não é pressão, é direção."  ← H1 no topo     │
+├────────────────────────────────────────────────────┤
+│ [+ Novo Lead]                                      │
+├────────────────────────────────────────────────────┤
+│ Filtros...                                         │
+└────────────────────────────────────────────────────┘
 ```
 
-## Implementação
+## Layout Depois
 
-### Arquivos a criar/modificar
+```text
+┌────────────────────────────────────────────────────┐
+│ [+ Novo Lead]    "Meta não é pressão, é direção."  │
+├────────────────────────────────────────────────────┤
+│ Filtros...                                         │
+└────────────────────────────────────────────────────┘
+```
+
+## Alteração
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/constants/motivationalQuotes.ts` | Criar arquivo com a lista de 47 frases |
-| `src/hooks/useDailyQuote.ts` | Criar hook que calcula qual frase mostrar baseado na data atual |
-| `src/pages/Index.tsx` | Usar o hook para exibir a frase do dia |
+| `src/pages/Index.tsx` | Mover o texto motivacional para dentro da linha do botão "Novo Lead" |
 
-### Lógica do cálculo
+## Código Antes (linhas 228-247)
 
-```typescript
-// Calcula quantos "dias" se passaram desde uma data de referência
-// considerando que o dia muda às 7:35
-
-function getDailyQuote(quotes: string[]): string {
-  const now = new Date();
-  const referenceDate = new Date('2025-02-02T07:35:00'); // Data de início
+```jsx
+<div className="flex flex-col gap-4">
+  <div>
+    <h1 className="text-3xl font-bold text-gray-900">  "Meta não é pressão, é direção."</h1>
+  </div>
   
-  // Ajusta para considerar que o dia muda às 7:35
-  const adjustedNow = new Date(now);
-  if (now.getHours() < 7 || (now.getHours() === 7 && now.getMinutes() < 35)) {
-    adjustedNow.setDate(adjustedNow.getDate() - 1); // Ainda é o dia anterior
-  }
-  
-  // Calcula dias desde a referência
-  const diffTime = adjustedNow.getTime() - referenceDate.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  
-  // Índice circular (volta ao início após a última frase)
-  const index = ((diffDays % quotes.length) + quotes.length) % quotes.length;
-  
-  return quotes[index];
-}
+  <div className="flex items-center gap-3">
+    {canCreateLeads && <Button>...</Button>}
+    ...
+  </div>
+</div>
 ```
 
-### Estrutura do hook
+## Código Depois
 
-```typescript
-// useDailyQuote.ts
-export const useDailyQuote = () => {
-  const [quote, setQuote] = useState(getDailyQuote(QUOTES));
+```jsx
+<div className="flex items-center gap-4">
+  {canCreateLeads && <Button>...</Button>}
   
-  // Atualiza a frase se o usuário ficar na página durante a mudança às 7:35
-  useEffect(() => {
-    const checkForUpdate = () => {
-      const newQuote = getDailyQuote(QUOTES);
-      if (newQuote !== quote) {
-        setQuote(newQuote);
-      }
-    };
-    
-    const interval = setInterval(checkForUpdate, 60000); // Verifica a cada minuto
-    return () => clearInterval(interval);
-  }, [quote]);
-  
-  return quote;
-};
+  <span className="text-lg font-medium text-gray-600 italic">
+    "{dailyQuote}"
+  </span>
+</div>
 ```
 
-### Uso no Index.tsx
+## Detalhes
 
-```typescript
-// Antes
-<h1 className="text-3xl font-bold text-gray-900">
-  "Meta não é pressão, é direção."
-</h1>
-
-// Depois
-const dailyQuote = useDailyQuote();
-
-<h1 className="text-3xl font-bold text-gray-900">
-  "{dailyQuote}"
-</h1>
-```
-
-## Comportamento
-
-- **Às 7:35 de cada dia**: A frase muda automaticamente
-- **Antes das 7:35**: Mostra a frase do dia anterior
-- **Após as 7:35**: Mostra a frase do dia atual
-- **Ciclo**: Após a 47ª frase, volta para a 1ª
+- Remover o `<div>` com o `<h1>` do topo
+- Adicionar a frase como um `<span>` ao lado do botão "Novo Lead"
+- Estilizar com fonte menor e itálico para parecer uma citação sutil
+- Manter o uso do hook `useDailyQuote` para a frase rotativa
 
 ## Risco
 
-- **Nenhum**: Alteração isolada que não afeta outras funcionalidades
-- O cálculo é feito no frontend, então todos os usuários verão a mesma frase no mesmo dia
+- **Nenhum**: Alteração puramente visual de posicionamento
 
