@@ -227,7 +227,7 @@ const Index = () => {
       {/* Header */}
       <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">  Boas Vendas!</h1>
+          <h1 className="text-3xl font-bold text-gray-900">  “Meta não é pressão, é direção.”</h1>
           
         </div>
         
