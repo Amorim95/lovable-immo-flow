@@ -48,11 +48,12 @@ export function useLeadsOptimized() {
       setLoading(true);
       setError(null);
 
-      // Implementar paginação automática para carregar TODOS os leads
+      // Carregar leads em lotes de 1000, mas iniciar exibição após o primeiro lote
       let allLeads: LeadsData[] = [];
       let from = 0;
-      const pageSize = 1000; // Limite máximo do Supabase por query
+      const pageSize = 1000;
       let hasMore = true;
+      let isFirstBatch = true;
 
       while (hasMore) {
         const { data, error } = await supabase
@@ -91,6 +92,13 @@ export function useLeadsOptimized() {
         }
 
         allLeads = [...allLeads, ...data];
+        
+        // Exibir leads imediatamente após o primeiro lote para UX mais rápida
+        if (isFirstBatch) {
+          setLeads(allLeads);
+          setLoading(false); // Desativa loading após primeiro lote
+          isFirstBatch = false;
+        }
 
         // Se retornou menos que o pageSize, chegamos ao fim
         if (data.length < pageSize) {
@@ -100,6 +108,7 @@ export function useLeadsOptimized() {
         }
       }
 
+      // Atualizar com todos os leads após carregar tudo
       console.log(`Total de leads carregados: ${allLeads.length}`);
       setLeads(allLeads);
     } catch (error) {
