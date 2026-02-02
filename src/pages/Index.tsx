@@ -241,10 +241,7 @@ const Index = () => {
             </Button>}
           
           {!isMobile && <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-              <Button variant={viewMode === 'kanban' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('kanban')} className="px-3">
-                <LayoutGrid className="w-4 h-4 mr-2" />
-                Padrão
-              </Button>
+              
               
             </div>}
         </div>
