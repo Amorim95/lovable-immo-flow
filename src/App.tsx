@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -56,21 +55,22 @@ import ResetPassword from "./pages/ResetPassword";
 import Repiques from "./pages/Repiques";
 import MobileRepiques from "./pages/MobileRepiques";
 import { AccessControlCheck } from "@/components/AccessControlCheck";
-
 const queryClient = new QueryClient();
-
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+function ProtectedRoute({
+  children
+}: {
+  children: React.ReactNode;
+}) {
+  const {
+    user,
+    loading
+  } = useAuth();
   const location = useLocation();
-  
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+      </div>;
   }
-  
   if (!user) {
     // Se está tentando acessar /admin, usar login com fundo especial
     if (location.pathname === '/admin') {
@@ -78,18 +78,22 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
     return <Login />;
   }
-  
   return <>{children}</>;
 }
-
 function AppContent() {
-  const { settings } = useCompany();
-  const { user, logout } = useAuth();
+  const {
+    settings
+  } = useCompany();
+  const {
+    user,
+    logout
+  } = useAuth();
   const isMobile = useIsMobile();
-  const { showOnboarding, completeOnboarding } = useOnboarding();
-  
-  return (
-    <>
+  const {
+    showOnboarding,
+    completeOnboarding
+  } = useOnboarding();
+  return <>
       <AutoSyncUsers />
       <OnboardingSteps isOpen={showOnboarding} onComplete={completeOnboarding} />
       <Routes>
@@ -105,11 +109,10 @@ function AppContent() {
       <Route path="/sobre-nos" element={<SobreNos />} />
       <Route path="/contato" element={<Contato />} />
       <Route path="/imovel/:id" element={<ImovelDetalhes />} />
-      <Route path="/*" element={
-        <ProtectedRoute>
-          {isMobile ? (
-            // Mobile Layout
-            <div className="min-h-screen bg-gray-50 dark:bg-background">
+      <Route path="/*" element={<ProtectedRoute>
+          {isMobile ?
+        // Mobile Layout
+        <div className="min-h-screen bg-gray-50 dark:bg-background">
               <Routes>
                 <Route path="/" element={<MobileLeads />} />
                 <Route path="/lead/:id" element={<LeadDetails />} />
@@ -130,29 +133,25 @@ function AppContent() {
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <MobileTabBar />
-            </div>
-          ) : (
-            // Desktop Layout
-            <SidebarProvider>
+            </div> :
+        // Desktop Layout
+        <SidebarProvider>
               <div className="min-h-screen flex w-full bg-gray-50 dark:bg-background">
                 <CRMSidebar />
                 <div className="flex-1 flex flex-col">
-                  <header className="h-16 bg-white border-b border-gray-200 flex items-center px-6 shadow-sm dark:bg-white dark:border-gray-200">
+                  <header className="h-16 bg-white border-b border-gray-200 flex items-center px-6 dark:bg-white dark:border-gray-200 mx-[10px] rounded-none shadow-none">
                     <SidebarTrigger className="lg:hidden" />
                     <div className="flex-1" />
                     <div className="flex items-center gap-4">
                       <div className="text-sm text-gray-600">
                         {user?.name}{settings.name ? ` - ${settings.name}` : ''}
                       </div>
-                      <button
-                        onClick={logout}
-                        className="text-sm text-gray-500 hover:text-gray-700 underline"
-                      >
+                      <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-700 underline">
                         Sair
                       </button>
                     </div>
                   </header>
-                  <main className="flex-1 p-6">
+                  <main className="flex-1 p-6 mx-[7px]">
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/dashboards" element={<Dashboards />} />
@@ -173,17 +172,12 @@ function AppContent() {
                   </main>
                 </div>
               </div>
-            </SidebarProvider>
-          )}
-        </ProtectedRoute>
-      } />
+            </SidebarProvider>}
+        </ProtectedRoute>} />
     </Routes>
-    </>
-  );
+    </>;
 }
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -199,7 +193,5 @@ const App = () => (
         </CompanyProvider>
       </BrowserRouter>
     </TooltipProvider>
-  </QueryClientProvider>
-);
-
+  </QueryClientProvider>;
 export default App;
