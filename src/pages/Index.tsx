@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lead } from "@/types/crm";
@@ -18,19 +17,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  LayoutList, 
-  LayoutGrid,
-  Plus
-} from "lucide-react";
-
+import { LayoutList, LayoutGrid, Plus } from "lucide-react";
 const Index = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { user } = useAuth();
-  const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
-  const { isAdmin, isGestor, isCorretor, isDono, loading: roleLoading } = useUserRole();
-  const { managedTeamId, loading: teamLoading } = useManagerTeam();
+  const {
+    user
+  } = useAuth();
+  const {
+    leads,
+    loading,
+    error,
+    refreshLeads,
+    updateLeadOptimistic
+  } = useLeadsOptimized();
+  const {
+    isAdmin,
+    isGestor,
+    isCorretor,
+    isDono,
+    loading: roleLoading
+  } = useUserRole();
+  const {
+    managedTeamId,
+    loading: teamLoading
+  } = useManagerTeam();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,10 +64,9 @@ const Index = () => {
 
   // Permitir criação de leads para todos os usuários autenticados
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor || isDono);
-
   const handleLeadUpdate = async (leadId: string, updates: Partial<Lead>) => {
     const success = await updateLeadOptimistic(leadId, updates);
-    
+
     // Atualizar o lead local se estiver selecionado (para atividades)
     if (success && selectedLead && selectedLead.id === leadId) {
       setSelectedLead({
@@ -65,16 +75,15 @@ const Index = () => {
       });
     }
   };
-
   const handleLeadClick = async (lead: Lead) => {
     // Marcar primeira visualização se ainda não foi visualizado
     if (!lead.primeira_visualizacao) {
       try {
-        const { error } = await supabase
-          .from('leads')
-          .update({ primeira_visualizacao: new Date().toISOString() })
-          .eq('id', lead.id);
-        
+        const {
+          error
+        } = await supabase.from('leads').update({
+          primeira_visualizacao: new Date().toISOString()
+        }).eq('id', lead.id);
         if (!error) {
           // Atualizar os dados após marcar a visualização
           refreshLeads();
@@ -83,7 +92,6 @@ const Index = () => {
         console.error('Erro ao marcar primeira visualização:', error);
       }
     }
-
     if (isMobile) {
       // No mobile, navegar para a tela de detalhes
       navigate(`/lead/${lead.id}`);
@@ -93,17 +101,14 @@ const Index = () => {
       setIsModalOpen(true);
     }
   };
-
   const handleCreateLead = (leadData: Partial<Lead>) => {
     refreshLeads();
   };
-
   const handleCreateLeadInStage = (stageName: string) => {
     // Por enquanto, manter criação com etapa padrão; futuras melhorias: suportar stage_name customizado
     setNewLeadStage('aguardando-atendimento');
     setIsNewLeadModalOpen(true);
   };
-
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
     setDateFilter(option);
     if (option === 'personalizado' && customRange) {
@@ -114,7 +119,9 @@ const Index = () => {
   };
 
   // Converter dados do Supabase para formato da interface
-  const convertedLeads: (Lead & { userId: string })[] = leads.map(lead => ({
+  const convertedLeads: (Lead & {
+    userId: string;
+  })[] = leads.map(lead => ({
     id: lead.id,
     nome: lead.nome,
     telefone: lead.telefone,
@@ -139,19 +146,11 @@ const Index = () => {
   }));
 
   // Extrair datas únicas dos leads para o DateFilter
-  const availableDates = [...new Set(convertedLeads.map(lead => 
-    lead.dataCriacao.toDateString()
-  ))].map(dateString => new Date(dateString));
-
+  const availableDates = [...new Set(convertedLeads.map(lead => lead.dataCriacao.toDateString()))].map(dateString => new Date(dateString));
   const filteredLeads = convertedLeads.filter(lead => {
-    const matchesSearch = lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      lead.corretor.toLowerCase().includes(searchTerm.toLowerCase());
-
+    const matchesSearch = lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) || lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase()) || lead.corretor.toLowerCase().includes(searchTerm.toLowerCase());
     const dateRange = getDateRangeFromFilter(dateFilter, customDateRange);
-    const matchesDate = !dateRange || (
-      lead.dataCriacao >= dateRange.from && lead.dataCriacao <= dateRange.to
-    );
+    const matchesDate = !dateRange || lead.dataCriacao >= dateRange.from && lead.dataCriacao <= dateRange.to;
 
     // Filtro por usuário (apenas para admin, gestor e dono)
     let matchesUser = true;
@@ -177,7 +176,6 @@ const Index = () => {
       const originalLead = leads.find(l => l.id === lead.id);
       console.log('Filtrando por tags - Lead:', lead.nome, 'selectedTagIds:', selectedTagIds);
       console.log('Original lead tag relations:', originalLead?.lead_tag_relations);
-      
       if (originalLead?.lead_tag_relations) {
         const leadTagIds = originalLead.lead_tag_relations.map((relation: any) => relation.lead_tags?.id).filter(Boolean);
         console.log('Lead tag IDs:', leadTagIds);
@@ -193,95 +191,65 @@ const Index = () => {
     let matchesStage = true;
     if (selectedStageKey && viewMode === 'list') {
       const leadStageKey = lead.stage_name || lead.etapa;
-      
       if (leadStageKey && selectedStageKey) {
         matchesStage = leadStageKey === selectedStageKey;
       } else {
         matchesStage = false;
       }
     }
-
     return matchesSearch && matchesDate && matchesUser && matchesTeam && matchesTags && matchesStage;
   });
-
   if (loading || roleLoading || teamLoading) {
-    return (
-      <div className="space-y-6">
+    return <div className="space-y-6">
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2"></div>
         </div>
         <div className="h-96 bg-gray-200 rounded animate-pulse"></div>
-      </div>
-    );
+      </div>;
   }
-
   if (error) {
-    return (
-      <div className="space-y-6">
+    return <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gestão de Leads</h1>
           <p className="text-red-600 mt-1">{error}</p>
         </div>
         <Button onClick={refreshLeads}>Tentar Novamente</Button>
-      </div>
-    );
+      </div>;
   }
-
   const totalLeads = convertedLeads.length;
   const leadsHoje = convertedLeads.filter(lead => {
     const hoje = new Date();
     const leadDate = new Date(lead.dataCriacao);
     return leadDate.toDateString() === hoje.toDateString();
   }).length;
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gestão de Leads</h1>
-          <p className="text-gray-600 mt-1">
-            Gerencie seus leads aqui ({totalLeads} leads total, {leadsHoje} hoje)
-          </p>
+          
         </div>
         
         <div className="flex items-center gap-3">
-          {canCreateLeads && (
-            <Button 
-              className="bg-primary hover:bg-primary/90"
-              onClick={() => {
-                setNewLeadStage('aguardando-atendimento');
-                setIsNewLeadModalOpen(true);
-              }}
-            >
+          {canCreateLeads && <Button className="bg-primary hover:bg-primary/90" onClick={() => {
+          setNewLeadStage('aguardando-atendimento');
+          setIsNewLeadModalOpen(true);
+        }}>
               <Plus className="w-4 h-4 mr-2" />
               Novo Lead
-            </Button>
-          )}
+            </Button>}
           
-          {!isMobile && (
-            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-              <Button
-                variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('kanban')}
-                className="px-3"
-              >
+          {!isMobile && <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+              <Button variant={viewMode === 'kanban' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('kanban')} className="px-3">
                 <LayoutGrid className="w-4 h-4 mr-2" />
                 Padrão
               </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="px-3"
-              >
+              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} className="px-3">
                 <LayoutList className="w-4 h-4 mr-2" />
                 Lista
               </Button>
-            </div>
-          )}
+            </div>}
         </div>
       </div>
 
@@ -289,93 +257,37 @@ const Index = () => {
       <div className="bg-white p-4 rounded-lg shadow-sm border">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Input
-              placeholder="Buscar leads..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64"
-            />
-            <DateFilter
-              value={dateFilter}
-              customRange={customDateRange}
-              onValueChange={handleDateFilterChange}
-              availableDates={availableDates}
-            />
+            <Input placeholder="Buscar leads..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-64" />
+            <DateFilter value={dateFilter} customRange={customDateRange} onValueChange={handleDateFilterChange} availableDates={availableDates} />
             {/* Filtros de Equipe e Usuário - Apenas para Admin, Gestor e Dono */}
-            {(isAdmin || isGestor || isDono) && (
-              <TeamUserFilters
-                onTeamChange={setSelectedTeamId}
-                onUserChange={setSelectedUserId}
-                selectedTeamId={selectedTeamId}
-                selectedUserId={selectedUserId}
-              />
-            )}
+            {(isAdmin || isGestor || isDono) && <TeamUserFilters onTeamChange={setSelectedTeamId} onUserChange={setSelectedUserId} selectedTeamId={selectedTeamId} selectedUserId={selectedUserId} />}
             {/* Filtro de Etiquetas */}
-            <TagFilter
-              selectedTagIds={selectedTagIds}
-              onTagChange={setSelectedTagIds}
-              className="w-64"
-            />
+            <TagFilter selectedTagIds={selectedTagIds} onTagChange={setSelectedTagIds} className="w-64" />
             {/* Filtro de Etapas - Apenas no modo lista */}
-            {viewMode === 'list' && (
-              <StageFilter
-                selectedStageKey={selectedStageKey}
-                onStageChange={setSelectedStageKey}
-                className="w-64"
-              />
-            )}
+            {viewMode === 'list' && <StageFilter selectedStageKey={selectedStageKey} onStageChange={setSelectedStageKey} className="w-64" />}
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="min-h-[600px] transition-all duration-300 ease-in-out">
-        {isMobile || viewMode === 'list' ? (
-          <div className="animate-fade-in">
-            <ListView
-              leads={filteredLeads}
-              onLeadClick={handleLeadClick}
-              onLeadUpdate={handleLeadUpdate}
-              onOptimisticUpdate={updateLeadOptimistic}
-            />
-          </div>
-        ) : (
-          <div className="animate-fade-in">
-            <KanbanBoard
-              leads={filteredLeads}
-              onLeadUpdate={handleLeadUpdate}
-              onLeadClick={handleLeadClick}
-              onCreateLead={handleCreateLeadInStage}
-              onOptimisticUpdate={updateLeadOptimistic}
-            />
-          </div>
-        )}
+        {isMobile || viewMode === 'list' ? <div className="animate-fade-in">
+            <ListView leads={filteredLeads} onLeadClick={handleLeadClick} onLeadUpdate={handleLeadUpdate} onOptimisticUpdate={updateLeadOptimistic} />
+          </div> : <div className="animate-fade-in">
+            <KanbanBoard leads={filteredLeads} onLeadUpdate={handleLeadUpdate} onLeadClick={handleLeadClick} onCreateLead={handleCreateLeadInStage} onOptimisticUpdate={updateLeadOptimistic} />
+          </div>}
       </div>
 
       {/* Modals */}
-      <LeadModal
-        lead={selectedLead}
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedLead(null);
-        }}
-        onUpdate={handleLeadUpdate}
-      />
+      <LeadModal lead={selectedLead} isOpen={isModalOpen} onClose={() => {
+      setIsModalOpen(false);
+      setSelectedLead(null);
+    }} onUpdate={handleLeadUpdate} />
 
-      {canCreateLeads && (
-        <NewLeadModal
-          isOpen={isNewLeadModalOpen}
-          onClose={() => {
-            setIsNewLeadModalOpen(false);
-            setNewLeadStage('aguardando-atendimento'); // Reset para padrão
-          }}
-          onCreateLead={handleCreateLead}
-          initialStage={newLeadStage}
-        />
-      )}
-    </div>
-  );
+      {canCreateLeads && <NewLeadModal isOpen={isNewLeadModalOpen} onClose={() => {
+      setIsNewLeadModalOpen(false);
+      setNewLeadStage('aguardando-atendimento'); // Reset para padrão
+    }} onCreateLead={handleCreateLead} initialStage={newLeadStage} />}
+    </div>;
 };
-
 export default Index;
