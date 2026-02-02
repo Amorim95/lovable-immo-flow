@@ -274,7 +274,7 @@ const Corretores = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
@@ -286,22 +286,6 @@ const Corretores = () => {
                     {corretores.filter(c => c.status === 'ativo').length}
                   </p>
                   <p className="text-sm text-gray-600">Usuários Ativos</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                  <User className="w-6 h-6 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {corretores.filter(c => c.status === 'pendente').length}
-                  </p>
-                  <p className="text-sm text-gray-600">Aguardando Confirmação</p>
                 </div>
               </div>
             </CardContent>
