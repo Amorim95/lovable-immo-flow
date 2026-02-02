@@ -245,10 +245,7 @@ const Index = () => {
                 <LayoutGrid className="w-4 h-4 mr-2" />
                 Padrão
               </Button>
-              <Button variant={viewMode === 'list' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('list')} className="px-3">
-                <LayoutList className="w-4 h-4 mr-2" />
-                Lista
-              </Button>
+              
             </div>}
         </div>
       </div>
