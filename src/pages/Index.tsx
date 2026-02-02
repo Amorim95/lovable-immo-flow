@@ -43,6 +43,8 @@ const Index = () => {
     loading: teamLoading
   } = useManagerTeam();
   
+  const dailyQuote = useDailyQuote();
+  
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -226,8 +228,6 @@ const Index = () => {
     const leadDate = new Date(lead.dataCriacao);
     return leadDate.toDateString() === hoje.toDateString();
   }).length;
-
-  const dailyQuote = useDailyQuote();
 
   return (
     <div className="space-y-6">
