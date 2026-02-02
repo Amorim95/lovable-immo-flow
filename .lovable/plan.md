@@ -1,159 +1,152 @@
 
-# Plano: Corrigir Contagem de Leads no Dashboard
 
-## Problema Identificado
+# Diagnóstico: Lentidão ao Carregar Leads e Abrir Detalhes
 
-O Dashboard mostra números incorretos de leads porque a query no `useDashboardMetrics.ts` usa `.limit(10000)` mas o **Supabase retorna no máximo 1000 rows por query** por padrão.
+## Problemas Identificados
 
-**Evidências:**
-- Total de leads no banco: **5.964**
-- Leads da Click Imóveis: **5.519**
-- Dashboard mostra apenas ~700 leads (limite do Supabase atingido)
-- Kanban usa paginação e mostra corretamente: 738 em "Recuperar"
+### 1. Carregamento de TODOS os 5.604 leads de uma vez
 
-## Causa Raiz
+O hook `useLeadsOptimized` carrega **todos os leads** do banco usando paginação (lotes de 1000), resultando em:
+- 6 requisições sequenciais ao Supabase para carregar 5.604 leads
+- Todo o processamento de conversão de dados acontece no frontend
+- Toda vez que a página é acessada, esses dados são recarregados
 
-| Componente | Método de Query | Resultado |
-|------------|-----------------|-----------|
-| Kanban (`useLeadsOptimized`) | Loop de paginação com `range()` | Carrega TODOS os leads |
-| Dashboard (`useDashboardMetrics`) | `.limit(10000)` simples | Truncado em 1000 pelo Supabase |
+### 2. LeadDetails depende do carregamento completo de todos os leads
+
+Quando você clica em um lead, a página `LeadDetails` usa o mesmo hook `useLeadsOptimized` e precisa esperar **todos os 5.604 leads** carregarem para então encontrar apenas 1 lead:
 
 ```typescript
-// Dashboard atual (INCORRETO)
-const { data: leadsData } = await supabase
-  .from('leads')
-  .select('...')
-  .limit(10000); // Supabase ignora e retorna max 1000
-
-// Kanban (CORRETO)
-while (hasMore) {
-  const { data } = await supabase
-    .from('leads')
-    .select('...')
-    .range(from, from + pageSize - 1);
-  // ... continua paginando
-}
+// LeadDetails.tsx - Linha 49-50
+useEffect(() => {
+  if (id && leads.length > 0) {  // ⚠️ Espera TODOS carregarem
+    const foundLead = leads.find(l => l.id === id);  // Procura apenas 1
 ```
 
-## Solução
+### 3. Múltiplas queries em cascata
 
-Implementar a mesma lógica de paginação do `useLeadsOptimized` no hook `useDashboardMetrics`.
+Cada componente faz suas próprias queries:
+- `useLeadsOptimized` → 6+ requisições para leads
+- `useLeadStages` → 1 requisição para etapas
+- `useUserRole` → 1 requisição para verificar role
+- `useManagerTeam` → 1 requisição para equipe
+
+---
+
+## Solução Proposta
+
+### Etapa 1: Busca direta no LeadDetails (resolução imediata)
+
+Modificar `LeadDetails.tsx` para buscar o lead diretamente pelo ID, ao invés de esperar todos os leads carregarem:
+
+```typescript
+// ANTES: Espera 5604 leads carregarem
+const { leads } = useLeadsOptimized();
+const foundLead = leads.find(l => l.id === id);
+
+// DEPOIS: Busca apenas 1 lead direto do banco
+const { data: lead } = await supabase
+  .from('leads')
+  .select('*, user:users(name), lead_tag_relations(...)')
+  .eq('id', id)
+  .single();
+```
+
+**Impacto esperado:** Abertura de lead de ~3-5s para ~200ms
+
+### Etapa 2: Paginação no Kanban (carregamento mais rápido)
+
+Modificar `useLeadsOptimized` para carregar apenas os leads visíveis inicialmente (ex: primeiros 500) e implementar scroll infinito ou "Carregar mais".
+
+**Impacto esperado:** Carregamento inicial de ~5s para ~1s
+
+### Etapa 3: Cache com React Query (evitar recarregar)
+
+Adicionar cache para que os leads não sejam recarregados toda vez que a página é acessada.
 
 ---
 
 ## Detalhes Técnicos
 
-### Arquivo a modificar:
-`src/hooks/useDashboardMetrics.ts`
+### Arquivos a modificar:
 
-### Alterações:
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/pages/LeadDetails.tsx` | Buscar lead diretamente pelo ID ao invés de usar useLeadsOptimized |
+| `src/hooks/useLeadsOptimized.ts` | (Opcional) Implementar paginação com limite inicial |
 
-**1. Adicionar paginação na busca de leads (linhas 63-81)**
+### Nova implementação do LeadDetails:
 
-Substituir:
 ```typescript
-let leadsQuery = supabase
-  .from('leads')
-  .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
-  .limit(10000);
+// Novo hook específico para buscar 1 lead
+const [lead, setLead] = useState<Lead | null>(null);
+const [loading, setLoading] = useState(true);
 
-if (companyId) {
-  leadsQuery = leadsQuery.eq('company_id', companyId);
-}
-
-if (dateRange?.from && dateRange?.to) {
-  leadsQuery = leadsQuery
-    .gte('created_at', dateRange.from.toISOString())
-    .lte('created_at', dateRange.to.toISOString());
-}
-
-const { data: leadsData, error: leadsError } = await leadsQuery;
-```
-
-Por:
-```typescript
-// Implementar paginação para buscar TODOS os leads
-let allLeads: any[] = [];
-let from = 0;
-const pageSize = 1000;
-let hasMore = true;
-
-while (hasMore) {
-  let leadsQuery = supabase
-    .from('leads')
-    .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
-    .order('created_at', { ascending: false })
-    .range(from, from + pageSize - 1);
-
-  if (companyId) {
-    leadsQuery = leadsQuery.eq('company_id', companyId);
-  }
-
-  if (dateRange?.from && dateRange?.to) {
-    leadsQuery = leadsQuery
-      .gte('created_at', dateRange.from.toISOString())
-      .lte('created_at', dateRange.to.toISOString());
-  }
-
-  const { data, error } = await leadsQuery;
+useEffect(() => {
+  const fetchLead = async () => {
+    if (!id) return;
+    
+    const { data, error } = await supabase
+      .from('leads')
+      .select(`
+        id, nome, telefone, dados_adicionais, etapa, stage_name,
+        created_at, user_id, atividades, primeira_visualizacao,
+        user:users(name, equipe_id),
+        lead_tag_relations(lead_tags(id, nome, cor))
+      `)
+      .eq('id', id)
+      .single();
+    
+    if (data) {
+      setLead(convertToLeadFormat(data));
+    }
+    setLoading(false);
+  };
   
-  if (error) throw error;
-  if (!data || data.length === 0) break;
-
-  allLeads = [...allLeads, ...data];
-
-  if (data.length < pageSize) {
-    hasMore = false;
-  } else {
-    from += pageSize;
-  }
-}
-
-const leadsData = allLeads;
+  fetchLead();
+}, [id]);
 ```
 
-**2. Aplicar mesma correção nas queries de crescimento (linhas 221-232 e 245-275)**
-
-As queries de comparação de período anterior também precisam de paginação para garantir contagens corretas.
-
----
-
-## Fluxo Corrigido
+### Fluxo atual vs corrigido:
 
 ```text
-Dashboard carrega
-       |
-       v
-Loop de paginação
-  (1000 em 1000)
-       |
-       v
-Carrega TODOS os leads
-  (5519 para Click Imóveis)
-       |
-       v
-Conta por etapa
-       |
-       v
-Números batem com Kanban
+ATUAL (lento):
+Clica no lead
+     ↓
+Carrega LeadDetails
+     ↓
+Hook useLeadsOptimized inicia
+     ↓
+6 requisições (1000 leads cada)
+     ↓
+5604 leads carregados (~3-5s)
+     ↓
+find(l => l.id === id)
+     ↓
+Exibe 1 lead
+
+
+CORRIGIDO (rápido):
+Clica no lead
+     ↓
+Carrega LeadDetails
+     ↓
+Query direta: .eq('id', id).single()
+     ↓
+1 lead carregado (~200ms)
+     ↓
+Exibe 1 lead
 ```
 
 ---
 
 ## Resultado Esperado
 
-Após a correção:
-- "Recuperar": 738 leads (igual ao Kanban)
-- "Aguardando Atendimento": 292 leads (igual ao Kanban)
-- "Em Tentativas de Contato": 2897 leads (igual ao Kanban)
-
-## Arquivos Modificados
-
-| Arquivo | Alteração |
-|---------|-----------|
-| `src/hooks/useDashboardMetrics.ts` | Implementar paginação automática igual ao Kanban |
+- **Abertura de lead individual:** De ~3-5 segundos para ~200ms
+- **Carregamento inicial da página:** Mantém comportamento atual (pode ser otimizado depois)
+- **Experiência do usuário:** Muito mais fluida ao navegar entre leads
 
 ## Risco
 
-- **Baixo**: Apenas altera a forma de buscar dados, sem impacto na lógica de cálculo
-- **Performance**: Pode aumentar levemente o tempo de carregamento para empresas com muitos leads, mas é necessário para garantir precisão dos dados
+- **Baixo:** A alteração é isolada na página de detalhes
+- Funcionalidade de atualização otimística continua funcionando normalmente
+
