@@ -1,74 +1,52 @@
 
-
-# Plano: Mover Frase Motivacional para Após o Botão
+# Plano: Adicionar Novas Frases Motivacionais
 
 ## Objetivo
 
-Reposicionar o texto motivacional diário para aparecer logo depois do botão "Novo Lead", em vez de no topo da página como título.
+Adicionar 17 novas frases motivacionais de autores renomados à lista rotativa existente.
 
-## Layout Atual
+## Novas Frases a Adicionar
 
-```text
-┌────────────────────────────────────────────────────┐
-│ "Meta não é pressão, é direção."  ← H1 no topo     │
-├────────────────────────────────────────────────────┤
-│ [+ Novo Lead]                                      │
-├────────────────────────────────────────────────────┤
-│ Filtros...                                         │
-└────────────────────────────────────────────────────┘
-```
+| # | Frase | Autor |
+|---|-------|-------|
+| 1 | "A melhor maneira de prever o futuro é criá-lo." | Peter Drucker |
+| 2 | "Disciplina é a ponte entre metas e realizações." | Jim Rohn |
+| 3 | "Onde o foco vai, a energia flui." | Tony Robbins |
+| 4 | "Sucesso é sua obrigação, não uma opção." | Grant Cardone |
+| 5 | "Pessoas de sucesso fazem o que as pessoas comuns não querem fazer." | Brian Tracy |
+| 6 | "Posso aceitar o fracasso, mas não posso aceitar não tentar." | Michael Jordan |
+| 7 | "Descanso no final, não no meio." | Kobe Bryant |
+| 8 | "Disciplina é liberdade." | Jocko Willink |
+| 9 | "Sonhar grande e sonhar pequeno dá o mesmo trabalho." | Jorge Paulo Lemann |
+| 10 | "Não existe sucesso sem desconforto." | Flávio Augusto |
+| 11 | "Quem resolve problema cresce." | Luiza Helena Trajano |
+| 12 | "Eu acredito na sorte, mas acredito muito mais no trabalho." | Silvio Santos |
+| 13 | "Ideia boa sem execução não vale nada." | Murilo Gun |
+| 14 | "Quem não controla o processo não controla o resultado." | Thiago Nigro |
+| 15 | "Quem se adapta mais rápido, vence." | Ricardo Amorim |
+| 16 | "Disciplina é fazer o que precisa ser feito, mesmo sem vontade." | Carlos Wizard |
+| 17 | "O jogo é simples: quem executa, ganha." | Erico Rocha |
 
-## Layout Depois
-
-```text
-┌────────────────────────────────────────────────────┐
-│ [+ Novo Lead]    "Meta não é pressão, é direção."  │
-├────────────────────────────────────────────────────┤
-│ Filtros...                                         │
-└────────────────────────────────────────────────────┘
-```
-
-## Alteração
+## Implementação
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/pages/Index.tsx` | Mover o texto motivacional para dentro da linha do botão "Novo Lead" |
+| `src/constants/motivationalQuotes.ts` | Adicionar as 17 novas frases ao final do array |
 
-## Código Antes (linhas 228-247)
+## Resultado
 
-```jsx
-<div className="flex flex-col gap-4">
-  <div>
-    <h1 className="text-3xl font-bold text-gray-900">  "Meta não é pressão, é direção."</h1>
-  </div>
-  
-  <div className="flex items-center gap-3">
-    {canCreateLeads && <Button>...</Button>}
-    ...
-  </div>
-</div>
+- **Antes**: 46 frases
+- **Depois**: 63 frases (46 + 17)
+- **Ciclo completo**: 63 dias até repetir
+
+## Formato das Frases
+
+As frases serão adicionadas incluindo o nome do autor para dar crédito:
 ```
-
-## Código Depois
-
-```jsx
-<div className="flex items-center gap-4">
-  {canCreateLeads && <Button>...</Button>}
-  
-  <span className="text-lg font-medium text-gray-600 italic">
-    "{dailyQuote}"
-  </span>
-</div>
+"A melhor maneira de prever o futuro é criá-lo." - Peter Drucker
 ```
-
-## Detalhes
-
-- Remover o `<div>` com o `<h1>` do topo
-- Adicionar a frase como um `<span>` ao lado do botão "Novo Lead"
-- Estilizar com fonte menor e itálico para parecer uma citação sutil
-- Manter o uso do hook `useDailyQuote` para a frase rotativa
 
 ## Risco
 
-- **Nenhum**: Alteração puramente visual de posicionamento
-
+- **Nenhum**: Apenas adição de novos itens ao array existente
+- A lógica de rotação já suporta qualquer quantidade de frases automaticamente
