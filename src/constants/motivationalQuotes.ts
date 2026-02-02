@@ -35,7 +35,6 @@ export const MOTIVATIONAL_QUOTES = [
   "Venda não é sorte, é método.",
   "Quem aparece todo dia, é lembrado.",
   "Constância transforma potencial em dinheiro.",
-  "O 'não' de hoje prepara o 'sim' de amanhã.",
   "Alta performance começa antes do expediente.",
   "Venda acontece quando você acredita primeiro.",
   "Persistência constrói faturamento.",
