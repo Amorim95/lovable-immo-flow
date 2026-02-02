@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Lead, LeadStage } from "@/types/crm";
 import { LeadCard } from "./LeadCard";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, ChevronDown } from "lucide-react";
 import { useLeadStages } from "@/hooks/useLeadStages";
+
+const LEADS_PER_PAGE = 50;
 
 // Função para converter hex para cores Tailwind
 const getColorClasses = (hexColor: string) => {
@@ -36,7 +38,19 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, onOptimisticUpdate }: KanbanBoardProps) {
   const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
+  const [stageVisibleCounts, setStageVisibleCounts] = useState<Record<string, number>>({});
   const { stages, loading } = useLeadStages();
+
+  const getVisibleCount = (stageName: string) => {
+    return stageVisibleCounts[stageName] || LEADS_PER_PAGE;
+  };
+
+  const handleShowMore = (stageName: string) => {
+    setStageVisibleCounts(prev => ({
+      ...prev,
+      [stageName]: (prev[stageName] || LEADS_PER_PAGE) + LEADS_PER_PAGE
+    }));
+  };
 
   const handleDragStart = (e: React.DragEvent, lead: Lead) => {
     e.dataTransfer.setData('application/json', JSON.stringify(lead));
@@ -113,6 +127,10 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
       {stages.map((stage) => {
         const stageLeads = getLeadsByStage(stage.nome);
         const colorClasses = getColorClasses(stage.cor);
+        const visibleCount = getVisibleCount(stage.nome);
+        const visibleLeads = stageLeads.slice(0, visibleCount);
+        const hasMore = stageLeads.length > visibleCount;
+        const remainingCount = stageLeads.length - visibleCount;
         
         return (
           <div
@@ -144,7 +162,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
             </div>
 
             <div className="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar">
-              {stageLeads.map((lead) => (
+              {visibleLeads.map((lead) => (
                 <div
                   key={lead.id}
                   draggable
@@ -160,6 +178,18 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                   />
                 </div>
               ))}
+              
+              {hasMore && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-muted-foreground hover:text-foreground py-3 border border-dashed border-gray-300 hover:border-gray-400"
+                  onClick={() => handleShowMore(stage.nome)}
+                >
+                  <ChevronDown className="w-4 h-4 mr-2" />
+                  Ver mais {Math.min(remainingCount, LEADS_PER_PAGE)} de {remainingCount}
+                </Button>
+              )}
               
               {stageLeads.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
