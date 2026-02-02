@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Lead, Atividade } from "@/types/crm";
-import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
+import { useLeadById } from "@/hooks/useLeadById";
 import { useAuth } from "@/contexts/AuthContext";
 import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
@@ -32,8 +32,10 @@ export default function LeadDetails() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { leads, updateLeadOptimistic } = useLeadsOptimized();
-  const [lead, setLead] = useState<Lead | null>(null);
+  
+  // Busca direta do lead pelo ID - muito mais rápido!
+  const { lead, loading: leadLoading, updateLead, refreshLead } = useLeadById(id);
+  
   const [isEditing, setIsEditing] = useState(false);
   const [showActivities, setShowActivities] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -46,44 +48,20 @@ export default function LeadDetails() {
   });
   const [newActivity, setNewActivity] = useState('');
 
+  // Atualizar formData quando lead carregar
   useEffect(() => {
-    if (id && leads.length > 0) {
-      const foundLead = leads.find(l => l.id === id);
-      if (foundLead) {
-        const convertedLead: Lead = {
-          id: foundLead.id,
-          nome: foundLead.nome,
-          telefone: foundLead.telefone,
-          dadosAdicionais: foundLead.dados_adicionais || '',
-          campanha: 'Não especificada',
-          conjunto: 'Não especificado',
-          anuncio: 'Não especificado',
-          dataCriacao: new Date(foundLead.created_at),
-          etapa: foundLead.etapa as Lead['etapa'],
-          etiquetas: foundLead.lead_tag_relations?.map(rel => rel.lead_tags?.nome as Lead['etiquetas'][0]).filter(Boolean) || [],
-          corretor: foundLead.user?.name || 'Não atribuído',
-          atividades: (Array.isArray(foundLead.atividades) ? foundLead.atividades : []).map((atividade: any) => ({
-            id: atividade.id,
-            tipo: atividade.tipo as Atividade['tipo'],
-            descricao: atividade.descricao,
-            data: new Date(atividade.data),
-            corretor: atividade.corretor
-          })),
-          status: 'ativo'
-        };
-        setLead(convertedLead);
-        setFormData({
-          nome: convertedLead.nome,
-          telefone: convertedLead.telefone,
-          dadosAdicionais: convertedLead.dadosAdicionais,
-          etapa: convertedLead.etapa
-        });
-
-        // Registrar visualização do lead
-        registerLeadView(convertedLead);
-      }
+    if (lead) {
+      setFormData({
+        nome: lead.nome,
+        telefone: lead.telefone,
+        dadosAdicionais: lead.dadosAdicionais || '',
+        etapa: lead.etapa
+      });
+      
+      // Registrar visualização do lead
+      registerLeadView(lead);
     }
-  }, [id, leads]);
+  }, [lead]);
 
   // Função para registrar visualização do lead
   const registerLeadView = async (leadData: Lead) => {
@@ -151,10 +129,7 @@ export default function LeadDetails() {
       if (!error) {
         console.log('Visualização registrada com sucesso');
         // Atualizar estado local
-        setLead(prev => prev ? { 
-          ...prev, 
-          atividades: updatedActivities
-        } : null);
+        updateLead({ atividades: updatedActivities });
       } else {
         console.error('Erro ao registrar visualização:', error);
       }
@@ -166,19 +141,42 @@ export default function LeadDetails() {
   const handleSave = async () => {
     if (!lead) return;
     
-    const success = await updateLeadOptimistic(lead.id, {
-      nome: formData.nome,
-      telefone: formData.telefone,
-      dadosAdicionais: formData.dadosAdicionais,
-      etapa: formData.etapa
-    });
+    try {
+      const supabaseUpdates: any = {
+        nome: formData.nome,
+        telefone: formData.telefone,
+        dados_adicionais: formData.dadosAdicionais,
+        etapa: formData.etapa,
+        stage_name: formData.etapa
+      };
 
-    if (success) {
-      setLead(prev => prev ? { ...prev, ...formData } : null);
+      const { error } = await supabase
+        .from('leads')
+        .update(supabaseUpdates)
+        .eq('id', lead.id);
+
+      if (error) {
+        console.error('Erro ao atualizar lead:', error);
+        toast({
+          title: "Erro",
+          description: "Erro ao atualizar lead.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      updateLead(formData);
       setIsEditing(false);
       toast({
         title: "Lead atualizado",
         description: "As informações do lead foram atualizadas com sucesso."
+      });
+    } catch (err) {
+      console.error('Erro ao salvar:', err);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar alterações.",
+        variant: "destructive"
       });
     }
   };
@@ -220,10 +218,7 @@ export default function LeadDetails() {
         console.error('Erro ao salvar atividade de contato:', error);
       } else {
         // Atualizar estado local
-        setLead(prev => prev ? { 
-          ...prev, 
-          atividades: updatedActivities
-        } : null);
+        updateLead({ atividades: updatedActivities });
       }
     } catch (error) {
       console.error('Erro geral:', error);
@@ -269,10 +264,7 @@ export default function LeadDetails() {
       }
 
       // Atualizar estado local
-      setLead(prev => prev ? { 
-        ...prev, 
-        atividades: updatedActivities
-      } : null);
+      updateLead({ atividades: updatedActivities });
       
       toast({
         title: "Atividade adicionada",
