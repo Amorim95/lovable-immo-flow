@@ -44,5 +44,22 @@ export const MOTIVATIONAL_QUOTES = [
   "Sem ação, sem resultado.",
   "Confiança fecha mais que desconto.",
   "Processo executado gera previsibilidade.",
-  "Quem não desiste, fecha."
+  "Quem não desiste, fecha.",
+  '"A melhor maneira de prever o futuro é criá-lo." - Peter Drucker',
+  '"Disciplina é a ponte entre metas e realizações." - Jim Rohn',
+  '"Onde o foco vai, a energia flui." - Tony Robbins',
+  '"Sucesso é sua obrigação, não uma opção." - Grant Cardone',
+  '"Pessoas de sucesso fazem o que as pessoas comuns não querem fazer." - Brian Tracy',
+  '"Posso aceitar o fracasso, mas não posso aceitar não tentar." - Michael Jordan',
+  '"Descanso no final, não no meio." - Kobe Bryant',
+  '"Disciplina é liberdade." - Jocko Willink',
+  '"Sonhar grande e sonhar pequeno dá o mesmo trabalho." - Jorge Paulo Lemann',
+  '"Não existe sucesso sem desconforto." - Flávio Augusto',
+  '"Quem resolve problema cresce." - Luiza Helena Trajano',
+  '"Eu acredito na sorte, mas acredito muito mais no trabalho." - Silvio Santos',
+  '"Ideia boa sem execução não vale nada." - Murilo Gun',
+  '"Quem não controla o processo não controla o resultado." - Thiago Nigro',
+  '"Quem se adapta mais rápido, vence." - Ricardo Amorim',
+  '"Disciplina é fazer o que precisa ser feito, mesmo sem vontade." - Carlos Wizard',
+  '"O jogo é simples: quem executa, ganha." - Erico Rocha'
 ];
