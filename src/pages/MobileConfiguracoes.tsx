@@ -46,38 +46,38 @@ export default function MobileConfiguracoes() {
       <MobileHeader title="Configurações" />
 
       <div className="p-4 space-y-6">
+        {/* Menu Items */}
+        <div className="space-y-3">
+          {menuItems.filter(item => item.show).map(item => {
+          const Icon = item.icon;
+          return <div key={item.id} onClick={item.action} className="bg-white dark:bg-card rounded-lg p-4 shadow-sm border active:bg-gray-50 dark:active:bg-muted transition-colors cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-foreground">{item.title}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                </div>
+              </div>;
+        })}
+        </div>
+
         {/* User Info */}
-        <div className="bg-white rounded-lg p-4">
+        <div className="bg-white dark:bg-card rounded-lg p-4">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
               <User className="w-6 h-6 text-primary" />
             </div>
             <div className="flex-1">
-              <h3 className="font-medium text-gray-900">{user?.name}</h3>
-              <p className="text-sm text-gray-500">{user?.email}</p>
+              <h3 className="font-medium text-foreground">{user?.name}</h3>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </div>
-        </div>
-
-        {/* Menu Items */}
-        <div className="space-y-3">
-          {menuItems.filter(item => item.show).map(item => {
-          const Icon = item.icon;
-          return <div key={item.id} onClick={item.action} className="bg-white rounded-lg p-4 shadow-sm border active:bg-gray-50 transition-colors cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-gray-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">{item.title}</h3>
-                      <p className="text-sm text-gray-500 mt-1">{item.description}</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                </div>
-              </div>;
-        })}
         </div>
 
         {/* Logout Button */}
@@ -89,7 +89,7 @@ export default function MobileConfiguracoes() {
         </div>
 
         {/* App Info */}
-        <div className="text-center text-sm text-gray-500 pt-4">
+        <div className="text-center text-sm text-muted-foreground pt-4">
           <p>Feito por Rhenan Amorim</p>
         </div>
       </div>
