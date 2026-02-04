@@ -82,8 +82,10 @@ Deno.serve(async (req) => {
       
       // Só enviar avisos se o tempo configurado for maior que 2 minutos
       if (warningMinutes > 0) {
+        // Janela de 1 minuto para evitar avisos duplicados
+        // Ex: timeout 10 min -> aviso entre 8-9 min (apenas 1 execução do cron)
         const warningTimeStart = new Date();
-        warningTimeStart.setMinutes(warningTimeStart.getMinutes() - auto_repique_minutes);
+        warningTimeStart.setMinutes(warningTimeStart.getMinutes() - (auto_repique_minutes - 1));
         
         const warningTimeEnd = new Date();
         warningTimeEnd.setMinutes(warningTimeEnd.getMinutes() - warningMinutes);
