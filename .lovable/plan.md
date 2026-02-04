@@ -1,67 +1,57 @@
 
 
-# Plano: Centralizar frase motivacional no header mobile
+# Plano: Adicionar campo de busca ao lado do filtro de data
 
-## Problema Atual
+## O Que Será Feito
 
-A estrutura atual do header tem:
-- Logo à esquerda + frase junto ao logo
-- Elementos à direita
+Adicionar o campo de busca de leads **ao lado do DateFilter** (Período Total), como primeiro elemento junto ao filtro de data.
 
-Isso faz a frase ficar alinhada à esquerda, não centralizada.
+## Alteração no Arquivo: `src/pages/Index.tsx`
 
-## Solução
+### 1. Adicionar import do ícone Search (linha 22)
 
-Reestruturar o layout do header para usar 3 colunas:
-1. **Esquerda**: Logo da empresa
-2. **Centro**: Frase motivacional (centralizada)
-3. **Direita**: Elementos opcionais (rightElement)
-
-## Alteração no Arquivo: `src/components/MobileHeader.tsx`
-
-**Estrutura Atual:**
-```tsx
-<header className="flex items-center justify-between">
-  <div className="flex items-center gap-3">
-    {logo}
-    {title}  // Frase fica junto ao logo, não centralizada
-  </div>
-  {rightElement}
-</header>
+```typescript
+import { LayoutList, LayoutGrid, Plus, Search } from "lucide-react";
 ```
 
-**Nova Estrutura:**
+### 2. Adicionar campo de busca após DateFilter (linha 263)
+
 ```tsx
-<header className="flex items-center justify-between">
-  {/* Coluna esquerda - Logo */}
-  <div className="flex items-center min-w-[40px]">
-    {logo}
+<div className="flex items-center gap-4">
+  <DateFilter 
+    value={dateFilter} 
+    customRange={customDateRange} 
+    onValueChange={handleDateFilterChange} 
+    availableDates={availableDates} 
+  />
+  
+  {/* NOVO: Campo de busca ao lado do período */}
+  <div className="relative">
+    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+    <Input
+      type="text"
+      placeholder="Buscar leads..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="pl-9 w-64"
+    />
   </div>
   
-  {/* Coluna central - Frase centralizada */}
-  {title && (
-    <div className="flex-1 flex justify-center">
-      <h1 className="text-xs font-medium text-muted-foreground italic leading-tight line-clamp-2 max-w-[200px] text-center">
-        {title}
-      </h1>
-    </div>
-  )}
-  
-  {/* Coluna direita - Elementos opcionais */}
-  <div className="flex items-center min-w-[40px] justify-end">
-    {rightElement}
-  </div>
-</header>
+  {/* Filtros de Equipe e Usuário... */}
 ```
 
 ## Resultado Visual
 
-- Logo permanece à esquerda
-- Frase motivacional fica **perfeitamente centralizada** na barra
-- Elementos à direita (quando existem) ficam à direita
-- As colunas laterais têm `min-w-[40px]` para garantir simetria
+```
+[Período Total ▼] [🔍 Buscar leads...] [Equipe ▼] [Usuário ▼] [Etiquetas ▼]
+```
+
+- Campo de busca aparece logo após o seletor de período
+- Ícone de lupa dentro do campo
+- Placeholder "Buscar leads..."
+- Busca filtra por nome, dados adicionais e corretor
 
 ## Risco
 
-Nenhum - apenas reorganização do layout interno do componente.
+Nenhum - reutilizamos o estado `searchTerm` e a lógica de filtragem que já existem no código.
 
