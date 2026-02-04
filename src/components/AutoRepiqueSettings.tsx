@@ -140,9 +140,7 @@ export function AutoRepiqueSettings({
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <Label htmlFor="auto-repique-toggle">Ativar repique automático</Label>
-            <p className="text-sm text-muted-foreground">
-              Leads sem contato WhatsApp serão redistribuídos
-            </p>
+            <p className="text-sm text-muted-foreground">Leads sem contato serão redistribuídos</p>
           </div>
           <Switch id="auto-repique-toggle" checked={isEnabled} onCheckedChange={handleEnabledChange} />
         </div>
