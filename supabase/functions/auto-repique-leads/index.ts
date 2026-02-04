@@ -58,9 +58,11 @@ Deno.serve(async (req) => {
     console.log(`Empresas com repique ativado: ${companies.length}`);
 
     let totalProcessed = 0;
+    let totalWarnings = 0;
     const results: any[] = [];
+    const warnings: any[] = [];
 
-    // 2. Para cada empresa, buscar leads para repique
+    // 2. Para cada empresa, processar avisos e repiques
     for (const company of companies as CompanySettings[]) {
       const { company_id, auto_repique_minutes } = company;
       
@@ -68,25 +70,88 @@ Deno.serve(async (req) => {
 
       console.log(`Processando empresa: ${company_id} (timeout: ${auto_repique_minutes} min)`);
 
-      // Calcular o timestamp limite
-      const timeLimit = new Date();
-      timeLimit.setMinutes(timeLimit.getMinutes() - auto_repique_minutes);
-
       // Data de corte: somente leads criados a partir de hoje são elegíveis
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const cutoffDate = today.toISOString();
 
-      // Buscar leads que precisam de repique (somente leads novos a partir de hoje)
+      // ========================================
+      // FASE 1: AVISOS (2 minutos antes do timeout)
+      // ========================================
+      const warningMinutes = auto_repique_minutes - 2;
+      
+      // Só enviar avisos se o tempo configurado for maior que 2 minutos
+      if (warningMinutes > 0) {
+        const warningTimeStart = new Date();
+        warningTimeStart.setMinutes(warningTimeStart.getMinutes() - auto_repique_minutes);
+        
+        const warningTimeEnd = new Date();
+        warningTimeEnd.setMinutes(warningTimeEnd.getMinutes() - warningMinutes);
+
+        // Buscar leads que estão entre warningMinutes e auto_repique_minutes de inatividade
+        // (ou seja, faltam ~2 minutos para o timeout)
+        const { data: leadsToWarn, error: warnError } = await supabase
+          .from('leads')
+          .select('id, nome, user_id, company_id')
+          .eq('company_id', company_id)
+          .eq('etapa', 'aguardando-atendimento')
+          .is('primeiro_contato_whatsapp', null)
+          .gte('created_at', cutoffDate)
+          .gte('assigned_at', warningTimeStart.toISOString())
+          .lt('assigned_at', warningTimeEnd.toISOString())
+          .lt('repique_count', 3);
+
+        if (warnError) {
+          console.error(`Erro ao buscar leads para aviso na empresa ${company_id}:`, warnError);
+        } else if (leadsToWarn && leadsToWarn.length > 0) {
+          console.log(`Leads para aviso na empresa ${company_id}: ${leadsToWarn.length}`);
+
+          for (const lead of leadsToWarn) {
+            try {
+              // Enviar notificação de aviso para o usuário ATUAL
+              await supabase.functions.invoke('send-push-notification', {
+                body: {
+                  userId: lead.user_id,
+                  title: '⚠️ Em 2 min você vai perder uma oportunidade! ⚠️',
+                  body: `Se você não atender o Lead: ${lead.nome} ele será enviado para outro corretor!`,
+                  data: {
+                    leadId: lead.id,
+                    url: '/',
+                    type: 'repique_warning'
+                  }
+                }
+              });
+              console.log(`Aviso enviado para usuário ${lead.user_id} sobre lead ${lead.id}`);
+              
+              totalWarnings++;
+              warnings.push({
+                leadId: lead.id,
+                leadName: lead.nome,
+                userId: lead.user_id
+              });
+            } catch (notifError) {
+              console.error('Erro ao enviar aviso:', notifError);
+            }
+          }
+        }
+      }
+
+      // ========================================
+      // FASE 2: REPIQUE (leads que já passaram do timeout)
+      // ========================================
+      const timeLimit = new Date();
+      timeLimit.setMinutes(timeLimit.getMinutes() - auto_repique_minutes);
+
+      // Buscar leads que precisam de repique
       const { data: leads, error: leadsError } = await supabase
         .from('leads')
         .select('id, nome, user_id, company_id, repique_count')
         .eq('company_id', company_id)
         .eq('etapa', 'aguardando-atendimento')
         .is('primeiro_contato_whatsapp', null)
-        .gte('created_at', cutoffDate) // Somente leads criados a partir de hoje
+        .gte('created_at', cutoffDate)
         .lt('assigned_at', timeLimit.toISOString())
-        .lt('repique_count', 3); // Limite máximo de repiques
+        .lt('repique_count', 3);
 
       if (leadsError) {
         console.error(`Erro ao buscar leads para empresa ${company_id}:`, leadsError);
@@ -216,13 +281,15 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`=== Auto Repique finalizado. Total processado: ${totalProcessed} ===`);
+    console.log(`=== Auto Repique finalizado. Avisos: ${totalWarnings}, Redistribuídos: ${totalProcessed} ===`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `${totalProcessed} leads redistribuídos`,
+        message: `${totalWarnings} avisos enviados, ${totalProcessed} leads redistribuídos`,
+        warnings_sent: totalWarnings,
         processed: totalProcessed,
+        warnings: warnings,
         details: results
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
