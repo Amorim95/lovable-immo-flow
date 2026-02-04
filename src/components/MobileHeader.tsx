@@ -19,23 +19,35 @@ export function MobileHeader({
   const {
     settings
   } = useCompany();
-  return <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between dark:bg-white dark:border-gray-200">
-      <div className="flex items-center gap-3">
-        {showBackButton && <Button variant="ghost" size="sm" onClick={onBack} className="p-2 -ml-2">
+  return (
+    <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between dark:bg-white dark:border-gray-200">
+      {/* Coluna esquerda - Logo/Back button */}
+      <div className="flex items-center min-w-[40px]">
+        {showBackButton && (
+          <Button variant="ghost" size="sm" onClick={onBack} className="p-2 -ml-2">
             <ArrowLeft className="w-5 h-5" />
-          </Button>}
-        {logoOnly ? <div className="flex items-center gap-2">
-            <img src="/lovable-uploads/default-crm-logo.png" alt="Logo" className="h-8 w-auto" />
-          </div> : <>
-            {!showBackButton && settings.logo && <img src={settings.logo} alt={settings.name} className="h-8 w-auto" />}
-            {title && <h1 className="text-xs font-medium text-muted-foreground italic leading-tight line-clamp-2 max-w-[200px] text-center">
-                {title}
-              </h1>}
-          </>}
+          </Button>
+        )}
+        {logoOnly ? (
+          <img src="/lovable-uploads/default-crm-logo.png" alt="Logo" className="h-8 w-auto" />
+        ) : (
+          !showBackButton && settings.logo && <img src={settings.logo} alt={settings.name} className="h-8 w-auto" />
+        )}
       </div>
-      
-      {rightElement && <div className="flex items-center gap-2">
-          {rightElement}
-        </div>}
-    </header>;
+
+      {/* Coluna central - Frase centralizada */}
+      {title && !logoOnly && (
+        <div className="flex-1 flex justify-center">
+          <h1 className="text-xs font-medium text-muted-foreground italic leading-tight line-clamp-2 max-w-[200px] text-center">
+            {title}
+          </h1>
+        </div>
+      )}
+
+      {/* Coluna direita - Elementos opcionais */}
+      <div className="flex items-center min-w-[40px] justify-end gap-2">
+        {rightElement}
+      </div>
+    </header>
+  );
 }
