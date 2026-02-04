@@ -43,7 +43,7 @@ export default function MobileConfiguracoes() {
     show: canAccessCompanyData
   }];
   return <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
-      <MobileHeader title="Configurações" />
+      <MobileHeader title="Opções" />
 
       <div className="p-4 space-y-6">
         {/* Menu Items */}
