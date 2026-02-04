@@ -28,7 +28,7 @@ export function MobileHeader({
             <img src="/lovable-uploads/default-crm-logo.png" alt="Logo" className="h-8 w-auto" />
           </div> : <>
             {!showBackButton && settings.logo && <img src={settings.logo} alt={settings.name} className="h-8 w-auto" />}
-            {title && <h1 className="text-lg font-semibold text-gray-900 truncate text-center flex-1">
+            {title && <h1 className="text-xs font-medium text-muted-foreground italic leading-tight line-clamp-2 max-w-[200px] text-center">
                 {title}
               </h1>}
           </>}

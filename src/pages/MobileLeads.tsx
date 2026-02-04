@@ -5,6 +5,7 @@ import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { useLeadStages } from "@/hooks/useLeadStages";
+import { useDailyQuote } from "@/hooks/useDailyQuote";
 import { MobileHeader } from "@/components/MobileHeader";
 import { TagFilter } from "@/components/TagFilter";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ export default function MobileLeads() {
   const navigate = useNavigate();
   const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
+  const quote = useDailyQuote();
   const { stages, loading: stagesLoading } = useLeadStages();
   
   // Criar mapa de stages para acesso rápido por nome
@@ -276,7 +278,7 @@ export default function MobileLeads() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
-      <MobileHeader title="Gestão de Leads" />
+      <MobileHeader title={quote} />
 
       {/* Search */}
       <div className="p-4">
