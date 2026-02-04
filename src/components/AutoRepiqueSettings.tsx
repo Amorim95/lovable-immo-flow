@@ -160,7 +160,7 @@ export function AutoRepiqueSettings({
             <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg text-sm">
               <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
               <div className="text-muted-foreground">
-                <p>Se o corretor não clicar em "Contato" em 4 minutos, o lead será transferido para o próximo da fila.<strong>{minutes} minutos</strong>, o lead será transferido para o próximo da fila.</p>
+                <p>Se o corretor não clicar em "Contato" em 5 minutos, o lead será transferido para o próximo da fila.<strong>{minutes} minutos</strong>, o lead será transferido para o próximo da fila.</p>
                 <p className="mt-1">Limite máximo: 3 repiques por lead.</p>
               </div>
             </div>
