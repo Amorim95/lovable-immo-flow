@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+
+// Cache para a VAPID key
+let cachedVapidKey: string | null = null;
 
 export function usePushNotifications() {
   const auth = useAuth();
@@ -98,6 +101,36 @@ export function usePushNotifications() {
     }
   };
 
+  const getVapidPublicKey = async (): Promise<string | null> => {
+    // Usar cache se disponível
+    if (cachedVapidKey) {
+      console.log('[Push] Using cached VAPID key');
+      return cachedVapidKey;
+    }
+
+    try {
+      console.log('[Push] Fetching VAPID public key from server...');
+      const { data, error } = await supabase.functions.invoke('get-vapid-public-key');
+      
+      if (error) {
+        console.error('[Push] Error fetching VAPID key:', error);
+        return null;
+      }
+      
+      if (data?.publicKey) {
+        cachedVapidKey = data.publicKey;
+        console.log('[Push] VAPID key fetched successfully');
+        return data.publicKey;
+      }
+      
+      console.error('[Push] No public key in response');
+      return null;
+    } catch (error) {
+      console.error('[Push] Failed to fetch VAPID key:', error);
+      return null;
+    }
+  };
+
   const subscribeToPush = async () => {
     try {
       console.log('[Push] Starting subscription process...');
@@ -117,8 +150,13 @@ export function usePushNotifications() {
         return existingSubscription;
       }
 
-      // VAPID Public Key configurada (JWK format - converted to base64url)
-      const vapidPublicKey = 'BEqaOWo9daxuxKSiRf0QuY4pkt967tXXZ1gThjN57tUwT03DwwFsJ-ZQDz2T7tnrajbD7ueHuQV7rtNoPU39_C8';
+      // Buscar VAPID key do servidor
+      const vapidPublicKey = await getVapidPublicKey();
+      
+      if (!vapidPublicKey) {
+        toast.error('Erro ao obter chave de configuração. Tente novamente.');
+        return null;
+      }
       
       // Converter VAPID key para Uint8Array
       const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
