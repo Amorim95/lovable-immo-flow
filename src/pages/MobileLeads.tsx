@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lead } from "@/types/crm";
 import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
+import { useLeadStages } from "@/hooks/useLeadStages";
 import { MobileHeader } from "@/components/MobileHeader";
 import { TagFilter } from "@/components/TagFilter";
 import { Button } from "@/components/ui/button";
@@ -17,30 +18,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { getTagColor } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
-const stageColors = {
-  'aguardando-atendimento': 'bg-slate-100 text-slate-800',
-  'tentativas-contato': 'bg-yellow-100 text-yellow-800',
-  'atendeu': 'bg-blue-100 text-blue-800',
-  'nome-sujo': 'bg-amber-100 text-amber-800',
-  'nome-limpo': 'bg-teal-100 text-teal-800',
-  'visita': 'bg-purple-100 text-purple-800',
-  'vendas-fechadas': 'bg-green-100 text-green-800',
-  'em-pausa': 'bg-orange-100 text-orange-800',
-  'descarte': 'bg-red-100 text-red-800'
-};
-
-const stageLabels = {
-  'aguardando-atendimento': 'Aguardando Atendimento',
-  'tentativas-contato': 'Em Tentativas de Contato',
-  'atendeu': 'Atendeu',
-  'nome-sujo': 'Nome Sujo',
-  'nome-limpo': 'Nome Limpo',
-  'visita': 'Visita',
-  'vendas-fechadas': 'Vendas Fechadas',
-  'em-pausa': 'Em Pausa',
-  'descarte': 'Descarte'
-};
-
 interface Equipe {
   id: string;
   nome: string;
@@ -51,6 +28,29 @@ export default function MobileLeads() {
   const navigate = useNavigate();
   const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
+  const { stages, loading: stagesLoading } = useLeadStages();
+  
+  // Criar mapa de stages para acesso rápido por nome
+  const stageMap = useMemo(() => {
+    const map: Record<string, { nome: string; cor: string }> = {};
+    stages.forEach(stage => {
+      map[stage.nome] = { nome: stage.nome, cor: stage.cor };
+      if (stage.legacy_key) {
+        map[stage.legacy_key] = { nome: stage.nome, cor: stage.cor };
+      }
+    });
+    return map;
+  }, [stages]);
+  
+  // Função para obter cor da etapa
+  const getStageColor = (stageName: string) => {
+    return stageMap[stageName]?.cor || '#94a3b8';
+  };
+  
+  // Função para obter nome da etapa
+  const getStageName = (stageName: string) => {
+    return stageMap[stageName]?.nome || stageName;
+  };
   const { managedTeamId, loading: teamLoading } = useManagerTeam();
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
@@ -242,7 +242,7 @@ export default function MobileLeads() {
     await updateLeadOptimistic(leadId, { etapa: newStage });
   };
 
-  if (loading || roleLoading || teamLoading) {
+  if (loading || roleLoading || teamLoading || stagesLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-background">
         <MobileHeader title="Gestão de Leads" />
@@ -381,11 +381,14 @@ export default function MobileLeads() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todas">Todas as etapas</SelectItem>
-                  {Object.entries(stageLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
+                  {stages.map((stage) => (
+                    <SelectItem key={stage.id} value={stage.nome}>
                       <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full ${stageColors[value as keyof typeof stageColors]}`}></div>
-                        {label}
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: stage.cor }}
+                        ></div>
+                        {stage.nome}
                       </div>
                     </SelectItem>
                   ))}
@@ -447,16 +450,26 @@ export default function MobileLeads() {
                     }}
                   >
                     <SelectTrigger 
-                      className={`ml-2 h-auto p-1 text-xs border-none shadow-none ${stageColors[lead.etapa]}`}
+                      className="ml-2 h-auto p-1 text-xs border-none shadow-none"
+                      style={{ 
+                        backgroundColor: getStageColor(lead.etapa),
+                        color: '#1f2937'
+                      }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <SelectValue />
+                      <span>{getStageName(lead.etapa)}</span>
                       <ChevronDown className="h-3 w-3 ml-1" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.entries(stageLabels).map(([value, label]) => (
-                        <SelectItem key={value} value={value} className="text-xs">
-                          {label}
+                      {stages.map((stage) => (
+                        <SelectItem key={stage.id} value={stage.legacy_key || stage.nome} className="text-xs">
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-2 h-2 rounded-full" 
+                              style={{ backgroundColor: stage.cor }}
+                            ></div>
+                            {stage.nome}
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
