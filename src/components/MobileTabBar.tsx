@@ -11,7 +11,7 @@ const tabs = [
   },
   {
     id: "configuracoes",
-    label: "Config", 
+    label: "Opções", 
     path: "/configuracoes",
     icon: Settings
   }
