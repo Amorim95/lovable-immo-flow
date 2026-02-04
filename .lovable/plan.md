@@ -1,90 +1,68 @@
 
 
-# Plano: Sistema de Repique Automático de Leads
+# Plano de Teste do Repique Automático
 
-## Status: ✅ Implementado
+## Objetivo
+Testar o sistema de repique automático de leads, criando um lead de teste e configurando o tempo limite para 1 minuto.
 
-## Resumo da Funcionalidade
+## Passos para o Teste
 
-Sistema opcional por empresa que redireciona automaticamente leads não atendidos (sem clique em "Tentativa de contato via WhatsApp") após X minutos para o próximo usuário da fila.
+### 1. Corrigir Erro de Build
+Há um erro no arquivo `src/components/ui/label.tsx` que precisa ser corrigido primeiro. O componente Label não está retornando JSX corretamente.
 
-## Componentes Implementados
+### 2. Ativar o Repique Automático para a Empresa
+Atualizar as configurações da empresa **Click Imóveis** para:
+- `auto_repique_enabled`: true
+- `auto_repique_minutes`: 1 (1 minuto para o teste)
 
-### 1. ✅ Banco de Dados (Migration Executada)
+### 3. Criar Lead de Teste
+Criar um lead de teste usando a edge function `webhook-lead` com:
+- Nome: "Lead Teste Repique"
+- Telefone: "5511999999999"
+- company_id: `c95541d9-3e6a-4fc1-8d64-c5a6d5f7c9b6` (Click Imóveis)
 
-| Tabela | Coluna | Descrição |
-|--------|--------|-----------|
-| `company_settings` | `auto_repique_enabled` | boolean (default: false) |
-| `company_settings` | `auto_repique_minutes` | integer (default: 5) |
-| `leads` | `assigned_at` | timestamp - Quando foi atribuído ao usuário atual |
-| `leads` | `repique_count` | integer - Quantas vezes foi repassado |
+### 4. Aguardar e Monitorar
+Após 1 minuto, o cron job deve executar e:
+1. Detectar que o lead está na etapa "aguardando-atendimento"
+2. Verificar que não houve contato via WhatsApp
+3. Verificar que passou mais de 1 minuto desde o `assigned_at`
+4. Transferir o lead para o próximo usuário na fila
+5. Incrementar o `repique_count` para 1
+6. Enviar notificação push para o novo usuário
 
-### 2. ✅ Edge Function: `auto-repique-leads`
+## Verificações Após o Teste
+- Consultar o lead para ver se o `user_id` mudou
+- Verificar se o `repique_count` foi incrementado
+- Consultar a tabela de logs para ver o registro de transferência
+- Verificar os logs da edge function `auto-repique-leads`
 
-Função que verifica e redistribui leads não atendidos:
-- Busca empresas com `auto_repique_enabled = true`
-- Para cada empresa, busca leads pendentes sem contato WhatsApp
-- Redistribui para próximo usuário via round-robin
-- Envia notificação push
-- Limite máximo: 3 repiques por lead
+## Detalhes Técnicos
 
-### 3. ✅ Interface de Configuração
+**Arquivos a modificar:**
+- `src/components/ui/label.tsx` - Corrigir o componente para retornar JSX
 
-Componente `AutoRepiqueSettings` adicionado em "Gestão de Usuários":
-- Toggle para ativar/desativar
-- Campo para configurar tempo limite (1-30 minutos)
-- Visível apenas para admins
-
-### 4. ✅ Badge de Repique no Lead Card
-
-Componente `RepiqueBadge` mostra contador quando lead foi redistribuído:
-- "Repique 1x", "Repique 2x", etc.
-
-### 5. ✅ Webhook Atualizado
-
-`webhook-lead` atualiza `assigned_at` ao criar leads.
-
-## ⚠️ Configuração Pendente: Cron Job
-
-Para o repique automático funcionar, é necessário configurar um cron job no Supabase:
-
-### Opção 1: Via Dashboard Supabase (Recomendado)
-
-1. Acesse o Dashboard do Supabase
-2. Vá em Database > Extensions
-3. Habilite a extensão `pg_cron`
-4. Vá em SQL Editor e execute:
-
+**Configurações de banco de dados:**
 ```sql
-SELECT cron.schedule(
-  'auto-repique-leads',
-  '* * * * *',
-  $$
-  SELECT net.http_post(
-    url := 'https://loxpoehsddfearnzcdla.supabase.co/functions/v1/auto-repique-leads',
-    headers := '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxveHBvZWhzZGRmZWFybnpjZGxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyOTg4NjgsImV4cCI6MjA2Njg3NDg2OH0.2jHJynuzjEhK3Gk_OrFMR6zM3Tyq3JWIYjhiVQVx4wY"}'::jsonb,
-    body := concat('{"time": "', now(), '"}')::jsonb
-  ) AS request_id;
-  $$
-);
+UPDATE company_settings 
+SET auto_repique_enabled = true, auto_repique_minutes = 1 
+WHERE company_id = 'c95541d9-3e6a-4fc1-8d64-c5a6d5f7c9b6';
 ```
 
-### Opção 2: Usar Serviço Externo
-
-Usar um serviço como cron-job.org, EasyCron ou GitHub Actions para chamar a edge function a cada minuto.
-
-## Como Usar
-
-1. Acesse "Gestão de Usuários" como admin
-2. Encontre a seção "Repique Automático"
-3. Ative o toggle
-4. Configure o tempo limite desejado (padrão: 5 minutos)
-5. Salve as configurações
-
-## Fluxo de Funcionamento
-
+**Chamada para criar lead de teste:**
+```json
+POST /functions/v1/webhook-lead
+{
+  "nome": "Lead Teste Repique",
+  "telefone": "5511999999999",
+  "company_id": "c95541d9-3e6a-4fc1-8d64-c5a6d5f7c9b6"
+}
 ```
-Lead atribuído → Timer inicia → 5 min sem WhatsApp → Repique automático
-                                                    ↓
-                              Próximo usuário recebe + notificação push
+
+**Query para verificar resultado após 1 minuto:**
+```sql
+SELECT id, nome, user_id, assigned_at, repique_count 
+FROM leads 
+WHERE telefone = '5511999999999' 
+ORDER BY created_at DESC LIMIT 1;
 ```
+
