@@ -79,11 +79,26 @@ export function NotificationPromptBanner() {
   // O banner só desaparece quando o usuário tiver uma subscription válida
   const hasValidSubscription = subscription && permission === 'granted';
   
+  // DEBUG LOGS - remover depois
+  console.log('[NotificationBanner] DEBUG v1.0:', {
+    isSupported,
+    hasUser: !!user,
+    userId: user?.id,
+    dismissed,
+    hasDbSubscription,
+    hasValidSubscription,
+    permission,
+    subscriptionExists: !!subscription,
+    needsReactivation
+  });
+  
   const shouldShow = isSupported && 
     user && 
     !dismissed && 
     hasDbSubscription !== null &&
     !hasValidSubscription;
+
+  console.log('[NotificationBanner] shouldShow:', shouldShow);
 
   if (!shouldShow) {
     return null;
