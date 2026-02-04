@@ -1,68 +1,54 @@
 
+# Plano: Corrigir nomes de etapas na versão mobile
 
-# Plano de Teste do Repique Automático
+## Problema Identificado
 
-## Objetivo
-Testar o sistema de repique automático de leads, criando um lead de teste e configurando o tempo limite para 1 minuto.
+A página **MobileLeads.tsx** está usando nomes de etapas **fixos no código** (hardcoded), enquanto a versão desktop (KanbanBoard) busca os nomes diretamente do banco de dados usando o hook `useLeadStages()`.
 
-## Passos para o Teste
+Quando você alterou "Nome Limpo" para "Análise de Crédito" no banco de dados, apenas a versão desktop refletiu a mudança.
 
-### 1. Corrigir Erro de Build
-Há um erro no arquivo `src/components/ui/label.tsx` que precisa ser corrigido primeiro. O componente Label não está retornando JSX corretamente.
+## Solução
 
-### 2. Ativar o Repique Automático para a Empresa
-Atualizar as configurações da empresa **Click Imóveis** para:
-- `auto_repique_enabled`: true
-- `auto_repique_minutes`: 1 (1 minuto para o teste)
+Atualizar a página `MobileLeads.tsx` para usar o hook `useLeadStages()` existente, igual ao KanbanBoard.
 
-### 3. Criar Lead de Teste
-Criar um lead de teste usando a edge function `webhook-lead` com:
-- Nome: "Lead Teste Repique"
-- Telefone: "5511999999999"
-- company_id: `c95541d9-3e6a-4fc1-8d64-c5a6d5f7c9b6` (Click Imóveis)
+## Alterações Necessárias
 
-### 4. Aguardar e Monitorar
-Após 1 minuto, o cron job deve executar e:
-1. Detectar que o lead está na etapa "aguardando-atendimento"
-2. Verificar que não houve contato via WhatsApp
-3. Verificar que passou mais de 1 minuto desde o `assigned_at`
-4. Transferir o lead para o próximo usuário na fila
-5. Incrementar o `repique_count` para 1
-6. Enviar notificação push para o novo usuário
+### 1. Arquivo: `src/pages/MobileLeads.tsx`
 
-## Verificações Após o Teste
-- Consultar o lead para ver se o `user_id` mudou
-- Verificar se o `repique_count` foi incrementado
-- Consultar a tabela de logs para ver o registro de transferência
-- Verificar os logs da edge function `auto-repique-leads`
+**Remover os objetos hardcoded:**
+```typescript
+// REMOVER estas constantes fixas (linhas 20-42):
+const stageColors = { ... };
+const stageLabels = { ... };
+```
+
+**Adicionar importação do hook:**
+```typescript
+import { useLeadStages } from "@/hooks/useLeadStages";
+```
+
+**Usar o hook dentro do componente:**
+```typescript
+const { stages, loading: stagesLoading } = useLeadStages();
+```
+
+**Atualizar o filtro de etapas para usar dados dinâmicos:**
+- Substituir `Object.entries(stageLabels)` por `stages.map(stage => ...)`
+- Usar `stage.nome` e `stage.cor` do banco de dados
+
+**Atualizar o badge de etapa no card do lead:**
+- Buscar a cor da etapa dinamicamente baseado no `stage_name` do lead
 
 ## Detalhes Técnicos
 
-**Arquivos a modificar:**
-- `src/components/ui/label.tsx` - Corrigir o componente para retornar JSX
+| Item | Antes | Depois |
+|------|-------|--------|
+| Fonte dos nomes | Constante `stageLabels` hardcoded | `stages` do hook `useLeadStages()` |
+| Cores das etapas | Constante `stageColors` hardcoded | Campo `cor` de cada stage do banco |
+| Filtro de etapa | `Object.entries(stageLabels)` | `stages.map()` |
 
-**Configurações de banco de dados:**
-```sql
-UPDATE company_settings 
-SET auto_repique_enabled = true, auto_repique_minutes = 1 
-WHERE company_id = 'c95541d9-3e6a-4fc1-8d64-c5a6d5f7c9b6';
-```
+## Benefícios
 
-**Chamada para criar lead de teste:**
-```json
-POST /functions/v1/webhook-lead
-{
-  "nome": "Lead Teste Repique",
-  "telefone": "5511999999999",
-  "company_id": "c95541d9-3e6a-4fc1-8d64-c5a6d5f7c9b6"
-}
-```
-
-**Query para verificar resultado após 1 minuto:**
-```sql
-SELECT id, nome, user_id, assigned_at, repique_count 
-FROM leads 
-WHERE telefone = '5511999999999' 
-ORDER BY created_at DESC LIMIT 1;
-```
-
+- Nomes de etapas sincronizados entre desktop e mobile
+- Cores personalizadas também funcionarão no mobile
+- Novas etapas criadas aparecerão automaticamente no mobile
