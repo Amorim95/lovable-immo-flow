@@ -122,7 +122,7 @@ serve(async (req) => {
           body: {
             userId: nextUserId,
             title: '🔔 Opa! Novo Lead!',
-            body: `Corre lá, chegou um novo lead para você!`,
+            body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`,
             data: { leadId: result.lead_id, url: '/' }
           }
         });
