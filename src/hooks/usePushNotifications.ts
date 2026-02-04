@@ -149,24 +149,29 @@ export function usePushNotifications() {
           stack: subscriptionError?.stack
         });
         
-        // Mensagem mais específica para iOS/Safari
+        // Detectar ambiente
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isStandalone = (window.navigator as any).standalone === true || 
+          window.matchMedia('(display-mode: standalone)').matches;
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
         
-        if (isIOS) {
-          toast.error('No iPhone, instale o app na tela inicial primeiro (Compartilhar → Adicionar à Tela Inicial)');
-        } else if (isSafari) {
-          toast.error('Safari tem suporte limitado. Tente usar Chrome ou Firefox.');
+        console.error('[Push] Environment:', { isIOS, isStandalone, isSafari });
+        
+        if (isIOS && !isStandalone) {
+          toast.error('Instale o app na tela inicial primeiro (Compartilhar → Adicionar à Tela Inicial)');
+        } else if (isIOS && isStandalone) {
+          // Está no PWA mas ainda falhou - pode ser problema de permissão ou VAPID
+          toast.error('Verifique se as notificações estão permitidas em Ajustes → Notificações → CRM.Imob');
         } else if (subscriptionError?.name === 'NotAllowedError') {
           toast.error('Permissão negada. Verifique as configurações do navegador.');
         } else {
-          toast.error('Erro ao criar subscrição push. Tente novamente.');
+          toast.error(`Erro: ${subscriptionError?.message || 'Falha ao criar subscrição'}`);
         }
         return null;
       }
-    } catch (error) {
-      console.error('Error subscribing to push notifications:', error);
-      toast.error('Erro ao configurar notificações push');
+    } catch (error: any) {
+      console.error('[Push] General error:', error);
+      toast.error(`Erro ao configurar notificações: ${error?.message || 'Erro desconhecido'}`);
       return null;
     }
   };
