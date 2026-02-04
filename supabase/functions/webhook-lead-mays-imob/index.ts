@@ -136,6 +136,23 @@ serve(async (req) => {
       console.error('Erro ao atualizar ultimo_lead_recebido:', updateError);
     }
 
+    // Enviar notificação push para o usuário (apenas se não for duplicata)
+    if (!result.is_duplicate) {
+      try {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            userId: selectedUser.id,
+            title: 'Novo Lead - MAYS IMOB',
+            body: `Novo lead: ${leadData.nome}`,
+            data: { leadId: result.lead_id, url: '/' }
+          }
+        });
+        console.log('Notificação push enviada para:', selectedUser.name);
+      } catch (notificationError) {
+        console.error('Erro ao enviar notificação push:', notificationError);
+      }
+    }
+
     // Fetch complete lead data
     const { data: lead, error: fetchError } = await supabase
       .from('leads')

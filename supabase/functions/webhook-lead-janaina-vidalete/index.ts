@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
     const result = leadResult[0];
     console.log('Resultado create_lead_safe:', result);
 
-    // If it's a new lead (not duplicate), update ultimo_lead_recebido
+    // If it's a new lead (not duplicate), update ultimo_lead_recebido and send push notification
     if (!result.is_duplicate) {
       const { error: updateError } = await supabase
         .from('users')
@@ -100,6 +100,21 @@ Deno.serve(async (req) => {
         console.error('Erro ao atualizar ultimo_lead_recebido:', updateError);
       } else {
         console.log('ultimo_lead_recebido atualizado para Janaina Vidalete');
+      }
+
+      // Enviar notificação push para o usuário
+      try {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            userId: JANAINA_VIDALETE_USER_ID,
+            title: 'Novo Lead - MAYS IMOB',
+            body: `Novo lead: ${body.nome}`,
+            data: { leadId: result.lead_id, url: '/' }
+          }
+        });
+        console.log('Notificação push enviada para Janaina Vidalete');
+      } catch (notificationError) {
+        console.error('Erro ao enviar notificação push:', notificationError);
       }
     }
 
