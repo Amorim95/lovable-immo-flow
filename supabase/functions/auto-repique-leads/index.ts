@@ -259,9 +259,28 @@ Deno.serve(async (req) => {
                 }
               }
             });
-            console.log(`Notificação enviada para usuário ${nextUser.id}`);
+            console.log(`Notificação enviada para novo usuário ${nextUser.id}`);
           } catch (notifError) {
-            console.error('Erro ao enviar notificação:', notifError);
+            console.error('Erro ao enviar notificação para novo usuário:', notifError);
+          }
+
+          // Enviar notificação push para o usuário antigo (que perdeu o lead)
+          try {
+            await supabase.functions.invoke('send-push-notification', {
+              body: {
+                userId: lead.user_id,
+                title: '💔 Acabou o tempo 💔',
+                body: `Seu tempo limite de atender o lead: ${lead.nome} foi expirado e ele foi para outro Corretor.`,
+                data: {
+                  leadId: lead.id,
+                  url: '/',
+                  type: 'lead_lost'
+                }
+              }
+            });
+            console.log(`Notificação de perda enviada para usuário antigo ${lead.user_id}`);
+          } catch (notifError) {
+            console.error('Erro ao enviar notificação para usuário antigo:', notifError);
           }
 
           totalProcessed++;
