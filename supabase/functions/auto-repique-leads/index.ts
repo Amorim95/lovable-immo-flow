@@ -121,13 +121,33 @@ Deno.serve(async (req) => {
 
           console.log(`Transferindo lead ${lead.id} de ${lead.user_id} para ${nextUser.id}`);
 
-          // Atualizar o lead
+          // Buscar atividades atuais do lead
+          const { data: leadAtual } = await supabase
+            .from('leads')
+            .select('atividades')
+            .eq('id', lead.id)
+            .maybeSingle();
+
+          // Criar atividade de reatribuição por repique
+          const repiqueAtividade = {
+            id: Date.now().toString(),
+            tipo: 'observacao',
+            descricao: `Lead reatribuído a ${nextUser.name}`,
+            data: new Date().toISOString(),
+            corretor: 'Sistema (Repique Automático)'
+          };
+
+          const atividadesAtuais = (leadAtual?.atividades as any[]) || [];
+          const novasAtividades = [...atividadesAtuais, repiqueAtividade];
+
+          // Atualizar o lead com a nova atividade
           const { error: updateError } = await supabase
             .from('leads')
             .update({
               user_id: nextUser.id,
               assigned_at: new Date().toISOString(),
-              repique_count: lead.repique_count + 1
+              repique_count: lead.repique_count + 1,
+              atividades: novasAtividades
             })
             .eq('id', lead.id);
 
@@ -135,6 +155,8 @@ Deno.serve(async (req) => {
             console.error(`Erro ao atualizar lead ${lead.id}:`, updateError);
             continue;
           }
+          
+          console.log(`Atividade de reatribuição registrada para lead ${lead.id}`);
 
           // Atualizar ultimo_lead_recebido do novo usuário
           await supabase
