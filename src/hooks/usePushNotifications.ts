@@ -132,9 +132,22 @@ export function usePushNotifications() {
         await saveSubscriptionToSupabase(newSubscription);
         
         return newSubscription;
-      } catch (subscriptionError) {
+      } catch (subscriptionError: any) {
         console.log('Push subscription failed:', subscriptionError);
-        toast.error('Erro ao criar subscrição push');
+        
+        // Mensagem mais específica para iOS/Safari
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        
+        if (isIOS) {
+          toast.error('No iPhone, instale o app na tela inicial primeiro (Compartilhar → Adicionar à Tela Inicial)');
+        } else if (isSafari) {
+          toast.error('Safari tem suporte limitado. Tente usar Chrome ou Firefox.');
+        } else if (subscriptionError?.name === 'NotAllowedError') {
+          toast.error('Permissão negada. Verifique as configurações do navegador.');
+        } else {
+          toast.error('Erro ao criar subscrição push. Tente novamente.');
+        }
         return null;
       }
     } catch (error) {
