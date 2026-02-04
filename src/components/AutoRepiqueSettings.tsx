@@ -9,53 +9,54 @@ import { RefreshCw, Clock, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCompanyFilter } from '@/hooks/useCompanyFilter';
 import { toast } from 'sonner';
-
 interface AutoRepiqueSettingsProps {
   className?: string;
 }
-
-export function AutoRepiqueSettings({ className }: AutoRepiqueSettingsProps) {
-  const { getCompanyId } = useCompanyFilter();
+export function AutoRepiqueSettings({
+  className
+}: AutoRepiqueSettingsProps) {
+  const {
+    getCompanyId
+  } = useCompanyFilter();
   const [isEnabled, setIsEnabled] = useState(false);
   const [minutes, setMinutes] = useState(5);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const [initialValues, setInitialValues] = useState({ enabled: false, minutes: 5 });
-
+  const [initialValues, setInitialValues] = useState({
+    enabled: false,
+    minutes: 5
+  });
   useEffect(() => {
     loadSettings();
   }, []);
-
   const loadSettings = async () => {
     try {
       setLoading(true);
       const companyId = await getCompanyId();
-      
       if (!companyId) {
         console.log('Nenhum company_id encontrado');
         setLoading(false);
         return;
       }
-
-      const { data, error } = await supabase
-        .from('company_settings')
-        .select('auto_repique_enabled, auto_repique_minutes')
-        .eq('company_id', companyId)
-        .maybeSingle();
-
+      const {
+        data,
+        error
+      } = await supabase.from('company_settings').select('auto_repique_enabled, auto_repique_minutes').eq('company_id', companyId).maybeSingle();
       if (error) {
         console.error('Erro ao carregar configurações:', error);
         toast.error('Erro ao carregar configurações de repique');
         return;
       }
-
       if (data) {
         const enabled = data.auto_repique_enabled ?? false;
         const mins = data.auto_repique_minutes ?? 5;
         setIsEnabled(enabled);
         setMinutes(mins);
-        setInitialValues({ enabled, minutes: mins });
+        setInitialValues({
+          enabled,
+          minutes: mins
+        });
       }
     } catch (error) {
       console.error('Erro ao carregar configurações:', error);
@@ -63,49 +64,41 @@ export function AutoRepiqueSettings({ className }: AutoRepiqueSettingsProps) {
       setLoading(false);
     }
   };
-
   const handleEnabledChange = (checked: boolean) => {
     setIsEnabled(checked);
     setHasChanges(checked !== initialValues.enabled || minutes !== initialValues.minutes);
   };
-
   const handleMinutesChange = (value: string) => {
     const numValue = parseInt(value) || 1;
     const clampedValue = Math.min(Math.max(numValue, 1), 30);
     setMinutes(clampedValue);
     setHasChanges(isEnabled !== initialValues.enabled || clampedValue !== initialValues.minutes);
   };
-
   const saveSettings = async () => {
     try {
       setSaving(true);
       const companyId = await getCompanyId();
-      
       if (!companyId) {
         toast.error('Empresa não encontrada');
         return;
       }
-
-      const { error } = await supabase
-        .from('company_settings')
-        .update({
-          auto_repique_enabled: isEnabled,
-          auto_repique_minutes: minutes
-        })
-        .eq('company_id', companyId);
-
+      const {
+        error
+      } = await supabase.from('company_settings').update({
+        auto_repique_enabled: isEnabled,
+        auto_repique_minutes: minutes
+      }).eq('company_id', companyId);
       if (error) {
         console.error('Erro ao salvar:', error);
         toast.error('Erro ao salvar configurações');
         return;
       }
-
-      setInitialValues({ enabled: isEnabled, minutes });
+      setInitialValues({
+        enabled: isEnabled,
+        minutes
+      });
       setHasChanges(false);
-      toast.success(isEnabled 
-        ? `Repique automático ativado (${minutes} minutos)` 
-        : 'Repique automático desativado'
-      );
+      toast.success(isEnabled ? `Repique automático ativado (${minutes} minutos)` : 'Repique automático desativado');
     } catch (error) {
       console.error('Erro ao salvar:', error);
       toast.error('Erro ao salvar configurações');
@@ -113,10 +106,8 @@ export function AutoRepiqueSettings({ className }: AutoRepiqueSettingsProps) {
       setSaving(false);
     }
   };
-
   if (loading) {
-    return (
-      <Card className={className}>
+    return <Card className={className}>
         <CardContent className="p-6">
           <div className="animate-pulse flex items-center gap-4">
             <div className="h-10 w-10 bg-muted rounded-full"></div>
@@ -126,12 +117,9 @@ export function AutoRepiqueSettings({ className }: AutoRepiqueSettingsProps) {
             </div>
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   }
-
-  return (
-    <Card className={className}>
+  return <Card className={className}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -139,10 +127,8 @@ export function AutoRepiqueSettings({ className }: AutoRepiqueSettingsProps) {
               <RefreshCw className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-lg">Repique Automático</CardTitle>
-              <CardDescription>
-                Redistribuir leads não atendidos automaticamente
-              </CardDescription>
+              <CardTitle className="text-lg">Redistribuição Automática de Leads por Inatividade</CardTitle>
+              <CardDescription>Redistribuição Automática de Leads por Inatividade</CardDescription>
             </div>
           </div>
           <Badge variant={isEnabled ? 'default' : 'secondary'}>
@@ -158,29 +144,16 @@ export function AutoRepiqueSettings({ className }: AutoRepiqueSettingsProps) {
               Leads sem contato WhatsApp serão redistribuídos
             </p>
           </div>
-          <Switch
-            id="auto-repique-toggle"
-            checked={isEnabled}
-            onCheckedChange={handleEnabledChange}
-          />
+          <Switch id="auto-repique-toggle" checked={isEnabled} onCheckedChange={handleEnabledChange} />
         </div>
 
-        {isEnabled && (
-          <div className="space-y-3 pt-2 border-t">
+        {isEnabled && <div className="space-y-3 pt-2 border-t">
             <div className="flex items-center gap-3">
               <Clock className="w-4 h-4 text-muted-foreground" />
               <Label htmlFor="repique-minutes">Tempo limite (minutos)</Label>
             </div>
             <div className="flex items-center gap-3">
-              <Input
-                id="repique-minutes"
-                type="number"
-                min={1}
-                max={30}
-                value={minutes}
-                onChange={(e) => handleMinutesChange(e.target.value)}
-                className="w-24"
-              />
+              <Input id="repique-minutes" type="number" min={1} max={30} value={minutes} onChange={e => handleMinutesChange(e.target.value)} className="w-24" />
               <span className="text-sm text-muted-foreground">
                 minutos sem contato
               </span>
@@ -193,21 +166,13 @@ export function AutoRepiqueSettings({ className }: AutoRepiqueSettingsProps) {
                 <p className="mt-1">Limite máximo: 3 repiques por lead.</p>
               </div>
             </div>
-          </div>
-        )}
+          </div>}
 
-        {hasChanges && (
-          <div className="pt-3 border-t">
-            <Button 
-              onClick={saveSettings} 
-              disabled={saving}
-              className="w-full"
-            >
+        {hasChanges && <div className="pt-3 border-t">
+            <Button onClick={saveSettings} disabled={saving} className="w-full">
               {saving ? 'Salvando...' : 'Salvar Configurações'}
             </Button>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
