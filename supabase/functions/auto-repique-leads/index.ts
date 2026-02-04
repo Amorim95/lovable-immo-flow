@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
               body: {
                 userId: nextUser.id,
                 title: '🔔 Alerta de Oportunidade 🔔',
-                body: 'Um lead não foi atendido por outro corretor no tempo limite e foi enviado agora para você atender!',
+                body: `O lead ${lead.nome} não foi atendido por outro corretor no tempo limite e foi enviado agora para você atender!`,
                 data: {
                   leadId: lead.id,
                   url: '/'
