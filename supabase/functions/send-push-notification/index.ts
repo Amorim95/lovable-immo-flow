@@ -18,64 +18,14 @@ interface NotificationPayload {
   data?: any;
 }
 
-// Helper to convert URL-safe Base64 to regular Base64
-function urlSafeBase64ToBase64(str: string): string {
-  return str.replace(/-/g, '+').replace(/_/g, '/');
-}
-
-// Helper to decode base64url string to Uint8Array
-function base64UrlToUint8Array(base64String: string): Uint8Array {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = urlSafeBase64ToBase64(base64String + padding);
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; i++) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
-// Convert raw EC key bytes to JWK format for import
-function rawKeysToJwk(publicKeyBase64: string, privateKeyBase64: string): { publicKey: JsonWebKey; privateKey: JsonWebKey } {
-  const publicKeyBytes = base64UrlToUint8Array(publicKeyBase64);
-  const privateKeyBytes = base64UrlToUint8Array(privateKeyBase64);
-  
-  // Public key is 65 bytes: 0x04 + 32 bytes X + 32 bytes Y
-  // Remove the 0x04 prefix if present
-  const xBytes = publicKeyBytes.slice(1, 33);
-  const yBytes = publicKeyBytes.slice(33, 65);
-  
-  // Convert to base64url
-  const x = btoa(String.fromCharCode(...xBytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  const y = btoa(String.fromCharCode(...yBytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  const d = btoa(String.fromCharCode(...privateKeyBytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  
-  return {
-    publicKey: {
-      kty: 'EC',
-      crv: 'P-256',
-      x,
-      y,
-      ext: true,
-    },
-    privateKey: {
-      kty: 'EC',
-      crv: 'P-256',
-      x,
-      y,
-      d,
-      ext: true,
-    }
-  };
-}
-
-// Import VAPID keys from raw base64url format
-async function importVapidKeysFromRaw(publicKeyBase64: string, privateKeyBase64: string): Promise<CryptoKeyPair> {
-  const jwk = rawKeysToJwk(publicKeyBase64, privateKeyBase64);
+// Import VAPID keys from JWK format stored in secrets
+async function importVapidKeysFromJwk(publicKeyJwk: string, privateKeyJwk: string): Promise<CryptoKeyPair> {
+  const pubJwk = JSON.parse(publicKeyJwk);
+  const privJwk = JSON.parse(privateKeyJwk);
   
   const publicKey = await crypto.subtle.importKey(
     'jwk',
-    jwk.publicKey,
+    pubJwk,
     { name: 'ECDSA', namedCurve: 'P-256' },
     true,
     ['verify']
@@ -83,7 +33,7 @@ async function importVapidKeysFromRaw(publicKeyBase64: string, privateKeyBase64:
   
   const privateKey = await crypto.subtle.importKey(
     'jwk',
-    jwk.privateKey,
+    privJwk,
     { name: 'ECDSA', namedCurve: 'P-256' },
     true,
     ['sign']
@@ -153,9 +103,9 @@ serve(async (req) => {
     });
 
     try {
-      // Import VAPID keys from raw base64url format
-      console.log('Importing VAPID keys...');
-      const vapidKeys = await importVapidKeysFromRaw(vapidPublicKey, vapidPrivateKey);
+      // Import VAPID keys from JWK format
+      console.log('Importing VAPID keys from JWK format...');
+      const vapidKeys = await importVapidKeysFromJwk(vapidPublicKey, vapidPrivateKey);
       console.log('VAPID keys imported successfully');
 
       // Create Application Server
