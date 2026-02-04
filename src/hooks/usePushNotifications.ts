@@ -111,8 +111,9 @@ export function usePushNotifications() {
         return existingSubscription;
       }
 
-      // VAPID Public Key configurada
-      const vapidPublicKey = 'BIg_KLSu6147INg13uGEJ8UjqkyE8znNi6w_07qOOSo_onLFg6G2ZAy79JabaUjRLHK6EopySZu928H1eggLY-0';
+      // VAPID Public Key configurada (JWK format - converted to base64url)
+      // Generated from: {"x":"Tpo5aj11rG7EpKJF_RC5jimS33ru1ddnWBOGM3nu1TA","y":"T03DwwFsJ-ZQDz2T7tnrajbD7ueHuQV7rtNoPU39_C8"}
+      const vapidPublicKey = 'BEqaOWo9daxuxKSiRf0QuY4pkt967tXXZ1gThjN57tUwT03DwwFsJ-ZQDz2T7tnrajbD7ueHuQV7rtNoPU39_C8';
       
       // Converter VAPID key para Uint8Array
       const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
