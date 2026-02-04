@@ -25,12 +25,13 @@ export function usePushNotifications() {
         if (existingSubscription) {
           setSubscription(existingSubscription);
         } else {
-          // Create a mock subscription to show as active
-          const mockSubscription = { endpoint: 'local', keys: {} } as any;
-          setSubscription(mockSubscription);
+          // No real subscription exists - keep as null so reactivation banner shows
+          console.log('No real subscription found, needs reactivation');
+          setSubscription(null);
         }
       }).catch(error => {
         console.error('Error checking existing subscription:', error);
+        setSubscription(null);
       });
     } else if (permission !== 'granted') {
       setSubscription(null);
