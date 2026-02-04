@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TagSelector } from "@/components/TagSelector";
 import { LeadTransferModal } from "@/components/LeadTransferModal";
+import { RepiqueBadge } from "@/components/RepiqueBadge";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Phone, User, Calendar, ArrowRightLeft } from "lucide-react";
 
@@ -179,6 +180,9 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
             <Calendar className="w-3 h-3" />
             <span>{formatDate(lead.dataCriacao)}</span>
+            {(lead as any).repiqueCount > 0 && (
+              <RepiqueBadge count={(lead as any).repiqueCount} />
+            )}
           </div>
           <p className="text-sm text-gray-600 line-clamp-2">{lead.dadosAdicionais || 'Sem informações adicionais'}</p>
         </div>

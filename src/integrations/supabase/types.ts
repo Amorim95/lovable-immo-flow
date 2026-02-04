@@ -132,6 +132,8 @@ export type Database = {
       }
       company_settings: {
         Row: {
+          auto_repique_enabled: boolean | null
+          auto_repique_minutes: number | null
           company_id: string | null
           created_at: string
           custom_domain: string | null
@@ -157,6 +159,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auto_repique_enabled?: boolean | null
+          auto_repique_minutes?: number | null
           company_id?: string | null
           created_at?: string
           custom_domain?: string | null
@@ -182,6 +186,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auto_repique_enabled?: boolean | null
+          auto_repique_minutes?: number | null
           company_id?: string | null
           created_at?: string
           custom_domain?: string | null
@@ -622,6 +628,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          assigned_at: string | null
           atividades: Json | null
           company_id: string | null
           created_at: string
@@ -631,12 +638,14 @@ export type Database = {
           nome: string
           primeira_visualizacao: string | null
           primeiro_contato_whatsapp: string | null
+          repique_count: number | null
           stage_name: string | null
           telefone: string
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          assigned_at?: string | null
           atividades?: Json | null
           company_id?: string | null
           created_at?: string
@@ -646,12 +655,14 @@ export type Database = {
           nome: string
           primeira_visualizacao?: string | null
           primeiro_contato_whatsapp?: string | null
+          repique_count?: number | null
           stage_name?: string | null
           telefone: string
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          assigned_at?: string | null
           atividades?: Json | null
           company_id?: string | null
           created_at?: string
@@ -661,6 +672,7 @@ export type Database = {
           nome?: string
           primeira_visualizacao?: string | null
           primeiro_contato_whatsapp?: string | null
+          repique_count?: number | null
           stage_name?: string | null
           telefone?: string
           updated_at?: string

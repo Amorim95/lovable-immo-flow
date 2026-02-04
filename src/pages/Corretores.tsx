@@ -9,6 +9,7 @@ import { NewCorretorModal } from "@/components/NewCorretorModal";
 import { EditUsuarioModal } from "@/components/EditUsuarioModal";
 import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { UserRoleBadge } from "@/components/UserRoleBadge";
+import { AutoRepiqueSettings } from "@/components/AutoRepiqueSettings";
 import { 
   Plus,
   User,
@@ -321,6 +322,11 @@ const Corretores = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Configuração de Repique Automático - apenas para admins */}
+        <AccessControlWrapper requireAdmin>
+          <AutoRepiqueSettings />
+        </AccessControlWrapper>
 
         {/* Filtros */}
         <Card>
