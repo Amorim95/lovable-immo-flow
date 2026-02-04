@@ -98,12 +98,39 @@ export function LeadTransferModal({
     let failedLeads: string[] = [];
 
     try {
+      // Encontrar o nome do novo usuário selecionado
+      const newUser = users.find(u => u.id === selectedUserId);
+      const newUserName = newUser?.name || 'Novo Corretor';
+
       // Transferir todos os leads em paralelo
       const transferPromises = leadIds.map(async (leadId, index) => {
         try {
+          // Buscar atividades atuais do lead
+          const { data: leadAtual } = await supabase
+            .from('leads')
+            .select('atividades')
+            .eq('id', leadId)
+            .single();
+
+          // Criar atividade de reatribuição manual
+          const reatribuicaoAtividade = {
+            id: Date.now().toString() + index,
+            tipo: 'observacao',
+            descricao: `Lead reatribuído manualmente a ${newUserName}`,
+            data: new Date().toISOString(),
+            corretor: 'Sistema'
+          };
+
+          const atividadesAtuais = (leadAtual?.atividades as any[]) || [];
+          const novasAtividades = [...atividadesAtuais, reatribuicaoAtividade];
+
+          // Atualizar lead com novo usuário e atividade
           const { error } = await supabase
             .from('leads')
-            .update({ user_id: selectedUserId })
+            .update({ 
+              user_id: selectedUserId,
+              atividades: novasAtividades
+            })
             .eq('id', leadId);
 
           if (error) {
@@ -138,12 +165,9 @@ export function LeadTransferModal({
         });
       }
 
-      // Encontrar o nome do novo usuário selecionado
-      const newUser = users.find(u => u.id === selectedUserId);
-      
       // Aguardar um pouco para o usuário ver o feedback e fechar o modal
       setTimeout(() => {
-        onTransferComplete(selectedUserId, newUser?.name || 'Novo Corretor');
+        onTransferComplete(selectedUserId, newUserName);
       }, 500);
     } catch (error) {
       console.error('Erro geral ao transferir leads:', error);

@@ -195,6 +195,27 @@ Deno.serve(async (req) => {
       console.error('Erro ao buscar dados do lead criado:', newLeadError);
     }
 
+    // Adicionar atividade de atribuição inicial no histórico
+    const userName = newLead?.users?.name || 'Usuário não identificado';
+    const atribuicaoAtividade = {
+      id: Date.now().toString(),
+      tipo: 'observacao',
+      descricao: `Lead atribuído a ${userName}`,
+      data: new Date().toISOString(),
+      corretor: 'Sistema'
+    };
+
+    // Buscar atividades existentes e adicionar a nova
+    const atividadesAtuais = (newLead?.atividades as any[]) || [];
+    const novasAtividades = [...atividadesAtuais, atribuicaoAtividade];
+
+    await supabase
+      .from('leads')
+      .update({ atividades: novasAtividades })
+      .eq('id', leadResult.lead_id);
+
+    console.log('Atividade de atribuição registrada com sucesso');
+
     // Atualizar ultimo_lead_recebido do usuário que recebeu o lead
     console.log('Atualizando ultimo_lead_recebido do usuário:', nextUser.id);
     const { error: updateUserError } = await supabase
