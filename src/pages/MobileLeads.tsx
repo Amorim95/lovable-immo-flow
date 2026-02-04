@@ -8,6 +8,7 @@ import { useLeadStages } from "@/hooks/useLeadStages";
 import { useDailyQuote } from "@/hooks/useDailyQuote";
 import { MobileHeader } from "@/components/MobileHeader";
 import { TagFilter } from "@/components/TagFilter";
+import { NotificationPromptBanner } from "@/components/NotificationPromptBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search, MessageCircle, Calendar, User, ChevronDown, Filter, Tag, Users } from "lucide-react";
@@ -279,6 +280,9 @@ export default function MobileLeads() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader title={quote} />
+
+      {/* Banner de notificações */}
+      <NotificationPromptBanner />
 
       {/* Search */}
       <div className="p-4">
