@@ -127,7 +127,7 @@ export function AutoRepiqueSettings({
               <RefreshCw className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-lg">Redistribuição Automática de Leads por Inatividade</CardTitle>
+              <CardTitle className="text-lg">Fallback Automático de Leads</CardTitle>
               <CardDescription>Redistribuição Automática de Leads por Inatividade</CardDescription>
             </div>
           </div>
