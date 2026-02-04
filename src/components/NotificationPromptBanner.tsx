@@ -74,22 +74,23 @@ export function NotificationPromptBanner() {
   // Detectar se precisa reativar (tem no banco mas não tem subscription ativa no browser)
   const needsReactivation = hasDbSubscription && !subscription;
   
-  // Detectar se permissão foi negada (precisa de instruções especiais)
-  const permissionDenied = permission === 'denied';
-  
   // Mostrar banner se:
-  // - Precisa reativar (subscription antiga inválida)
-  // - OU não tem subscription e permissão não foi dada ainda (default)
-  // - OU permissão foi negada (mostrar instruções para reativar nas configurações)
+  // - Não tem subscription ativa E não foi dispensado
+  // O banner só desaparece quando o usuário tiver uma subscription válida
+  const hasValidSubscription = subscription && permission === 'granted';
+  
   const shouldShow = isSupported && 
     user && 
     !dismissed && 
     hasDbSubscription !== null &&
-    (needsReactivation || !hasDbSubscription && permission === 'default' || permissionDenied);
+    !hasValidSubscription;
 
   if (!shouldShow) {
     return null;
   }
+  
+  // Detectar se permissão foi negada (precisa de instruções especiais)
+  const permissionDenied = permission === 'denied';
 
   // Estilo diferente para reativação ou permissão negada
   const isReactivation = needsReactivation;
