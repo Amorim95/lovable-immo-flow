@@ -108,7 +108,7 @@ Deno.serve(async (req) => {
           body: {
             userId: JANAINA_VIDALETE_USER_ID,
             title: '🔔 Opa! Novo Lead!',
-            body: `Corre lá, chegou um novo lead para você!`,
+            body: `Corre lá, que o lead ${body.nome} está esperando seu atendimento!`,
             data: { leadId: result.lead_id, url: '/' }
           }
         });
