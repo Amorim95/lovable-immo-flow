@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { useDailyQuote } from "@/hooks/useDailyQuote";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutList, LayoutGrid, Plus } from "lucide-react";
+import { LayoutList, LayoutGrid, Plus, Search } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -261,6 +261,17 @@ const Index = () => {
               onValueChange={handleDateFilterChange} 
               availableDates={availableDates} 
             />
+            {/* Campo de busca ao lado do período */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Buscar leads..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 w-64"
+              />
+            </div>
             {/* Filtros de Equipe e Usuário - Apenas para Admin, Gestor e Dono */}
             {(isAdmin || isGestor || isDono) && (
               <TeamUserFilters 
