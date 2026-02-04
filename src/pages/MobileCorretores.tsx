@@ -300,7 +300,7 @@ export default function MobileCorretores() {
                         corretor.status === 'pendente' ? 'secondary' : 
                         'destructive'
                       }
-                      className={`cursor-pointer hover:opacity-80 active:scale-95 transition-all ${
+                      className={`cursor-pointer hover:opacity-80 active:scale-95 transition-all px-4 py-1.5 text-sm ${
                         corretor.status === 'ativo' ? 'bg-green-100 text-green-800' : 
                         corretor.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
