@@ -115,6 +115,23 @@ serve(async (req) => {
     const result = leadResult[0];
     console.log('Resultado da criação do lead:', result);
 
+    // Enviar notificação push para o usuário (apenas se não for duplicata)
+    if (!result.is_duplicate) {
+      try {
+        await supabaseClient.functions.invoke('send-push-notification', {
+          body: {
+            userId: nextUserId,
+            title: 'Novo Lead - Araújo Broker',
+            body: `Novo lead: ${leadData.nome}`,
+            data: { leadId: result.lead_id, url: '/' }
+          }
+        });
+        console.log('Notificação push enviada para usuário:', nextUserId);
+      } catch (notificationError) {
+        console.error('Erro ao enviar notificação push:', notificationError);
+      }
+    }
+
     // Fetch complete lead data
     const { data: completeLead, error: fetchError } = await supabaseClient
       .from('leads')

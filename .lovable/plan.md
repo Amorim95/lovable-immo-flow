@@ -12,13 +12,13 @@ Adicionar notificação push em todos os webhooks que criam leads, para que o us
 | `webhook-lead` | Sim |
 | `webhook-lead-click-imoveis` | Sim |
 | `webhook-lead-click-imoveis-nao-qualificado` | Sim |
-| `webhook-lead-janaina-vidalete` | **Nao** |
-| `webhook-lead-mays-imob` | **Nao** |
-| `webhook-lead-vivaz` | **Nao** |
-| `webhook-lead-vivaz-zona-sul` | **Nao** |
-| `webhook-lead-vivaz-zona-leste` | **Nao** |
-| `webhook-lead-araujo-broker` | **Nao** |
-| `webhook-lead-recuperar` | **Nao** |
+| `webhook-lead-janaina-vidalete` | **Sim** ✅ |
+| `webhook-lead-mays-imob` | **Sim** ✅ |
+| `webhook-lead-vivaz` | **Sim** ✅ |
+| `webhook-lead-vivaz-zona-sul` | **Sim** ✅ |
+| `webhook-lead-vivaz-zona-leste` | **Sim** ✅ |
+| `webhook-lead-araujo-broker` | **Sim** ✅ |
+| `webhook-lead-recuperar` | **Sim** ✅ |
 
 ## O Que Sera Feito
 

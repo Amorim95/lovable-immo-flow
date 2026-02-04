@@ -151,6 +151,23 @@ serve(async (req) => {
 
     console.log('Timestamp de último lead atualizado para usuário da ZONA LESTE:', nextUser);
 
+    // Enviar notificação push para o usuário (apenas se não for duplicata)
+    if (!isDuplicate) {
+      try {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            userId: nextUser,
+            title: 'Novo Lead - Vivaz ZONA LESTE',
+            body: `Novo lead: ${leadData.nome}`,
+            data: { leadId, url: '/' }
+          }
+        });
+        console.log('Notificação push enviada para usuário ZONA LESTE:', nextUser);
+      } catch (notificationError) {
+        console.error('Erro ao enviar notificação push:', notificationError);
+      }
+    }
+
     // Get complete lead data to return
     const { data: completeLeadData } = await supabase
       .from('leads')

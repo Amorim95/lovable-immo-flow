@@ -170,6 +170,23 @@ serve(async (req) => {
     // Timestamp já foi atualizado atomicamente pela função get_next_user_round_robin
     // Não precisamos atualizar novamente aqui
 
+    // Enviar notificação push para o usuário (apenas se não for duplicata)
+    if (!isDuplicate) {
+      try {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            userId: nextUser,
+            title: 'Novo Lead - Recuperar',
+            body: `Novo lead para recuperar: ${leadData.nome}`,
+            data: { leadId, url: '/' }
+          }
+        });
+        console.log('Notificação push enviada para usuário:', nextUser);
+      } catch (notificationError) {
+        console.error('Erro ao enviar notificação push:', notificationError);
+      }
+    }
+
     // Get complete lead data to return
     const { data: completeLeadData } = await supabase
       .from('leads')
