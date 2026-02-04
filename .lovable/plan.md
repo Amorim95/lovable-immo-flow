@@ -1,86 +1,85 @@
 
-# Plano: Adicionar pré-filtro de equipe para responsáveis na Gestão de Usuários Mobile
+# Plano: Notificar Usuário Quando Lead For Atribuído
 
-## Objetivo
+## Resumo
 
-Quando o usuário logado é responsável por uma equipe, o filtro de equipe deve ser pré-selecionado automaticamente com sua equipe, assim como já acontece no Kanban.
+Adicionar notificação push em todos os webhooks que criam leads, para que o usuário seja notificado quando receber um lead - mesmo com o PWA fechado.
 
-## Como Funciona Atualmente no Kanban
+## Situação Atual
+
+| Webhook | Notificação Push |
+|---------|------------------|
+| `webhook-lead` | Sim |
+| `webhook-lead-click-imoveis` | Sim |
+| `webhook-lead-click-imoveis-nao-qualificado` | Sim |
+| `webhook-lead-janaina-vidalete` | **Nao** |
+| `webhook-lead-mays-imob` | **Nao** |
+| `webhook-lead-vivaz` | **Nao** |
+| `webhook-lead-vivaz-zona-sul` | **Nao** |
+| `webhook-lead-vivaz-zona-leste` | **Nao** |
+| `webhook-lead-araujo-broker` | **Nao** |
+| `webhook-lead-recuperar` | **Nao** |
+
+## O Que Sera Feito
+
+Adicionar o codigo de notificacao push nos 6 webhooks que ainda nao tem.
+
+O codigo a adicionar (apos criar o lead com sucesso):
 
 ```text
-Index.tsx
-    │
-    ├── useManagerTeam() ─────► Retorna { managedTeamId, loading }
-    │
-    └── useEffect() ─────────► Se managedTeamId existe, seta selectedTeamId
-```
-
-## Alterações no Arquivo: `src/pages/MobileCorretores.tsx`
-
-### 1. Importar o hook useManagerTeam (linha 14)
-
-```typescript
-import { useManagerTeam } from "@/hooks/useManagerTeam";
-```
-
-### 2. Usar o hook no componente (após linha 41)
-
-```typescript
-const { managedTeamId, loading: teamLoading } = useManagerTeam();
-```
-
-### 3. Adicionar useEffect para pré-selecionar equipe (após linha 43)
-
-```typescript
-import { useState, useEffect } from "react";
-
-// Dentro do componente:
-useEffect(() => {
-  if (!teamLoading && managedTeamId && !selectedEquipeId) {
-    setSelectedEquipeId(managedTeamId);
+// Enviar notificacao push para o usuario
+if (!result.is_duplicate) {
+  try {
+    await supabase.functions.invoke('send-push-notification', {
+      body: {
+        userId: [ID_DO_USUARIO],
+        title: 'Novo Lead - [NOME_DA_EMPRESA]',
+        body: `Novo lead: ${leadData.nome}`,
+        data: { leadId: result.lead_id, url: '/' }
+      }
+    });
+    console.log('Notificacao push enviada');
+  } catch (error) {
+    console.error('Erro ao enviar notificacao:', error);
   }
-}, [teamLoading, managedTeamId, selectedEquipeId]);
+}
 ```
+
+## Arquivos a Modificar
+
+| Arquivo | Empresa |
+|---------|---------|
+| `supabase/functions/webhook-lead-janaina-vidalete/index.ts` | MAYS IMOB |
+| `supabase/functions/webhook-lead-mays-imob/index.ts` | MAYS IMOB |
+| `supabase/functions/webhook-lead-vivaz/index.ts` | Vivaz Imoveis - ZONA NORTE |
+| `supabase/functions/webhook-lead-vivaz-zona-sul/index.ts` | Vivaz Imoveis - ZONA SUL |
+| `supabase/functions/webhook-lead-vivaz-zona-leste/index.ts` | Vivaz Imoveis - ZONA LESTE |
+| `supabase/functions/webhook-lead-araujo-broker/index.ts` | Araujo Broker |
+| `supabase/functions/webhook-lead-recuperar/index.ts` | Click Imoveis (Recuperar) |
 
 ## Fluxo de Funcionamento
 
 ```text
-Usuário abre Gestão de Usuários
-           │
-           ▼
-   useManagerTeam() executa
-           │
-           ▼
-  Busca equipe onde user.id = responsavel_id
-           │
-           ├── Se encontrou equipe ──► managedTeamId = equipe.id
-           │                                    │
-           │                                    ▼
-           │                          useEffect detecta
-           │                                    │
-           │                                    ▼
-           │                     setSelectedEquipeId(managedTeamId)
-           │                                    │
-           │                                    ▼
-           │                     Filtro mostra apenas usuários dessa equipe
-           │
-           └── Se não encontrou ──► Mantém "Todas as equipes"
+Lead chega via webhook
+       |
+       v
+Webhook cria lead e atribui usuario
+       |
+       v
+Webhook chama send-push-notification
+       |
+       v
+Edge function busca subscription do usuario
+       |
+       v
+Envia push via web-push
+       |
+       v
+Service Worker exibe notificacao no dispositivo
 ```
 
-## Comportamento Esperado
+## Observacoes
 
-| Tipo de Usuário | Pré-filtro |
-|-----------------|------------|
-| Responsável por equipe | Equipe pré-selecionada |
-| Admin sem equipe | "Todas as equipes" |
-| Gestor sem equipe própria | "Todas as equipes" |
-
-## Detalhes Técnicos
-
-- A condição `!selectedEquipeId` evita sobrescrever se o usuário já mudou o filtro manualmente
-- O `teamLoading` garante que a pré-seleção só acontece após carregar os dados
-- Reutiliza o mesmo hook já usado no Kanban, mantendo consistência
-
-## Risco
-
-Nenhum - reutilizamos um hook existente e aplicamos o mesmo padrão já usado no Kanban.
+- A notificacao so e enviada se o lead NAO for duplicata
+- Se o usuario nao tiver subscription ativa, a notificacao falha silenciosamente (sem erro)
+- A infraestrutura ja existe e funciona (VAPID keys configuradas, Edge Function pronta, subscriptions ativas no banco)
