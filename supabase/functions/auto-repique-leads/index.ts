@@ -72,13 +72,19 @@ Deno.serve(async (req) => {
       const timeLimit = new Date();
       timeLimit.setMinutes(timeLimit.getMinutes() - auto_repique_minutes);
 
-      // Buscar leads que precisam de repique
+      // Data de corte: somente leads criados a partir de hoje são elegíveis
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const cutoffDate = today.toISOString();
+
+      // Buscar leads que precisam de repique (somente leads novos a partir de hoje)
       const { data: leads, error: leadsError } = await supabase
         .from('leads')
         .select('id, nome, user_id, company_id, repique_count')
         .eq('company_id', company_id)
         .eq('etapa', 'aguardando-atendimento')
         .is('primeiro_contato_whatsapp', null)
+        .gte('created_at', cutoffDate) // Somente leads criados a partir de hoje
         .lt('assigned_at', timeLimit.toISOString())
         .lt('repique_count', 3); // Limite máximo de repiques
 
