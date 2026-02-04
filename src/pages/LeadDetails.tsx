@@ -9,15 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, MessageCircle, History, Plus, Clock, Copy, Tag, Trash2 } from "lucide-react";
+import { Edit, MessageCircle, History, Plus, Clock, Copy, Tag } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TagSelector } from "@/components/TagSelector";
-
 const stageLabels = {
   'aguardando-atendimento': 'Aguardando Atendimento',
-  'tentativas-contato': 'Em Tentativas de Contato', 
+  'tentativas-contato': 'Em Tentativas de Contato',
   'atendeu': 'Atendeu',
   'nome-sujo': 'Nome Sujo',
   'nome-limpo': 'Nome Limpo',
@@ -26,16 +25,27 @@ const stageLabels = {
   'em-pausa': 'Em Pausa',
   'descarte': 'Descarte'
 };
-
 export default function LeadDetails() {
-  const { id } = useParams<{ id: string }>();
+  const {
+    id
+  } = useParams<{
+    id: string;
+  }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { toast } = useToast();
-  
+  const {
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
+
   // Busca direta do lead pelo ID - muito mais rápido!
-  const { lead, loading: leadLoading, updateLead, refreshLead } = useLeadById(id);
-  
+  const {
+    lead,
+    loading: leadLoading,
+    updateLead,
+    refreshLead
+  } = useLeadById(id);
   const [isEditing, setIsEditing] = useState(false);
   const [showActivities, setShowActivities] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -57,7 +67,7 @@ export default function LeadDetails() {
         dadosAdicionais: lead.dadosAdicionais || '',
         etapa: lead.etapa
       });
-      
+
       // Registrar visualização do lead
       registerLeadView(lead);
     }
@@ -66,20 +76,22 @@ export default function LeadDetails() {
   // Função para registrar visualização do lead
   const registerLeadView = async (leadData: Lead) => {
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { data: userData } = await supabase.auth.getUser();
-      
+      const {
+        supabase
+      } = await import('@/integrations/supabase/client');
+      const {
+        data: userData
+      } = await supabase.auth.getUser();
       if (!userData.user) return;
-
       const userName = userData.user.user_metadata?.name || userData.user.email || 'Usuário não identificado';
 
       // Marcar primeira visualização se ainda não foi marcada
       if (!leadData.primeira_visualizacao) {
-        const { error: updateError } = await supabase
-          .from('leads')
-          .update({ primeira_visualizacao: new Date().toISOString() })
-          .eq('id', leadData.id);
-        
+        const {
+          error: updateError
+        } = await supabase.from('leads').update({
+          primeira_visualizacao: new Date().toISOString()
+        }).eq('id', leadData.id);
         if (updateError) {
           console.error('Erro ao marcar primeira visualização:', updateError);
         }
@@ -87,21 +99,14 @@ export default function LeadDetails() {
 
       // Verificar se já existe uma visualização recente (últimos 5 minutos) do mesmo usuário
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-      const recentViewByUser = leadData.atividades?.find(atividade => 
-        atividade.tipo === 'observacao' && 
-        atividade.descricao === 'Lead visualizado' &&
-        atividade.corretor === userName &&
-        new Date(atividade.data) > fiveMinutesAgo
-      );
+      const recentViewByUser = leadData.atividades?.find(atividade => atividade.tipo === 'observacao' && atividade.descricao === 'Lead visualizado' && atividade.corretor === userName && new Date(atividade.data) > fiveMinutesAgo);
 
       // Se já visualizou recentemente, não registrar novamente
       if (recentViewByUser) {
         console.log('Visualização já registrada nos últimos 5 minutos');
         return;
       }
-
       console.log('Registrando visualização do lead por:', userName);
-
       const viewActivity: Atividade = {
         id: Date.now().toString(),
         tipo: 'observacao',
@@ -109,9 +114,8 @@ export default function LeadDetails() {
         data: new Date(),
         corretor: userName
       };
-
       const updatedActivities = [...(leadData.atividades || []), viewActivity];
-      
+
       // Converter atividades para formato JSON correto
       const atividadesJson = updatedActivities.map(atividade => ({
         id: atividade.id,
@@ -120,16 +124,17 @@ export default function LeadDetails() {
         data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
         corretor: atividade.corretor
       }));
-
-      const { error } = await supabase
-        .from('leads')
-        .update({ atividades: atividadesJson })
-        .eq('id', leadData.id);
-
+      const {
+        error
+      } = await supabase.from('leads').update({
+        atividades: atividadesJson
+      }).eq('id', leadData.id);
       if (!error) {
         console.log('Visualização registrada com sucesso');
         // Atualizar estado local
-        updateLead({ atividades: updatedActivities });
+        updateLead({
+          atividades: updatedActivities
+        });
       } else {
         console.error('Erro ao registrar visualização:', error);
       }
@@ -137,10 +142,8 @@ export default function LeadDetails() {
       console.error('Erro ao registrar visualização:', error);
     }
   };
-
   const handleSave = async () => {
     if (!lead) return;
-    
     try {
       const supabaseUpdates: any = {
         nome: formData.nome,
@@ -149,12 +152,9 @@ export default function LeadDetails() {
         etapa: formData.etapa,
         stage_name: formData.etapa
       };
-
-      const { error } = await supabase
-        .from('leads')
-        .update(supabaseUpdates)
-        .eq('id', lead.id);
-
+      const {
+        error
+      } = await supabase.from('leads').update(supabaseUpdates).eq('id', lead.id);
       if (error) {
         console.error('Erro ao atualizar lead:', error);
         toast({
@@ -164,7 +164,6 @@ export default function LeadDetails() {
         });
         return;
       }
-
       updateLead(formData);
       setIsEditing(false);
       toast({
@@ -180,13 +179,11 @@ export default function LeadDetails() {
       });
     }
   };
-
   const handleWhatsApp = async () => {
     if (!lead?.telefone) return;
-    
     const cleanPhone = lead.telefone.replace(/\D/g, '');
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
-    
+
     // Registrar atividade de contato
     try {
       const activity: Atividade = {
@@ -196,9 +193,8 @@ export default function LeadDetails() {
         data: new Date(),
         corretor: user?.name || 'Usuário não identificado'
       };
-
       const updatedActivities = [...(lead.atividades || []), activity];
-      
+
       // Converter atividades para formato JSON correto
       const atividadesJson = updatedActivities.map(atividade => ({
         id: atividade.id,
@@ -207,27 +203,28 @@ export default function LeadDetails() {
         data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
         corretor: atividade.corretor
       }));
-
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { error } = await supabase
-        .from('leads')
-        .update({ atividades: atividadesJson })
-        .eq('id', lead.id);
-
+      const {
+        supabase
+      } = await import('@/integrations/supabase/client');
+      const {
+        error
+      } = await supabase.from('leads').update({
+        atividades: atividadesJson
+      }).eq('id', lead.id);
       if (error) {
         console.error('Erro ao salvar atividade de contato:', error);
       } else {
         // Atualizar estado local
-        updateLead({ atividades: updatedActivities });
+        updateLead({
+          atividades: updatedActivities
+        });
       }
     } catch (error) {
       console.error('Erro geral:', error);
     }
   };
-
   const handleAddActivity = async () => {
     if (!newActivity.trim() || !lead) return;
-    
     try {
       const activity: Atividade = {
         id: Date.now().toString(),
@@ -236,9 +233,8 @@ export default function LeadDetails() {
         data: new Date(),
         corretor: user?.name || 'Usuário não identificado'
       };
-
       const updatedActivities = [...(lead.atividades || []), activity];
-      
+
       // Converter atividades para formato JSON correto
       const atividadesJson = updatedActivities.map(atividade => ({
         id: atividade.id,
@@ -247,13 +243,14 @@ export default function LeadDetails() {
         data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
         corretor: atividade.corretor
       }));
-
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { error } = await supabase
-        .from('leads')
-        .update({ atividades: atividadesJson })
-        .eq('id', lead.id);
-
+      const {
+        supabase
+      } = await import('@/integrations/supabase/client');
+      const {
+        error
+      } = await supabase.from('leads').update({
+        atividades: atividadesJson
+      }).eq('id', lead.id);
       if (error) {
         console.error('Erro ao salvar atividade:', error);
         toast({
@@ -264,8 +261,9 @@ export default function LeadDetails() {
       }
 
       // Atualizar estado local
-      updateLead({ atividades: updatedActivities });
-      
+      updateLead({
+        atividades: updatedActivities
+      });
       toast({
         title: "Atividade adicionada",
         description: "A atividade foi registrada com sucesso."
@@ -279,7 +277,6 @@ export default function LeadDetails() {
       });
     }
   };
-
   const handleCopyDadosAdicionais = async () => {
     try {
       const dadosAdicionais = formData.dadosAdicionais || '';
@@ -296,25 +293,24 @@ export default function LeadDetails() {
       });
     }
   };
-
   const handleDelete = async () => {
     if (!lead) return;
-    
     setIsDeleting(true);
     try {
-      const { error } = await supabase.functions.invoke('delete-lead', {
-        body: { leadId: lead.id }
+      const {
+        error
+      } = await supabase.functions.invoke('delete-lead', {
+        body: {
+          leadId: lead.id
+        }
       });
-
       if (error) {
         throw error;
       }
-
       toast({
         title: "Lead deletado",
         description: "O lead foi removido com sucesso."
       });
-      
       navigate('/');
     } catch (error) {
       console.error('Erro ao deletar lead:', error);
@@ -328,15 +324,9 @@ export default function LeadDetails() {
       setShowDeleteDialog(false);
     }
   };
-
   if (!lead) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <MobileHeader 
-          title="Carregando..." 
-          showBackButton 
-          onBack={() => navigate('/')} 
-        />
+    return <div className="min-h-screen bg-gray-50">
+        <MobileHeader title="Carregando..." showBackButton onBack={() => navigate('/')} />
         <div className="p-4">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 rounded"></div>
@@ -344,72 +334,36 @@ export default function LeadDetails() {
             <div className="h-20 bg-gray-200 rounded"></div>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <MobileHeader
-        title={lead.nome}
-        showBackButton
-        onBack={() => navigate('/')}
-          rightElement={
-          <div className="flex items-center gap-2">
+  return <div className="min-h-screen bg-gray-50">
+      <MobileHeader title={lead.nome} showBackButton onBack={() => navigate('/')} rightElement={<div className="flex items-center gap-2">
             {/* Tags discretas no header */}
-            {lead.etiquetas && lead.etiquetas.length > 0 && (
-              <div className="flex items-center gap-1 mr-2">
+            {lead.etiquetas && lead.etiquetas.length > 0 && <div className="flex items-center gap-1 mr-2">
                 <Tag className="w-3 h-3 text-gray-400" />
                 <div className="flex gap-1">
-                  {lead.etiquetas.slice(0, 2).map((etiqueta, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] bg-blue-100 text-blue-800 font-medium"
-                    >
+                  {lead.etiquetas.slice(0, 2).map((etiqueta, index) => <span key={index} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] bg-blue-100 text-blue-800 font-medium">
                       {etiqueta.length > 6 ? `${etiqueta.substring(0, 6)}...` : etiqueta}
-                    </span>
-                  ))}
-                  {lead.etiquetas.length > 2 && (
-                    <span className="text-[9px] text-gray-400">+{lead.etiquetas.length - 2}</span>
-                  )}
+                    </span>)}
+                  {lead.etiquetas.length > 2 && <span className="text-[9px] text-gray-400">+{lead.etiquetas.length - 2}</span>}
                 </div>
-              </div>
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowDeleteDialog(true)}
-              className="p-2 text-red-600 hover:bg-red-50"
-            >
-              <Trash2 className="w-5 h-5" />
+              </div>}
+            <Button variant="ghost" size="sm" onClick={() => setShowDeleteDialog(true)} className="p-2 text-red-600 hover:bg-red-50">
+              
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsEditing(!isEditing)}
-              className="p-2"
-            >
+            <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)} className="p-2">
               <Edit className="w-5 h-5" />
             </Button>
-          </div>
-        }
-      />
+          </div>} />
 
       <div className="p-4 space-y-6">
         {/* Contact Actions */}
         <div className="flex gap-3">
-          <Button 
-            onClick={handleWhatsApp}
-            className="flex-1 bg-green-500 hover:bg-green-600"
-          >
+          <Button onClick={handleWhatsApp} className="flex-1 bg-green-500 hover:bg-green-600">
             <MessageCircle className="w-4 h-4 mr-2" />
             WhatsApp
           </Button>
-          <Button 
-            onClick={() => setShowActivities(!showActivities)}
-            variant="outline"
-            className="flex-1"
-          >
+          <Button onClick={() => setShowActivities(!showActivities)} variant="outline" className="flex-1">
             <History className="w-4 h-4 mr-2" />
             Histórico
           </Button>
@@ -422,42 +376,33 @@ export default function LeadDetails() {
           <div className="space-y-4">
             <div>
               <Label htmlFor="nome">Nome</Label>
-              <Input
-                id="nome"
-                value={formData.nome}
-                onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
-                disabled={!isEditing}
-                className={!isEditing ? "bg-gray-50" : ""}
-              />
+              <Input id="nome" value={formData.nome} onChange={e => setFormData(prev => ({
+              ...prev,
+              nome: e.target.value
+            }))} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
             </div>
 
             <div>
               <Label htmlFor="telefone">Telefone</Label>
-              <Input
-                id="telefone"
-                value={formData.telefone}
-                onChange={(e) => setFormData(prev => ({ ...prev, telefone: e.target.value }))}
-                disabled={!isEditing}
-                className={!isEditing ? "bg-gray-50" : ""}
-              />
+              <Input id="telefone" value={formData.telefone} onChange={e => setFormData(prev => ({
+              ...prev,
+              telefone: e.target.value
+            }))} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
             </div>
 
             <div>
               <Label htmlFor="etapa">Etapa</Label>
-              <Select
-                value={formData.etapa}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, etapa: value as Lead['etapa'] }))}
-                disabled={!isEditing}
-              >
+              <Select value={formData.etapa} onValueChange={value => setFormData(prev => ({
+              ...prev,
+              etapa: value as Lead['etapa']
+            }))} disabled={!isEditing}>
                 <SelectTrigger className={!isEditing ? "bg-gray-50" : ""}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(stageLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
+                  {Object.entries(stageLabels).map(([value, label]) => <SelectItem key={value} value={value}>
                       {label}
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -465,25 +410,15 @@ export default function LeadDetails() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <Label htmlFor="dados">Dados Adicionais</Label>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyDadosAdicionais}
-                  className="flex items-center gap-2"
-                >
+                <Button variant="outline" size="sm" onClick={handleCopyDadosAdicionais} className="flex items-center gap-2">
                   <Copy className="w-4 h-4" />
                   Copiar
                 </Button>
               </div>
-              <Textarea
-                id="dados"
-                value={formData.dadosAdicionais}
-                onChange={(e) => setFormData(prev => ({ ...prev, dadosAdicionais: e.target.value }))}
-                disabled={!isEditing}
-                className={!isEditing ? "bg-gray-50" : ""}
-                rows={4}
-                placeholder="Informações extras sobre o lead..."
-              />
+              <Textarea id="dados" value={formData.dadosAdicionais} onChange={e => setFormData(prev => ({
+              ...prev,
+              dadosAdicionais: e.target.value
+            }))} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} rows={4} placeholder="Informações extras sobre o lead..." />
             </div>
 
             <div className="text-sm text-gray-500 space-y-1">
@@ -491,37 +426,27 @@ export default function LeadDetails() {
               <p><strong>Data de Criação:</strong> {lead.dataCriacao.toLocaleDateString('pt-BR')}</p>
             </div>
 
-            {isEditing && (
-              <div className="flex gap-3 pt-4">
-                <Button 
-                  onClick={handleSave}
-                  className="flex-1"
-                >
+            {isEditing && <div className="flex gap-3 pt-4">
+                <Button onClick={handleSave} className="flex-1">
                   Salvar
                 </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    setIsEditing(false);
-                    setFormData({
-                      nome: lead.nome,
-                      telefone: lead.telefone,
-                      dadosAdicionais: lead.dadosAdicionais,
-                      etapa: lead.etapa
-                    });
-                  }}
-                  className="flex-1"
-                >
+                <Button variant="outline" onClick={() => {
+              setIsEditing(false);
+              setFormData({
+                nome: lead.nome,
+                telefone: lead.telefone,
+                dadosAdicionais: lead.dadosAdicionais,
+                etapa: lead.etapa
+              });
+            }} className="flex-1">
                   Cancelar
                 </Button>
-              </div>
-            )}
+              </div>}
           </div>
         </div>
 
         {/* Histórico de Atividades */}
-        {showActivities && (
-          <div className="bg-white rounded-lg p-4 space-y-4">
+        {showActivities && <div className="bg-white rounded-lg p-4 space-y-4">
             <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
               <History className="w-5 h-5" />
               Histórico de Atividades
@@ -530,18 +455,8 @@ export default function LeadDetails() {
             {/* Nova Atividade */}
             <div className="space-y-3">
               <div className="flex gap-2">
-                <Textarea
-                  placeholder="Adicionar nova atividade..."
-                  value={newActivity}
-                  onChange={(e) => setNewActivity(e.target.value)}
-                  className="flex-1"
-                  rows={2}
-                />
-                <Button
-                  onClick={handleAddActivity}
-                  disabled={!newActivity.trim()}
-                  className="h-fit"
-                >
+                <Textarea placeholder="Adicionar nova atividade..." value={newActivity} onChange={e => setNewActivity(e.target.value)} className="flex-1" rows={2} />
+                <Button onClick={handleAddActivity} disabled={!newActivity.trim()} className="h-fit">
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
@@ -549,9 +464,7 @@ export default function LeadDetails() {
 
             {/* Lista de Atividades */}
             <div className="space-y-3">
-              {lead.atividades && lead.atividades.length > 0 ? (
-                [...lead.atividades].reverse().map((atividade, index) => (
-                  <div key={index} className="border-l-2 border-blue-200 pl-4 py-2">
+              {lead.atividades && lead.atividades.length > 0 ? [...lead.atividades].reverse().map((atividade, index) => <div key={index} className="border-l-2 border-blue-200 pl-4 py-2">
                     <div className="flex items-start gap-2">
                       <Clock className="w-4 h-4 text-gray-400 mt-1" />
                       <div className="flex-1">
@@ -561,16 +474,11 @@ export default function LeadDetails() {
                         </p>
                       </div>
                     </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4">
+                  </div>) : <div className="text-center py-4">
                   <p className="text-gray-500 text-sm">Nenhuma atividade registrada ainda</p>
-                </div>
-              )}
+                </div>}
             </div>
-          </div>
-        )}
+          </div>}
       </div>
 
       {/* Delete Confirmation Dialog */}
@@ -591,16 +499,11 @@ export default function LeadDetails() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-red-600 hover:bg-red-700">
               {isDeleting ? 'Deletando...' : 'Deletar Lead'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
+    </div>;
 }
