@@ -245,24 +245,6 @@ export default function MobileCorretores() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="px-4 pb-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-white dark:bg-card rounded-lg p-3 text-center">
-            <div className="text-lg font-bold text-green-600">
-              {users.filter(u => u.status === 'ativo').length}
-            </div>
-            <div className="text-xs text-muted-foreground">Ativos</div>
-          </div>
-          <div className="bg-white dark:bg-card rounded-lg p-3 text-center">
-            <div className="text-lg font-bold text-red-600">
-              {users.filter(u => u.status === 'inativo').length}
-            </div>
-            <div className="text-xs text-muted-foreground">Inativos</div>
-          </div>
-        </div>
-      </div>
-
       {/* Users List */}
       <div className="px-4 space-y-3">
         {filteredCorretores.length === 0 ? (
