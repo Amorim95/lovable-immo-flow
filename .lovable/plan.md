@@ -2,156 +2,89 @@
 
 # Plano: Sistema de Repique Automático de Leads
 
+## Status: ✅ Implementado
+
 ## Resumo da Funcionalidade
 
-Criar um sistema opcional por empresa que redireciona automaticamente leads não atendidos (sem clique em "Tentativa de contato via WhatsApp") após 5 minutos para o próximo usuário da fila.
+Sistema opcional por empresa que redireciona automaticamente leads não atendidos (sem clique em "Tentativa de contato via WhatsApp") após X minutos para o próximo usuário da fila.
 
-## Arquitetura da Solução
+## Componentes Implementados
 
-```text
-┌─────────────────────────────────────────────────────────────────────┐
-│                    FLUXO DE REPIQUE AUTOMÁTICO                      │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  1. Lead é atribuído ao Usuário A                                   │
-│             ↓                                                       │
-│  2. Timer de 5 minutos inicia (created_at ou assigned_at)           │
-│             ↓                                                       │
-│  3. Cron Job verifica a cada minuto:                                │
-│     → Lead sem "primeiro_contato_whatsapp"?                         │
-│     → Mais de 5 minutos desde atribuição?                           │
-│     → Empresa com repique automático ativado?                       │
-│             ↓                                                       │
-│  4. Se sim: Lead vai para próximo da fila (round-robin)             │
-│             + Log de transferência automática                       │
-│             + Notificação push para novo corretor                   │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
-```
+### 1. ✅ Banco de Dados (Migration Executada)
 
-## Componentes a Implementar
+| Tabela | Coluna | Descrição |
+|--------|--------|-----------|
+| `company_settings` | `auto_repique_enabled` | boolean (default: false) |
+| `company_settings` | `auto_repique_minutes` | integer (default: 5) |
+| `leads` | `assigned_at` | timestamp - Quando foi atribuído ao usuário atual |
+| `leads` | `repique_count` | integer - Quantas vezes foi repassado |
 
-### 1. Banco de Dados
+### 2. ✅ Edge Function: `auto-repique-leads`
 
-| Alteração | Tabela | Descrição |
-|-----------|--------|-----------|
-| Nova coluna | `company_settings` | `auto_repique_enabled` (boolean, default: false) |
-| Nova coluna | `company_settings` | `auto_repique_minutes` (integer, default: 5) |
-| Nova coluna | `leads` | `assigned_at` (timestamp) - Para rastrear quando foi atribuído ao usuário atual |
-| Nova coluna | `leads` | `repique_count` (integer, default: 0) - Quantas vezes foi repassado |
+Função que verifica e redistribui leads não atendidos:
+- Busca empresas com `auto_repique_enabled = true`
+- Para cada empresa, busca leads pendentes sem contato WhatsApp
+- Redistribui para próximo usuário via round-robin
+- Envia notificação push
+- Limite máximo: 3 repiques por lead
 
-### 2. Edge Function: `auto-repique-leads`
+### 3. ✅ Interface de Configuração
 
-Função que será executada via cron job a cada minuto para verificar e redistribuir leads não atendidos.
+Componente `AutoRepiqueSettings` adicionado em "Gestão de Usuários":
+- Toggle para ativar/desativar
+- Campo para configurar tempo limite (1-30 minutos)
+- Visível apenas para admins
 
-```text
-Lógica:
-1. Buscar empresas com auto_repique_enabled = true
-2. Para cada empresa, buscar leads onde:
-   - primeiro_contato_whatsapp IS NULL
-   - assigned_at < now() - interval 'X minutes'
-   - etapa = 'aguardando-atendimento'
-3. Para cada lead encontrado:
-   - Buscar próximo usuário no round-robin
-   - Atualizar user_id e assigned_at
-   - Incrementar repique_count
-   - Registrar log de transferência automática
-   - Enviar notificação push
-```
+### 4. ✅ Badge de Repique no Lead Card
 
-### 3. Interface de Configuração
-
-Adicionar toggle em "Gestão de Usuários" (ou criar seção em Configurações) para:
-
-- Ativar/desativar repique automático
-- Configurar tempo limite (padrão: 5 minutos)
-- Ver estatísticas de repiques
-
-### 4. Atualização dos Webhooks
-
-Atualizar webhooks de criação de leads para:
-- Preencher campo `assigned_at` com timestamp atual
-- Garantir que `primeiro_contato_whatsapp` começa como NULL
-
-### 5. Indicador Visual no Lead Card
-
-Mostrar badge/contador quando o lead foi repassado automaticamente:
+Componente `RepiqueBadge` mostra contador quando lead foi redistribuído:
 - "Repique 1x", "Repique 2x", etc.
 
-## Detalhes Técnicos
+### 5. ✅ Webhook Atualizado
 
-### Migration SQL
+`webhook-lead` atualiza `assigned_at` ao criar leads.
 
-```sql
--- Adicionar colunas em company_settings
-ALTER TABLE company_settings 
-ADD COLUMN IF NOT EXISTS auto_repique_enabled boolean DEFAULT false,
-ADD COLUMN IF NOT EXISTS auto_repique_minutes integer DEFAULT 5;
+## ⚠️ Configuração Pendente: Cron Job
 
--- Adicionar colunas em leads
-ALTER TABLE leads 
-ADD COLUMN IF NOT EXISTS assigned_at timestamp with time zone DEFAULT now(),
-ADD COLUMN IF NOT EXISTS repique_count integer DEFAULT 0;
+Para o repique automático funcionar, é necessário configurar um cron job no Supabase:
 
--- Atualizar leads existentes
-UPDATE leads SET assigned_at = created_at WHERE assigned_at IS NULL;
-```
+### Opção 1: Via Dashboard Supabase (Recomendado)
 
-### Edge Function Principal
-
-```typescript
-// supabase/functions/auto-repique-leads/index.ts
-// Executada via cron a cada minuto
-
-1. Buscar empresas com repique ativado
-2. Para cada empresa:
-   - Buscar leads pendentes de atendimento
-   - Verificar se passou o tempo limite
-   - Redistribuir para próximo usuário
-   - Enviar notificação
-```
-
-### Configuração do Cron Job
+1. Acesse o Dashboard do Supabase
+2. Vá em Database > Extensions
+3. Habilite a extensão `pg_cron`
+4. Vá em SQL Editor e execute:
 
 ```sql
 SELECT cron.schedule(
   'auto-repique-leads',
-  '* * * * *', -- a cada minuto
-  $$ SELECT net.http_post(...) $$
+  '* * * * *',
+  $$
+  SELECT net.http_post(
+    url := 'https://loxpoehsddfearnzcdla.supabase.co/functions/v1/auto-repique-leads',
+    headers := '{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxveHBvZWhzZGRmZWFybnpjZGxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyOTg4NjgsImV4cCI6MjA2Njg3NDg2OH0.2jHJynuzjEhK3Gk_OrFMR6zM3Tyq3JWIYjhiVQVx4wY"}'::jsonb,
+    body := concat('{"time": "', now(), '"}')::jsonb
+  ) AS request_id;
+  $$
 );
 ```
 
-## Arquivos a Criar/Modificar
+### Opção 2: Usar Serviço Externo
 
-| Arquivo | Ação | Descrição |
-|---------|------|-----------|
-| `migrations/add_auto_repique.sql` | Criar | Adicionar colunas no banco |
-| `supabase/functions/auto-repique-leads/index.ts` | Criar | Edge function do cron |
-| `src/components/AutoRepiqueSettings.tsx` | Criar | Componente de configuração |
-| `src/pages/Corretores.tsx` | Modificar | Adicionar seção de configuração |
-| `src/components/LeadCard.tsx` | Modificar | Mostrar badge de repique |
-| Webhooks existentes | Modificar | Preencher assigned_at |
+Usar um serviço como cron-job.org, EasyCron ou GitHub Actions para chamar a edge function a cada minuto.
 
-## Benefícios
+## Como Usar
 
-- **Nenhum lead perdido**: Leads não atendidos são automaticamente redistribuídos
-- **Configurável por empresa**: Cada empresa decide se quer usar
-- **Tempo configurável**: Pode ajustar de 1 a 30 minutos
-- **Transparência**: Contador de repiques mostra histórico
-- **Notificações**: Novos donos são avisados imediatamente
+1. Acesse "Gestão de Usuários" como admin
+2. Encontre a seção "Repique Automático"
+3. Ative o toggle
+4. Configure o tempo limite desejado (padrão: 5 minutos)
+5. Salve as configurações
 
-## Riscos e Mitigações
+## Fluxo de Funcionamento
 
-| Risco | Mitigação |
-|-------|-----------|
-| Lead sendo transferido infinitamente | Limite máximo de repiques (ex: 3x) |
-| Sobrecarga do cron | Execução otimizada com queries eficientes |
-| Conflito com transferência manual | Respeitar transferências feitas pelo gestor |
-
-## Estimativa
-
-- **Banco de dados**: 1 migration
-- **Edge Function**: 1 função nova
-- **Frontend**: 2 componentes (configuração + badge)
-- **Complexidade**: Média-alta (envolve cron job)
-
+```
+Lead atribuído → Timer inicia → 5 min sem WhatsApp → Repique automático
+                                                    ↓
+                              Próximo usuário recebe + notificação push
+```

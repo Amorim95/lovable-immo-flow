@@ -117,6 +117,14 @@ Deno.serve(async (req) => {
       })
       .maybeSingle();
 
+    // Atualizar assigned_at para o lead criado (para o sistema de repique)
+    if (leadResult && !leadResult.is_duplicate) {
+      await supabase
+        .from('leads')
+        .update({ assigned_at: new Date().toISOString() })
+        .eq('id', leadResult.lead_id);
+    }
+
     console.log('Resultado da função create_lead_safe:', { leadResult, leadError });
 
     if (leadError) {
