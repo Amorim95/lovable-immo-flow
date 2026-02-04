@@ -121,8 +121,8 @@ serve(async (req) => {
         await supabaseClient.functions.invoke('send-push-notification', {
           body: {
             userId: nextUserId,
-            title: 'Novo Lead - Araújo Broker',
-            body: `Novo lead: ${leadData.nome}`,
+            title: '🔔 Novo Lead!',
+            body: `Chegou um novo lead para você!`,
             data: { leadId: result.lead_id, url: '/' }
           }
         });

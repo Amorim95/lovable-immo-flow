@@ -157,8 +157,8 @@ serve(async (req) => {
         await supabase.functions.invoke('send-push-notification', {
           body: {
             userId: nextUser,
-            title: 'Novo Lead - Vivaz ZONA NORTE',
-            body: `Novo lead: ${leadData.nome}`,
+            title: '🔔 Novo Lead!',
+            body: `Chegou um novo lead para você!`,
             data: { leadId, url: '/' }
           }
         });

@@ -176,8 +176,8 @@ serve(async (req) => {
         await supabase.functions.invoke('send-push-notification', {
           body: {
             userId: nextUser,
-            title: 'Novo Lead - Recuperar',
-            body: `Novo lead para recuperar: ${leadData.nome}`,
+            title: '🔔 Novo Lead!',
+            body: `Chegou um novo lead para você!`,
             data: { leadId, url: '/' }
           }
         });

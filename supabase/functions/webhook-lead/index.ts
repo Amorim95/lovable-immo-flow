@@ -245,11 +245,11 @@ Deno.serve(async (req) => {
     // Enviar notificação push para o usuário
     console.log('Enviando notificação push para o usuário:', nextUser.id);
     try {
-      const notificationResponse = await supabase.functions.invoke('send-push-notification', {
-        body: {
-          userId: nextUser.id,
-          title: 'Novo Lead - Click Imóveis',
-          body: `Novo lead recebido: ${leadData.nome}`,
+        const notificationResponse = await supabase.functions.invoke('send-push-notification', {
+          body: {
+            userId: nextUser.id,
+            title: '🔔 Novo Lead!',
+            body: `Chegou um novo lead para você!`,
           data: {
             leadId: leadResult.lead_id,
             url: '/'
