@@ -101,15 +101,22 @@ export default function MobileCorretores() {
     equipeNome: equipes.find(e => e.id === user.equipeId)?.nome
   }));
 
-  const filteredCorretores = corretoresWithEquipes.filter(corretor => {
-    const matchesSearch = corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      corretor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (corretor.equipeNome && corretor.equipeNome.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesTeam = !selectedEquipeId || corretor.equipeId === selectedEquipeId;
-    
-    return matchesSearch && matchesTeam;
-  });
+  const filteredCorretores = corretoresWithEquipes
+    .filter(corretor => {
+      const matchesSearch = corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        corretor.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (corretor.equipeNome && corretor.equipeNome.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesTeam = !selectedEquipeId || corretor.equipeId === selectedEquipeId;
+      
+      return matchesSearch && matchesTeam;
+    })
+    // Ordenar: ativos primeiro, depois inativos, e dentro de cada grupo por nome
+    .sort((a, b) => {
+      if (a.status === 'ativo' && b.status !== 'ativo') return -1;
+      if (a.status !== 'ativo' && b.status === 'ativo') return 1;
+      return a.nome.localeCompare(b.nome);
+    });
 
   const handleCorretorClick = (corretor: Corretor) => {
     setSelectedCorretor(corretor);
