@@ -1,60 +1,67 @@
 
-# Plano: Adicionar frases motivacionais no header mobile
 
-## O Que Será Feito
+# Plano: Centralizar frase motivacional no header mobile
 
-Substituir o título estático "Gestão de Leads" na versão mobile pelas **frases motivacionais rotativas** que já existem na versão desktop.
+## Problema Atual
 
-## Alterações Necessárias
+A estrutura atual do header tem:
+- Logo à esquerda + frase junto ao logo
+- Elementos à direita
 
-### Arquivo: `src/pages/MobileLeads.tsx`
+Isso faz a frase ficar alinhada à esquerda, não centralizada.
 
-1. **Importar o hook existente:**
-```typescript
-import { useDailyQuote } from "@/hooks/useDailyQuote";
+## Solução
+
+Reestruturar o layout do header para usar 3 colunas:
+1. **Esquerda**: Logo da empresa
+2. **Centro**: Frase motivacional (centralizada)
+3. **Direita**: Elementos opcionais (rightElement)
+
+## Alteração no Arquivo: `src/components/MobileHeader.tsx`
+
+**Estrutura Atual:**
+```tsx
+<header className="flex items-center justify-between">
+  <div className="flex items-center gap-3">
+    {logo}
+    {title}  // Frase fica junto ao logo, não centralizada
+  </div>
+  {rightElement}
+</header>
 ```
 
-2. **Usar o hook dentro do componente:**
-```typescript
-const quote = useDailyQuote();
+**Nova Estrutura:**
+```tsx
+<header className="flex items-center justify-between">
+  {/* Coluna esquerda - Logo */}
+  <div className="flex items-center min-w-[40px]">
+    {logo}
+  </div>
+  
+  {/* Coluna central - Frase centralizada */}
+  {title && (
+    <div className="flex-1 flex justify-center">
+      <h1 className="text-xs font-medium text-muted-foreground italic leading-tight line-clamp-2 max-w-[200px] text-center">
+        {title}
+      </h1>
+    </div>
+  )}
+  
+  {/* Coluna direita - Elementos opcionais */}
+  <div className="flex items-center min-w-[40px] justify-end">
+    {rightElement}
+  </div>
+</header>
 ```
-
-3. **Passar a frase para o MobileHeader:**
-```typescript
-<MobileHeader title={quote} />
-```
-
-### Arquivo: `src/components/MobileHeader.tsx`
-
-Ajustar o estilo do título para acomodar textos mais longos:
-
-**Antes:**
-```typescript
-<h1 className="text-lg font-semibold text-gray-900 truncate text-center flex-1">
-```
-
-**Depois:**
-```typescript
-<h1 className="text-xs font-medium text-gray-600 italic leading-tight line-clamp-2 max-w-[200px]">
-```
-
-| Propriedade | Função |
-|-------------|--------|
-| `text-xs` | Fonte menor para caber frases longas |
-| `font-medium` | Peso médio, não tão pesado |
-| `text-gray-600` | Cor sutil, não tão forte |
-| `italic` | Estilo itálico para diferenciar de títulos |
-| `leading-tight` | Altura de linha compacta |
-| `line-clamp-2` | Limita a 2 linhas, trunca o resto |
-| `max-w-[200px]` | Largura máxima para não ocupar todo espaço |
 
 ## Resultado Visual
 
-- A frase motivacional do dia aparecerá no header mobile
-- Fonte pequena e em itálico para caber no espaço disponível
-- Frases muito longas serão truncadas em 2 linhas
-- A frase muda automaticamente às 07:35 AM (mesmo comportamento do desktop)
+- Logo permanece à esquerda
+- Frase motivacional fica **perfeitamente centralizada** na barra
+- Elementos à direita (quando existem) ficam à direita
+- As colunas laterais têm `min-w-[40px]` para garantir simetria
 
 ## Risco
 
-Nenhum risco - estamos reutilizando o hook `useDailyQuote` que já funciona no desktop. Apenas adaptando o visual para o espaço menor do mobile.
+Nenhum - apenas reorganização do layout interno do componente.
+
