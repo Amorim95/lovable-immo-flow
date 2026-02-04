@@ -187,8 +187,8 @@ Deno.serve(async (req) => {
             await supabase.functions.invoke('send-push-notification', {
               body: {
                 userId: nextUser.id,
-                title: '🔄 Repique de Lead',
-                body: `Novo lead recebido via repique: ${lead.nome}`,
+                title: '🔔 Alerta de Oportunidade 🔔',
+                body: 'Um lead não foi atendido por outro corretor no tempo limite e foi enviado agora para você atender!',
                 data: {
                   leadId: lead.id,
                   url: '/'
