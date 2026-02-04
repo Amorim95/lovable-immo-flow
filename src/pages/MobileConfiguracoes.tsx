@@ -21,6 +21,13 @@ export default function MobileConfiguracoes() {
     navigate('/login');
   };
   const menuItems = [{
+    id: 'users',
+    title: 'Gestão de Usuários',
+    description: 'Gerenciar corretores e equipes',
+    icon: Users,
+    action: () => navigate('/corretores'),
+    show: canManageUsers
+  }, {
     id: 'profile',
     title: 'Informações Pessoais',
     description: 'Gerencie suas informações de perfil e senha',
@@ -34,13 +41,6 @@ export default function MobileConfiguracoes() {
     icon: Building2,
     action: () => navigate('/company-settings'),
     show: canAccessCompanyData
-  }, {
-    id: 'users',
-    title: 'Gestão de Usuários',
-    description: 'Gerenciar corretores e equipes',
-    icon: Users,
-    action: () => navigate('/corretores'),
-    show: canManageUsers
   }];
   return <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader title="Configurações" />
