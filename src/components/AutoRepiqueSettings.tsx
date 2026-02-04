@@ -157,7 +157,7 @@ export function AutoRepiqueSettings({
               <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
               <div className="text-muted-foreground">
                 
-                <p className="mt-1">Limite máximo: 3 redistriições por lead.</p>
+                
               </div>
             </div>
           </div>}
