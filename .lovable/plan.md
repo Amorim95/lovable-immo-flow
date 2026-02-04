@@ -1,86 +1,86 @@
 
+# Plano: Adicionar pré-filtro de equipe para responsáveis na Gestão de Usuários Mobile
 
-# Plano: Botão rápido para mudar status do usuário no cartão mobile
+## Objetivo
 
-## O Que Será Feito
+Quando o usuário logado é responsável por uma equipe, o filtro de equipe deve ser pré-selecionado automaticamente com sua equipe, assim como já acontece no Kanban.
 
-Adicionar um botão/toggle clicável diretamente no badge de status de cada usuário, permitindo mudar entre "ativo" e "inativo" com um único toque, sem precisar abrir o modal de edição.
+## Como Funciona Atualmente no Kanban
 
-## Solução Proposta
-
-Transformar o Badge de status em um botão clicável que alterna o status ao ser tocado.
+```text
+Index.tsx
+    │
+    ├── useManagerTeam() ─────► Retorna { managedTeamId, loading }
+    │
+    └── useEffect() ─────────► Se managedTeamId existe, seta selectedTeamId
+```
 
 ## Alterações no Arquivo: `src/pages/MobileCorretores.tsx`
 
-### 1. Criar função para atualizar status diretamente
+### 1. Importar o hook useManagerTeam (linha 14)
 
 ```typescript
-const handleToggleStatus = async (e: React.MouseEvent, corretor: Corretor) => {
-  e.stopPropagation(); // Impede abrir o modal
-  
-  const newStatus = corretor.status === 'ativo' ? 'inativo' : 'ativo';
-  
-  try {
-    const { error } = await supabase
-      .from('users')
-      .update({ status: newStatus })
-      .eq('id', corretor.id);
+import { useManagerTeam } from "@/hooks/useManagerTeam";
+```
 
-    if (error) throw error;
+### 2. Usar o hook no componente (após linha 41)
 
-    toast.success(`Status alterado para ${newStatus}`);
-    refetchUsers();
-  } catch (error) {
-    toast.error('Erro ao alterar status');
+```typescript
+const { managedTeamId, loading: teamLoading } = useManagerTeam();
+```
+
+### 3. Adicionar useEffect para pré-selecionar equipe (após linha 43)
+
+```typescript
+import { useState, useEffect } from "react";
+
+// Dentro do componente:
+useEffect(() => {
+  if (!teamLoading && managedTeamId && !selectedEquipeId) {
+    setSelectedEquipeId(managedTeamId);
   }
-};
+}, [teamLoading, managedTeamId, selectedEquipeId]);
 ```
 
-### 2. Modificar o Badge de status para ser clicável
+## Fluxo de Funcionamento
 
-**Antes (linha 274-287):**
-```tsx
-<Badge 
-  variant={...}
-  className={...}
->
-  {corretor.status === 'pendente' ? 'Aguardando' : corretor.status}
-</Badge>
+```text
+Usuário abre Gestão de Usuários
+           │
+           ▼
+   useManagerTeam() executa
+           │
+           ▼
+  Busca equipe onde user.id = responsavel_id
+           │
+           ├── Se encontrou equipe ──► managedTeamId = equipe.id
+           │                                    │
+           │                                    ▼
+           │                          useEffect detecta
+           │                                    │
+           │                                    ▼
+           │                     setSelectedEquipeId(managedTeamId)
+           │                                    │
+           │                                    ▼
+           │                     Filtro mostra apenas usuários dessa equipe
+           │
+           └── Se não encontrou ──► Mantém "Todas as equipes"
 ```
 
-**Depois:**
-```tsx
-<Badge 
-  variant={...}
-  className={`cursor-pointer hover:opacity-80 active:scale-95 transition-all ${...}`}
-  onClick={(e) => handleToggleStatus(e, corretor)}
->
-  {corretor.status === 'pendente' ? 'Aguardando' : corretor.status}
-</Badge>
-```
+## Comportamento Esperado
 
-## Comportamento Visual
-
-| Estado | Ação ao Clicar | Feedback |
-|--------|----------------|----------|
-| ativo (verde) | Muda para inativo | Badge fica vermelho + toast |
-| inativo (vermelho) | Muda para ativo | Badge fica verde + toast |
-| pendente (amarelo) | Muda para ativo | Badge fica verde + toast |
-
-## Indicadores de Interatividade
-
-- `cursor-pointer` - Mostra que é clicável
-- `hover:opacity-80` - Feedback visual no hover
-- `active:scale-95` - Animação de "press" ao tocar
-- `e.stopPropagation()` - Impede que o clique abra o modal
+| Tipo de Usuário | Pré-filtro |
+|-----------------|------------|
+| Responsável por equipe | Equipe pré-selecionada |
+| Admin sem equipe | "Todas as equipes" |
+| Gestor sem equipe própria | "Todas as equipes" |
 
 ## Detalhes Técnicos
 
-O `e.stopPropagation()` é essencial para:
-- Impedir que o clique no badge também acione o `onClick` do cartão pai
-- Permitir ação independente no badge sem abrir o modal de edição
+- A condição `!selectedEquipeId` evita sobrescrever se o usuário já mudou o filtro manualmente
+- O `teamLoading` garante que a pré-seleção só acontece após carregar os dados
+- Reutiliza o mesmo hook já usado no Kanban, mantendo consistência
 
-## Resultado Esperado
+## Risco
 
-O usuário poderá tocar diretamente no badge de status (ativo/inativo) e o status será alterado instantaneamente, com feedback visual e toast de confirmação.
-
+Nenhum - reutilizamos um hook existente e aplicamos o mesmo padrão já usado no Kanban.
