@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Clock, AlertCircle } from 'lucide-react';
+import { RefreshCw, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCompanyFilter } from '@/hooks/useCompanyFilter';
 import { toast } from 'sonner';
@@ -147,7 +147,7 @@ export function AutoRepiqueSettings({
 
         {isEnabled && <div className="space-y-3 pt-2 border-t">
             <div className="flex items-center gap-3">
-              <Clock className="w-4 h-4 text-muted-foreground" />
+              
               <Label htmlFor="repique-minutes">Tempo limite (minutos)</Label>
             </div>
             <div className="flex items-center gap-3">
