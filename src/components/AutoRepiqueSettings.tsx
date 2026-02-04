@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, AlertCircle } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCompanyFilter } from '@/hooks/useCompanyFilter';
 import { toast } from 'sonner';
@@ -154,7 +154,7 @@ export function AutoRepiqueSettings({
             </div>
             
             <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg text-sm">
-              <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+              
               <div className="text-muted-foreground">
                 
                 
