@@ -44,6 +44,30 @@ export type Database = {
         }
         Relationships: []
       }
+      click_bd: {
+        Row: {
+          created_at: string | null
+          etapa: string | null
+          id: number
+          message: Json
+          session_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          etapa?: string | null
+          id?: number
+          message: Json
+          session_id: string
+        }
+        Update: {
+          created_at?: string | null
+          etapa?: string | null
+          id?: number
+          message?: Json
+          session_id?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           created_at: string
