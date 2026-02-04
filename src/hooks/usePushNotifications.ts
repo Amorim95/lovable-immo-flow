@@ -100,25 +100,35 @@ export function usePushNotifications() {
 
   const subscribeToPush = async () => {
     try {
+      console.log('[Push] Starting subscription process...');
+      
       const registration = await navigator.serviceWorker.ready;
-      console.log('Service Worker ready for push subscription');
+      console.log('[Push] Service Worker ready:', registration);
+      console.log('[Push] PushManager available:', !!registration.pushManager);
       
       // Check if already subscribed
       const existingSubscription = await registration.pushManager.getSubscription();
+      console.log('[Push] Existing subscription:', existingSubscription);
+      
       if (existingSubscription) {
-        console.log('Already subscribed to push notifications');
+        console.log('[Push] Already subscribed to push notifications');
         setSubscription(existingSubscription);
         await saveSubscriptionToSupabase(existingSubscription);
         return existingSubscription;
       }
 
       // VAPID Public Key configurada (JWK format - converted to base64url)
-      // Generated from: {"x":"Tpo5aj11rG7EpKJF_RC5jimS33ru1ddnWBOGM3nu1TA","y":"T03DwwFsJ-ZQDz2T7tnrajbD7ueHuQV7rtNoPU39_C8"}
       const vapidPublicKey = 'BEqaOWo9daxuxKSiRf0QuY4pkt967tXXZ1gThjN57tUwT03DwwFsJ-ZQDz2T7tnrajbD7ueHuQV7rtNoPU39_C8';
       
       // Converter VAPID key para Uint8Array
       const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+      console.log('[Push] VAPID key converted, length:', convertedVapidKey.length);
 
+      console.log('[Push] Attempting to subscribe with options:', {
+        userVisibleOnly: true,
+        keyLength: convertedVapidKey.length
+      });
+      
       try {
         const newSubscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
@@ -133,7 +143,11 @@ export function usePushNotifications() {
         
         return newSubscription;
       } catch (subscriptionError: any) {
-        console.log('Push subscription failed:', subscriptionError);
+        console.error('[Push] Subscription failed:', {
+          name: subscriptionError?.name,
+          message: subscriptionError?.message,
+          stack: subscriptionError?.stack
+        });
         
         // Mensagem mais específica para iOS/Safari
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
