@@ -123,8 +123,8 @@ Deno.serve(async (req) => {
         const notificationResponse = await supabase.functions.invoke('send-push-notification', {
           body: {
             userId: nextUser.id,
-            title: 'Novo Lead - Click Imóveis',
-            body: `Novo lead qualificado: ${leadData.nome}`,
+            title: '🔔 Novo Lead!',
+            body: `Chegou um novo lead para você!`,
             data: {
               leadId: result.lead_id,
               url: '/'
