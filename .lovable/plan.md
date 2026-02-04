@@ -1,57 +1,86 @@
 
 
-# Plano: Adicionar campo de busca ao lado do filtro de data
+# Plano: Botão rápido para mudar status do usuário no cartão mobile
 
 ## O Que Será Feito
 
-Adicionar o campo de busca de leads **ao lado do DateFilter** (Período Total), como primeiro elemento junto ao filtro de data.
+Adicionar um botão/toggle clicável diretamente no badge de status de cada usuário, permitindo mudar entre "ativo" e "inativo" com um único toque, sem precisar abrir o modal de edição.
 
-## Alteração no Arquivo: `src/pages/Index.tsx`
+## Solução Proposta
 
-### 1. Adicionar import do ícone Search (linha 22)
+Transformar o Badge de status em um botão clicável que alterna o status ao ser tocado.
+
+## Alterações no Arquivo: `src/pages/MobileCorretores.tsx`
+
+### 1. Criar função para atualizar status diretamente
 
 ```typescript
-import { LayoutList, LayoutGrid, Plus, Search } from "lucide-react";
+const handleToggleStatus = async (e: React.MouseEvent, corretor: Corretor) => {
+  e.stopPropagation(); // Impede abrir o modal
+  
+  const newStatus = corretor.status === 'ativo' ? 'inativo' : 'ativo';
+  
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({ status: newStatus })
+      .eq('id', corretor.id);
+
+    if (error) throw error;
+
+    toast.success(`Status alterado para ${newStatus}`);
+    refetchUsers();
+  } catch (error) {
+    toast.error('Erro ao alterar status');
+  }
+};
 ```
 
-### 2. Adicionar campo de busca após DateFilter (linha 263)
+### 2. Modificar o Badge de status para ser clicável
 
+**Antes (linha 274-287):**
 ```tsx
-<div className="flex items-center gap-4">
-  <DateFilter 
-    value={dateFilter} 
-    customRange={customDateRange} 
-    onValueChange={handleDateFilterChange} 
-    availableDates={availableDates} 
-  />
-  
-  {/* NOVO: Campo de busca ao lado do período */}
-  <div className="relative">
-    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-    <Input
-      type="text"
-      placeholder="Buscar leads..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      className="pl-9 w-64"
-    />
-  </div>
-  
-  {/* Filtros de Equipe e Usuário... */}
+<Badge 
+  variant={...}
+  className={...}
+>
+  {corretor.status === 'pendente' ? 'Aguardando' : corretor.status}
+</Badge>
 ```
 
-## Resultado Visual
-
+**Depois:**
+```tsx
+<Badge 
+  variant={...}
+  className={`cursor-pointer hover:opacity-80 active:scale-95 transition-all ${...}`}
+  onClick={(e) => handleToggleStatus(e, corretor)}
+>
+  {corretor.status === 'pendente' ? 'Aguardando' : corretor.status}
+</Badge>
 ```
-[Período Total ▼] [🔍 Buscar leads...] [Equipe ▼] [Usuário ▼] [Etiquetas ▼]
-```
 
-- Campo de busca aparece logo após o seletor de período
-- Ícone de lupa dentro do campo
-- Placeholder "Buscar leads..."
-- Busca filtra por nome, dados adicionais e corretor
+## Comportamento Visual
 
-## Risco
+| Estado | Ação ao Clicar | Feedback |
+|--------|----------------|----------|
+| ativo (verde) | Muda para inativo | Badge fica vermelho + toast |
+| inativo (vermelho) | Muda para ativo | Badge fica verde + toast |
+| pendente (amarelo) | Muda para ativo | Badge fica verde + toast |
 
-Nenhum - reutilizamos o estado `searchTerm` e a lógica de filtragem que já existem no código.
+## Indicadores de Interatividade
+
+- `cursor-pointer` - Mostra que é clicável
+- `hover:opacity-80` - Feedback visual no hover
+- `active:scale-95` - Animação de "press" ao tocar
+- `e.stopPropagation()` - Impede que o clique abra o modal
+
+## Detalhes Técnicos
+
+O `e.stopPropagation()` é essencial para:
+- Impedir que o clique no badge também acione o `onClick` do cartão pai
+- Permitir ação independente no badge sem abrir o modal de edição
+
+## Resultado Esperado
+
+O usuário poderá tocar diretamente no badge de status (ativo/inativo) e o status será alterado instantaneamente, com feedback visual e toast de confirmação.
 
