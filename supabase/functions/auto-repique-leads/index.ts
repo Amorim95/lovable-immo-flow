@@ -90,13 +90,11 @@ Deno.serve(async (req) => {
         const warningTimeEnd = new Date();
         warningTimeEnd.setMinutes(warningTimeEnd.getMinutes() - warningMinutes);
 
-        // Buscar leads que estão entre warningMinutes e auto_repique_minutes de inatividade
-        // (ou seja, faltam ~2 minutos para o timeout)
+        // Critério: apenas primeiro_contato_whatsapp = NULL (independente da etapa)
         const { data: leadsToWarn, error: warnError } = await supabase
           .from('leads')
           .select('id, nome, user_id, company_id')
           .eq('company_id', company_id)
-          .eq('etapa', 'aguardando-atendimento')
           .is('primeiro_contato_whatsapp', null)
           .gte('created_at', cutoffDate)
           .gte('assigned_at', warningTimeStart.toISOString())
@@ -144,12 +142,11 @@ Deno.serve(async (req) => {
       const timeLimit = new Date();
       timeLimit.setMinutes(timeLimit.getMinutes() - auto_repique_minutes);
 
-      // Buscar leads que precisam de repique
+      // Critério: apenas primeiro_contato_whatsapp = NULL (independente da etapa)
       const { data: leads, error: leadsError } = await supabase
         .from('leads')
         .select('id, nome, user_id, company_id, repique_count')
         .eq('company_id', company_id)
-        .eq('etapa', 'aguardando-atendimento')
         .is('primeiro_contato_whatsapp', null)
         .gte('created_at', cutoffDate)
         .lt('assigned_at', timeLimit.toISOString())
