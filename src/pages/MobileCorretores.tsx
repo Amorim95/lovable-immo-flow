@@ -240,24 +240,18 @@ export default function MobileCorretores() {
 
       {/* Stats */}
       <div className="px-4 pb-4">
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white rounded-lg p-3 text-center">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white dark:bg-card rounded-lg p-3 text-center">
             <div className="text-lg font-bold text-green-600">
               {users.filter(u => u.status === 'ativo').length}
             </div>
-            <div className="text-xs text-gray-600">Ativos</div>
+            <div className="text-xs text-muted-foreground">Ativos</div>
           </div>
-          <div className="bg-white rounded-lg p-3 text-center">
-            <div className="text-lg font-bold text-yellow-600">
-              {users.filter(u => u.status === 'pendente').length}
-            </div>
-            <div className="text-xs text-gray-600">Pendentes</div>
-          </div>
-          <div className="bg-white rounded-lg p-3 text-center">
+          <div className="bg-white dark:bg-card rounded-lg p-3 text-center">
             <div className="text-lg font-bold text-red-600">
               {users.filter(u => u.status === 'inativo').length}
             </div>
-            <div className="text-xs text-gray-600">Inativos</div>
+            <div className="text-xs text-muted-foreground">Inativos</div>
           </div>
         </div>
       </div>
