@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ import { UserRoleBadge } from "@/components/UserRoleBadge";
 import { NewCorretorModal } from "@/components/NewCorretorModal";
 import { MobileEditUsuarioModal } from "@/components/MobileEditUsuarioModal";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { toast } from "sonner";
 
 interface Corretor {
@@ -39,8 +40,16 @@ export default function MobileCorretores() {
   const [selectedCorretor, setSelectedCorretor] = useState<Corretor | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { isAdmin, isGestor } = useUserRole();
+  const { managedTeamId, loading: teamLoading } = useManagerTeam();
 
   const canManageUsers = isAdmin || isGestor;
+
+  // Pré-selecionar equipe se o usuário for responsável
+  useEffect(() => {
+    if (!teamLoading && managedTeamId && !selectedEquipeId) {
+      setSelectedEquipeId(managedTeamId);
+    }
+  }, [teamLoading, managedTeamId, selectedEquipeId]);
 
   // Buscar usuários
   const { data: users = [], isLoading: usersLoading, refetch: refetchUsers } = useQuery({
