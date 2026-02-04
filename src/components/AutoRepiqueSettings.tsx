@@ -153,13 +153,7 @@ export function AutoRepiqueSettings({
               </span>
             </div>
             
-            <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg text-sm">
-              
-              <div className="text-muted-foreground">
-                
-                
-              </div>
-            </div>
+            
           </div>}
 
         {hasChanges && <div className="pt-3 border-t">
