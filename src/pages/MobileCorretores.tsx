@@ -108,6 +108,26 @@ export default function MobileCorretores() {
   };
 
 
+  const handleToggleStatus = async (e: React.MouseEvent, corretor: Corretor) => {
+    e.stopPropagation();
+    
+    const newStatus = corretor.status === 'ativo' ? 'inativo' : 'ativo';
+    
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ status: newStatus })
+        .eq('id', corretor.id);
+
+      if (error) throw error;
+
+      toast.success(`Status alterado para ${newStatus}`);
+      refetchUsers();
+    } catch (error) {
+      toast.error('Erro ao alterar status');
+    }
+  };
+
   const handleUpdateCorretor = (corretorId: string, updates: any) => {
     refetchUsers();
   };
@@ -277,11 +297,12 @@ export default function MobileCorretores() {
                         corretor.status === 'pendente' ? 'secondary' : 
                         'destructive'
                       }
-                      className={
+                      className={`cursor-pointer hover:opacity-80 active:scale-95 transition-all ${
                         corretor.status === 'ativo' ? 'bg-green-100 text-green-800' : 
                         corretor.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
-                      }
+                      }`}
+                      onClick={(e) => handleToggleStatus(e, corretor)}
                     >
                       {corretor.status === 'pendente' ? 'Aguardando' : corretor.status}
                     </Badge>
