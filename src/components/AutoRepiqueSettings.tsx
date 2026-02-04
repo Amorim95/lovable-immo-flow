@@ -131,19 +131,15 @@ export function AutoRepiqueSettings({
               <CardDescription>Redistribuição Automática de Leads por Inatividade</CardDescription>
             </div>
           </div>
-          <Badge variant={isEnabled ? 'default' : 'secondary'}>
-            {isEnabled ? 'Ativado' : 'Desativado'}
-          </Badge>
+          <div className="flex items-center gap-3">
+            <Badge variant={isEnabled ? 'default' : 'secondary'}>
+              {isEnabled ? 'Ativado' : 'Desativado'}
+            </Badge>
+            <Switch id="auto-repique-toggle" checked={isEnabled} onCheckedChange={handleEnabledChange} />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-0.5">
-            <Label htmlFor="auto-repique-toggle">Ativar repique automático</Label>
-            
-          </div>
-          <Switch id="auto-repique-toggle" checked={isEnabled} onCheckedChange={handleEnabledChange} />
-        </div>
 
         {isEnabled && <div className="space-y-3 pt-2 border-t">
             <div className="flex items-center gap-3">
