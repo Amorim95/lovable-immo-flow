@@ -1,54 +1,34 @@
 
-# Plano: Corrigir nomes de etapas na versão mobile
+# Plano: Remover opção "Aparência" do menu mobile
 
-## Problema Identificado
+## Alteração Necessária
 
-A página **MobileLeads.tsx** está usando nomes de etapas **fixos no código** (hardcoded), enquanto a versão desktop (KanbanBoard) busca os nomes diretamente do banco de dados usando o hook `useLeadStages()`.
+### Arquivo: `src/pages/MobileConfiguracoes.tsx`
 
-Quando você alterou "Nome Limpo" para "Análise de Crédito" no banco de dados, apenas a versão desktop refletiu a mudança.
+Remover o item de menu "Aparência" do array `menuItems`:
 
-## Solução
-
-Atualizar a página `MobileLeads.tsx` para usar o hook `useLeadStages()` existente, igual ao KanbanBoard.
-
-## Alterações Necessárias
-
-### 1. Arquivo: `src/pages/MobileLeads.tsx`
-
-**Remover os objetos hardcoded:**
 ```typescript
-// REMOVER estas constantes fixas (linhas 20-42):
-const stageColors = { ... };
-const stageLabels = { ... };
+// REMOVER estas linhas (37-44):
+{
+  id: 'appearance',
+  title: 'Aparência',
+  description: 'Modo noturno e personalização visual',
+  icon: Palette,
+  action: () => navigate('/mobile-appearance'),
+  show: true
+},
 ```
 
-**Adicionar importação do hook:**
-```typescript
-import { useLeadStages } from "@/hooks/useLeadStages";
-```
+Também remover a importação não utilizada do ícone `Palette` da linha 12.
 
-**Usar o hook dentro do componente:**
-```typescript
-const { stages, loading: stagesLoading } = useLeadStages();
-```
+## Resultado
 
-**Atualizar o filtro de etapas para usar dados dinâmicos:**
-- Substituir `Object.entries(stageLabels)` por `stages.map(stage => ...)`
-- Usar `stage.nome` e `stage.cor` do banco de dados
+O menu de configurações mobile mostrará apenas:
+- Informações Pessoais
+- Dados da Empresa (para admin/gestor)
+- Gestão de Usuários (para admin/gestor)
+- Botão Sair
 
-**Atualizar o badge de etapa no card do lead:**
-- Buscar a cor da etapa dinamicamente baseado no `stage_name` do lead
+## Risco
 
-## Detalhes Técnicos
-
-| Item | Antes | Depois |
-|------|-------|--------|
-| Fonte dos nomes | Constante `stageLabels` hardcoded | `stages` do hook `useLeadStages()` |
-| Cores das etapas | Constante `stageColors` hardcoded | Campo `cor` de cada stage do banco |
-| Filtro de etapa | `Object.entries(stageLabels)` | `stages.map()` |
-
-## Benefícios
-
-- Nomes de etapas sincronizados entre desktop e mobile
-- Cores personalizadas também funcionarão no mobile
-- Novas etapas criadas aparecerão automaticamente no mobile
+Nenhum risco - é apenas uma remoção de item de menu. A página de aparência continuará existindo, apenas não será acessível pelo menu mobile.
