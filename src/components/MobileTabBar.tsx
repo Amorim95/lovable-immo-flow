@@ -10,12 +10,6 @@ const tabs = [
     icon: LayoutGrid
   },
   {
-    id: "dashboards", 
-    label: "Relatórios",
-    path: "/dashboards",
-    icon: BarChart3
-  },
-  {
     id: "configuracoes",
     label: "Config", 
     path: "/configuracoes",
