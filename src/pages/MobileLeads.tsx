@@ -69,6 +69,10 @@ export default function MobileLeads() {
   const [equipes, setEquipes] = useState<Equipe[]>([]);
   
   // Estado do formulário de novo lead
+  // Paginação de leads
+  const LEADS_PER_PAGE = 50;
+  const [visibleLeadsCount, setVisibleLeadsCount] = useState(LEADS_PER_PAGE);
+  
   const [newLeadFormData, setNewLeadFormData] = useState({
     nome: '',
     telefone: '',
@@ -77,6 +81,11 @@ export default function MobileLeads() {
   const [isCreatingLead, setIsCreatingLead] = useState(false);
   
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
+
+  // Resetar contagem de leads visíveis quando filtros mudam
+  useEffect(() => {
+    setVisibleLeadsCount(LEADS_PER_PAGE);
+  }, [searchTerm, selectedUserId, selectedTeamId, selectedStage, selectedTagIds, dateFilter, customDateRange]);
 
   // Pré-selecionar equipe gerenciada automaticamente
   useEffect(() => {
@@ -183,6 +192,15 @@ export default function MobileLeads() {
 
     return matchesSearch && matchesUser && matchesTeam && matchesStage && matchesDate && matchesTags;
   });
+
+  // Aplicar paginação - mostrar apenas os primeiros N leads
+  const visibleLeads = filteredLeads.slice(0, visibleLeadsCount);
+  const hasMoreLeads = filteredLeads.length > visibleLeadsCount;
+  const remainingLeadsCount = filteredLeads.length - visibleLeadsCount;
+
+  const handleLoadMore = () => {
+    setVisibleLeadsCount(prev => prev + LEADS_PER_PAGE);
+  };
 
   const handleLeadClick = (lead: Lead) => {
     navigate(`/lead/${lead.id}`);
@@ -489,10 +507,11 @@ export default function MobileLeads() {
       <div className="px-4 space-y-3">
         {filteredLeads.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">Nenhum lead encontrado</p>
+            <p className="text-muted-foreground">Nenhum lead encontrado</p>
           </div>
         ) : (
-          filteredLeads.map((lead) => (
+          <>
+            {visibleLeads.map((lead) => (
             <div
               key={lead.id}
               onClick={() => handleLeadClick(lead)}
@@ -545,7 +564,7 @@ export default function MobileLeads() {
               )}
               
               <div className="flex items-center justify-between">
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-muted-foreground">
                   <span>{lead.corretor}</span>
                   <span className="mx-1">•</span>
                   <span>{lead.dataCriacao.toLocaleDateString('pt-BR')}</span>
@@ -581,7 +600,31 @@ export default function MobileLeads() {
                 )}
               </div>
             </div>
-          ))
+            ))}
+            
+            {/* Botão Ver Mais */}
+            {hasMoreLeads && (
+              <div className="py-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={handleLoadMore}
+                >
+                  Ver mais {Math.min(LEADS_PER_PAGE, remainingLeadsCount)} leads
+                  <span className="ml-2 text-muted-foreground text-xs">
+                    ({remainingLeadsCount} restantes)
+                  </span>
+                </Button>
+              </div>
+            )}
+            
+            {/* Indicador de fim da lista */}
+            {!hasMoreLeads && filteredLeads.length > 0 && (
+              <div className="text-center py-4 text-sm text-muted-foreground">
+                Exibindo todos os {filteredLeads.length} leads
+              </div>
+            )}
+          </>
         )}
       </div>
 
