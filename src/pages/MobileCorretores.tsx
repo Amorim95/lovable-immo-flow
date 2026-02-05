@@ -5,13 +5,14 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Users, Mail, Phone, Filter } from "lucide-react";
+import { Plus, Search, Users, Mail, Filter } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { UserRoleBadge } from "@/components/UserRoleBadge";
 import { NewCorretorModal } from "@/components/NewCorretorModal";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { toast } from "sonner";
+import { NotificationPromptBanner } from "@/components/NotificationPromptBanner";
 
 interface Corretor {
   id: string;
@@ -203,6 +204,9 @@ export default function MobileCorretores() {
           </Button>
         }
       />
+
+      {/* Banner de notificações */}
+      <NotificationPromptBanner />
 
       {/* Search and Filters */}
       <div className="p-4 space-y-3">
