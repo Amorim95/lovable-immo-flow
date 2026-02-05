@@ -391,23 +391,6 @@ export default function MobileLeads() {
           {filtersExpanded && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">Períodos</span>
-              </div>
-              
-              <DateFilter
-                value={dateFilter}
-                onValueChange={(option, customRange) => {
-                  setDateFilter(option);
-                  if (customRange) {
-                    setCustomDateRange(customRange);
-                  }
-                }}
-                customRange={customDateRange}
-                className="w-full"
-              />
-              
-              <div className="flex items-center gap-2 mb-2">
                 <User className="w-4 h-4 text-gray-500" />
                 <span className="text-sm font-medium text-gray-700">Filtrar por Usuário</span>
               </div>
