@@ -264,10 +264,10 @@ const Index = () => {
               variant={viewMode === 'kanban' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setViewMode('kanban')}
-              className="rounded-r-none"
+              className="rounded-r-none px-3"
+              title="Visualização Kanban"
             >
-              <LayoutGrid className="w-4 h-4 mr-1" />
-              Kanban
+              <LayoutGrid className="w-4 h-4" />
             </Button>
             <Button
               variant={viewMode === 'list' ? 'default' : 'ghost'}
