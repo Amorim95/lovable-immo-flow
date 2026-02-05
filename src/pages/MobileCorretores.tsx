@@ -246,12 +246,6 @@ export default function MobileCorretores() {
                     <Mail className="w-3 h-3 text-gray-400" />
                     <p className="text-sm text-gray-500 truncate">{corretor.email}</p>
                   </div>
-                  {corretor.telefone && (
-                    <div className="flex items-center gap-2 mt-1">
-                      <Phone className="w-3 h-3 text-gray-400" />
-                      <p className="text-sm text-gray-500">{corretor.telefone}</p>
-                    </div>
-                  )}
                 </div>
               </div>
 
