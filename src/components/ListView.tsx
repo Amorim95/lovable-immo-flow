@@ -203,8 +203,6 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                 </TableHead>
               )}
               <TableHead>Nome</TableHead>
-              <TableHead>Telefone</TableHead>
-              <TableHead>Dados Adicionais</TableHead>
               <TableHead>Etapa</TableHead>
               <TableHead>Etiquetas</TableHead>
               <TableHead>Corretor</TableHead>
@@ -230,14 +228,6 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                   </TableCell>
                 )}
                 <TableCell className="font-medium">{lead.nome}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <span>{lead.telefone}</span>
-                </div>
-              </TableCell>
-              <TableCell className="max-w-xs truncate">
-                {lead.dadosAdicionais || '-'}
-              </TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <Select
                   value={lead.etapa}
