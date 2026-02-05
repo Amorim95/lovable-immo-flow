@@ -202,11 +202,11 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                 <TableHead className="w-12">
                 </TableHead>
               )}
+              <TableHead>Data</TableHead>
               <TableHead>Nome</TableHead>
               <TableHead>Etapa</TableHead>
               <TableHead>Etiquetas</TableHead>
               <TableHead>Corretor</TableHead>
-              <TableHead>Data</TableHead>
             </TableRow>
           </TableHeader>
         <TableBody>
@@ -227,6 +227,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                     />
                   </TableCell>
                 )}
+                <TableCell className="text-muted-foreground">{formatDate(lead.dataCriacao)}</TableCell>
                 <TableCell className="font-medium">{lead.nome}</TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <Select
@@ -268,7 +269,6 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                   )}
                 </div>
               </TableCell>
-              <TableCell>{formatDate(lead.dataCriacao)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
