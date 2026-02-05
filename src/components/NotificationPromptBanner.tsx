@@ -75,30 +75,38 @@ export function NotificationPromptBanner() {
   const needsReactivation = hasDbSubscription && !subscription;
   
   // Mostrar banner se:
-  // - Não tem subscription ativa E não foi dispensado
-  // O banner só desaparece quando o usuário tiver uma subscription válida
+  // 1. Navegador suporta notificações
+  // 2. Usuário está logado
+  // 3. Não foi dispensado
+  // 4. Já verificamos o status no banco (não está carregando)
+  // 5. NÃO tem uma subscription válida ativa
   const hasValidSubscription = subscription && permission === 'granted';
   
   // DEBUG LOGS - remover depois
-  console.log('[NotificationBanner] DEBUG v1.0:', {
+  console.log('[NotificationBanner] DEBUG v1.1:', {
     isSupported,
     hasUser: !!user,
     userId: user?.id,
     dismissed,
     hasDbSubscription,
+    hasDbSubscriptionIsNull: hasDbSubscription === null,
     hasValidSubscription,
     permission,
     subscriptionExists: !!subscription,
     needsReactivation
   });
   
+  // Mostrar para todos que não têm subscription válida
+  // hasDbSubscription === null significa que ainda está carregando
+  // hasDbSubscription === false significa que nunca ativou
+  // hasDbSubscription === true significa que tem no banco mas pode precisar reativar
   const shouldShow = isSupported && 
     user && 
     !dismissed && 
-    hasDbSubscription !== null &&
-    !hasValidSubscription;
+    hasDbSubscription !== null && // Já terminou de carregar
+    !hasValidSubscription; // Não tem subscription ativa
 
-  console.log('[NotificationBanner] shouldShow:', shouldShow);
+  console.log('[NotificationBanner] shouldShow:', shouldShow, 'hasDbSubscription value:', hasDbSubscription);
 
   if (!shouldShow) {
     return null;
