@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Users, Mail, Phone, Settings, Filter } from "lucide-react";
+import { Plus, Search, Users, Mail, Phone, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { UserRoleBadge } from "@/components/UserRoleBadge";
 import { NewCorretorModal } from "@/components/NewCorretorModal";
-import { MobileEditUsuarioModal } from "@/components/MobileEditUsuarioModal";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { toast } from "sonner";
@@ -33,12 +31,9 @@ interface EquipeSimple {
 }
 
 export default function MobileCorretores() {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEquipeId, setSelectedEquipeId] = useState<string | null>(null);
   const [isNewCorretorModalOpen, setIsNewCorretorModalOpen] = useState(false);
-  const [selectedCorretor, setSelectedCorretor] = useState<Corretor | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { isAdmin, isGestor } = useUserRole();
   const { managedTeamId, loading: teamLoading } = useManagerTeam();
 
@@ -118,11 +113,6 @@ export default function MobileCorretores() {
       return a.nome.localeCompare(b.nome);
     });
 
-  const handleCorretorClick = (corretor: Corretor) => {
-    setSelectedCorretor(corretor);
-    setIsEditModalOpen(true);
-  };
-
 
   const handleToggleStatus = async (e: React.MouseEvent, corretor: Corretor) => {
     e.stopPropagation();
@@ -188,22 +178,13 @@ export default function MobileCorretores() {
       <MobileHeader
         title="Gestão de Usuários"
         rightElement={
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/equipes')}
-            >
-              <Users className="w-4 h-4" />
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setIsNewCorretorModalOpen(true)}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            onClick={() => setIsNewCorretorModalOpen(true)}
+            className="bg-primary hover:bg-primary/90"
+          >
+            <Plus className="w-4 h-4" />
+          </Button>
         }
       />
 
@@ -255,17 +236,11 @@ export default function MobileCorretores() {
           filteredCorretores.map((corretor) => (
             <div
               key={corretor.id}
-              onClick={() => handleCorretorClick(corretor)}
-              className="bg-white rounded-lg p-4 shadow-sm border active:bg-gray-50 transition-colors relative"
+              className="bg-white dark:bg-card rounded-lg p-4 shadow-sm border relative"
             >
-              {/* Botão de configurações visível */}
-              <div className="absolute top-3 right-3">
-                <Settings className="w-4 h-4 text-gray-400" />
-              </div>
-
-              <div className="flex items-start justify-between mb-3 pr-8">
+              <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 truncate">{corretor.nome}</h3>
+                  <h3 className="font-medium text-gray-900 dark:text-foreground truncate">{corretor.nome}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <Mail className="w-3 h-3 text-gray-400" />
                     <p className="text-sm text-gray-500 truncate">{corretor.email}</p>
@@ -307,11 +282,6 @@ export default function MobileCorretores() {
                   )}
                 </div>
               </div>
-              
-              {/* Indicador visual de que é clicável */}
-              <div className="absolute bottom-2 right-2">
-                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-              </div>
             </div>
           ))
         )}
@@ -324,19 +294,6 @@ export default function MobileCorretores() {
         onCreateCorretor={handleCreateCorretor}
         equipes={equipes as any}
       />
-
-      {selectedCorretor && (
-        <MobileEditUsuarioModal
-          corretor={selectedCorretor as any}
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setSelectedCorretor(null);
-          }}
-          onUpdateCorretor={handleUpdateCorretor}
-          equipes={equipes as any}
-        />
-      )}
     </div>
   );
 }
