@@ -117,11 +117,22 @@ export function TagFilter({ selectedTagIds, onTagChange, className }: TagFilterP
               key={tag.id} 
               variant="secondary" 
               className="text-xs"
-              style={{ backgroundColor: `${tag.cor}20`, borderColor: tag.cor }}
+              style={{ 
+                backgroundColor: tag.nome === 'Lead Qualificado Pela IA' 
+                  ? 'rgba(255, 215, 0, 0.2)' 
+                  : `${tag.cor}20`, 
+                borderColor: tag.nome === 'Lead Qualificado Pela IA' 
+                  ? '#FFD700' 
+                  : tag.cor 
+              }}
             >
               <div 
                 className="w-2 h-2 rounded-full mr-1"
-                style={{ backgroundColor: tag.cor }}
+                style={{ 
+                  backgroundColor: tag.nome === 'Lead Qualificado Pela IA' 
+                    ? '#FFD700' 
+                    : tag.cor 
+                }}
               />
               {tag.nome}
               <button
