@@ -1,85 +1,56 @@
 
-# Plano: Notificar Usuário Quando Lead For Atribuído
 
-## Resumo
+# Transformar Modal de "Novo Lead" em Banner no Topo (Mobile)
 
-Adicionar notificação push em todos os webhooks que criam leads, para que o usuário seja notificado quando receber um lead - mesmo com o PWA fechado.
+## Objetivo
+Melhorar a experiencia de digitacao na versao mobile ao criar um novo lead, substituindo o modal central por um painel fixo no topo da tela.
 
-## Situação Atual
+## Problema Atual
+O modal de "Novo Lead" aparece centralizado na tela, o que em dispositivos moveis faz com que o teclado virtual cubra parte do formulario, dificultando a visualizacao dos campos enquanto o usuario digita.
 
-| Webhook | Notificação Push |
-|---------|------------------|
-| `webhook-lead` | Sim |
-| `webhook-lead-click-imoveis` | Sim |
-| `webhook-lead-click-imoveis-nao-qualificado` | Sim |
-| `webhook-lead-janaina-vidalete` | **Sim** ✅ |
-| `webhook-lead-mays-imob` | **Sim** ✅ |
-| `webhook-lead-vivaz` | **Sim** ✅ |
-| `webhook-lead-vivaz-zona-sul` | **Sim** ✅ |
-| `webhook-lead-vivaz-zona-leste` | **Sim** ✅ |
-| `webhook-lead-araujo-broker` | **Sim** ✅ |
-| `webhook-lead-recuperar` | **Sim** ✅ |
-
-## O Que Sera Feito
-
-Adicionar o codigo de notificacao push nos 6 webhooks que ainda nao tem.
-
-O codigo a adicionar (apos criar o lead com sucesso):
-
-```text
-// Enviar notificacao push para o usuario
-if (!result.is_duplicate) {
-  try {
-    await supabase.functions.invoke('send-push-notification', {
-      body: {
-        userId: [ID_DO_USUARIO],
-        title: 'Novo Lead - [NOME_DA_EMPRESA]',
-        body: `Novo lead: ${leadData.nome}`,
-        data: { leadId: result.lead_id, url: '/' }
-      }
-    });
-    console.log('Notificacao push enviada');
-  } catch (error) {
-    console.error('Erro ao enviar notificacao:', error);
-  }
-}
-```
+## Solucao Proposta
+Utilizar o componente `Sheet` com `side="top"` para exibir o formulario de novo lead como um painel que desliza do topo da tela. Isso permite que o formulario fique visivel acima do teclado virtual.
 
 ## Arquivos a Modificar
 
-| Arquivo | Empresa |
-|---------|---------|
-| `supabase/functions/webhook-lead-janaina-vidalete/index.ts` | MAYS IMOB |
-| `supabase/functions/webhook-lead-mays-imob/index.ts` | MAYS IMOB |
-| `supabase/functions/webhook-lead-vivaz/index.ts` | Vivaz Imoveis - ZONA NORTE |
-| `supabase/functions/webhook-lead-vivaz-zona-sul/index.ts` | Vivaz Imoveis - ZONA SUL |
-| `supabase/functions/webhook-lead-vivaz-zona-leste/index.ts` | Vivaz Imoveis - ZONA LESTE |
-| `supabase/functions/webhook-lead-araujo-broker/index.ts` | Araujo Broker |
-| `supabase/functions/webhook-lead-recuperar/index.ts` | Click Imoveis (Recuperar) |
+### 1. `src/pages/MobileLeads.tsx`
+- Substituir o `NewLeadModal` por uma implementacao inline usando o componente `Sheet` com `side="top"`
+- Manter toda a logica de criacao de lead existente
+- O painel tera:
+  - Header com titulo "+ Novo Lead" e botao de fechar (X)
+  - Campos: Nome, Telefone, Dados Adicionais
+  - Botoes: Cancelar e Criar Lead
+  - Animacao de slide-in do topo
 
-## Fluxo de Funcionamento
+## Detalhes Tecnicos
 
+### Estrutura do Componente Sheet (Banner do Topo)
 ```text
-Lead chega via webhook
-       |
-       v
-Webhook cria lead e atribui usuario
-       |
-       v
-Webhook chama send-push-notification
-       |
-       v
-Edge function busca subscription do usuario
-       |
-       v
-Envia push via web-push
-       |
-       v
-Service Worker exibe notificacao no dispositivo
++------------------------------------------+
+|  + Novo Lead                         [X] |
+|------------------------------------------|
+|  Nome *                                  |
+|  [________________________]              |
+|                                          |
+|  Telefone *                              |
+|  [________________________]              |
+|                                          |
+|  Dados Adicionais                        |
+|  [________________________]              |
+|                                          |
+|     [Cancelar]  [Criar Lead]             |
++------------------------------------------+
 ```
 
-## Observacoes
+### Beneficios
+- O formulario fica no topo, acima do teclado virtual
+- O usuario consegue ver todos os campos enquanto digita
+- Animacao suave de entrada/saida do topo
+- Consistente com outros padroes de UX mobile
 
-- A notificacao so e enviada se o lead NAO for duplicata
-- Se o usuario nao tiver subscription ativa, a notificacao falha silenciosamente (sem erro)
-- A infraestrutura ja existe e funciona (VAPID keys configuradas, Edge Function pronta, subscriptions ativas no banco)
+### Implementacao
+- Usar `Sheet` do `@radix-ui/react-dialog` com `side="top"`
+- Manter a mesma logica de submit do `NewLeadModal` atual
+- Incluir validacao de campos obrigatorios
+- Usar o hook `useAuth` para obter o usuario logado
+
