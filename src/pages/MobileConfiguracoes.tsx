@@ -4,6 +4,8 @@ import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Building2, LogOut, Users, ChevronRight, User } from "lucide-react";
+import { NotificationPromptBanner } from "@/components/NotificationPromptBanner";
+
 export default function MobileConfiguracoes() {
   const {
     user,
@@ -44,6 +46,9 @@ export default function MobileConfiguracoes() {
   }];
   return <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader title="Opções" />
+
+      {/* Banner de notificações */}
+      <NotificationPromptBanner />
 
       <div className="p-4 space-y-6">
         {/* Menu Items */}

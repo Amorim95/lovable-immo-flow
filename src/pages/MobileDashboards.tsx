@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
+import { NotificationPromptBanner } from "@/components/NotificationPromptBanner";
 import { 
   BarChart3, 
   TrendingUp, 
@@ -46,6 +47,9 @@ export default function MobileDashboards() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader title="Dashboards" />
+
+      {/* Banner de notificações */}
+      <NotificationPromptBanner />
 
       <div className="p-4 space-y-6">
         {/* Quick Stats */}
