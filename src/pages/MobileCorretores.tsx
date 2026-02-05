@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Users, Mail, Phone, Filter } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { UserRoleBadge } from "@/components/UserRoleBadge";
 import { NewCorretorModal } from "@/components/NewCorretorModal";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -114,9 +114,7 @@ export default function MobileCorretores() {
     });
 
 
-  const handleToggleStatus = async (e: React.MouseEvent, corretor: Corretor) => {
-    e.stopPropagation();
-    
+  const handleToggleStatus = async (corretor: Corretor) => {
     const newStatus = corretor.status === 'ativo' ? 'inativo' : 'ativo';
     
     try {
@@ -258,21 +256,22 @@ export default function MobileCorretores() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <UserRoleBadge role={corretor.role as any} />
-                    <Badge 
-                      variant={
-                        corretor.status === 'ativo' ? 'default' : 
-                        corretor.status === 'pendente' ? 'secondary' : 
-                        'destructive'
-                      }
-                      className={`cursor-pointer hover:opacity-80 active:scale-95 transition-all px-4 py-1.5 text-sm ${
-                        corretor.status === 'ativo' ? 'bg-green-100 text-green-800' : 
-                        corretor.status === 'pendente' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}
-                      onClick={(e) => handleToggleStatus(e, corretor)}
-                    >
-                      {corretor.status === 'pendente' ? 'Aguardando' : corretor.status}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={corretor.status === 'ativo'}
+                        onCheckedChange={() => handleToggleStatus(corretor)}
+                        disabled={corretor.status === 'pendente'}
+                        className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
+                      />
+                      <span className={`text-xs font-medium ${
+                        corretor.status === 'ativo' ? 'text-green-600' : 
+                        corretor.status === 'pendente' ? 'text-yellow-600' : 
+                        'text-gray-500'
+                      }`}>
+                        {corretor.status === 'pendente' ? 'Aguardando' : 
+                         corretor.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </div>
                   </div>
                   {corretor.equipeNome && (
                     <div className="flex items-center gap-1 text-xs text-gray-500">
