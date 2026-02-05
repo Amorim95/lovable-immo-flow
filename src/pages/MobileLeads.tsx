@@ -588,7 +588,7 @@ export default function MobileLeads() {
       {/* Sheet de Novo Lead no Topo */}
       {canCreateLeads && (
         <Sheet open={isNewLeadModalOpen} onOpenChange={handleCloseNewLeadSheet}>
-          <SheetContent side="top" className="px-4 py-4">
+          <SheetContent side="top" className="mx-3 mt-3 rounded-xl px-5 py-5 border shadow-lg">
             <SheetHeader className="pb-2">
               <SheetTitle className="flex items-center gap-2 text-base">
                 <Plus className="w-4 h-4" />
