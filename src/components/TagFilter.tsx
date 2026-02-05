@@ -93,7 +93,11 @@ export function TagFilter({ selectedTagIds, onTagChange, className }: TagFilterP
                     <div className="flex items-center gap-2">
                       <div 
                         className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: tag.cor }}
+                        style={{ 
+                          backgroundColor: tag.nome === 'Lead Qualificado Pela IA' 
+                            ? '#FFD700' 
+                            : tag.cor 
+                        }}
                       />
                       {tag.nome}
                     </div>
