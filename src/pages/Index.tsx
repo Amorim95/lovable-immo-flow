@@ -18,7 +18,9 @@ import { Input } from "@/components/ui/input";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { useDailyQuote } from "@/hooks/useDailyQuote";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutList, LayoutGrid, Plus, Search } from "lucide-react";
+import { LayoutList, LayoutGrid, Plus, Search, SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -57,6 +59,7 @@ const Index = () => {
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedStageKey, setSelectedStageKey] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Pré-selecionar equipe gerenciada automaticamente
   useEffect(() => {
@@ -252,72 +255,132 @@ const Index = () => {
       </div>
 
       {/* Filtros */}
-      <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-4">
-            {/* Toggle Kanban/Lista */}
-            <div className="flex items-center border rounded-md">
-              <Button
-                variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('kanban')}
-                className="rounded-r-none"
-              >
-                <LayoutGrid className="w-4 h-4 mr-1" />
-                Kanban
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                className="rounded-l-none"
-              >
-                <LayoutList className="w-4 h-4 mr-1" />
-                Lista
-              </Button>
-            </div>
-            <DateFilter 
-              value={dateFilter} 
-              customRange={customDateRange} 
-              onValueChange={handleDateFilterChange} 
-              availableDates={availableDates} 
+      <div className="bg-white rounded-lg shadow-sm border">
+        {/* Barra principal - sempre visível */}
+        <div className="p-4 flex items-center gap-4 flex-wrap">
+          {/* Toggle Kanban/Lista */}
+          <div className="flex items-center border rounded-md">
+            <Button
+              variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('kanban')}
+              className="rounded-r-none"
+            >
+              <LayoutGrid className="w-4 h-4 mr-1" />
+              Kanban
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="rounded-l-none"
+            >
+              <LayoutList className="w-4 h-4 mr-1" />
+              Lista
+            </Button>
+          </div>
+
+          {/* Campo de busca */}
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Buscar leads..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9"
             />
-            {/* Campo de busca ao lado do período */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Buscar leads..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 w-64"
-              />
-            </div>
-            {/* Filtros de Equipe e Usuário - Apenas para Admin, Gestor e Dono */}
-            {(isAdmin || isGestor || isDono) && (
-              <TeamUserFilters 
-                onTeamChange={setSelectedTeamId} 
-                onUserChange={setSelectedUserId} 
-                selectedTeamId={selectedTeamId} 
-                selectedUserId={selectedUserId} 
-              />
+          </div>
+
+          {/* Botão de Filtros Avançados */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFiltersOpen(!filtersOpen)}
+            className="gap-2"
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            Filtros
+            {/* Badge com contagem de filtros ativos */}
+            {(() => {
+              const activeCount = 
+                (dateFilter !== 'periodo-total' ? 1 : 0) +
+                (selectedTeamId ? 1 : 0) +
+                (selectedUserId ? 1 : 0) +
+                (selectedTagIds.length > 0 ? 1 : 0) +
+                (selectedStageKey ? 1 : 0);
+              return activeCount > 0 ? (
+                <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  {activeCount}
+                </Badge>
+              ) : null;
+            })()}
+            {filtersOpen ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
             )}
-            {/* Filtro de Etiquetas */}
-            <TagFilter 
-              selectedTagIds={selectedTagIds} 
-              onTagChange={setSelectedTagIds} 
-              className="w-64" 
-            />
-            {/* Filtro de Etapas - Apenas no modo lista */}
-            {viewMode === 'list' && (
-              <StageFilter 
-                selectedStageKey={selectedStageKey} 
-                onStageChange={setSelectedStageKey} 
+          </Button>
+        </div>
+
+        {/* Filtros Avançados - Colapsável */}
+        <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
+          <CollapsibleContent className="border-t">
+            <div className="p-4 flex items-center gap-4 flex-wrap bg-muted/30">
+              <DateFilter 
+                value={dateFilter} 
+                customRange={customDateRange} 
+                onValueChange={handleDateFilterChange} 
+                availableDates={availableDates} 
+              />
+              
+              {/* Filtros de Equipe e Usuário - Apenas para Admin, Gestor e Dono */}
+              {(isAdmin || isGestor || isDono) && (
+                <TeamUserFilters 
+                  onTeamChange={setSelectedTeamId} 
+                  onUserChange={setSelectedUserId} 
+                  selectedTeamId={selectedTeamId} 
+                  selectedUserId={selectedUserId} 
+                />
+              )}
+              
+              {/* Filtro de Etiquetas */}
+              <TagFilter 
+                selectedTagIds={selectedTagIds} 
+                onTagChange={setSelectedTagIds} 
                 className="w-64" 
               />
-            )}
-          </div>
-        </div>
+              
+              {/* Filtro de Etapas - Apenas no modo lista */}
+              {viewMode === 'list' && (
+                <StageFilter 
+                  selectedStageKey={selectedStageKey} 
+                  onStageChange={setSelectedStageKey} 
+                  className="w-64" 
+                />
+              )}
+
+              {/* Botão Limpar Filtros */}
+              {(dateFilter !== 'periodo-total' || selectedTeamId || selectedUserId || selectedTagIds.length > 0 || selectedStageKey) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setDateFilter('periodo-total');
+                    setCustomDateRange(undefined);
+                    setSelectedTeamId(null);
+                    setSelectedUserId(null);
+                    setSelectedTagIds([]);
+                    setSelectedStageKey(null);
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Limpar filtros
+                </Button>
+              )}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
 
       {/* Content */}
