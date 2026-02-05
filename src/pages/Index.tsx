@@ -21,6 +21,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { LayoutList, LayoutGrid, Plus, Search, SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
+import { NotificationPromptBanner } from "@/components/NotificationPromptBanner";
+import { NotificationSoundPlayer } from "@/components/NotificationSoundPlayer";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -234,6 +236,12 @@ const Index = () => {
 
   return (
     <div className="space-y-6">
+      {/* Notification Sound Player - listens for push events */}
+      <NotificationSoundPlayer />
+      
+      {/* Banner de notificações para desktop */}
+      {!isMobile && <NotificationPromptBanner />}
+      
       {/* Header */}
       <div className="flex items-center gap-4">
         {canCreateLeads && (

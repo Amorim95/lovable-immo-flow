@@ -39,11 +39,31 @@ self.addEventListener('push', (event) => {
       }
     ],
     requireInteraction: true,
-    tag: 'lead-notification'
+    tag: 'lead-notification',
+    silent: false // Allow system sound
   };
 
+  // Notify all clients that a push was received (for custom sound)
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Click Imóveis', options)
+    Promise.all([
+      self.registration.showNotification(data.title || 'Click Imóveis', options),
+      // Broadcast to all clients to play sound
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'PUSH_RECEIVED', data });
+        });
+      }),
+      // Also use BroadcastChannel for better reliability
+      (async () => {
+        try {
+          const channel = new BroadcastChannel('push-notifications');
+          channel.postMessage({ type: 'PUSH_RECEIVED', data });
+          channel.close();
+        } catch (e) {
+          console.log('BroadcastChannel not supported');
+        }
+      })()
+    ])
   );
 });
 
