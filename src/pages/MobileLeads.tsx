@@ -6,19 +6,20 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { useLeadStages } from "@/hooks/useLeadStages";
 import { useDailyQuote } from "@/hooks/useDailyQuote";
+import { useAuth } from "@/contexts/AuthContext";
 import { MobileHeader } from "@/components/MobileHeader";
 import { TagFilter } from "@/components/TagFilter";
 import { NotificationPromptBanner } from "@/components/NotificationPromptBanner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, MessageCircle, Calendar, User, ChevronDown, Filter, Tag, Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { NewLeadModal } from "@/components/NewLeadModal";
+import { Label } from "@/components/ui/label";
+import { Plus, Search, Calendar, User, ChevronDown, Filter, Tag, Users } from "lucide-react";
 import { DateFilter, DateFilterOption, getDateRangeFromFilter } from "@/components/DateFilter";
 import { UserFilter } from "@/components/UserFilter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getTagColor } from "@/lib/utils";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Equipe {
   id: string;
@@ -30,6 +31,7 @@ export default function MobileLeads() {
   const navigate = useNavigate();
   const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
+  const { user } = useAuth();
   const quote = useDailyQuote();
   const { stages, loading: stagesLoading } = useLeadStages();
   
@@ -65,6 +67,14 @@ export default function MobileLeads() {
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [equipes, setEquipes] = useState<Equipe[]>([]);
+  
+  // Estado do formulário de novo lead
+  const [newLeadFormData, setNewLeadFormData] = useState({
+    nome: '',
+    telefone: '',
+    dadosAdicionais: ''
+  });
+  const [isCreatingLead, setIsCreatingLead] = useState(false);
   
   const canCreateLeads = !roleLoading && (isAdmin || isGestor || isCorretor);
 
@@ -237,8 +247,53 @@ export default function MobileLeads() {
     window.open(`tel:${telefone}`, '_self');
   };
 
-  const handleCreateLead = () => {
-    refreshLeads();
+  const handleCreateLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newLeadFormData.nome.trim() || !newLeadFormData.telefone.trim()) {
+      toast.error('Nome e Telefone são obrigatórios');
+      return;
+    }
+
+    if (!user) {
+      toast.error('Usuário não autenticado');
+      return;
+    }
+
+    setIsCreatingLead(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('leads')
+        .insert({
+          nome: newLeadFormData.nome,
+          telefone: newLeadFormData.telefone,
+          dados_adicionais: newLeadFormData.dadosAdicionais || null,
+          etapa: 'aguardando-atendimento',
+          user_id: user.id
+        })
+        .select('*')
+        .single();
+
+      if (error) {
+        toast.error(`Erro ao criar lead: ${error.message}`);
+        return;
+      }
+
+      toast.success('Lead criado com sucesso!');
+      setNewLeadFormData({ nome: '', telefone: '', dadosAdicionais: '' });
+      setIsNewLeadModalOpen(false);
+      refreshLeads();
+    } catch (error) {
+      toast.error('Erro ao criar lead');
+    } finally {
+      setIsCreatingLead(false);
+    }
+  };
+
+  const handleCloseNewLeadSheet = () => {
+    setNewLeadFormData({ nome: '', telefone: '', dadosAdicionais: '' });
+    setIsNewLeadModalOpen(false);
   };
 
   const handleStageChange = async (leadId: string, newStage: Lead['etapa']) => {
@@ -530,14 +585,65 @@ export default function MobileLeads() {
         )}
       </div>
 
-      {/* New Lead Modal */}
+      {/* Sheet de Novo Lead no Topo */}
       {canCreateLeads && (
-        <NewLeadModal
-          isOpen={isNewLeadModalOpen}
-          onClose={() => setIsNewLeadModalOpen(false)}
-          onCreateLead={handleCreateLead}
-          initialStage="aguardando-atendimento"
-        />
+        <Sheet open={isNewLeadModalOpen} onOpenChange={handleCloseNewLeadSheet}>
+          <SheetContent side="top" className="px-4 py-4">
+            <SheetHeader className="pb-2">
+              <SheetTitle className="flex items-center gap-2 text-base">
+                <Plus className="w-4 h-4" />
+                Novo Lead
+              </SheetTitle>
+            </SheetHeader>
+            
+            <form onSubmit={handleCreateLead} className="space-y-3">
+              <div>
+                <Label htmlFor="nome" className="text-sm">Nome *</Label>
+                <Input
+                  id="nome"
+                  value={newLeadFormData.nome}
+                  onChange={(e) => setNewLeadFormData({ ...newLeadFormData, nome: e.target.value })}
+                  placeholder="Nome completo"
+                  className="h-9"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="telefone" className="text-sm">Telefone *</Label>
+                <Input
+                  id="telefone"
+                  value={newLeadFormData.telefone}
+                  onChange={(e) => setNewLeadFormData({ ...newLeadFormData, telefone: e.target.value })}
+                  placeholder="(11) 99999-9999"
+                  className="h-9"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="dadosAdicionais" className="text-sm">Dados Adicionais</Label>
+                <textarea
+                  id="dadosAdicionais"
+                  value={newLeadFormData.dadosAdicionais}
+                  onChange={(e) => setNewLeadFormData({ ...newLeadFormData, dadosAdicionais: e.target.value })}
+                  placeholder="Informações adicionais..."
+                  rows={2}
+                  className="w-full px-3 py-2 text-sm border border-input bg-background rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" size="sm" onClick={handleCloseNewLeadSheet}>
+                  Cancelar
+                </Button>
+                <Button type="submit" size="sm" disabled={isCreatingLead}>
+                  {isCreatingLead ? 'Criando...' : 'Criar Lead'}
+                </Button>
+              </div>
+            </form>
+          </SheetContent>
+        </Sheet>
       )}
     </div>
   );
