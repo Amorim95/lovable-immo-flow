@@ -33,6 +33,28 @@ Deno.serve(async (req) => {
 
     console.log('=== Auto Repique de Leads - Iniciando ===');
 
+     // Função para obter data atual no fuso horário de São Paulo
+     const getBrazilDate = () => {
+       const now = new Date();
+       // Converter para horário de Brasília (UTC-3)
+       const brazilOffset = -3 * 60; // -3 horas em minutos
+       const utcOffset = now.getTimezoneOffset(); // offset local em minutos
+       const brazilTime = new Date(now.getTime() + (utcOffset + brazilOffset) * 60 * 1000);
+       return brazilTime;
+     };
+
+     // Função para obter início do dia no horário de Brasília
+     const getBrazilMidnight = () => {
+       const brazilNow = getBrazilDate();
+       // Pegar ano, mês, dia no horário de Brasília
+       const year = brazilNow.getFullYear();
+       const month = brazilNow.getMonth();
+       const day = brazilNow.getDate();
+       // Criar meia-noite de Brasília e converter para UTC
+       // Meia-noite em Brasília = 03:00 UTC
+       return new Date(Date.UTC(year, month, day, 3, 0, 0, 0));
+     };
+
     // 1. Buscar empresas com repique automático ativado
     const { data: companies, error: companiesError } = await supabase
       .from('company_settings')
@@ -70,10 +92,9 @@ Deno.serve(async (req) => {
 
       console.log(`Processando empresa: ${company_id} (timeout: ${auto_repique_minutes} min)`);
 
-      // Data de corte: somente leads criados a partir de hoje são elegíveis
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const cutoffDate = today.toISOString();
+       // Data de corte: somente leads criados a partir de hoje (horário de Brasília) são elegíveis
+       const cutoffDate = getBrazilMidnight().toISOString();
+       console.log(`Data de corte (meia-noite Brasília em UTC): ${cutoffDate}`);
 
       // ========================================
       // FASE 1: AVISOS (2 minutos antes do timeout)
