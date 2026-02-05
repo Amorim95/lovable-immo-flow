@@ -238,7 +238,10 @@ export default function MobileCorretores() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 dark:text-foreground truncate">{corretor.nome}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-medium text-gray-900 dark:text-foreground truncate">{corretor.nome}</h3>
+                    <UserRoleBadge role={corretor.role as any} />
+                  </div>
                   <div className="flex items-center gap-2 mt-1">
                     <Mail className="w-3 h-3 text-gray-400" />
                     <p className="text-sm text-gray-500 truncate">{corretor.email}</p>
@@ -252,34 +255,29 @@ export default function MobileCorretores() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <UserRoleBadge role={corretor.role as any} />
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={corretor.status === 'ativo'}
-                        onCheckedChange={() => handleToggleStatus(corretor)}
-                        disabled={corretor.status === 'pendente'}
-                        className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
-                      />
-                      <span className={`text-xs font-medium ${
-                        corretor.status === 'ativo' ? 'text-green-600' : 
-                        corretor.status === 'pendente' ? 'text-yellow-600' : 
-                        'text-gray-500'
-                      }`}>
-                        {corretor.status === 'pendente' ? 'Aguardando' : 
-                         corretor.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </div>
-                  </div>
-                  {corretor.equipeNome && (
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <Users className="w-3 h-3" />
-                      <span className="truncate max-w-[100px]">{corretor.equipeNome}</span>
-                    </div>
-                  )}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={corretor.status === 'ativo'}
+                    onCheckedChange={() => handleToggleStatus(corretor)}
+                    disabled={corretor.status === 'pendente'}
+                    className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
+                  />
+                  <span className={`text-xs font-medium ${
+                    corretor.status === 'ativo' ? 'text-green-600' : 
+                    corretor.status === 'pendente' ? 'text-yellow-600' : 
+                    'text-gray-500'
+                  }`}>
+                    {corretor.status === 'pendente' ? 'Aguardando' : 
+                     corretor.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                  </span>
                 </div>
+                {corretor.equipeNome && (
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                    <Users className="w-3 h-3" />
+                    <span className="truncate max-w-[100px]">{corretor.equipeNome}</span>
+                  </div>
+                )}
               </div>
             </div>
           ))
