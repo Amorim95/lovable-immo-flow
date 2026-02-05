@@ -125,6 +125,24 @@ export default function MobileCorretores() {
 
       if (error) throw error;
 
+      // Se o usuário foi ativado, enviar notificação push
+      if (newStatus === 'ativo') {
+        try {
+          const firstName = corretor.nome.split(' ')[0];
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              userId: corretor.id,
+              title: `${firstName}, o seu plantão começou!`,
+              body: 'A partir de agora você está na fila para receber os leads. Fique atento, dê o seu melhor e boas vendas!'
+            }
+          });
+          console.log('Notificação de ativação enviada para:', corretor.nome);
+        } catch (notifError) {
+          console.error('Erro ao enviar notificação de ativação:', notifError);
+          // Não interromper o fluxo se a notificação falhar
+        }
+      }
+
       toast.success(`Status alterado para ${newStatus}`);
       refetchUsers();
     } catch (error) {
