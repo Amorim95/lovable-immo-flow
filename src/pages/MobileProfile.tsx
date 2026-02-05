@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { NotificationPromptBanner } from "@/components/NotificationPromptBanner";
 
 export default function MobileProfile() {
   const { user } = useAuth();
@@ -113,6 +114,9 @@ export default function MobileProfile() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader title="Informações Pessoais" />
+
+      {/* Banner de notificações */}
+      <NotificationPromptBanner />
 
       <div className="p-4 space-y-4">
         {/* Opção de Alterar Senha */}
