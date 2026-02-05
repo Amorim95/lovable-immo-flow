@@ -37,9 +37,11 @@ export function NotificationPromptBanner() {
   }, [user]);
 
   // Verificar se foi dispensado recentemente (24h)
+  // IMPORTANTE: Só respeitar dispensa se o usuário JÁ tem subscription no banco
   useEffect(() => {
     const dismissedAt = localStorage.getItem('notification_banner_dismissed');
-    if (dismissedAt) {
+    if (dismissedAt && hasDbSubscription === true) {
+      // Só respeitar dispensa se usuário já ativou notificações antes
       const dismissedTime = parseInt(dismissedAt, 10);
       const now = Date.now();
       const hoursElapsed = (now - dismissedTime) / (1000 * 60 * 60);
@@ -50,9 +52,14 @@ export function NotificationPromptBanner() {
       } else {
         // Limpar o localStorage após 24 horas
         localStorage.removeItem('notification_banner_dismissed');
+        setDismissed(false);
       }
+    } else if (hasDbSubscription === false) {
+      // Se nunca ativou, NUNCA pode estar dispensado
+      setDismissed(false);
+      localStorage.removeItem('notification_banner_dismissed');
     }
-  }, []);
+  }, [hasDbSubscription]);
 
   const handleDismiss = () => {
     setDismissed(true);
@@ -192,7 +199,8 @@ export function NotificationPromptBanner() {
                 )}
               </Button>
               
-              {!isReactivation && !showDeniedMessage && (
+              {/* Só mostrar "Agora não" se já ativou antes (reativação) */}
+              {isReactivation && (
                 <Button
                   size="sm"
                   variant="ghost"
@@ -206,7 +214,8 @@ export function NotificationPromptBanner() {
           )}
         </div>
         
-        {!isReactivation && !showDeniedMessage && (
+        {/* Só mostrar X para fechar se já ativou antes (reativação) */}
+        {isReactivation && (
           <button
             onClick={handleDismiss}
             className="flex-shrink-0 text-white/60 hover:text-white transition-colors"
