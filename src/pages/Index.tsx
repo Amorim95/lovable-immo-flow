@@ -255,12 +255,6 @@ const Index = () => {
       <div className="bg-white p-4 rounded-lg shadow-sm border">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
-            <DateFilter 
-              value={dateFilter} 
-              customRange={customDateRange} 
-              onValueChange={handleDateFilterChange} 
-              availableDates={availableDates} 
-            />
             {/* Toggle Kanban/Lista */}
             <div className="flex items-center border rounded-md">
               <Button
@@ -282,6 +276,12 @@ const Index = () => {
                 Lista
               </Button>
             </div>
+            <DateFilter 
+              value={dateFilter} 
+              customRange={customDateRange} 
+              onValueChange={handleDateFilterChange} 
+              availableDates={availableDates} 
+            />
             {/* Campo de busca ao lado do período */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
