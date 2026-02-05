@@ -261,6 +261,27 @@ const Index = () => {
               onValueChange={handleDateFilterChange} 
               availableDates={availableDates} 
             />
+            {/* Toggle Kanban/Lista */}
+            <div className="flex items-center border rounded-md">
+              <Button
+                variant={viewMode === 'kanban' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('kanban')}
+                className="rounded-r-none"
+              >
+                <LayoutGrid className="w-4 h-4 mr-1" />
+                Kanban
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="rounded-l-none"
+              >
+                <LayoutList className="w-4 h-4 mr-1" />
+                Lista
+              </Button>
+            </div>
             {/* Campo de busca ao lado do período */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
