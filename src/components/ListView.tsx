@@ -16,7 +16,7 @@ import { TagSelector } from "@/components/TagSelector";
 import { LeadTransferModal } from "@/components/LeadTransferModal";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Phone, ArrowRightLeft, Users, X } from "lucide-react";
+import { Phone, ArrowRightLeft, Users, X, ChevronDown } from "lucide-react";
 
 interface ListViewProps {
   leads: (Lead & { userId?: string })[];
@@ -52,6 +52,7 @@ const stageColors = {
 export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate }: ListViewProps) {
   const { isAdmin, isGestor } = useUserRole();
   const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
+  const [visibleCount, setVisibleCount] = useState(50);
   const [transferModalData, setTransferModalData] = useState<{
     isOpen: boolean;
     leadIds: string[];
@@ -61,6 +62,10 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
   } | null>(null);
   
   const canTransfer = isAdmin || isGestor;
+  
+  // Limitar leads visíveis para performance
+  const visibleLeads = leads.slice(0, visibleCount);
+  const hasMoreLeads = leads.length > visibleCount;
   
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('pt-BR', {
@@ -204,11 +209,10 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
               <TableHead>Etiquetas</TableHead>
               <TableHead>Corretor</TableHead>
               <TableHead>Data</TableHead>
-              <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {leads.map((lead) => (
+        <TableBody>
+            {visibleLeads.map((lead) => (
               <TableRow
                 key={lead.id}
                 className={`cursor-pointer hover:bg-gray-50 transition-colors ${
@@ -279,6 +283,25 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
           ))}
         </TableBody>
       </Table>
+      
+      {/* Botão Ver Mais */}
+      {hasMoreLeads && (
+        <div className="flex justify-center py-4 border-t">
+          <Button
+            variant="outline"
+            onClick={() => setVisibleCount(prev => prev + 50)}
+            className="gap-2"
+          >
+            <ChevronDown className="w-4 h-4" />
+            Ver mais ({leads.length - visibleCount} restantes)
+          </Button>
+        </div>
+      )}
+      
+      {/* Contador de leads */}
+      <div className="flex justify-between items-center py-3 px-4 border-t text-sm text-muted-foreground">
+        <span>Exibindo {visibleLeads.length} de {leads.length} leads</span>
+      </div>
       
         {/* Modal de Transferência */}
         {transferModalData && (
