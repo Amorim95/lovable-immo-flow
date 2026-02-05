@@ -22,7 +22,7 @@ const Dashboards = () => {
   const navigate = useNavigate();
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
-  const { isAdmin, isGestor } = useUserRole();
+  const { isAdmin, isGestor, isCorretor } = useUserRole();
   const { stages } = useLeadStages();
 
   // Calcular o range de data baseado no filtro selecionado
@@ -156,38 +156,40 @@ const Dashboards = () => {
           </Card>
         )}
 
-        <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => navigate('/dashboards/performance-equipe')}
-        >
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <LayoutList className="w-6 h-6 text-green-600" />
+        {!isCorretor && (
+          <Card 
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/dashboards/performance-equipe')}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                  <LayoutList className="w-6 h-6 text-green-600" />
+                </div>
+                <CardTitle className="text-lg">Performance da Equipe</CardTitle>
               </div>
-              <CardTitle className="text-lg">Performance da Equipe</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 text-sm">
-              Visão geral do desempenho da equipe, comparativos entre corretores e metas atingidas.
-            </p>
-            <div className="mt-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Equipe Destaque:</span>
-                <span className="font-medium">
-                  {loading ? '...' : `${metrics.equipeDestaque.nome} - ${metrics.equipeDestaque.totalLeads} leads`}
-                </span>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 text-sm">
+                Visão geral do desempenho da equipe, comparativos entre corretores e metas atingidas.
+              </p>
+              <div className="mt-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Equipe Destaque:</span>
+                  <span className="font-medium">
+                    {loading ? '...' : `${metrics.equipeDestaque.nome} - ${metrics.equipeDestaque.totalLeads} leads`}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Total de Leads:</span>
+                  <span className="font-medium">
+                    {loading ? '...' : `${metrics.equipeDestaque.totalLeads} leads`}
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between text-sm">
-                <span>Total de Leads:</span>
-                <span className="font-medium">
-                  {loading ? '...' : `${metrics.equipeDestaque.totalLeads} leads`}
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
         <Card 
           className="cursor-pointer hover:shadow-lg transition-shadow"
