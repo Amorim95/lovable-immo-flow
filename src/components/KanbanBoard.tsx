@@ -23,7 +23,7 @@ const getColorClasses = (hexColor: string) => {
   const isLight = l > 0.5;
   
   return {
-    color: `border-2 border-gray-200 bg-gray-50`,
+    color: `border border-border`,
     headerColor: hexColor
   };
 };
@@ -145,8 +145,8 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                   className="w-3 h-3 rounded-full border"
                   style={{ backgroundColor: colorClasses.headerColor }}
                 />
-                <h3 className="font-semibold text-gray-800">{stage.nome}</h3>
-                <span className="bg-white text-gray-600 text-sm px-2 py-1 rounded-full font-medium">
+                <h3 className="font-semibold text-foreground">{stage.nome}</h3>
+                <span className="bg-card text-muted-foreground text-sm px-2 py-1 rounded-full font-medium">
                   {stageLeads.length}
                 </span>
               </div>
@@ -183,7 +183,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full text-muted-foreground hover:text-foreground py-3 border border-dashed border-gray-300 hover:border-gray-400"
+                  className="w-full text-muted-foreground hover:text-foreground py-3 border border-dashed border-border hover:border-muted-foreground"
                   onClick={() => handleShowMore(stage.nome)}
                 >
                   <ChevronDown className="w-4 h-4 mr-2" />
@@ -192,7 +192,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
               )}
               
               {stageLeads.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-muted-foreground">
                   <p className="text-sm">Nenhum lead nesta etapa</p>
                 </div>
               )}
