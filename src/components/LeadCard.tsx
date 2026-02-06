@@ -167,24 +167,24 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
 
   return (
     <Card 
-      className="lead-card cursor-pointer bg-white shadow-sm hover:shadow-md border border-gray-200"
+      className="lead-card cursor-pointer bg-card shadow-sm hover:shadow-md border"
       onClick={onClick}
     >
       <CardContent className="p-4">
         {/* Título do Lead */}
         <div className="mb-3">
           <div className="flex items-center gap-2 mb-1">
-            <User className="w-4 h-4 text-gray-500" />
-            <h4 className="font-semibold text-gray-900 truncate">{lead.nome}</h4>
+            <User className="w-4 h-4 text-muted-foreground" />
+            <h4 className="font-semibold text-foreground truncate">{lead.nome}</h4>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
             <Calendar className="w-3 h-3" />
             <span>{formatDate(lead.dataCriacao)}</span>
             {(lead as any).repiqueCount > 0 && (
               <RepiqueBadge count={(lead as any).repiqueCount} />
             )}
           </div>
-          <p className="text-sm text-gray-600 line-clamp-2">{lead.dadosAdicionais || 'Sem informações adicionais'}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2">{lead.dadosAdicionais || 'Sem informações adicionais'}</p>
         </div>
 
         {/* Seletor de Etiquetas */}
@@ -199,8 +199,8 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
         {/* Telefone */}
         <div className="mb-3">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Telefone:</span>
-            <span className="font-medium text-gray-800">
+            <span className="text-muted-foreground">Telefone:</span>
+            <span className="font-medium text-foreground">
               {lead.telefone}
             </span>
           </div>
@@ -208,8 +208,8 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
 
         {/* Corretor */}
         <div className="flex justify-between items-center mb-3">
-          <span className="text-xs text-gray-500">Corretor:</span>
-          <div 
+          <span className="text-xs text-muted-foreground">Corretor:</span>
+          <div
             className={`flex items-center gap-1 ${canTransfer ? 'cursor-pointer hover:bg-muted/50 rounded p-1 -m-1' : ''}`}
             onClick={handleCorretorClick}
             title={canTransfer ? 'Clique para transferir lead' : undefined}

@@ -320,14 +320,14 @@ export default function MobileLeads() {
 
   if (loading || roleLoading || teamLoading || stagesLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-background">
+      <div className="min-h-screen bg-background">
         <MobileHeader title="Gestão de Leads" />
         <div className="p-4">
           <div className="animate-pulse space-y-4">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg p-4">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              <div key={i} className="bg-card rounded-lg p-4">
+                <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
               </div>
             ))}
           </div>
@@ -338,11 +338,11 @@ export default function MobileLeads() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-background">
+      <div className="min-h-screen bg-background">
         <MobileHeader title="Gestão de Leads" />
         <div className="p-4">
           <div className="text-center py-8">
-            <p className="text-red-600 mb-4">{error}</p>
+            <p className="text-destructive mb-4">{error}</p>
             <Button onClick={refreshLeads}>Tentar Novamente</Button>
           </div>
         </div>
@@ -351,7 +351,7 @@ export default function MobileLeads() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
+    <div className="min-h-screen bg-background pb-20">
       <MobileHeader title={quote} />
 
       {/* Banner de notificações */}
@@ -360,7 +360,7 @@ export default function MobileLeads() {
       {/* Search */}
       <div className="p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Buscar leads..."
             value={searchTerm}
@@ -372,7 +372,7 @@ export default function MobileLeads() {
 
       {/* Filtros */}
       <div className="px-4 pb-4">
-        <div className="bg-white rounded-lg p-4">
+        <div className="bg-card rounded-lg p-4 border">
           {/* Botão para expandir/minimizar filtros */}
           <Button
             variant="ghost"
@@ -391,8 +391,8 @@ export default function MobileLeads() {
           {filtersExpanded && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-2">
-                <User className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">Filtrar por Usuário</span>
+                <User className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">Filtrar por Usuário</span>
               </div>
               
               <UserFilter
@@ -401,8 +401,8 @@ export default function MobileLeads() {
               />
               
               <div className="flex items-center gap-2 mb-2">
-                <Users className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">Filtrar por Equipe</span>
+                <Users className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">Filtrar por Equipe</span>
               </div>
               
               <Select
@@ -430,8 +430,8 @@ export default function MobileLeads() {
               </Select>
               
               <div className="flex items-center gap-2 mb-2">
-                <Filter className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">Filtrar por Etapa</span>
+                <Filter className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">Filtrar por Etapa</span>
               </div>
               
               <Select
@@ -458,8 +458,8 @@ export default function MobileLeads() {
               </Select>
               
               <div className="flex items-center gap-2 mb-2 mt-4">
-                <Tag className="w-4 h-4 text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">Filtrar por Etiquetas</span>
+                <Tag className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-foreground">Filtrar por Etiquetas</span>
               </div>
               
               <TagFilter
@@ -498,12 +498,12 @@ export default function MobileLeads() {
             <div
               key={lead.id}
               onClick={() => handleLeadClick(lead)}
-              className="bg-white rounded-lg p-4 shadow-sm border active:bg-gray-50 transition-colors"
+              className="bg-card rounded-lg p-4 shadow-sm border active:bg-muted transition-colors"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 truncate">{lead.nome}</h3>
-                  <p className="text-sm text-gray-500 truncate">{lead.telefone}</p>
+                  <h3 className="font-medium text-foreground truncate">{lead.nome}</h3>
+                  <p className="text-sm text-muted-foreground truncate">{lead.telefone}</p>
                 </div>
                 <div className="relative">
                   <Select
@@ -541,7 +541,7 @@ export default function MobileLeads() {
               </div>
               
               {lead.dadosAdicionais && (
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                   {lead.dadosAdicionais}
                 </p>
               )}
