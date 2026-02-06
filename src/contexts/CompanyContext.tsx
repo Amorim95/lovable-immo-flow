@@ -34,11 +34,21 @@ interface CompanyContextType {
 const CompanyContext = createContext<CompanyContextType | undefined>(undefined);
 
 export function CompanyProvider({ children }: { children: ReactNode }) {
+  // Recuperar isDarkMode do localStorage na inicialização
+  const getInitialDarkMode = () => {
+    try {
+      const saved = localStorage.getItem('isDarkMode');
+      return saved === 'true';
+    } catch {
+      return false;
+    }
+  };
+
   const [settings, setSettings] = useState<CompanySettings>({
     name: '', // Vazio por padrão para onboarding
     logo: null,
     theme: 'blue',
-    isDarkMode: false
+    isDarkMode: getInitialDarkMode()
   });
 
   useEffect(() => {
@@ -256,12 +266,14 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     await loadCompanySettings();
   };
 
-  // Apply dark mode to document
+  // Apply dark mode to document and persist to localStorage
   useEffect(() => {
     if (settings.isDarkMode) {
       document.documentElement.classList.add('dark');
+      localStorage.setItem('isDarkMode', 'true');
     } else {
       document.documentElement.classList.remove('dark');
+      localStorage.setItem('isDarkMode', 'false');
     }
   }, [settings.isDarkMode]);
 
