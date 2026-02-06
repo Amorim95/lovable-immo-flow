@@ -48,27 +48,6 @@ export default function MobileConfiguracoes() {
       <NotificationPromptBanner />
 
       <div className="p-4 space-y-6">
-        {/* Dark Mode Toggle */}
-        <div className="bg-card rounded-lg p-4 shadow-sm border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                <Moon className="w-5 h-5 text-muted-foreground" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-foreground">Modo Noturno</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Ative para reduzir o cansaço visual
-                </p>
-              </div>
-            </div>
-            <Switch
-              checked={settings.isDarkMode}
-              onCheckedChange={handleDarkModeToggle}
-            />
-          </div>
-        </div>
-
         {/* Menu Items */}
         <div className="space-y-3">
           {menuItems.filter(item => item.show).map(item => {
@@ -106,6 +85,27 @@ export default function MobileConfiguracoes() {
               <h3 className="font-medium text-foreground">{user?.name}</h3>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
+          </div>
+        </div>
+
+        {/* Dark Mode Toggle - Now last option before logout */}
+        <div className="bg-card rounded-lg p-4 shadow-sm border">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                <Moon className="w-5 h-5 text-muted-foreground" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-medium text-foreground">Modo Noturno</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Ative para reduzir o cansaço visual
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={settings.isDarkMode}
+              onCheckedChange={handleDarkModeToggle}
+            />
           </div>
         </div>
 
