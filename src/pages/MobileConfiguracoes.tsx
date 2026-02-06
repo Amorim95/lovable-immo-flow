@@ -75,20 +75,7 @@ export default function MobileConfiguracoes() {
           })}
         </div>
 
-        {/* User Info */}
-        <div className="bg-card rounded-lg p-4 border">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-              <User className="w-6 h-6 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-medium text-foreground">{user?.name}</h3>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Dark Mode Toggle - Now last option before logout */}
+        {/* Dark Mode Toggle - Above user info */}
         <div className="bg-card rounded-lg p-4 shadow-sm border">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -106,6 +93,19 @@ export default function MobileConfiguracoes() {
               checked={settings.isDarkMode}
               onCheckedChange={handleDarkModeToggle}
             />
+          </div>
+        </div>
+
+        {/* User Info */}
+        <div className="bg-card rounded-lg p-4 border">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+              <User className="w-6 h-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-medium text-foreground">{user?.name}</h3>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
+            </div>
           </div>
         </div>
 
