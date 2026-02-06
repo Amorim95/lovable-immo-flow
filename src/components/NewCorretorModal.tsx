@@ -153,29 +153,29 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={isMobile ? "max-w-[95vw] p-4 top-4 translate-y-0 rounded-xl" : "max-w-md"}>
-        <DialogHeader className={isMobile ? "pb-2" : ""}>
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <Plus className="w-4 h-4" />
+      <DialogContent className={isMobile ? "max-w-[92vw] p-3 top-4 translate-y-0 rounded-xl" : "max-w-md"}>
+        <DialogHeader className={isMobile ? "pb-1" : ""}>
+          <DialogTitle className={`flex items-center gap-2 ${isMobile ? "text-sm" : "text-base"}`}>
+            <Plus className={isMobile ? "w-3.5 h-3.5" : "w-4 h-4"} />
             Novo Corretor
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className={isMobile ? "space-y-3" : "space-y-4"}>
+        <form onSubmit={handleSubmit} className={isMobile ? "space-y-2" : "space-y-4"}>
           <div>
-            <Label htmlFor="nome" className={isMobile ? "text-sm" : ""}>Nome *</Label>
+            <Label htmlFor="nome" className={isMobile ? "text-xs" : ""}>Nome *</Label>
             <Input
               id="nome"
               value={formData.nome}
               onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
               placeholder="Nome completo"
               required
-              className={isMobile ? "h-9 text-sm" : ""}
+              className={isMobile ? "h-8 text-xs" : ""}
             />
           </div>
 
           <div>
-            <Label htmlFor="email" className={isMobile ? "text-sm" : ""}>Email *</Label>
+            <Label htmlFor="email" className={isMobile ? "text-xs" : ""}>Email *</Label>
             <Input
               id="email"
               type="email"
@@ -183,25 +183,25 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="email@exemplo.com"
               required
-              className={isMobile ? "h-9 text-sm" : ""}
+              className={isMobile ? "h-8 text-xs" : ""}
             />
           </div>
 
           <div>
-            <Label htmlFor="telefone" className={isMobile ? "text-sm" : ""}>Telefone</Label>
+            <Label htmlFor="telefone" className={isMobile ? "text-xs" : ""}>Telefone</Label>
             <Input
               id="telefone"
               value={formData.telefone}
               onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
               placeholder="(11) 99999-9999"
-              className={isMobile ? "h-9 text-sm" : ""}
+              className={isMobile ? "h-8 text-xs" : ""}
             />
           </div>
 
           <div>
-            <Label htmlFor="equipe" className={isMobile ? "text-sm" : ""}>Equipe (Opcional)</Label>
+            <Label htmlFor="equipe" className={isMobile ? "text-xs" : ""}>Equipe (Opcional)</Label>
             <Select value={formData.equipeId} onValueChange={(value) => setFormData({ ...formData, equipeId: value })}>
-              <SelectTrigger className={isMobile ? "h-9 text-sm" : ""}>
+              <SelectTrigger className={isMobile ? "h-8 text-xs" : ""}>
                 <SelectValue placeholder="Selecione uma equipe" />
               </SelectTrigger>
               <SelectContent>
@@ -225,20 +225,20 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
           </div>
 
           <div>
-            <Label className={isMobile ? "text-sm" : ""}>Cargo</Label>
+            <Label className={isMobile ? "text-xs" : ""}>Cargo</Label>
             {isMobile ? (
               /* Versão mobile: RadioGroup compacto em linha */
               <RadioGroup 
                 value={formData.role} 
                 onValueChange={(value) => handleRoleChange(value as 'admin' | 'gestor' | 'corretor')}
-                className="flex gap-4 mt-2"
+                className="flex gap-3 mt-1"
               >
                 {availableRoles.map((role) => (
-                  <div key={role.id} className="flex items-center space-x-1.5">
-                    <RadioGroupItem value={role.id} id={`mobile-${role.id}`} />
+                  <div key={role.id} className="flex items-center space-x-1">
+                    <RadioGroupItem value={role.id} id={`mobile-${role.id}`} className="w-3.5 h-3.5" />
                     <Label 
                       htmlFor={`mobile-${role.id}`} 
-                      className="text-sm font-normal cursor-pointer"
+                      className="text-xs font-normal cursor-pointer"
                     >
                       {role.label}
                     </Label>
@@ -277,11 +277,11 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
             )}
           </div>
 
-          <div className={`flex justify-end gap-2 ${isMobile ? "pt-2" : "pt-4"}`}>
-            <Button type="button" variant="outline" onClick={handleClose} size={isMobile ? "sm" : "default"}>
+          <div className={`flex justify-end gap-2 ${isMobile ? "pt-1" : "pt-4"}`}>
+            <Button type="button" variant="outline" onClick={handleClose} size="sm" className={isMobile ? "h-8 text-xs px-3" : ""}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading} size={isMobile ? "sm" : "default"}>
+            <Button type="submit" disabled={isLoading} size="sm" className={isMobile ? "h-8 text-xs px-3" : ""}>
               {isLoading ? 'Criando...' : 'Criar Usuário'}
             </Button>
           </div>
