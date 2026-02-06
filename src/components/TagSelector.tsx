@@ -40,7 +40,7 @@ const getTagColor = (nome: string, dbColor?: string) => {
   }
   
   // Fallback para tags customizadas
-  return { className: 'bg-gray-100 text-gray-800 border-gray-200' };
+  return { className: 'bg-muted text-foreground border-border' };
 };
 
 export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }: TagSelectorProps) {
@@ -68,7 +68,7 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
   return (
     <div className="space-y-2">
       {/* Etiquetas selecionadas */}
-      <div className="flex flex-wrap gap-1 min-h-[32px] p-2 border rounded-md bg-gray-50">
+      <div className="flex flex-wrap gap-1 min-h-[32px] p-2 border rounded-md bg-muted">
         {selectedTags.length > 0 ? (
           selectedTags.map((tag) => {
             // Find the tag in available tags to get its database color
@@ -89,7 +89,7 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
             );
           })
         ) : (
-          <span className="text-gray-400 text-sm">Nenhuma etiqueta selecionada</span>
+          <span className="text-muted-foreground text-sm">Nenhuma etiqueta selecionada</span>
         )}
       </div>
 
@@ -106,12 +106,12 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
             {isCompact ? "Tags" : "Adicionar/Remover Etiquetas"}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-72 p-4 bg-white dark:bg-gray-800 border shadow-lg z-50" align="start">
+        <PopoverContent className="w-72 p-4 bg-popover border shadow-lg z-50" align="start">
           <div className="space-y-3">
             <h4 className="font-medium text-sm">Selecionar Etiquetas</h4>
             <div className="space-y-2">
               {loading ? (
-                <div className="text-sm text-gray-500">Carregando tags...</div>
+                <div className="text-sm text-muted-foreground">Carregando tags...</div>
               ) : (
                 availableTags.map((tag) => (
                   <div key={tag.id} className="flex items-center space-x-2">
