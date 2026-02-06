@@ -232,13 +232,13 @@ const Corretores = () => {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
+          <div className="h-4 bg-muted rounded w-1/2"></div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1, 2, 3].map(i => (
             <div key={i} className="animate-pulse">
-              <div className="h-24 bg-gray-200 rounded"></div>
+              <div className="h-24 bg-muted rounded"></div>
             </div>
           ))}
         </div>
@@ -251,8 +251,8 @@ const Corretores = () => {
       <div className="space-y-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Gestão de Usuários</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-foreground">Gestão de Usuários</h1>
+            <p className="text-muted-foreground mt-1">
               Gerencie usuários do sistema
             </p>
           </div>
@@ -279,14 +279,14 @@ const Corretores = () => {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <User className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-green-500/10 dark:bg-green-500/20 rounded-lg flex items-center justify-center">
+                  <User className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-foreground">
                     {corretores.filter(c => c.status === 'ativo').length}
                   </p>
-                  <p className="text-sm text-gray-600">Usuários Ativos</p>
+                  <p className="text-sm text-muted-foreground">Usuários Ativos</p>
                 </div>
               </div>
             </CardContent>
@@ -295,14 +295,14 @@ const Corretores = () => {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                  <User className="w-6 h-6 text-red-600" />
+                <div className="w-12 h-12 bg-red-500/10 dark:bg-red-500/20 rounded-lg flex items-center justify-center">
+                  <User className="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-foreground">
                     {corretores.filter(c => c.status === 'inativo').length}
                   </p>
-                  <p className="text-sm text-gray-600">Usuários Inativos</p>
+                  <p className="text-sm text-muted-foreground">Usuários Inativos</p>
                 </div>
               </div>
             </CardContent>
@@ -311,12 +311,12 @@ const Corretores = () => {
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <User className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-blue-500/10 dark:bg-blue-500/20 rounded-lg flex items-center justify-center">
+                  <User className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{corretores.length}</p>
-                  <p className="text-sm text-gray-600">Total de Usuários</p>
+                  <p className="text-2xl font-bold text-foreground">{corretores.length}</p>
+                  <p className="text-sm text-muted-foreground">Total de Usuários</p>
                 </div>
               </div>
             </CardContent>
@@ -368,7 +368,7 @@ const Corretores = () => {
                     </div>
                     <div>
                       <CardTitle className="text-lg">{corretor.nome}</CardTitle>
-                      <p className="text-sm text-gray-600">{corretor.email}</p>
+                      <p className="text-sm text-muted-foreground">{corretor.email}</p>
                     </div>
                   </div>
                   <Badge 
@@ -388,13 +388,13 @@ const Corretores = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Phone className="w-4 h-4" />
                     <span>{corretor.telefone || 'Não informado'}</span>
                   </div>
                   
                   <div>
-                    <p className="text-sm font-medium text-gray-700 mb-2">Permissões:</p>
+                    <p className="text-sm font-medium text-foreground mb-2">Permissões:</p>
                     <div className="flex flex-wrap gap-1">
                       {corretor.permissoes.slice(0, 2).map((permissao) => (
                         <Badge key={permissao} variant="outline" className="text-xs">
@@ -410,14 +410,14 @@ const Corretores = () => {
                   </div>
 
                   {corretor.equipeNome && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Users className="w-4 h-4" />
                       <span>{corretor.equipeNome}</span>
                     </div>
                   )}
 
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Leads Ativos:</span>
+                    <span className="text-muted-foreground">Leads Ativos:</span>
                     <span className="font-medium">{corretor.leads.length}</span>
                   </div>
 
