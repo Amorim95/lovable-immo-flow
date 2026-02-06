@@ -112,7 +112,7 @@ function AppContent() {
       <Route path="/*" element={<ProtectedRoute>
           {isMobile ?
         // Mobile Layout
-        <div className="min-h-screen bg-gray-50 dark:bg-background">
+        <div className="min-h-screen bg-background">
               <Routes>
                 <Route path="/" element={<MobileLeads />} />
                 <Route path="/lead/:id" element={<LeadDetails />} />
@@ -136,17 +136,17 @@ function AppContent() {
             </div> :
         // Desktop Layout
         <SidebarProvider>
-              <div className="min-h-screen flex w-full bg-gray-50 dark:bg-background">
+              <div className="min-h-screen flex w-full bg-background">
                 <CRMSidebar />
                 <div className="flex-1 flex flex-col">
-                  <header className="h-16 bg-white border-b border-gray-200 flex items-center px-6 dark:bg-white dark:border-gray-200 mx-[10px] rounded-none shadow-none">
+                  <header className="h-16 bg-card border-b border-border flex items-center px-6 mx-[10px] rounded-none shadow-none">
                     <SidebarTrigger className="lg:hidden" />
                     <div className="flex-1" />
                     <div className="flex items-center gap-4">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-muted-foreground">
                         {user?.name}{settings.name ? ` - ${settings.name}` : ''}
                       </div>
-                      <button onClick={logout} className="text-sm text-gray-500 hover:text-gray-700 underline">
+                      <button onClick={logout} className="text-sm text-muted-foreground hover:text-foreground underline">
                         Sair
                       </button>
                     </div>
