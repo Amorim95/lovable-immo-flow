@@ -29,12 +29,12 @@ export function MobileHeader({
           </Button>
         )}
         {logoOnly ? (
-          <div className="w-10 h-10 rounded-full bg-background border-2 border-primary/20 overflow-hidden flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-background border-2 border-primary/20 overflow-hidden flex items-center justify-center shadow-sm dark:hidden">
             <img src="/lovable-uploads/default-crm-logo.png" alt="Logo" className="h-7 w-auto object-contain" />
           </div>
         ) : (
           !showBackButton && settings.logo && (
-            <div className="w-10 h-10 rounded-full bg-background border-2 border-primary/20 overflow-hidden flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-background border-2 border-primary/20 overflow-hidden flex items-center justify-center shadow-sm dark:hidden">
               <img src={settings.logo} alt={settings.name} className="h-7 w-auto object-contain" />
             </div>
           )
