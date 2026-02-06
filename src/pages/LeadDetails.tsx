@@ -325,30 +325,30 @@ export default function LeadDetails() {
     }
   };
   if (!lead) {
-    return <div className="min-h-screen bg-gray-50">
+    return <div className="min-h-screen bg-background">
         <MobileHeader title="Carregando..." showBackButton onBack={() => navigate('/')} />
         <div className="p-4">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-20 bg-gray-200 rounded"></div>
+            <div className="h-8 bg-muted rounded"></div>
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+            <div className="h-20 bg-muted rounded"></div>
           </div>
         </div>
       </div>;
   }
-  return <div className="min-h-screen bg-gray-50">
+  return <div className="min-h-screen bg-background">
       <MobileHeader title={lead.nome} showBackButton onBack={() => navigate('/')} rightElement={<div className="flex items-center gap-2">
             {/* Tags discretas no header */}
             {lead.etiquetas && lead.etiquetas.length > 0 && <div className="flex items-center gap-1 mr-2">
-                <Tag className="w-3 h-3 text-gray-400" />
+                <Tag className="w-3 h-3 text-muted-foreground" />
                 <div className="flex gap-1">
-                  {lead.etiquetas.slice(0, 2).map((etiqueta, index) => <span key={index} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] bg-blue-100 text-blue-800 font-medium">
+                  {lead.etiquetas.slice(0, 2).map((etiqueta, index) => <span key={index} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] bg-primary/20 text-primary font-medium">
                       {etiqueta.length > 6 ? `${etiqueta.substring(0, 6)}...` : etiqueta}
                     </span>)}
-                  {lead.etiquetas.length > 2 && <span className="text-[9px] text-gray-400">+{lead.etiquetas.length - 2}</span>}
+                  {lead.etiquetas.length > 2 && <span className="text-[9px] text-muted-foreground">+{lead.etiquetas.length - 2}</span>}
                 </div>
               </div>}
-            <Button variant="ghost" size="sm" onClick={() => setShowDeleteDialog(true)} className="p-2 text-red-600 hover:bg-red-50">
+            <Button variant="ghost" size="sm" onClick={() => setShowDeleteDialog(true)} className="p-2 text-destructive hover:bg-destructive/10">
               
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setIsEditing(!isEditing)} className="p-2">
@@ -370,8 +370,8 @@ export default function LeadDetails() {
         </div>
 
         {/* Lead Information */}
-        <div className="bg-white rounded-lg p-4 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Informações do Lead</h2>
+        <div className="bg-card rounded-lg p-4 space-y-4 border">
+          <h2 className="text-lg font-semibold text-foreground">Informações do Lead</h2>
           
           <div className="space-y-4">
             <div>
@@ -379,7 +379,7 @@ export default function LeadDetails() {
               <Input id="nome" value={formData.nome} onChange={e => setFormData(prev => ({
               ...prev,
               nome: e.target.value
-            }))} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
+            }))} disabled={!isEditing} className={!isEditing ? "bg-muted" : ""} />
             </div>
 
             <div>
@@ -387,7 +387,7 @@ export default function LeadDetails() {
               <Input id="telefone" value={formData.telefone} onChange={e => setFormData(prev => ({
               ...prev,
               telefone: e.target.value
-            }))} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} />
+            }))} disabled={!isEditing} className={!isEditing ? "bg-muted" : ""} />
             </div>
 
             <div>
@@ -396,7 +396,7 @@ export default function LeadDetails() {
               ...prev,
               etapa: value as Lead['etapa']
             }))} disabled={!isEditing}>
-                <SelectTrigger className={!isEditing ? "bg-gray-50" : ""}>
+                <SelectTrigger className={!isEditing ? "bg-muted" : ""}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -418,12 +418,12 @@ export default function LeadDetails() {
               <Textarea id="dados" value={formData.dadosAdicionais} onChange={e => setFormData(prev => ({
               ...prev,
               dadosAdicionais: e.target.value
-            }))} disabled={!isEditing} className={!isEditing ? "bg-gray-50" : ""} rows={4} placeholder="Informações extras sobre o lead..." />
+            }))} disabled={!isEditing} className={!isEditing ? "bg-muted" : ""} rows={4} placeholder="Informações extras sobre o lead..." />
             </div>
 
-            <div className="text-sm text-gray-500 space-y-1">
-              <p><strong>Corretor:</strong> {lead.corretor}</p>
-              <p><strong>Data de Criação:</strong> {lead.dataCriacao.toLocaleDateString('pt-BR')}</p>
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p><strong className="text-foreground">Corretor:</strong> {lead.corretor}</p>
+              <p><strong className="text-foreground">Data de Criação:</strong> {lead.dataCriacao.toLocaleDateString('pt-BR')}</p>
             </div>
 
             {isEditing && <div className="flex gap-3 pt-4">
@@ -446,8 +446,8 @@ export default function LeadDetails() {
         </div>
 
         {/* Histórico de Atividades */}
-        {showActivities && <div className="bg-white rounded-lg p-4 space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+        {showActivities && <div className="bg-card rounded-lg p-4 space-y-4 border">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
               <History className="w-5 h-5" />
               Histórico de Atividades
             </h2>
@@ -464,18 +464,18 @@ export default function LeadDetails() {
 
             {/* Lista de Atividades */}
             <div className="space-y-3">
-              {lead.atividades && lead.atividades.length > 0 ? [...lead.atividades].reverse().map((atividade, index) => <div key={index} className="border-l-2 border-blue-200 pl-4 py-2">
+              {lead.atividades && lead.atividades.length > 0 ? [...lead.atividades].reverse().map((atividade, index) => <div key={index} className="border-l-2 border-primary/30 pl-4 py-2">
                     <div className="flex items-start gap-2">
-                      <Clock className="w-4 h-4 text-gray-400 mt-1" />
+                      <Clock className="w-4 h-4 text-muted-foreground mt-1" />
                       <div className="flex-1">
-                        <p className="text-sm text-gray-900">{atividade.descricao}</p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-sm text-foreground">{atividade.descricao}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
                           {new Date(atividade.data).toLocaleString('pt-BR')} • {atividade.corretor}
                         </p>
                       </div>
                     </div>
                   </div>) : <div className="text-center py-4">
-                  <p className="text-gray-500 text-sm">Nenhuma atividade registrada ainda</p>
+                  <p className="text-muted-foreground text-sm">Nenhuma atividade registrada ainda</p>
                 </div>}
             </div>
           </div>}
