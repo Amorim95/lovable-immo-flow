@@ -105,11 +105,14 @@ export function CRMSidebar() {
   return <Sidebar className={`${collapsed ? "w-20" : "w-72"} border-r`} collapsible="icon">
       <div className="p-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 flex-shrink-0">
-            {settings.logo ? <img src={settings.logo} alt={`${settings.name || 'Logo'}`} className="w-full h-full object-contain" /> : <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-muted-foreground" />
-              </div>}
-          </div>
+          {/* Ocultar logo no modo noturno */}
+          {!settings.isDarkMode && (
+            <div className="w-10 h-10 flex-shrink-0">
+              {settings.logo ? <img src={settings.logo} alt={`${settings.name || 'Logo'}`} className="w-full h-full object-contain" /> : <div className="w-full h-full bg-muted rounded-lg flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-muted-foreground" />
+                </div>}
+            </div>
+          )}
           {!collapsed && <div>
               <h1 className="text-lg font-bold text-foreground">
                 {settings.name || 'Sistema CRM'}
