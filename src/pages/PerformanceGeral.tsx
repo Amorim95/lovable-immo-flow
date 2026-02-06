@@ -101,8 +101,8 @@ const PerformanceGeral = () => {
             ← Voltar
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Performance Geral</h1>
-            <p className="text-gray-600 mt-1">Visão consolidada de toda a empresa</p>
+            <h1 className="text-3xl font-bold text-foreground">Performance Geral</h1>
+            <p className="text-muted-foreground mt-1">Visão consolidada de toda a empresa</p>
           </div>
         </div>
       </div>
@@ -167,18 +167,18 @@ const PerformanceGeral = () => {
           <CardContent>
             <div className="space-y-4">
               {Object.entries(performanceGeral.totalPorEtiqueta).map(([etiqueta, total]) => (
-                <div key={etiqueta} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div key={etiqueta} className="flex justify-between items-center p-3 bg-muted rounded-lg">
                   <span className="font-medium">{etiqueta}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xl font-bold">{total}</span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-muted-foreground">
                       ({performanceGeral.leadsTotais > 0 ? ((total / performanceGeral.leadsTotais) * 100).toFixed(1) : '0.0'}%)
                     </span>
                   </div>
                 </div>
               ))}
               {Object.keys(performanceGeral.totalPorEtiqueta).length === 0 && (
-                <div className="text-gray-500 text-center py-4">
+                <div className="text-muted-foreground text-center py-4">
                   Nenhuma etiqueta encontrada no período selecionado
                 </div>
               )}
@@ -220,7 +220,7 @@ const PerformanceGeral = () => {
                 </PieChart>
               </ChartContainer>
             ) : (
-              <div className="text-gray-500 text-center py-8">
+              <div className="text-muted-foreground text-center py-8">
                 Nenhum dado de etiqueta para exibir
               </div>
             )}
@@ -251,7 +251,7 @@ const PerformanceGeral = () => {
                   const totalEtapa = performanceGeral.leadsPorEtapa[stage.nome] || 0;
                   
                   return (
-                    <tr key={stage.id} className="border-b hover:bg-gray-50">
+                    <tr key={stage.id} className="border-b hover:bg-muted/50">
                       <td className="py-3 px-4 font-medium">{stage.nome}</td>
                       {Object.keys(performanceGeral.totalPorEtiqueta).map(etiqueta => (
                         <td key={etiqueta} className="text-center py-3 px-4">
@@ -265,7 +265,7 @@ const PerformanceGeral = () => {
                 {stages.length === 0 && (
                   <tr>
                     <td colSpan={Object.keys(performanceGeral.totalPorEtiqueta).length + 2} 
-                        className="text-center py-4 text-gray-500">
+                        className="text-center py-4 text-muted-foreground">
                       Nenhuma etapa configurada
                     </td>
                   </tr>
@@ -322,7 +322,7 @@ const PerformanceGeral = () => {
               </thead>
               <tbody>
                 {dadosStatus.map((item, index) => (
-                  <tr key={index} className="border-b hover:bg-gray-50">
+                  <tr key={index} className="border-b hover:bg-muted/50">
                     <td className="py-3 px-4 flex items-center gap-2">
                       <div 
                         className="w-3 h-3 rounded-full" 
