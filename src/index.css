@@ -54,41 +54,41 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 213 31% 91%;
+    --background: 220 13% 13%;
+    --foreground: 210 20% 92%;
 
-    --card: 224 71% 7%;
-    --card-foreground: 213 31% 91%;
+    --card: 220 13% 18%;
+    --card-foreground: 210 20% 92%;
 
-    --popover: 224 71% 7%;
-    --popover-foreground: 213 31% 91%;
+    --popover: 220 13% 16%;
+    --popover-foreground: 210 20% 92%;
 
     --primary: 217 91% 60%;
     --primary-foreground: 222 47% 11%;
 
-    --secondary: 222 47% 15%;
-    --secondary-foreground: 213 31% 91%;
+    --secondary: 220 13% 22%;
+    --secondary-foreground: 210 20% 92%;
 
-    --muted: 223 47% 13%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 220 13% 20%;
+    --muted-foreground: 215 15% 65%;
 
-    --accent: 222 47% 18%;
-    --accent-foreground: 213 31% 91%;
+    --accent: 220 13% 24%;
+    --accent-foreground: 210 20% 92%;
 
     --destructive: 0 63% 45%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 222 47% 18%;
-    --input: 222 47% 18%;
+    --border: 220 13% 25%;
+    --input: 220 13% 22%;
     --ring: 217 91% 60%;
     
-    --sidebar-background: 224 71% 7%;
-    --sidebar-foreground: 213 31% 91%;
+    --sidebar-background: 220 13% 16%;
+    --sidebar-foreground: 210 20% 92%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 222 47% 15%;
-    --sidebar-accent-foreground: 213 31% 91%;
-    --sidebar-border: 222 47% 18%;
+    --sidebar-accent: 220 13% 22%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 220 13% 25%;
     --sidebar-ring: 217 91% 60%;
 
     /* Cores das etiquetas de leads no modo escuro */
