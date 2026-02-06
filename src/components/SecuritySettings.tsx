@@ -117,11 +117,11 @@ export function SecuritySettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Shield className="w-6 h-6" />
           Acessos e Segurança
         </h2>
-        <p className="text-gray-600 mt-1">
+        <p className="text-muted-foreground mt-1">
           Gerencie suas informações pessoais e configurações de segurança
         </p>
       </div>
@@ -256,20 +256,20 @@ export function SecuritySettings() {
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <div>
-                <h4 className="font-medium text-gray-900">Notificações Push</h4>
-                <p className="text-sm text-gray-600 mt-1">
+                <h4 className="font-medium text-foreground">Notificações Push</h4>
+                <p className="text-sm text-muted-foreground mt-1">
                   Receba alertas em tempo real quando novos leads forem atribuídos a você
                 </p>
               </div>
               
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                     <Bell className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Alertas de Leads</p>
-                    <p className="text-sm text-gray-600">Seja notificado instantaneamente</p>
+                    <p className="font-medium text-foreground">Alertas de Leads</p>
+                    <p className="text-sm text-muted-foreground">Seja notificado instantaneamente</p>
                   </div>
                 </div>
                 <NotificationPermissionButton />
@@ -295,12 +295,12 @@ export function SecuritySettings() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="font-medium text-gray-600">Tipo de Conta:</span>
-              <p className="text-gray-900 capitalize">{user?.role === 'admin' ? 'Administrador' : 'Corretor'}</p>
+              <span className="font-medium text-muted-foreground">Tipo de Conta:</span>
+              <p className="text-foreground capitalize">{user?.role === 'admin' ? 'Administrador' : 'Corretor'}</p>
             </div>
             <div>
-              <span className="font-medium text-gray-600">Status:</span>
-              <p className="text-gray-900 capitalize">{user?.status}</p>
+              <span className="font-medium text-muted-foreground">Status:</span>
+              <p className="text-foreground capitalize">{user?.status}</p>
             </div>
           </div>
         </CardContent>
