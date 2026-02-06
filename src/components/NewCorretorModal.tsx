@@ -153,7 +153,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={isMobile ? "max-w-[95vw] max-h-[50vh] overflow-y-auto p-4 top-4 translate-y-0 rounded-xl" : "max-w-md"}>
+      <DialogContent className={isMobile ? "max-w-[95vw] p-4 top-4 translate-y-0 rounded-xl" : "max-w-md"}>
         <DialogHeader className={isMobile ? "pb-2" : ""}>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Plus className="w-4 h-4" />
