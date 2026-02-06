@@ -338,16 +338,6 @@ export default function LeadDetails() {
   }
   return <div className="min-h-screen bg-background">
       <MobileHeader title={lead.nome} showBackButton onBack={() => navigate('/')} rightElement={<div className="flex items-center gap-2">
-            {/* Tags discretas no header */}
-            {lead.etiquetas && lead.etiquetas.length > 0 && <div className="flex items-center gap-1 mr-2">
-                <Tag className="w-3 h-3 text-muted-foreground" />
-                <div className="flex gap-1">
-                  {lead.etiquetas.slice(0, 2).map((etiqueta, index) => <span key={index} className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] bg-primary/20 text-primary font-medium">
-                      {etiqueta.length > 6 ? `${etiqueta.substring(0, 6)}...` : etiqueta}
-                    </span>)}
-                  {lead.etiquetas.length > 2 && <span className="text-[9px] text-muted-foreground">+{lead.etiquetas.length - 2}</span>}
-                </div>
-              </div>}
             <Button variant="ghost" size="sm" onClick={() => setShowDeleteDialog(true)} className="p-2 text-destructive hover:bg-destructive/10">
               
             </Button>
