@@ -57,8 +57,8 @@ const Dashboards = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboards</h1>
-        <p className="text-gray-600 mt-1">
+        <h1 className="text-3xl font-bold text-foreground">Dashboards</h1>
+        <p className="text-muted-foreground mt-1">
           Análises de performance e relatórios detalhados
         </p>
       </div>
@@ -96,12 +96,12 @@ const Dashboards = () => {
                 {stages.slice(0, 3).map(stage => {
                   const { icon: Icon, color } = getStageIcon(stage.nome);
                   const colorClasses = {
-                    yellow: { bg: 'bg-yellow-50', text: 'text-yellow-600', bold: 'text-yellow-900' },
-                    purple: { bg: 'bg-purple-50', text: 'text-purple-600', bold: 'text-purple-900' },
-                    green: { bg: 'bg-green-50', text: 'text-green-600', bold: 'text-green-900' },
-                    blue: { bg: 'bg-blue-50', text: 'text-blue-600', bold: 'text-blue-900' },
-                    gray: { bg: 'bg-gray-50', text: 'text-gray-600', bold: 'text-gray-900' }
-                  }[color] || { bg: 'bg-gray-50', text: 'text-gray-600', bold: 'text-gray-900' };
+                    yellow: { bg: 'bg-yellow-500/10 dark:bg-yellow-500/20', text: 'text-yellow-600 dark:text-yellow-400', bold: 'text-yellow-900 dark:text-yellow-300' },
+                    purple: { bg: 'bg-purple-500/10 dark:bg-purple-500/20', text: 'text-purple-600 dark:text-purple-400', bold: 'text-purple-900 dark:text-purple-300' },
+                    green: { bg: 'bg-green-500/10 dark:bg-green-500/20', text: 'text-green-600 dark:text-green-400', bold: 'text-green-900 dark:text-green-300' },
+                    blue: { bg: 'bg-blue-500/10 dark:bg-blue-500/20', text: 'text-blue-600 dark:text-blue-400', bold: 'text-blue-900 dark:text-blue-300' },
+                    gray: { bg: 'bg-muted', text: 'text-muted-foreground', bold: 'text-foreground' }
+                  }[color] || { bg: 'bg-muted', text: 'text-muted-foreground', bold: 'text-foreground' };
 
                   return (
                     <div key={stage.id} className={`${colorClasses.bg} p-4 rounded-lg`}>
@@ -130,14 +130,14 @@ const Dashboards = () => {
           >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-blue-500/10 dark:bg-blue-500/20 rounded-lg flex items-center justify-center">
+                  <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <CardTitle className="text-lg">Performance do Corretor</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 text-sm">
+              <p className="text-muted-foreground text-sm">
                 Acompanhe o desempenho individual de cada corretor, incluindo leads convertidos, tempo médio de resposta e taxa de conversão.
               </p>
               <div className="mt-4 space-y-2">
@@ -163,14 +163,14 @@ const Dashboards = () => {
           >
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <LayoutList className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 bg-green-500/10 dark:bg-green-500/20 rounded-lg flex items-center justify-center">
+                  <LayoutList className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
                 <CardTitle className="text-lg">Performance da Equipe</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 text-sm">
+              <p className="text-muted-foreground text-sm">
                 Visão geral do desempenho da equipe, comparativos entre corretores e metas atingidas.
               </p>
               <div className="mt-4 space-y-2">
@@ -197,14 +197,14 @@ const Dashboards = () => {
         >
           <CardHeader className="pb-3">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-purple-500/10 dark:bg-purple-500/20 rounded-lg flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <CardTitle className="text-lg">Performance Geral</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600 text-sm">
+            <p className="text-muted-foreground text-sm">
               Relatórios gerais da empresa, incluindo análise de campanhas e performance consolidada.
             </p>
             <div className="mt-4 space-y-2">
