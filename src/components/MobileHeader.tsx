@@ -20,7 +20,7 @@ export function MobileHeader({
     settings
   } = useCompany();
   return (
-    <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between dark:bg-white dark:border-gray-200">
+    <header className="bg-card border-b px-4 py-3 flex items-center justify-between">
       {/* Coluna esquerda - Logo/Back button */}
       <div className="flex items-center min-w-[40px]">
         {showBackButton && (
@@ -29,9 +29,15 @@ export function MobileHeader({
           </Button>
         )}
         {logoOnly ? (
-          <img src="/lovable-uploads/default-crm-logo.png" alt="Logo" className="h-8 w-auto" />
+          <div className="w-10 h-10 rounded-full bg-background border-2 border-primary/20 overflow-hidden flex items-center justify-center shadow-sm">
+            <img src="/lovable-uploads/default-crm-logo.png" alt="Logo" className="h-7 w-auto object-contain" />
+          </div>
         ) : (
-          !showBackButton && settings.logo && <img src={settings.logo} alt={settings.name} className="h-8 w-auto" />
+          !showBackButton && settings.logo && (
+            <div className="w-10 h-10 rounded-full bg-background border-2 border-primary/20 overflow-hidden flex items-center justify-center shadow-sm">
+              <img src={settings.logo} alt={settings.name} className="h-7 w-auto object-contain" />
+            </div>
+          )
         )}
       </div>
 
