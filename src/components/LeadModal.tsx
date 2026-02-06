@@ -395,7 +395,7 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
 
               {/* Etapa do Lead */}
               <div className="space-y-4">
-                <h4 className="font-medium text-gray-700">Etapa do Lead</h4>
+                <h4 className="font-medium text-muted-foreground">Etapa do Lead</h4>
                 <Select
                   value={lead.stage_name || lead.etapa}
                   onValueChange={(value) => onUpdate(lead.id, { stage_name: value })}
@@ -424,7 +424,7 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
 
               {/* Dados Primários */}
               <div className="space-y-4">
-                <h4 className="font-medium text-gray-700">Dados Primários</h4>
+                <h4 className="font-medium text-muted-foreground">Dados Primários</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>Nome</Label>
@@ -529,23 +529,23 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                 <ScrollArea className="h-[400px]">
                   <div className="space-y-3 pr-4">
                     {[...lead.atividades].reverse().map((atividade) => (
-                      <div key={atividade.id} className="p-3 bg-gray-50 rounded-lg">
+                      <div key={atividade.id} className="p-3 bg-muted rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
-                          <Calendar className="w-3 h-3 text-gray-500" />
-                          <span className="text-xs text-gray-500">
+                          <Calendar className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">
                             {formatDate(atividade.data)}
                           </span>
                           <Badge variant="outline" className="text-xs">
                             {atividade.tipo}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-800">{atividade.descricao}</p>
-                        <p className="text-xs text-gray-500 mt-1">Por: {atividade.corretor}</p>
+                        <p className="text-sm text-foreground">{atividade.descricao}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Por: {atividade.corretor}</p>
                       </div>
                     ))}
                     
                     {lead.atividades.length === 0 && (
-                      <div className="text-center py-4 text-gray-500">
+                      <div className="text-center py-4 text-muted-foreground">
                         <p className="text-sm">Nenhuma atividade registrada</p>
                       </div>
                     )}
