@@ -367,8 +367,8 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                 )}
               </DialogTitle>
               
-              {/* Tags no topo direito */}
-              <div className="flex-shrink-0 max-w-xs">
+              {/* Tags no topo direito - com espaço para o botão de fechar */}
+              <div className="flex-shrink-0 max-w-xs mr-8">
                 <TagSelector
                   selectedTags={lead.etiquetas || []}
                   onTagsChange={handleTagsChange}
