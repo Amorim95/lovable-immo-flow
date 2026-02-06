@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCompany } from '@/contexts/CompanyContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, User, Mail, Phone, Lock, Save, Bell } from 'lucide-react';
+import { Shield, User, Mail, Phone, Lock, Save, Bell, Moon, Sun } from 'lucide-react';
 import { NotificationPermissionButton } from '@/components/NotificationPermissionButton';
 
 export function SecuritySettings() {
   const { user, updateProfile, changePassword } = useAuth();
+  const { settings, updateSettings } = useCompany();
   const { toast } = useToast();
   
   const [profileData, setProfileData] = useState({
@@ -183,6 +186,40 @@ export function SecuritySettings() {
               <Save className="w-4 h-4 mr-2" />
               {isUpdatingProfile ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Modo Noturno */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              {settings.isDarkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+              Aparência
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Moon className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">Modo Noturno</p>
+                  <p className="text-sm text-muted-foreground">
+                    {settings.isDarkMode ? 'Tema escuro ativado' : 'Tema claro ativado'}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={settings.isDarkMode}
+                onCheckedChange={(checked) => updateSettings({ isDarkMode: checked })}
+              />
+            </div>
+            <div className="bg-blue-500/10 dark:bg-blue-500/20 p-3 rounded-lg">
+              <p className="text-sm text-blue-800 dark:text-blue-300">
+                O modo noturno reduz o cansaço visual em ambientes com pouca luz.
+              </p>
+            </div>
           </CardContent>
         </Card>
 
