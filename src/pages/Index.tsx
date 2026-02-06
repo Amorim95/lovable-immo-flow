@@ -207,10 +207,10 @@ const Index = () => {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
+          <div className="h-4 bg-muted rounded w-1/2"></div>
         </div>
-        <div className="h-96 bg-gray-200 rounded animate-pulse"></div>
+        <div className="h-96 bg-muted rounded animate-pulse"></div>
       </div>
     );
   }
@@ -219,7 +219,7 @@ const Index = () => {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestão de Leads</h1>
+          <h1 className="text-3xl font-bold text-foreground">Gestão de Leads</h1>
           <p className="text-red-600 mt-1">{error}</p>
         </div>
         <Button onClick={refreshLeads}>Tentar Novamente</Button>
@@ -263,7 +263,7 @@ const Index = () => {
       </div>
 
       {/* Filtros */}
-      <div className="bg-white rounded-lg shadow-sm border">
+      <div className="bg-card rounded-lg shadow-sm border">
         {/* Barra principal - sempre visível */}
         <div className="p-4 flex items-center gap-4 flex-wrap">
           {/* Toggle Kanban/Lista */}
