@@ -24,7 +24,7 @@ export default function MobileConfiguracoes() {
   };
   const menuItems = [{
     id: 'users',
-    title: 'Gestão de Usuários',
+    title: 'Gerenciar Plantões',
     description: 'Gerenciar corretores e equipes',
     icon: Users,
     action: () => navigate('/corretores'),
