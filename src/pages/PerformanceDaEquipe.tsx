@@ -132,8 +132,8 @@ const PerformanceDaEquipe = () => {
             ← Voltar
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Performance da Equipe</h1>
-            <p className="text-gray-600 mt-1">Análise consolidada da performance da equipe</p>
+            <h1 className="text-3xl font-bold text-foreground">Performance da Equipe</h1>
+            <p className="text-muted-foreground mt-1">Análise consolidada da performance da equipe</p>
           </div>
         </div>
       </div>
@@ -181,7 +181,7 @@ const PerformanceDaEquipe = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-600">{equipe.leadsTotais}</div>
-            <p className="text-sm text-gray-500 mt-1">Total de leads da equipe</p>
+            <p className="text-sm text-muted-foreground mt-1">Total de leads da equipe</p>
           </CardContent>
         </Card>
         
@@ -191,7 +191,7 @@ const PerformanceDaEquipe = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-purple-600">{equipe.visitas}</div>
-            <p className="text-sm text-gray-500 mt-1">{equipe.leadsTotais > 0 ? ((equipe.visitas / equipe.leadsTotais) * 100).toFixed(1) : '0.0'}% dos leads</p>
+            <p className="text-sm text-muted-foreground mt-1">{equipe.leadsTotais > 0 ? ((equipe.visitas / equipe.leadsTotais) * 100).toFixed(1) : '0.0'}% dos leads</p>
           </CardContent>
         </Card>
 
@@ -201,7 +201,7 @@ const PerformanceDaEquipe = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">{equipe.vendas}</div>
-            <p className="text-sm text-gray-500 mt-1">{equipe.conversao}% de conversão</p>
+            <p className="text-sm text-muted-foreground mt-1">{equipe.conversao}% de conversão</p>
           </CardContent>
         </Card>
 
@@ -211,7 +211,7 @@ const PerformanceDaEquipe = () => {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-orange-600">{equipe.tempoMedioResposta} min</div>
-            <p className="text-sm text-gray-500 mt-1">Média da equipe</p>
+            <p className="text-sm text-muted-foreground mt-1">Média da equipe</p>
           </CardContent>
         </Card>
       </div>
@@ -291,18 +291,18 @@ const PerformanceDaEquipe = () => {
           <CardContent>
             <div className="space-y-4">
               {Object.entries(equipe.totalPorEtiqueta || {}).map(([etiqueta, total]) => (
-                <div key={etiqueta} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div key={etiqueta} className="flex justify-between items-center p-3 bg-muted rounded-lg">
                   <span className="font-medium">{etiqueta}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xl font-bold">{total}</span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-muted-foreground">
                       ({equipe.leadsTotais > 0 ? ((total / equipe.leadsTotais) * 100).toFixed(1) : '0.0'}%)
                     </span>
                   </div>
                 </div>
               ))}
               {Object.keys(equipe.totalPorEtiqueta || {}).length === 0 && (
-                <div className="text-gray-500 text-center py-4">
+                <div className="text-muted-foreground text-center py-4">
                   Nenhuma etiqueta encontrada para esta equipe no período selecionado
                 </div>
               )}
@@ -344,7 +344,7 @@ const PerformanceDaEquipe = () => {
                 </PieChart>
               </ChartContainer>
             ) : (
-              <div className="text-gray-500 text-center py-8">
+              <div className="text-muted-foreground text-center py-8">
                 Nenhum dado de etiqueta para exibir
               </div>
             )}
@@ -376,7 +376,7 @@ const PerformanceDaEquipe = () => {
                     const totalEtapa = equipe.leadsPorEtapa[stage.nome] || 0;
                     
                     return (
-                      <tr key={stage.id} className="border-b hover:bg-gray-50">
+                      <tr key={stage.id} className="border-b hover:bg-muted/50">
                         <td className="py-3 px-4 font-medium">{stage.nome}</td>
                         {Object.keys(equipe.totalPorEtiqueta || {}).map(etiqueta => (
                           <td key={etiqueta} className="text-center py-3 px-4">
@@ -412,7 +412,7 @@ const PerformanceDaEquipe = () => {
               </thead>
               <tbody>
                 {dadosStatus.map((item, index) => (
-                  <tr key={index} className="border-b hover:bg-gray-50">
+                  <tr key={index} className="border-b hover:bg-muted/50">
                     <td className="py-3 px-4 flex items-center gap-2">
                       <div 
                         className="w-3 h-3 rounded-full" 

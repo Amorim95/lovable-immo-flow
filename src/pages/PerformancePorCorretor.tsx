@@ -131,8 +131,8 @@ const PerformancePorCorretor = () => {
             ← Voltar
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Performance por Corretor</h1>
-            <p className="text-gray-600 mt-1">Análise detalhada de performance individual</p>
+            <h1 className="text-3xl font-bold text-foreground">Performance por Corretor</h1>
+            <p className="text-muted-foreground mt-1">Análise detalhada de performance individual</p>
           </div>
         </div>
       </div>
@@ -336,18 +336,18 @@ const PerformancePorCorretor = () => {
           <CardContent>
             <div className="space-y-4">
               {Object.entries(corretor.totalPorEtiqueta || {}).map(([etiqueta, total]) => (
-                <div key={etiqueta} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                <div key={etiqueta} className="flex justify-between items-center p-3 bg-muted rounded-lg">
                   <span className="font-medium">{etiqueta}</span>
                   <div className="flex items-center gap-2">
                     <span className="text-xl font-bold">{total}</span>
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-muted-foreground">
                       ({corretor.leadsRecebidos > 0 ? ((total / corretor.leadsRecebidos) * 100).toFixed(1) : '0.0'}%)
                     </span>
                   </div>
                 </div>
               ))}
               {Object.keys(corretor.totalPorEtiqueta || {}).length === 0 && (
-                <div className="text-gray-500 text-center py-4">
+                <div className="text-muted-foreground text-center py-4">
                   Nenhuma etiqueta encontrada para este corretor no período selecionado
                 </div>
               )}
@@ -389,7 +389,7 @@ const PerformancePorCorretor = () => {
                 </PieChart>
               </ChartContainer>
             ) : (
-              <div className="text-gray-500 text-center py-8">
+              <div className="text-muted-foreground text-center py-8">
                 Nenhum dado de etiqueta para exibir
               </div>
             )}
@@ -421,7 +421,7 @@ const PerformancePorCorretor = () => {
                     const totalEtapa = corretor.leadsPorEtapa[stage.nome] || 0;
                     
                     return (
-                      <tr key={stage.id} className="border-b hover:bg-gray-50">
+                      <tr key={stage.id} className="border-b hover:bg-muted/50">
                         <td className="py-3 px-4 font-medium">{stage.nome}</td>
                         {Object.keys(corretor.totalPorEtiqueta || {}).map(etiqueta => (
                           <td key={etiqueta} className="text-center py-3 px-4">
