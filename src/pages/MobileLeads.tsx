@@ -564,16 +564,12 @@ export default function MobileLeads() {
                           className={`inline-flex items-center px-2 py-1 rounded-full font-medium ${
                             isQualified 
                               ? 'text-black text-[10px] shadow-lg border border-yellow-600' 
-                              : 'text-white text-xs'
+                              : 'bg-black text-white text-xs'
                           }`}
-                          style={{
-                            background: isQualified 
-                              ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 25%, #FFD700 50%, #B8860B 75%, #FFD700 100%)' 
-                              : 'hsl(var(--tag-default))',
-                            boxShadow: isQualified 
-                              ? '0 2px 8px rgba(255, 215, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)' 
-                              : 'none'
-                          }}
+                          style={isQualified ? {
+                            background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 25%, #FFD700 50%, #B8860B 75%, #FFD700 100%)',
+                            boxShadow: '0 2px 8px rgba(255, 215, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                          } : undefined}
                         >
                           {etiqueta}
                         </span>
