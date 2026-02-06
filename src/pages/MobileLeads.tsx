@@ -372,19 +372,19 @@ export default function MobileLeads() {
 
       {/* Filtros */}
       <div className="px-4 pb-4">
-        <div className="bg-card rounded-lg p-4 border">
+        <div className={`bg-card rounded-lg border ${filtersExpanded ? 'p-4' : 'p-0'}`}>
           {/* Botão para expandir/minimizar filtros */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setFiltersExpanded(!filtersExpanded)}
-            className="w-full justify-between mb-4"
+            className={`justify-between ${filtersExpanded ? 'w-full mb-4' : 'h-8 px-3 text-xs'}`}
           >
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4" />
-              <span className="text-sm font-medium">Filtros</span>
+            <div className="flex items-center gap-1.5">
+              <Filter className="w-3.5 h-3.5" />
+              <span className={filtersExpanded ? 'text-sm font-medium' : 'text-xs font-medium'}>Filtros</span>
             </div>
-            <ChevronDown className={`w-4 h-4 transition-transform ${filtersExpanded ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${filtersExpanded ? 'rotate-180' : ''}`} />
           </Button>
 
           {/* Conteúdo dos filtros */}
