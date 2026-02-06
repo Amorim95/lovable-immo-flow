@@ -115,17 +115,17 @@ All colors MUST be HSL.
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: hsl(var(--muted));
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: hsl(var(--border));
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: hsl(var(--muted-foreground));
 }
 
 /* Kanban column styles */
