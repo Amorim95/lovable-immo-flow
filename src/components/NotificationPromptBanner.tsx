@@ -123,21 +123,34 @@ export function NotificationPromptBanner() {
   const permissionDenied = permission === 'denied';
 
   // Estilo diferente para reativação ou permissão negada
-  const isReactivation = needsReactivation;
-  const showDeniedMessage = permissionDenied && !hasDbSubscription;
+  const isReactivation = needsReactivation && !permissionDenied;
+
+  // Detectar ambiente para instruções específicas
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
 
   // Determinar mensagem e estilo
   const getContent = () => {
-    if (showDeniedMessage) {
+    // Prioridade 1: Permissão bloqueada no navegador/dispositivo
+    if (permissionDenied) {
+      const instructions = isIOS
+        ? 'Acesse Ajustes → Notificações → Safari/CRM.Imob e ative as notificações.'
+        : isAndroid
+        ? 'Toque no cadeado 🔒 na barra de endereço → Permissões → Notificações → Permitir.'
+        : 'Clique no cadeado 🔒 na barra de endereço → Permissões → Notificações → Permitir.';
+      
       return {
         title: '🔔 Notificações Bloqueadas',
-        description: 'As notificações foram bloqueadas. Para ativar, acesse as Configurações do seu navegador/dispositivo e permita notificações para este site.',
+        description: instructions,
         buttonText: 'Entendi',
         gradient: 'bg-gradient-to-r from-red-500/90 to-red-600',
         icon: <AlertTriangle className="w-5 h-5" />,
-        showButton: false
+        showButton: false,
+        showDismiss: true
       };
     }
+    
+    // Prioridade 2: Reativação necessária
     if (isReactivation) {
       return {
         title: '⚠️ Reative suas notificações!',
@@ -146,9 +159,12 @@ export function NotificationPromptBanner() {
         loadingText: 'Reativando...',
         gradient: 'bg-gradient-to-r from-amber-500/90 to-orange-500',
         icon: <AlertTriangle className="w-5 h-5" />,
-        showButton: true
+        showButton: true,
+        showDismiss: true
       };
     }
+    
+    // Prioridade 3: Primeira ativação
     return {
       title: 'Ative as notificações!',
       description: 'Receba alertas quando um novo lead for atribuído a você, mesmo com o app fechado.',
@@ -156,7 +172,8 @@ export function NotificationPromptBanner() {
       loadingText: 'Ativando...',
       gradient: 'bg-gradient-to-r from-primary/90 to-primary',
       icon: <Bell className="w-5 h-5" />,
-      showButton: true
+      showButton: true,
+      showDismiss: false
     };
   };
 
@@ -177,7 +194,7 @@ export function NotificationPromptBanner() {
             {content.description}
           </p>
           
-          {content.showButton && (
+        {content.showButton && (
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
@@ -199,8 +216,8 @@ export function NotificationPromptBanner() {
                 )}
               </Button>
               
-              {/* Só mostrar "Agora não" se já ativou antes (reativação) */}
-              {isReactivation && (
+              {/* Só mostrar "Agora não" se showDismiss = true */}
+              {content.showDismiss && (
                 <Button
                   size="sm"
                   variant="ghost"
@@ -214,8 +231,8 @@ export function NotificationPromptBanner() {
           )}
         </div>
         
-        {/* Só mostrar X para fechar se já ativou antes (reativação) */}
-        {isReactivation && (
+        {/* Mostrar X para fechar quando showDismiss = true e não tem botão de ação */}
+        {content.showDismiss && !content.showButton && (
           <button
             onClick={handleDismiss}
             className="flex-shrink-0 text-white/60 hover:text-white transition-colors"
@@ -224,7 +241,8 @@ export function NotificationPromptBanner() {
           </button>
         )}
         
-        {showDeniedMessage && (
+        {/* X para fechar quando showDismiss = true e tem botão */}
+        {content.showDismiss && content.showButton && (
           <button
             onClick={handleDismiss}
             className="flex-shrink-0 text-white/60 hover:text-white transition-colors"
