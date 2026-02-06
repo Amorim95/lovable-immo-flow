@@ -64,7 +64,7 @@ export default function MobileProfile() {
         />
 
         <div className="p-4">
-          <div className="bg-white rounded-lg p-4 space-y-4">
+          <div className="bg-card rounded-lg p-4 space-y-4">
             <div>
               <Label htmlFor="currentPassword">Senha Atual</Label>
               <Input
@@ -123,7 +123,7 @@ export default function MobileProfile() {
         <div className="space-y-3">
           <div
             onClick={() => setActiveTab('password')}
-            className="bg-white rounded-lg p-4 shadow-sm border active:bg-gray-50 transition-colors cursor-pointer"
+            className="bg-card rounded-lg p-4 shadow-sm border active:bg-muted transition-colors cursor-pointer"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -131,8 +131,8 @@ export default function MobileProfile() {
                   <Lock className="w-5 h-5 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-900">Alterar Senha</h3>
-                  <p className="text-sm text-gray-500">Alterar sua senha de acesso</p>
+                  <h3 className="font-medium text-foreground">Alterar Senha</h3>
+                  <p className="text-sm text-muted-foreground">Alterar sua senha de acesso</p>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -142,9 +142,9 @@ export default function MobileProfile() {
         </div>
 
         {/* Formulário de Informações Pessoais */}
-        <div className="bg-white rounded-lg p-4 space-y-4">
+        <div className="bg-card rounded-lg p-4 space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-gray-900">Seus Dados</h2>
+            <h2 className="text-lg font-semibold text-foreground">Seus Dados</h2>
             <Button
               variant="ghost"
               size="sm"
@@ -162,7 +162,7 @@ export default function MobileProfile() {
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 disabled={!isEditing}
-                className={!isEditing ? "bg-gray-50" : ""}
+                className={!isEditing ? "bg-muted" : ""}
               />
             </div>
 
@@ -174,7 +174,7 @@ export default function MobileProfile() {
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 disabled={!isEditing}
-                className={!isEditing ? "bg-gray-50" : ""}
+                className={!isEditing ? "bg-muted" : ""}
               />
             </div>
 
@@ -185,7 +185,7 @@ export default function MobileProfile() {
                 value={formData.telefone}
                 onChange={(e) => setFormData(prev => ({ ...prev, telefone: e.target.value }))}
                 disabled={!isEditing}
-                className={!isEditing ? "bg-gray-50" : ""}
+                className={!isEditing ? "bg-muted" : ""}
                 placeholder="(11) 99999-9999"
               />
             </div>
