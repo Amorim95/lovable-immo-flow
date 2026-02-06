@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Corretor, Equipe } from "@/types/crm";
 import { useCompanyFilter } from "@/hooks/useCompanyFilter";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Dialog,
   DialogContent,
@@ -10,8 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Plus } from "lucide-react";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -33,6 +34,7 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
   const [equipesFromDB, setEquipesFromDB] = useState<Equipe[]>([]);
   const [loadingEquipes, setLoadingEquipes] = useState(true);
   const { addCompanyFilter, getCompanyId } = useCompanyFilter();
+  const isMobile = useIsMobile();
 
   // Carregar equipes do banco de dados
   useEffect(() => {
@@ -151,28 +153,29 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Plus className="w-5 h-5" />
+      <DialogContent className={isMobile ? "max-w-[95vw] max-h-[50vh] overflow-y-auto p-4" : "max-w-md"}>
+        <DialogHeader className={isMobile ? "pb-2" : ""}>
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <Plus className="w-4 h-4" />
             Novo Corretor
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className={isMobile ? "space-y-3" : "space-y-4"}>
           <div>
-            <Label htmlFor="nome">Nome *</Label>
+            <Label htmlFor="nome" className={isMobile ? "text-sm" : ""}>Nome *</Label>
             <Input
               id="nome"
               value={formData.nome}
               onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
               placeholder="Nome completo"
               required
+              className={isMobile ? "h-9 text-sm" : ""}
             />
           </div>
 
           <div>
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email" className={isMobile ? "text-sm" : ""}>Email *</Label>
             <Input
               id="email"
               type="email"
@@ -180,23 +183,25 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="email@exemplo.com"
               required
+              className={isMobile ? "h-9 text-sm" : ""}
             />
           </div>
 
           <div>
-            <Label htmlFor="telefone">Telefone</Label>
+            <Label htmlFor="telefone" className={isMobile ? "text-sm" : ""}>Telefone</Label>
             <Input
               id="telefone"
               value={formData.telefone}
               onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
               placeholder="(11) 99999-9999"
+              className={isMobile ? "h-9 text-sm" : ""}
             />
           </div>
 
           <div>
-            <Label htmlFor="equipe">Equipe (Opcional)</Label>
+            <Label htmlFor="equipe" className={isMobile ? "text-sm" : ""}>Equipe (Opcional)</Label>
             <Select value={formData.equipeId} onValueChange={(value) => setFormData({ ...formData, equipeId: value })}>
-              <SelectTrigger>
+              <SelectTrigger className={isMobile ? "h-9 text-sm" : ""}>
                 <SelectValue placeholder="Selecione uma equipe" />
               </SelectTrigger>
               <SelectContent>
@@ -220,37 +225,63 @@ export function NewCorretorModal({ isOpen, onClose, onCreateCorretor, equipes = 
           </div>
 
           <div>
-            <Label>Cargo e Permissões</Label>
-            <div className="space-y-3 mt-2">
-              {availableRoles.map((role) => (
-                <div key={role.id} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer" onClick={() => handleRoleChange(role.id as 'admin' | 'gestor' | 'corretor')}>
-                  <input
-                    type="radio"
-                    id={role.id}
-                    name="role"
-                    value={role.id}
-                    checked={formData.role === role.id}
-                    onChange={() => handleRoleChange(role.id as 'admin' | 'gestor' | 'corretor')}
-                    className="mt-1"
-                  />
-                  <div className="flex-1">
-                    <Label htmlFor={role.id} className="text-sm font-medium cursor-pointer">
+            <Label className={isMobile ? "text-sm" : ""}>Cargo</Label>
+            {isMobile ? (
+              /* Versão mobile: RadioGroup compacto em linha */
+              <RadioGroup 
+                value={formData.role} 
+                onValueChange={(value) => handleRoleChange(value as 'admin' | 'gestor' | 'corretor')}
+                className="flex gap-4 mt-2"
+              >
+                {availableRoles.map((role) => (
+                  <div key={role.id} className="flex items-center space-x-1.5">
+                    <RadioGroupItem value={role.id} id={`mobile-${role.id}`} />
+                    <Label 
+                      htmlFor={`mobile-${role.id}`} 
+                      className="text-sm font-normal cursor-pointer"
+                    >
                       {role.label}
                     </Label>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {role.description}
-                    </p>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </RadioGroup>
+            ) : (
+              /* Versão desktop: cards com descrições */
+              <div className="space-y-3 mt-2">
+                {availableRoles.map((role) => (
+                  <div 
+                    key={role.id} 
+                    className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer" 
+                    onClick={() => handleRoleChange(role.id as 'admin' | 'gestor' | 'corretor')}
+                  >
+                    <input
+                      type="radio"
+                      id={role.id}
+                      name="role"
+                      value={role.id}
+                      checked={formData.role === role.id}
+                      onChange={() => handleRoleChange(role.id as 'admin' | 'gestor' | 'corretor')}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor={role.id} className="text-sm font-medium cursor-pointer">
+                        {role.label}
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {role.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={handleClose}>
+          <div className={`flex justify-end gap-2 ${isMobile ? "pt-2" : "pt-4"}`}>
+            <Button type="button" variant="outline" onClick={handleClose} size={isMobile ? "sm" : "default"}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} size={isMobile ? "sm" : "default"}>
               {isLoading ? 'Criando...' : 'Criar Usuário'}
             </Button>
           </div>
