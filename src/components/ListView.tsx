@@ -194,7 +194,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
 
   return (
     <>
-      <div className="bg-white rounded-lg border shadow-sm">
+      <div className="bg-card rounded-lg border shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
@@ -213,7 +213,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
             {visibleLeads.map((lead) => (
               <TableRow
                 key={lead.id}
-                className={`cursor-pointer hover:bg-gray-50 transition-colors ${
+                className={`cursor-pointer hover:bg-muted/50 transition-colors ${
                   selectedLeadIds.includes(lead.id) ? 'bg-primary/5 hover:bg-primary/10' : ''
                 }`}
                 onClick={() => onLeadClick(lead)}
