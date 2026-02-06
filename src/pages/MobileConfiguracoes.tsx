@@ -3,7 +3,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { MobileHeader } from "@/components/MobileHeader";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Building2, LogOut, Users, ChevronRight, User } from "lucide-react";
+import { LogOut, Users, ChevronRight, User } from "lucide-react";
 import { NotificationPromptBanner } from "@/components/NotificationPromptBanner";
 
 export default function MobileConfiguracoes() {
@@ -36,13 +36,6 @@ export default function MobileConfiguracoes() {
     icon: User,
     action: () => navigate('/profile'),
     show: true
-  }, {
-    id: 'company',
-    title: 'Dados da Empresa',
-    description: 'Informações e configurações da empresa',
-    icon: Building2,
-    action: () => navigate('/company-settings'),
-    show: canAccessCompanyData
   }];
   return <div className="min-h-screen bg-gray-50 pb-20 dark:bg-background">
       <MobileHeader title="Opções" />
