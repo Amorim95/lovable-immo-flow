@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { useNavigate } from "react-router-dom";
 import { useCompanyFilter } from "@/hooks/useCompanyFilter";
 import { supabase } from '@/integrations/supabase/client';
@@ -29,16 +30,26 @@ console.log('EditUsuarioModal imported:', EditUsuarioModal);
 const Corretores = () => {
   const { user } = useAuth();
   const { isAdmin, isGestor } = useUserRole();
+  const { managedTeamId, loading: teamLoading } = useManagerTeam();
   const navigate = useNavigate();
   const { addCompanyFilter, getCompanyId } = useCompanyFilter();
   const [corretores, setCorretores] = useState<Corretor[]>([]);
   const [equipes, setEquipes] = useState<Equipe[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [teamFilter, setTeamFilter] = useState('all');
+  const [teamFilter, setTeamFilter] = useState<string | null>(null);
   const [showNewModal, setShowNewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCorretor, setSelectedCorretor] = useState<Corretor | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Pré-selecionar equipe gerenciada automaticamente
+  useEffect(() => {
+    if (!teamLoading && managedTeamId && teamFilter === null) {
+      setTeamFilter(managedTeamId);
+    } else if (!teamLoading && !managedTeamId && teamFilter === null) {
+      setTeamFilter('all');
+    }
+  }, [teamLoading, managedTeamId, teamFilter]);
 
   useEffect(() => {
     loadData();
@@ -167,7 +178,7 @@ const Corretores = () => {
       const matchesSearch = corretor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            corretor.email.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesTeam = teamFilter === 'all' 
+      const matchesTeam = !teamFilter || teamFilter === 'all' 
         ? true 
         : teamFilter === 'no-team' 
           ? !corretor.equipeId 
@@ -180,6 +191,18 @@ const Corretores = () => {
       if (a.status === 'inativo' && b.status === 'ativo') return 1;
       return 0;
     });
+
+  // Verifica se equipe está bloqueada para o usuário
+  const isTeamLocked = !!managedTeamId;
+
+  const handleTeamFilterChange = (value: string) => {
+    // Se o usuário é responsável por uma equipe, forçar apenas sua equipe
+    if (managedTeamId && value !== managedTeamId) {
+      setTeamFilter(managedTeamId);
+    } else {
+      setTeamFilter(value);
+    }
+  };
 
   const toggleStatus = async (corretorId: string) => {
     const corretor = corretores.find(c => c.id === corretorId);
@@ -228,7 +251,7 @@ const Corretores = () => {
     setShowEditModal(true);
   };
 
-  if (loading) {
+  if (loading || teamLoading) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
@@ -338,8 +361,12 @@ const Corretores = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="max-w-sm"
               />
-              <Select value={teamFilter} onValueChange={setTeamFilter}>
-                <SelectTrigger className="max-w-sm">
+              <Select 
+                value={teamFilter || 'all'} 
+                onValueChange={handleTeamFilterChange}
+                disabled={isTeamLocked}
+              >
+                <SelectTrigger className={`max-w-sm ${isTeamLocked ? 'opacity-70 cursor-not-allowed' : ''}`}>
                   <SelectValue placeholder="Filtrar por equipe" />
                 </SelectTrigger>
                 <SelectContent>
@@ -352,6 +379,9 @@ const Corretores = () => {
                   ))}
                 </SelectContent>
               </Select>
+              {isTeamLocked && (
+                <span className="text-xs text-muted-foreground">(sua equipe)</span>
+              )}
             </div>
           </CardContent>
         </Card>
