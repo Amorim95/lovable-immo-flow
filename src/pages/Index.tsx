@@ -345,10 +345,18 @@ const Index = () => {
               {/* Filtros de Equipe e Usuário - Apenas para Admin, Gestor e Dono */}
               {(isAdmin || isGestor || isDono) && (
                 <TeamUserFilters 
-                  onTeamChange={setSelectedTeamId} 
+                  onTeamChange={(teamId) => {
+                    // Se o usuário é responsável por uma equipe, forçar apenas sua equipe
+                    if (managedTeamId && teamId !== managedTeamId) {
+                      setSelectedTeamId(managedTeamId);
+                    } else {
+                      setSelectedTeamId(teamId);
+                    }
+                  }} 
                   onUserChange={setSelectedUserId} 
                   selectedTeamId={selectedTeamId} 
                   selectedUserId={selectedUserId} 
+                  lockedTeamId={managedTeamId}
                 />
               )}
               
