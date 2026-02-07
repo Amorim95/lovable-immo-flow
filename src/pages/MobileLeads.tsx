@@ -115,6 +115,18 @@ export default function MobileLeads() {
     }
   };
 
+  // Verifica se equipe está bloqueada para o usuário
+  const isTeamLocked = !!managedTeamId;
+
+  const handleTeamChange = (value: string) => {
+    // Se o usuário é responsável por uma equipe, forçar apenas sua equipe
+    if (managedTeamId && value !== managedTeamId) {
+      setSelectedTeamId(managedTeamId);
+    } else {
+      setSelectedTeamId(value === "todas" ? null : value);
+    }
+  };
+
   // Converter dados do Supabase para formato da interface
   const convertedLeads: Lead[] = leads.map(lead => ({
     id: lead.id,
@@ -407,9 +419,10 @@ export default function MobileLeads() {
               
               <Select
                 value={selectedTeamId || "todas"}
-                onValueChange={(value) => setSelectedTeamId(value === "todas" ? null : value)}
+                onValueChange={handleTeamChange}
+                disabled={isTeamLocked}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className={`w-full ${isTeamLocked ? 'opacity-70' : ''}`}>
                   <SelectValue placeholder="Selecionar equipe" />
                 </SelectTrigger>
                 <SelectContent>
