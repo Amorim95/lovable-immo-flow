@@ -23,13 +23,15 @@ interface TeamUserFiltersProps {
   onUserChange: (userId: string | null) => void;
   selectedTeamId: string | null;
   selectedUserId: string | null;
+  lockedTeamId?: string | null; // Se definido, o usuário não pode mudar de equipe
 }
 
 export function TeamUserFilters({ 
   onTeamChange, 
   onUserChange, 
   selectedTeamId, 
-  selectedUserId 
+  selectedUserId,
+  lockedTeamId
 }: TeamUserFiltersProps) {
   const [equipes, setEquipes] = useState<Equipe[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -105,6 +107,9 @@ export function TeamUserFilters({
     );
   }
 
+  // Se há uma equipe bloqueada, não permitir mudanças
+  const isTeamLocked = !!lockedTeamId;
+
   return (
     <div className="flex items-center gap-4">
       {/* Filtro por Equipe */}
@@ -112,9 +117,16 @@ export function TeamUserFilters({
         <Label className="text-sm font-medium flex items-center gap-1">
           <Users className="w-4 h-4" />
           Filtrar por Equipe
+          {isTeamLocked && (
+            <span className="text-xs text-muted-foreground">(sua equipe)</span>
+          )}
         </Label>
-        <Select value={selectedTeamId || 'all'} onValueChange={handleTeamChange}>
-          <SelectTrigger className="w-48">
+        <Select 
+          value={selectedTeamId || 'all'} 
+          onValueChange={handleTeamChange}
+          disabled={isTeamLocked}
+        >
+          <SelectTrigger className={`w-48 ${isTeamLocked ? 'opacity-70 cursor-not-allowed' : ''}`}>
             <SelectValue placeholder="Todas as equipes" />
           </SelectTrigger>
           <SelectContent>
