@@ -192,16 +192,8 @@ const Corretores = () => {
       return 0;
     });
 
-  // Verifica se equipe está bloqueada para o usuário
-  const isTeamLocked = !!managedTeamId;
-
   const handleTeamFilterChange = (value: string) => {
-    // Se o usuário é responsável por uma equipe, forçar apenas sua equipe
-    if (managedTeamId && value !== managedTeamId) {
-      setTeamFilter(managedTeamId);
-    } else {
-      setTeamFilter(value);
-    }
+    setTeamFilter(value);
   };
 
   const toggleStatus = async (corretorId: string) => {
@@ -364,9 +356,8 @@ const Corretores = () => {
               <Select 
                 value={teamFilter || 'all'} 
                 onValueChange={handleTeamFilterChange}
-                disabled={isTeamLocked}
               >
-                <SelectTrigger className={`max-w-sm ${isTeamLocked ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                <SelectTrigger className="max-w-sm">
                   <SelectValue placeholder="Filtrar por equipe" />
                 </SelectTrigger>
                 <SelectContent>
@@ -379,9 +370,6 @@ const Corretores = () => {
                   ))}
                 </SelectContent>
               </Select>
-              {isTeamLocked && (
-                <span className="text-xs text-muted-foreground">(sua equipe)</span>
-              )}
             </div>
           </CardContent>
         </Card>
