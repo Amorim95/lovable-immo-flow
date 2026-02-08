@@ -97,16 +97,8 @@ export default function MobileCorretores() {
     equipeNome: equipes.find(e => e.id === user.equipeId)?.nome
   }));
 
-  // Verifica se equipe está bloqueada para o usuário
-  const isTeamLocked = !!managedTeamId;
-
   const handleEquipeChange = (value: string) => {
-    // Se o usuário é responsável por uma equipe, forçar apenas sua equipe
-    if (managedTeamId && value !== managedTeamId) {
-      setSelectedEquipeId(managedTeamId);
-    } else {
-      setSelectedEquipeId(value === 'all' ? null : value);
-    }
+    setSelectedEquipeId(value === 'all' ? null : value);
   };
 
   const filteredCorretores = corretoresWithEquipes
@@ -238,9 +230,8 @@ export default function MobileCorretores() {
           <Select 
             value={selectedEquipeId || 'all'} 
             onValueChange={handleEquipeChange}
-            disabled={isTeamLocked}
           >
-            <SelectTrigger className={`flex-1 ${isTeamLocked ? 'opacity-70' : ''}`}>
+            <SelectTrigger className="flex-1">
               <SelectValue placeholder="Todas as equipes" />
             </SelectTrigger>
             <SelectContent>
