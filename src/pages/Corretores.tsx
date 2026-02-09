@@ -137,7 +137,7 @@ const Corretores = () => {
           permissoes: permissoesList,
           leads: Array(leadCount).fill('').map((_, i) => i.toString()),
           equipeId: userData.equipe_id,
-          equipeNome: equipesData?.find(e => e.id === userData.equipe_id)?.nome,
+          equipeNome: undefined,
           role: userData.role
         };
       }) || [];
@@ -153,6 +153,7 @@ const Corretores = () => {
 
       if (equipesError) {
         console.error('Error loading equipes:', equipesError);
+        setCorretores(formattedCorretores);
       } else {
         const formattedEquipes: Equipe[] = equipesData?.map(equipe => ({
           id: equipe.id,
@@ -162,9 +163,14 @@ const Corretores = () => {
           corretores: []
         })) || [];
         setEquipes(formattedEquipes);
-      }
 
-      setCorretores(formattedCorretores);
+        // Preencher equipeNome nos corretores agora que temos os dados das equipes
+        const corretoresComEquipe = formattedCorretores.map(c => ({
+          ...c,
+          equipeNome: equipesData?.find(e => e.id === c.equipeId)?.nome
+        }));
+        setCorretores(corretoresComEquipe);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Erro ao carregar dados');
