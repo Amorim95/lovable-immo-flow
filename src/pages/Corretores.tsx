@@ -137,7 +137,7 @@ const Corretores = () => {
           permissoes: permissoesList,
           leads: Array(leadCount).fill('').map((_, i) => i.toString()),
           equipeId: userData.equipe_id,
-          equipeNome: undefined,
+          equipeNome: equipesData?.find(e => e.id === userData.equipe_id)?.nome,
           role: userData.role
         };
       }) || [];
@@ -493,6 +493,7 @@ const Corretores = () => {
               setSelectedCorretor(null);
             }}
             onUpdateCorretor={handleUpdateCorretor}
+            equipes={equipes}
           />
         </AccessControlWrapper>
       </div>
