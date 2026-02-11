@@ -36,27 +36,102 @@ Deno.serve(async (req) => {
 
     console.log(`Resetando senha para: ${email}`);
 
-    // Buscar usuário pelo email
-    const { data: authUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    // Buscar usuário pelo email - usar paginação para encontrar todos
+    let allUsers: any[] = [];
+    let page = 1;
+    const perPage = 1000;
+    let hasMore = true;
     
-    if (listError) {
-      console.error('Erro ao listar usuários:', listError);
-      return new Response(
-        JSON.stringify({ error: 'Erro ao buscar usuário' }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+    while (hasMore) {
+      const { data: pageData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+        page,
+        perPage
+      });
+      
+      if (listError) {
+        console.error('Erro ao listar usuários:', listError);
+        return new Response(
+          JSON.stringify({ error: 'Erro ao buscar usuário' }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+      
+      allUsers = allUsers.concat(pageData.users);
+      hasMore = pageData.users.length === perPage;
+      page++;
     }
 
-    const user = authUsers.users.find(u => u.email === email);
+    let user = allUsers.find(u => u.email === email);
 
     if (!user) {
+      // Tentar criar o usuário no auth se ele existe em public.users
+      console.log(`Usuário não encontrado no auth, tentando criar para: ${email}`);
+      
+      const { data: publicUser } = await supabaseAdmin
+        .from('users')
+        .select('id, name')
+        .eq('email', email)
+        .maybeSingle();
+      
+      if (!publicUser) {
+        return new Response(
+          JSON.stringify({ error: `Usuário ${email} não encontrado` }),
+          {
+            status: 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+
+      // Criar no auth.users
+      const { data: newAuthUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password: newPassword,
+        email_confirm: true,
+        user_metadata: { name: publicUser.name }
+      });
+
+      if (createError) {
+        console.error('Erro ao criar usuário no auth:', createError);
+        return new Response(
+          JSON.stringify({ error: 'Erro ao criar usuário no auth: ' + createError.message }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
+      }
+
+      // Atualizar o ID em public.users para corresponder ao auth
+      const oldId = publicUser.id;
+      const newId = newAuthUser.user.id;
+      
+      if (oldId !== newId) {
+        console.log(`Sincronizando IDs: ${oldId} -> ${newId}`);
+        
+        // Atualizar referências em outras tabelas
+        await supabaseAdmin.from('leads').update({ user_id: newId }).eq('user_id', oldId);
+        await supabaseAdmin.from('permissions').update({ user_id: newId }).eq('user_id', oldId);
+        await supabaseAdmin.from('logs').update({ user_id: newId }).eq('user_id', oldId);
+        await supabaseAdmin.from('lead_queue').update({ assigned_to: newId }).eq('assigned_to', oldId);
+        await supabaseAdmin.from('push_subscriptions').update({ user_id: newId }).eq('user_id', oldId);
+        
+        // Atualizar o próprio registro do usuário
+        await supabaseAdmin.from('users').update({ id: newId }).eq('id', oldId);
+      }
+
+      console.log(`✅ Usuário criado no auth e sincronizado: ${email}`);
+
       return new Response(
-        JSON.stringify({ error: `Usuário ${email} não encontrado em auth.users` }),
+        JSON.stringify({ 
+          success: true,
+          message: `Usuário ${email} criado no auth com senha: ${newPassword}`,
+          created: true
+        }),
         {
-          status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
