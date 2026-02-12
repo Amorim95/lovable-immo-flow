@@ -640,6 +640,7 @@ export type Database = {
           primeiro_contato_whatsapp: string | null
           repique_count: number | null
           stage_name: string | null
+          stage_order: number | null
           telefone: string
           updated_at: string
           user_id: string | null
@@ -657,6 +658,7 @@ export type Database = {
           primeiro_contato_whatsapp?: string | null
           repique_count?: number | null
           stage_name?: string | null
+          stage_order?: number | null
           telefone: string
           updated_at?: string
           user_id?: string | null
@@ -674,6 +676,7 @@ export type Database = {
           primeiro_contato_whatsapp?: string | null
           repique_count?: number | null
           stage_name?: string | null
+          stage_order?: number | null
           telefone?: string
           updated_at?: string
           user_id?: string | null

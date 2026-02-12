@@ -11,6 +11,7 @@ interface LeadsData {
   dados_adicionais?: string;
   etapa: string;
   stage_name?: string;
+  stage_order?: number;
   created_at: string;
   updated_at: string;
   user_id?: string;
@@ -65,6 +66,7 @@ export function useLeadsOptimized() {
             dados_adicionais,
             etapa,
             stage_name,
+            stage_order,
             created_at,
             updated_at,
             user_id,
@@ -135,6 +137,7 @@ export function useLeadsOptimized() {
             if (updates.dadosAdicionais !== undefined) updatedLead.dados_adicionais = updates.dadosAdicionais;
             if (updates.etapa !== undefined) updatedLead.etapa = updates.etapa;
             if (updates.stage_name !== undefined) updatedLead.stage_name = updates.stage_name;
+            if ((updates as any).stage_order !== undefined) (updatedLead as any).stage_order = (updates as any).stage_order;
             if (updates.userId !== undefined) {
               updatedLead.user_id = updates.userId;
               updatedLead.user = { name: updates.corretor || 'Novo Corretor', equipe_id: undefined };
@@ -179,6 +182,7 @@ export function useLeadsOptimized() {
         supabaseUpdates.stage_name = updates.etapa; // Sincronizar automaticamente com etapa
       }
       if (updates.stage_name !== undefined) supabaseUpdates.stage_name = updates.stage_name;
+      if ((updates as any).stage_order !== undefined) supabaseUpdates.stage_order = (updates as any).stage_order;
       if (updates.userId !== undefined) supabaseUpdates.user_id = updates.userId;
       
       // Auto-registrar primeiro contato quando etapa muda de "aguardando-atendimento"
