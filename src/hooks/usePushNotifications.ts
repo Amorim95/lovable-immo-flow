@@ -22,7 +22,7 @@ export function usePushNotifications() {
   useEffect(() => {
     // Check for existing subscription when permission changes
     if (permission === 'granted' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then(async (registration) => {
+      navigator.serviceWorker.ready.then(async (registration: any) => {
         const existingSubscription = await registration.pushManager.getSubscription();
         console.log('Existing subscription found:', existingSubscription);
         if (existingSubscription) {
@@ -135,7 +135,7 @@ export function usePushNotifications() {
     try {
       console.log('[Push] Starting subscription process...');
       
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await navigator.serviceWorker.ready as any;
       console.log('[Push] Service Worker ready:', registration);
       console.log('[Push] PushManager available:', !!registration.pushManager);
       
@@ -273,7 +273,7 @@ export function usePushNotifications() {
       console.log('Showing local notification for lead:', leadData);
       
       // Use the service worker to show the notification
-      navigator.serviceWorker.ready.then((registration) => {
+      navigator.serviceWorker.ready.then((registration: any) => {
         registration.showNotification('Novo Lead - Click Imóveis', {
           body: `Novo lead recebido: ${leadData.name || 'Lead sem nome'}`,
           icon: '/lovable-uploads/default-crm-logo.png',
