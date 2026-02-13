@@ -56,61 +56,20 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
     e.stopPropagation();
     const cleanPhone = telefone.replace(/\D/g, '');
     
-    // Registrar primeiro contato via WhatsApp se ainda não foi registrado
-    await registerFirstContactWhatsApp(lead.id);
-    
-    // Registrar tentativa de contato via WhatsApp
-    await registerContactAttempt(lead.id, 'whatsapp', telefone);
-    
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
-  };
-
-  // Função para registrar o primeiro contato via WhatsApp
-  const registerFirstContactWhatsApp = async (leadId: string) => {
-    try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      
-      // Buscar o lead para verificar se já tem primeiro contato registrado
-      const { data: leadData, error: fetchError } = await supabase
-        .from('leads')
-        .select('primeiro_contato_whatsapp')
-        .eq('id', leadId)
-        .single();
-
-      if (fetchError) {
-        console.error('Erro ao buscar lead:', fetchError);
-        return;
-      }
-
-      // Se ainda não tem primeiro contato registrado, registrar agora
-      if (!leadData.primeiro_contato_whatsapp) {
-        const { error } = await supabase
-          .from('leads')
-          .update({ primeiro_contato_whatsapp: new Date().toISOString() })
-          .eq('id', leadId);
-
-        if (error) {
-          console.error('Erro ao registrar primeiro contato WhatsApp:', error);
-        }
-      }
-    } catch (error) {
-      console.error('Erro geral ao registrar primeiro contato:', error);
-    }
-  };
-
-  // Função para registrar tentativa de contato
-  const registerContactAttempt = async (leadId: string, type: string, telefone: string) => {
+    
+    // Registrar primeiro contato E atividade em uma ÚNICA chamada atômica
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       const { data: userData } = await supabase.auth.getUser();
       
       if (!userData.user) return;
 
-      // Buscar o lead atual para pegar as atividades existentes
+      // Buscar lead com ambos os campos necessários
       const { data: leadData, error: fetchError } = await supabase
         .from('leads')
-        .select('atividades')
-        .eq('id', leadId)
+        .select('atividades, primeiro_contato_whatsapp')
+        .eq('id', lead.id)
         .single();
 
       if (fetchError) {
@@ -120,8 +79,8 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
 
       const contactActivity = {
         id: Date.now().toString(),
-        tipo: type,
-        descricao: `Tentativa de contato via ${type === 'whatsapp' ? 'WhatsApp' : type} para ${telefone}`,
+        tipo: 'whatsapp',
+        descricao: `Tentativa de contato via WhatsApp`,
         data: new Date().toISOString(),
         corretor: userData.user.user_metadata?.name || userData.user.email || 'Usuário não identificado'
       };
@@ -129,13 +88,19 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
       const existingActivities = Array.isArray(leadData.atividades) ? leadData.atividades : [];
       const updatedActivities = [...existingActivities, contactActivity];
 
+      // Update atômico: atividades + primeiro_contato_whatsapp juntos
+      const updateData: any = { atividades: updatedActivities };
+      if (!leadData.primeiro_contato_whatsapp) {
+        updateData.primeiro_contato_whatsapp = new Date().toISOString();
+      }
+
       const { error } = await supabase
         .from('leads')
-        .update({ atividades: updatedActivities })
-        .eq('id', leadId);
+        .update(updateData)
+        .eq('id', lead.id);
 
       if (error) {
-        console.error('Erro ao registrar tentativa de contato:', error);
+        console.error('Erro ao registrar contato WhatsApp:', error);
       }
     } catch (error) {
       console.error('Erro geral ao registrar contato:', error);
