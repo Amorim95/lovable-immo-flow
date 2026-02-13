@@ -137,37 +137,6 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
     }
   };
 
-  // Função para registrar o primeiro contato via WhatsApp
-  const registerFirstContactWhatsApp = async (leadId: string) => {
-    try {
-      // Buscar o lead para verificar se já tem primeiro contato registrado
-      const { data: leadData, error: fetchError } = await supabase
-        .from('leads')
-        .select('primeiro_contato_whatsapp')
-        .eq('id', leadId)
-        .single();
-
-      if (fetchError) {
-        console.error('Erro ao buscar lead:', fetchError);
-        return;
-      }
-
-      // Se ainda não tem primeiro contato registrado, registrar agora
-      if (!leadData.primeiro_contato_whatsapp) {
-        const { error } = await supabase
-          .from('leads')
-          .update({ primeiro_contato_whatsapp: new Date().toISOString() })
-          .eq('id', leadId);
-
-        if (error) {
-          console.error('Erro ao registrar primeiro contato WhatsApp:', error);
-        }
-      }
-    } catch (error) {
-      console.error('Erro geral ao registrar primeiro contato:', error);
-    }
-  };
-
   const handleAddActivity = async () => {
     if (!newActivity.trim()) return;
     
@@ -217,15 +186,12 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const handleWhatsAppClick = async (telefone: string) => {
     const cleanPhone = telefone.replace(/\D/g, '');
     
-    // Registrar primeiro contato via WhatsApp se ainda não foi registrado
-    await registerFirstContactWhatsApp(lead.id);
-    
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
     
     // Log primeira tentativa de contato
     const activity: Atividade = {
       id: Date.now().toString(),
-      tipo: 'observacao',
+      tipo: 'whatsapp',
       descricao: `Tentativa de contato via WhatsApp`,
       data: new Date(),
       corretor: user?.name || 'Usuário não identificado'
@@ -239,13 +205,27 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
         id: atividade.id,
         tipo: atividade.tipo,
         descricao: atividade.descricao,
-        data: atividade.data.toISOString(),
+        data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
         corretor: atividade.corretor
       }));
 
+      // Update atômico: atividades + primeiro_contato_whatsapp juntos
+      const updateData: any = { atividades: atividadesJson };
+      
+      // Buscar se já tem primeiro contato registrado
+      const { data: leadData } = await supabase
+        .from('leads')
+        .select('primeiro_contato_whatsapp')
+        .eq('id', lead.id)
+        .single();
+
+      if (!leadData?.primeiro_contato_whatsapp) {
+        updateData.primeiro_contato_whatsapp = new Date().toISOString();
+      }
+
       const { error } = await supabase
         .from('leads')
-        .update({ atividades: atividadesJson as any })
+        .update(updateData)
         .eq('id', lead.id);
 
       if (error) {
