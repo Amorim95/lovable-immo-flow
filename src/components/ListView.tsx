@@ -105,7 +105,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
       // Buscar o lead atual para pegar as atividades existentes
       const { data: leadData, error: fetchError } = await supabase
         .from('leads')
-        .select('atividades')
+        .select('atividades, primeiro_contato_whatsapp')
         .eq('id', leadId)
         .single();
 
@@ -125,9 +125,15 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
       const existingActivities = Array.isArray(leadData.atividades) ? leadData.atividades : [];
       const updatedActivities = [...existingActivities, contactActivity];
 
+      // Update atômico: atividades + primeiro_contato_whatsapp juntos
+      const updateData: any = { atividades: updatedActivities };
+      if (type === 'whatsapp' && !leadData.primeiro_contato_whatsapp) {
+        updateData.primeiro_contato_whatsapp = new Date().toISOString();
+      }
+
       const { error } = await supabase
         .from('leads')
-        .update({ atividades: updatedActivities })
+        .update(updateData)
         .eq('id', leadId);
 
       if (error) {

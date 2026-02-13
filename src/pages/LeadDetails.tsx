@@ -206,11 +206,23 @@ export default function LeadDetails() {
       const {
         supabase
       } = await import('@/integrations/supabase/client');
+      
+      // Buscar estado atual do primeiro_contato_whatsapp
+      const { data: currentLead } = await supabase
+        .from('leads')
+        .select('primeiro_contato_whatsapp')
+        .eq('id', lead.id)
+        .single();
+      
+      // Update atômico: atividades + primeiro_contato_whatsapp juntos
+      const updateData: any = { atividades: atividadesJson };
+      if (!currentLead?.primeiro_contato_whatsapp) {
+        updateData.primeiro_contato_whatsapp = new Date().toISOString();
+      }
+      
       const {
         error
-      } = await supabase.from('leads').update({
-        atividades: atividadesJson
-      }).eq('id', lead.id);
+      } = await supabase.from('leads').update(updateData).eq('id', lead.id);
       if (error) {
         console.error('Erro ao salvar atividade de contato:', error);
       } else {
