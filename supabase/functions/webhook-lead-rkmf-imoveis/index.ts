@@ -64,6 +64,7 @@ serve(async (req) => {
     }
 
     const EMPRESA_RKMF_ID = '1f12e1c1-a516-407f-aedd-865ef57b5ea3';
+    const TAG_QUALIFICADO_IA_ID = '89b0d175-7ac8-44b3-9f47-dec34353ccac';
 
     // Round-robin entre todos os usuários ativos da empresa
     const { data: nextUserId, error: userError } = await supabaseClient
@@ -100,13 +101,33 @@ serve(async (req) => {
     const result = leadResult[0];
     console.log('Resultado:', result);
 
-    // Notificação push (apenas para leads novos)
+    // Notificação push e tag (apenas para leads novos)
     if (!result.is_duplicate) {
       // Atualizar assigned_at para o sistema de repique
       await supabaseClient
         .from('leads')
         .update({ assigned_at: new Date().toISOString() })
         .eq('id', result.lead_id);
+
+      // Adicionar tag "Lead Qualificado Pela IA"
+      const { data: existingTag } = await supabaseClient
+        .from('lead_tag_relations')
+        .select('id')
+        .eq('lead_id', result.lead_id)
+        .eq('tag_id', TAG_QUALIFICADO_IA_ID)
+        .maybeSingle();
+
+      if (!existingTag) {
+        const { error: tagError } = await supabaseClient
+          .from('lead_tag_relations')
+          .insert({ lead_id: result.lead_id, tag_id: TAG_QUALIFICADO_IA_ID });
+
+        if (tagError) {
+          console.error('Erro ao adicionar tag:', tagError);
+        } else {
+          console.log('Tag "Lead Qualificado Pela IA" adicionada ao lead:', result.lead_id);
+        }
+      }
 
       try {
         await supabaseClient.functions.invoke('send-push-notification', {
