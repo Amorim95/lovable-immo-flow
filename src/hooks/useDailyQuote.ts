@@ -4,7 +4,7 @@ import { MOTIVATIONAL_QUOTES } from "@/constants/motivationalQuotes";
 // Frases especiais com datas fixas (YYYY-MM-DD)
 // Após essas datas, volta à rotação normal
 const SPECIAL_QUOTES: Record<string, string> = {
-  "2026-02-16": "Enquanto você diz \"eu mereço\", alguém está fazendo mais que você e conquistando o lugar que você sonha.",
+  "2026-02-16": "Enquanto você diz \"eu mereço\", alguém está fazendo mais do que você e conquistando o lugar com que você sonha.",
   "2026-02-17": "Merecimento sem esforço é ilusão confortável.",
   "2026-02-18": "Faça hoje o que os fracos não fazem e viva o amanhã que os fortes desfrutam.",
 };
