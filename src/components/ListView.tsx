@@ -53,6 +53,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
   const { isAdmin, isGestor } = useUserRole();
   const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
   const [visibleCount, setVisibleCount] = useState(50);
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
   const [transferModalData, setTransferModalData] = useState<{
     isOpen: boolean;
     leadIds: string[];
@@ -179,11 +180,35 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
     setSelectedLeadIds([]); // Limpar seleção após transferência
   };
 
-  const handleSelectLead = (leadId: string, checked: boolean) => {
+  const allVisibleSelected = visibleLeads.length > 0 && visibleLeads.every(l => selectedLeadIds.includes(l.id));
+  const someVisibleSelected = visibleLeads.some(l => selectedLeadIds.includes(l.id)) && !allVisibleSelected;
+
+  const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedLeadIds(prev => [...prev, leadId]);
+      // Seleciona os primeiros 50 visíveis
+      const first50 = visibleLeads.slice(0, 50).map(l => l.id);
+      setSelectedLeadIds(prev => Array.from(new Set([...prev, ...first50])));
     } else {
-      setSelectedLeadIds(prev => prev.filter(id => id !== leadId));
+      const visibleIds = new Set(visibleLeads.map(l => l.id));
+      setSelectedLeadIds(prev => prev.filter(id => !visibleIds.has(id)));
+    }
+    setLastSelectedIndex(null);
+  };
+
+  const handleSelectLead = (leadId: string, checked: boolean, index: number, e: React.MouseEvent) => {
+    if (e.shiftKey && lastSelectedIndex !== null) {
+      // Shift+Click: seleciona intervalo
+      const start = Math.min(lastSelectedIndex, index);
+      const end = Math.max(lastSelectedIndex, index);
+      const rangeIds = visibleLeads.slice(start, end + 1).map(l => l.id);
+      setSelectedLeadIds(prev => Array.from(new Set([...prev, ...rangeIds])));
+    } else {
+      if (checked) {
+        setSelectedLeadIds(prev => [...prev, leadId]);
+      } else {
+        setSelectedLeadIds(prev => prev.filter(id => id !== leadId));
+      }
+      setLastSelectedIndex(index);
     }
   };
 
@@ -206,6 +231,15 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
             <TableRow>
               {canTransfer && (
                 <TableHead className="w-12">
+                  <Checkbox
+                    checked={allVisibleSelected}
+                    ref={(el) => {
+                      if (el) (el as any).indeterminate = someVisibleSelected;
+                    }}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Selecionar todos os leads visíveis"
+                    title="Selecionar os primeiros 50 leads"
+                  />
                 </TableHead>
               )}
               <TableHead>Data</TableHead>
@@ -216,7 +250,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
             </TableRow>
           </TableHeader>
         <TableBody>
-            {visibleLeads.map((lead) => (
+            {visibleLeads.map((lead, index) => (
               <TableRow
                 key={lead.id}
                 className={`cursor-pointer hover:bg-muted/50 transition-colors ${
@@ -228,7 +262,11 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Checkbox
                       checked={selectedLeadIds.includes(lead.id)}
-                      onCheckedChange={(checked) => handleSelectLead(lead.id, checked as boolean)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const isCurrentlySelected = selectedLeadIds.includes(lead.id);
+                        handleSelectLead(lead.id, !isCurrentlySelected, index, e as React.MouseEvent);
+                      }}
                       aria-label={`Selecionar ${lead.nome}`}
                     />
                   </TableCell>
