@@ -147,7 +147,8 @@ export default function MobileLeads() {
       data: new Date(atividade.data),
       corretor: atividade.corretor
     })),
-    status: 'ativo'
+    status: 'ativo',
+    stage_name: lead.stage_name || undefined
   }));
 
   // Aplicar filtros
@@ -172,9 +173,8 @@ export default function MobileLeads() {
     }
 
     // Filtro de etapa
-    const originalLeadForStage = leads.find(l => l.id === lead.id);
     const matchesStage = !selectedStage || 
-      originalLeadForStage?.stage_name === selectedStage || 
+      lead.stage_name === selectedStage || 
       lead.etapa === selectedStage;
 
     // Filtro de etiquetas
@@ -537,12 +537,12 @@ export default function MobileLeads() {
                     <SelectTrigger 
                       className="ml-2 h-auto p-1 text-xs border-none shadow-none"
                       style={{ 
-                        backgroundColor: getStageColor(lead.etapa),
+                        backgroundColor: getStageColor(lead.stage_name || lead.etapa),
                         color: '#1f2937'
                       }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <span>{getStageName(lead.etapa)}</span>
+                      <span>{getStageName(lead.stage_name || lead.etapa)}</span>
                       <ChevronDown className="h-3 w-3 ml-1" />
                     </SelectTrigger>
                     <SelectContent>
