@@ -172,7 +172,10 @@ export default function MobileLeads() {
     }
 
     // Filtro de etapa
-    const matchesStage = !selectedStage || lead.etapa === selectedStage;
+    const originalLeadForStage = leads.find(l => l.id === lead.id);
+    const matchesStage = !selectedStage || 
+      originalLeadForStage?.stage_name === selectedStage || 
+      lead.etapa === selectedStage;
 
     // Filtro de etiquetas
     let matchesTags = true;
