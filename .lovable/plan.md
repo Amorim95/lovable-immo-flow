@@ -1,33 +1,27 @@
 
 
-## Bug: Filtro de Etapas nao funciona no Mobile
+## Correção: Filtros e Badges de Etapas no Mobile
 
-### Causa do Problema
+### Problema
+Os leads no mobile perdem o campo `stage_name` durante a conversão, causando:
+- Badges mostrando nomes de etapas errados (usando chave legada)
+- Filtro comparando valores incompatíveis
 
-O filtro de etapas no mobile compara dois valores incompativeis:
-- O dropdown define `selectedStage` com o **nome** da etapa (ex: "Aguardando Atendimento")
-- O filtro compara com `lead.etapa`, que contem a **chave legada** (ex: "aguardando-atendimento")
+### Alterações em `src/pages/MobileLeads.tsx`
 
-Como "Aguardando Atendimento" nunca e igual a "aguardando-atendimento", o filtro sempre retorna zero leads.
+**1. Incluir `stage_name` na conversão (linha 150)**
+Adicionar `stage_name: lead.stage_name || undefined` ao objeto convertido.
 
-Na versao desktop (Kanban), o sistema usa `stage_name` para comparar, que ja contem o nome correto.
-
-### Correcao
-
-**Arquivo:** `src/pages/MobileLeads.tsx`
-
-Alterar a linha do filtro de etapa (linha 175) para comparar usando `stage_name` do lead original em vez de `lead.etapa`:
-
+**2. Simplificar filtro de etapa (linhas 175-178)**
+Remover o `leads.find()` desnecessário e comparar diretamente com `lead.stage_name`:
 ```
-// De:
-const matchesStage = !selectedStage || lead.etapa === selectedStage;
-
-// Para:
-const originalLead = leads.find(l => l.id === lead.id);
 const matchesStage = !selectedStage || 
-  originalLead?.stage_name === selectedStage || 
+  lead.stage_name === selectedStage || 
   lead.etapa === selectedStage;
 ```
 
-Isso verifica primeiro o `stage_name` (nome completo da etapa) e como fallback o `etapa` (chave legada), garantindo compatibilidade em ambos os casos.
+**3. Corrigir badges nos cards (linhas 540-545)**
+Trocar `getStageColor(lead.etapa)` por `getStageColor(lead.stage_name || lead.etapa)` e `getStageName(lead.etapa)` por `getStageName(lead.stage_name || lead.etapa)`.
 
+### Risco
+Muito baixo. Todas as alterações usam fallback para `lead.etapa`, garantindo compatibilidade.
