@@ -102,27 +102,21 @@ serve(async (req) => {
     const leadId = result.lead_id;
     console.log('Resultado:', result);
 
-    // Mover para etapa "Recuperar"
-    await supabaseClient
-      .from('leads')
-      .update({
-        etapa: 'aguardando-atendimento',
-        stage_name: 'Recuperar',
-        assigned_at: new Date().toISOString()
-      })
-      .eq('id', leadId);
+    // Apenas processar leads NOVOS (não duplicatas)
+    if (!result.is_duplicate) {
+      // Mover para etapa "Recuperar"
+      await supabaseClient
+        .from('leads')
+        .update({
+          etapa: 'aguardando-atendimento',
+          stage_name: 'Recuperar',
+          assigned_at: new Date().toISOString()
+        })
+        .eq('id', leadId);
 
-    console.log('Lead movido para etapa Recuperar:', leadId);
+      console.log('Lead movido para etapa Recuperar:', leadId);
 
-    // Adicionar tag "Não Qualificado"
-    const { data: existingTag } = await supabaseClient
-      .from('lead_tag_relations')
-      .select('id')
-      .eq('lead_id', leadId)
-      .eq('tag_id', TAG_NAO_QUALIFICADO_ID)
-      .single();
-
-    if (!existingTag) {
+      // Adicionar tag "Não Qualificado"
       const { error: tagError } = await supabaseClient
         .from('lead_tag_relations')
         .insert({ lead_id: leadId, tag_id: TAG_NAO_QUALIFICADO_ID });
@@ -132,10 +126,8 @@ serve(async (req) => {
       } else {
         console.log('Tag "Não Qualificado" adicionada ao lead:', leadId);
       }
-    }
 
-    // Notificação push (apenas para leads novos)
-    if (!result.is_duplicate) {
+      // Notificação push
       try {
         await supabaseClient.functions.invoke('send-push-notification', {
           body: {
