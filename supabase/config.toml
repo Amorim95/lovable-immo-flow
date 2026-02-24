@@ -91,3 +91,6 @@ verify_jwt = false
 
 [functions.webhook-lead-rkmf-imoveis-nao-qualificado]
 verify_jwt = false
+
+[functions.webhook-lead-invest-imoveis]
+verify_jwt = false
