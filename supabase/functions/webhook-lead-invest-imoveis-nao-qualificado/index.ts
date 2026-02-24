@@ -101,25 +101,19 @@ Deno.serve(async (req) => {
     const leadId = result.lead_id;
     console.log('[webhook-lead-invest-imoveis-nao-qualificado] Resultado:', result);
 
-    // Mover para etapa "Recuperar" e adicionar tag
-    await supabase
-      .from('leads')
-      .update({
-        etapa: 'aguardando-atendimento',
-        stage_name: 'Recuperar',
-        assigned_at: new Date().toISOString()
-      })
-      .eq('id', leadId);
+    // Apenas processar leads NOVOS (não duplicatas)
+    if (!result.is_duplicate) {
+      // Mover para etapa "Recuperar" e adicionar tag
+      await supabase
+        .from('leads')
+        .update({
+          etapa: 'aguardando-atendimento',
+          stage_name: 'Recuperar',
+          assigned_at: new Date().toISOString()
+        })
+        .eq('id', leadId);
 
-    // Adicionar tag "Não Qualificado"
-    const { data: existingTag } = await supabase
-      .from('lead_tag_relations')
-      .select('id')
-      .eq('lead_id', leadId)
-      .eq('tag_id', TAG_NAO_QUALIFICADO_ID)
-      .single();
-
-    if (!existingTag) {
+      // Adicionar tag "Não Qualificado"
       const { error: tagError } = await supabase
         .from('lead_tag_relations')
         .insert({ lead_id: leadId, tag_id: TAG_NAO_QUALIFICADO_ID });
@@ -129,10 +123,8 @@ Deno.serve(async (req) => {
       } else {
         console.log('[webhook-lead-invest-imoveis-nao-qualificado] Tag "Não Qualificado" adicionada');
       }
-    }
 
-    // Notificação push (apenas leads novos)
-    if (!result.is_duplicate) {
+      // Notificação push
       try {
         await supabase.functions.invoke('send-push-notification', {
           body: {
