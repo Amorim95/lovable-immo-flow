@@ -64,11 +64,16 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
 
     // Ordenar por stage_order (leads sem ordem vão ao final)
     return filtered.sort((a, b) => {
-      const orderA = (a as any).stage_order ?? Number.MAX_SAFE_INTEGER;
-      const orderB = (b as any).stage_order ?? Number.MAX_SAFE_INTEGER;
-      if (orderA !== orderB) return orderA - orderB;
-      // Fallback: ordenar por data de criação
-      return new Date(a.dataCriacao).getTime() - new Date(b.dataCriacao).getTime();
+      const orderA = (a as any).stage_order;
+      const orderB = (b as any).stage_order;
+      
+      // If both have manual order, respect it
+      if (orderA != null && orderB != null) return orderA - orderB;
+      // Manual ordered leads come first
+      if (orderA != null) return -1;
+      if (orderB != null) return 1;
+      // Fallback: mais novos primeiro
+      return new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime();
     });
   }, [leads, stages]);
 
