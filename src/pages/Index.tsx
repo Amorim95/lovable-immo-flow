@@ -193,12 +193,11 @@ const Index = () => {
     // Filtro por etapa (apenas no modo lista)
     let matchesStage = true;
     if (selectedStageKey && viewMode === 'list') {
-      const leadStageKey = lead.stage_name || lead.etapa;
-      if (leadStageKey && selectedStageKey) {
-        matchesStage = leadStageKey === selectedStageKey;
-      } else {
-        matchesStage = false;
-      }
+      // Comparar contra stage_name, etapa e legacy_key (case-insensitive)
+      const selectedLower = selectedStageKey.toLowerCase();
+      const matchesStageName = lead.stage_name?.toLowerCase() === selectedLower;
+      const matchesEtapa = lead.etapa?.toLowerCase() === selectedLower;
+      matchesStage = matchesStageName || matchesEtapa;
     }
     return matchesSearch && matchesDate && matchesUser && matchesTeam && matchesTags && matchesStage;
   });
