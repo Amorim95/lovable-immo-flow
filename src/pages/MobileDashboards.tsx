@@ -34,6 +34,14 @@ const dashboardItems = [
     icon: Users,
     path: '/dashboards/performance-equipe',
     color: 'bg-purple-500'
+  },
+  {
+    id: 'perfil-cliente',
+    title: 'Perfil de Cliente',
+    description: 'Análise do perfil dos leads',
+    icon: Users,
+    path: '/dashboards/perfil-cliente',
+    color: 'bg-orange-500'
   }
 ];
 

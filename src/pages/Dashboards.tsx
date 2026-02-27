@@ -193,6 +193,25 @@ const Dashboards = () => {
 
         <Card 
           className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate('/dashboards/perfil-cliente')}
+        >
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-orange-500/10 dark:bg-orange-500/20 rounded-lg flex items-center justify-center">
+                <Users className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+              </div>
+              <CardTitle className="text-lg">Perfil de Cliente</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground text-sm">
+              Análise do perfil dos leads: renda, estado civil, bairro de preferência e mais.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => navigate('/dashboards/performance-geral')}
         >
           <CardHeader className="pb-3">
