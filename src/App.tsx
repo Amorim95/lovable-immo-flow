@@ -54,6 +54,7 @@ import ConfiguracaoEtapas from "./pages/ConfiguracaoEtapas";
 import ResetPassword from "./pages/ResetPassword";
 import Repiques from "./pages/Repiques";
 import MobileRepiques from "./pages/MobileRepiques";
+import PerfilCliente from "./pages/PerfilCliente";
 import { AccessControlCheck } from "@/components/AccessControlCheck";
 const queryClient = new QueryClient();
 function ProtectedRoute({
@@ -120,6 +121,7 @@ function AppContent() {
                 <Route path="/dashboards/performance-corretor" element={<PerformancePorCorretor />} />
                 <Route path="/dashboards/performance-equipe" element={<PerformanceDaEquipe />} />
                 <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
+                <Route path="/dashboards/perfil-cliente" element={<PerfilCliente />} />
                 <Route path="/corretores" element={<MobileCorretores />} />
                 <Route path="/equipes" element={<MobileEquipes />} />
                 <Route path="/repiques" element={<MobileRepiques />} />
@@ -158,6 +160,7 @@ function AppContent() {
                       <Route path="/dashboards/performance-corretor" element={<PerformancePorCorretor />} />
                       <Route path="/dashboards/performance-equipe" element={<PerformanceDaEquipe />} />
                       <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
+                      <Route path="/dashboards/perfil-cliente" element={<PerfilCliente />} />
                       <Route path="/corretores" element={<Corretores />} />
                       <Route path="/equipes" element={<EquipesCadastradas />} />
                       <Route path="/repiques" element={<Repiques />} />
