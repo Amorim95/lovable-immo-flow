@@ -28,8 +28,6 @@ import MobileEquipes from "./pages/MobileEquipes";
 import MobileCompanySettings from "./pages/MobileCompanySettings";
 import MobileApearencia from "./pages/MobileApearencia";
 import Dashboards from "./pages/Dashboards";
-import PerformancePorCorretor from "./pages/PerformancePorCorretor";
-import PerformanceDaEquipe from "./pages/PerformanceDaEquipe";
 import PerformanceGeral from "./pages/PerformanceGeral";
 import Corretores from "./pages/Corretores";
 import EquipesCadastradas from "./pages/EquipesCadastradas";
@@ -118,8 +116,6 @@ function AppContent() {
                 <Route path="/" element={<MobileLeads />} />
                 <Route path="/lead/:id" element={<LeadDetails />} />
                 <Route path="/dashboards" element={<MobileDashboards />} />
-                <Route path="/dashboards/performance-corretor" element={<PerformancePorCorretor />} />
-                <Route path="/dashboards/performance-equipe" element={<PerformanceDaEquipe />} />
                 <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
                 <Route path="/dashboards/perfil-cliente" element={<PerfilCliente />} />
                 <Route path="/corretores" element={<MobileCorretores />} />
@@ -157,8 +153,6 @@ function AppContent() {
                     <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/dashboards" element={<Dashboards />} />
-                      <Route path="/dashboards/performance-corretor" element={<PerformancePorCorretor />} />
-                      <Route path="/dashboards/performance-equipe" element={<PerformanceDaEquipe />} />
                       <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
                       <Route path="/dashboards/perfil-cliente" element={<PerfilCliente />} />
                       <Route path="/corretores" element={<Corretores />} />

@@ -1,16 +1,12 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
 import { useLeadStages } from "@/hooks/useLeadStages";
-import { useUserRole } from "@/hooks/useUserRole";
 import { 
   Calendar,
   Users,
-  LayoutList,
-  Download,
   Clock,
   UserCheck,
   CalendarCheck,
@@ -22,7 +18,6 @@ const Dashboards = () => {
   const navigate = useNavigate();
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
-  const { isAdmin, isGestor, isCorretor } = useUserRole();
   const { stages } = useLeadStages();
 
   // Calcular o range de data baseado no filtro selecionado
@@ -33,9 +28,6 @@ const Dashboards = () => {
   // Buscar métricas reais do banco de dados
   const { metrics, loading, error } = useDashboardMetrics(dateRange);
 
-  // Verificar se o usuário pode ver "Performance do Corretor"
-  const canViewCorretorPerformance = isAdmin || isGestor;
-
   // Função para obter ícone e cor com base no nome da etapa
   const getStageIcon = (stageName: string) => {
     const lowerName = stageName.toLowerCase();
@@ -43,7 +35,7 @@ const Dashboards = () => {
     if (lowerName.includes('visita')) return { icon: CalendarCheck, color: 'purple' };
     if (lowerName.includes('venda') || lowerName.includes('fechada')) return { icon: TrendingUp, color: 'green' };
     if (lowerName.includes('contato') || lowerName.includes('tentativa')) return { icon: UserCheck, color: 'blue' };
-    return { icon: LayoutList, color: 'gray' };
+    return { icon: Users, color: 'gray' };
   };
 
 
@@ -123,74 +115,6 @@ const Dashboards = () => {
 
       {/* Cards de Dashboards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {canViewCorretorPerformance && (
-          <Card 
-            className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => navigate('/dashboards/performance-corretor')}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-500/10 dark:bg-blue-500/20 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                </div>
-                <CardTitle className="text-lg">Performance do Corretor</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                Acompanhe o desempenho individual de cada corretor, incluindo leads convertidos, tempo médio de resposta e taxa de conversão.
-              </p>
-              <div className="mt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Corretor Destaque:</span>
-                  <span className="font-medium">{loading ? '...' : metrics.melhorCorretor.nome}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Taxa Conversão:</span>
-                  <span className="font-medium text-green-600">
-                    {loading ? '...' : `${metrics.melhorCorretor.taxaConversao}%`}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {!isCorretor && (
-          <Card 
-            className="cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={() => navigate('/dashboards/performance-equipe')}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-green-500/10 dark:bg-green-500/20 rounded-lg flex items-center justify-center">
-                  <LayoutList className="w-6 h-6 text-green-600 dark:text-green-400" />
-                </div>
-                <CardTitle className="text-lg">Performance da Equipe</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                Visão geral do desempenho da equipe, comparativos entre corretores e metas atingidas.
-              </p>
-              <div className="mt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Equipe Destaque:</span>
-                  <span className="font-medium">
-                    {loading ? '...' : `${metrics.equipeDestaque.nome} - ${metrics.equipeDestaque.totalLeads} leads`}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Total de Leads:</span>
-                  <span className="font-medium">
-                    {loading ? '...' : `${metrics.equipeDestaque.totalLeads} leads`}
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         <Card 
           className="cursor-pointer hover:shadow-lg transition-shadow"
           onClick={() => navigate('/dashboards/perfil-cliente')}

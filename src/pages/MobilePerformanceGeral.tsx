@@ -8,6 +8,7 @@ import { Loader2, ArrowLeft, TrendingUp, Target, Clock } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell } from "recharts";
 import { MobileHeader } from "@/components/MobileHeader";
+import { TeamUserFilters } from "@/components/TeamUserFilters";
 
 // Function to get stage icon and color
 const getStageIcon = (stageName: string) => {
@@ -24,7 +25,14 @@ const getStageIcon = (stageName: string) => {
   return { color: '#6b7280' };
 };
 
-const MobilePerformanceGeral = () => {
+interface MobilePerformanceGeralProps {
+  selectedTeamId?: string | null;
+  selectedUserId?: string | null;
+  onTeamChange?: (teamId: string | null) => void;
+  onUserChange?: (userId: string | null) => void;
+}
+
+const MobilePerformanceGeral = ({ selectedTeamId, selectedUserId, onTeamChange, onUserChange }: MobilePerformanceGeralProps) => {
   const { stages } = useLeadStages();
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
@@ -33,7 +41,7 @@ const MobilePerformanceGeral = () => {
     return getDateRangeFromFilter(dateFilter, customDateRange);
   }, [dateFilter, customDateRange]);
 
-  const { performanceGeral, loading, error } = usePerformanceGeral(dateRange);
+  const { performanceGeral, loading, error } = usePerformanceGeral(dateRange, selectedTeamId, selectedUserId);
 
   // Criar dados de status dinâmicos e config baseados nas etapas da empresa
   const dadosStatus = stages.map(stage => {
@@ -95,17 +103,25 @@ const MobilePerformanceGeral = () => {
       <MobileHeader title="Performance Geral" />
 
       <div className="p-4 space-y-4">
-        {/* Filtro de Data */}
+        {/* Filtros */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Filtro por Data</CardTitle>
+            <CardTitle className="text-base">Filtros</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <DateFilter
               value={dateFilter}
               customRange={customDateRange}
               onValueChange={handleDateFilterChange}
             />
+            {onTeamChange && onUserChange && (
+              <TeamUserFilters
+                selectedTeamId={selectedTeamId || null}
+                selectedUserId={selectedUserId || null}
+                onTeamChange={onTeamChange}
+                onUserChange={onUserChange}
+              />
+            )}
           </CardContent>
         </Card>
 

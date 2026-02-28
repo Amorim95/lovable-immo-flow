@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { usePerformanceGeral } from "@/hooks/usePerformanceGeral";
 import { useLeadStages } from "@/hooks/useLeadStages";
+import { TeamUserFilters } from "@/components/TeamUserFilters";
 import { Loader2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from "recharts";
@@ -31,6 +32,8 @@ const PerformanceGeral = () => {
   const { stages } = useLeadStages();
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   // Calcular o range de data baseado no filtro selecionado
   const dateRange = useMemo(() => {
@@ -38,11 +41,11 @@ const PerformanceGeral = () => {
   }, [dateFilter, customDateRange]);
 
   // Buscar dados reais do banco - sempre chamar todos os hooks
-  const { performanceGeral, evolutionData, loading, error } = usePerformanceGeral(dateRange);
+  const { performanceGeral, evolutionData, loading, error } = usePerformanceGeral(dateRange, selectedTeamId, selectedUserId);
 
   // Usar versão mobile em dispositivos móveis APÓS todos os hooks
   if (isMobile) {
-    return <MobilePerformanceGeral />;
+    return <MobilePerformanceGeral selectedTeamId={selectedTeamId} selectedUserId={selectedUserId} onTeamChange={setSelectedTeamId} onUserChange={setSelectedUserId} />;
   }
 
   // Criar dados de status dinâmicos e config baseados nas etapas da empresa
@@ -110,19 +113,23 @@ const PerformanceGeral = () => {
       {/* Filtros */}
       <Card>
         <CardHeader>
-          <CardTitle>Filtro por Data</CardTitle>
+          <CardTitle>Filtros</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="mb-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Filtro de Data</label>
-              <DateFilter
-                value={dateFilter}
-                customRange={customDateRange}
-                onValueChange={handleDateFilterChange}
-              />
-            </div>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Filtro de Data</label>
+            <DateFilter
+              value={dateFilter}
+              customRange={customDateRange}
+              onValueChange={handleDateFilterChange}
+            />
           </div>
+          <TeamUserFilters
+            selectedTeamId={selectedTeamId}
+            selectedUserId={selectedUserId}
+            onTeamChange={setSelectedTeamId}
+            onUserChange={setSelectedUserId}
+          />
         </CardContent>
       </Card>
 
