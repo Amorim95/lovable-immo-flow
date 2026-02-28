@@ -20,22 +20,6 @@ const dashboardItems = [
     color: 'bg-blue-500'
   },
   {
-    id: 'performance-corretor',
-    title: 'Performance por Corretor',
-    description: 'Análise individual de corretores',
-    icon: Target,
-    path: '/dashboards/performance-corretor',
-    color: 'bg-green-500'
-  },
-  {
-    id: 'performance-equipe',
-    title: 'Performance da Equipe',
-    description: 'Análise por equipes',
-    icon: Users,
-    path: '/dashboards/performance-equipe',
-    color: 'bg-purple-500'
-  },
-  {
     id: 'perfil-cliente',
     title: 'Perfil de Cliente',
     description: 'Análise do perfil dos leads',

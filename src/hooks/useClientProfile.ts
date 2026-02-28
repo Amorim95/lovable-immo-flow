@@ -192,7 +192,7 @@ function parseLeadData(dadosAdicionais: string) {
   return { fields: result, income, age };
 }
 
-export function useClientProfile(dateRange: DateRange | null) {
+export function useClientProfile(dateRange: DateRange | null, teamId?: string | null, userId?: string | null) {
   const [rawData, setRawData] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -209,6 +209,21 @@ export function useClientProfile(dateRange: DateRange | null) {
       setError(null);
       
       try {
+        // If filtering by team, first get user IDs in that team
+        let teamUserIds: string[] | null = null;
+        if (teamId) {
+          const { data: teamUsers } = await supabase
+            .from('users')
+            .select('id')
+            .eq('equipe_id', teamId);
+          teamUserIds = teamUsers?.map(u => u.id) || [];
+          if (teamUserIds.length === 0) {
+            setRawData([]);
+            setLoading(false);
+            return;
+          }
+        }
+
         const allData: string[] = [];
         let from = 0;
         const batchSize = 1000;
@@ -216,7 +231,7 @@ export function useClientProfile(dateRange: DateRange | null) {
         while (true) {
           let query = supabase
             .from('leads')
-            .select('dados_adicionais, created_at')
+            .select('dados_adicionais, created_at, user_id')
             .eq('company_id', companyId)
             .not('dados_adicionais', 'is', null)
             .neq('dados_adicionais', '')
@@ -225,6 +240,12 @@ export function useClientProfile(dateRange: DateRange | null) {
           if (dateRange) {
             query = query.gte('created_at', dateRange.from.toISOString())
               .lte('created_at', dateRange.to.toISOString());
+          }
+
+          if (userId) {
+            query = query.eq('user_id', userId);
+          } else if (teamUserIds) {
+            query = query.in('user_id', teamUserIds);
           }
           
           const { data, error: fetchError } = await query;
@@ -250,7 +271,7 @@ export function useClientProfile(dateRange: DateRange | null) {
     
     fetchAll();
     return () => { cancelled = true; };
-  }, [companyId, dateRange?.from?.getTime(), dateRange?.to?.getTime()]);
+  }, [companyId, dateRange?.from?.getTime(), dateRange?.to?.getTime(), teamId, userId]);
 
   const profileData = useMemo((): ClientProfileData => {
     const incomes: number[] = [];

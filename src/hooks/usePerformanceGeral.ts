@@ -26,7 +26,7 @@ interface DateRange {
   to?: Date;
 }
 
-export function usePerformanceGeral(dateRange?: DateRange) {
+export function usePerformanceGeral(dateRange?: DateRange, teamId?: string | null, userId?: string | null) {
   const { user } = useAuth();
   const { stages } = useLeadStages();
   const [performanceGeral, setPerformanceGeral] = useState<PerformanceGeral>({
@@ -46,7 +46,7 @@ export function usePerformanceGeral(dateRange?: DateRange) {
   useEffect(() => {
     if (!user || stages.length === 0) return;
     loadPerformanceGeral();
-  }, [user, dateRange, stages]);
+  }, [user, dateRange, stages, teamId, userId]);
 
   const loadPerformanceGeral = async () => {
     if (!user) return;
@@ -54,6 +54,25 @@ export function usePerformanceGeral(dateRange?: DateRange) {
     try {
       setLoading(true);
       setError(null);
+
+      // If filtering by team, first get user IDs in that team
+      let teamUserIds: string[] | null = null;
+      if (teamId) {
+        const { data: teamUsers } = await supabase
+          .from('users')
+          .select('id')
+          .eq('equipe_id', teamId);
+        teamUserIds = teamUsers?.map(u => u.id) || [];
+        if (teamUserIds.length === 0) {
+          setPerformanceGeral({
+            leadsTotais: 0, tempoMedioResposta: 0, tempoMedioPrimeiroContato: 0,
+            conversaoGeral: 0, leadsPorEtapa: {}, crescimentoMensal: 0,
+            etiquetasPorEtapa: {}, totalPorEtiqueta: {}
+          });
+          setLoading(false);
+          return;
+        }
+      }
 
       // 1. Buscar todos os leads no período com suas etiquetas usando paginação automática
       let allLeads: any[] = [];
@@ -87,6 +106,12 @@ export function usePerformanceGeral(dateRange?: DateRange) {
           leadsQuery = leadsQuery
             .gte('created_at', dateRange.from.toISOString())
             .lte('created_at', dateRange.to.toISOString());
+        }
+
+        if (userId) {
+          leadsQuery = leadsQuery.eq('user_id', userId);
+        } else if (teamUserIds) {
+          leadsQuery = leadsQuery.in('user_id', teamUserIds);
         }
 
         const { data, error: leadsError } = await leadsQuery;

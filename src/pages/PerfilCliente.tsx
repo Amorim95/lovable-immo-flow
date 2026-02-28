@@ -4,7 +4,7 @@ import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from 
 import { useClientProfile } from "@/hooks/useClientProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileHeader } from "@/components/MobileHeader";
-import { Skeleton } from "@/components/ui/skeleton";
+import { TeamUserFilters } from "@/components/TeamUserFilters";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Users, DollarSign, Loader2 } from "lucide-react";
 
@@ -43,9 +43,11 @@ export default function PerfilCliente() {
   const isMobile = useIsMobile();
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   const dateRange = useMemo(() => getDateRangeFromFilter(dateFilter, customDateRange), [dateFilter, customDateRange]);
-  const { data, loading, error } = useClientProfile(dateRange);
+  const { data, loading, error } = useClientProfile(dateRange, selectedTeamId, selectedUserId);
 
   const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
     setDateFilter(option);
@@ -61,12 +63,20 @@ export default function PerfilCliente() {
         </div>
       )}
 
-      {/* Date Filter */}
+      {/* Filters */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Filtro de Período</label>
             <DateFilter value={dateFilter} customRange={customDateRange} onValueChange={handleDateFilterChange} />
+          </div>
+          <div className={isMobile ? 'space-y-4' : ''}>
+            <TeamUserFilters
+              selectedTeamId={selectedTeamId}
+              selectedUserId={selectedUserId}
+              onTeamChange={setSelectedTeamId}
+              onUserChange={setSelectedUserId}
+            />
           </div>
           {!loading && (
             <p className="text-sm text-muted-foreground mt-3">
