@@ -36,23 +36,76 @@ const INCOME_BRACKETS = [
   { label: 'R$ 6.000+', min: 6000, max: Infinity },
 ];
 
+function parseBRNumber(raw: string): number | null {
+  let val = raw.trim();
+  // Remove trailing text like "reais", "mensal", "cada"
+  val = val.replace(/\s*(reais|mensal|cada|por\s+mês|mês|mes).*$/i, '').trim();
+  
+  if (!val) return null;
+  
+  // Format: "2.100,00" or "1.600,50" (dots=thousands, comma=decimal)
+  if (/^\d{1,3}(\.\d{3})+(,\d{1,2})?$/.test(val)) {
+    return parseFloat(val.replace(/\./g, '').replace(',', '.'));
+  }
+  
+  // Format: "2.000" or "12.500" (dot-only, segment after last dot is 3 digits = thousands separator)
+  if (/^\d{1,3}(\.\d{3})+$/.test(val)) {
+    return parseFloat(val.replace(/\./g, ''));
+  }
+  
+  // Format: "2,5" shorthand (comma as decimal, result < 50 means thousands shorthand)
+  if (/^\d+,\d{1}$/.test(val)) {
+    const num = parseFloat(val.replace(',', '.'));
+    if (!isNaN(num) && num < 50) return num * 1000;
+  }
+  
+  // Format: "2.2000" or "3.9000" (typos - dot in wrong place)
+  if (/^\d\.\d{4}$/.test(val)) {
+    return parseFloat(val.replace('.', ''));
+  }
+  
+  // Plain number
+  const num = parseFloat(val.replace(',', '.'));
+  if (!isNaN(num)) return num;
+  
+  return null;
+}
+
 function parseIncome(text: string): number | null {
-  // Try "Renda Bruta: R$ 2.100,00" or "Renda: 2000"
+  // Handle "salário mínimo" / "um salário mínimo"
+  if (/sal[aá]rio\s*m[ií]nimo/i.test(text)) {
+    return 1412;
+  }
+  
   const patterns = [
-    /[Rr]enda\s*[Bb]ruta[^0-9R$]*(?:R\$\s*)?([0-9.,]+)/i,
-    /[Rr]enda[^0-9R$]*(?:R\$\s*)?([0-9.,]+)/i,
+    /[Rr]enda\s*[Bb]ruta[^0-9R$]*(?:R\$\s*)?([0-9.,]+(?:\s*(?:mil|reais|mensal|cada|por\s+mês|mês|mes))?)/i,
+    /[Rr]enda[^0-9R$]*(?:R\$\s*)?([0-9.,]+(?:\s*(?:mil|reais|mensal|cada|por\s+mês|mês|mes))?)/i,
   ];
   
   for (const pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
-      let val = match[1];
-      // Handle BR format: 2.100,00 → 2100.00
-      if (val.includes(',')) {
-        val = val.replace(/\./g, '').replace(',', '.');
+      let raw = match[1].trim();
+      
+      // Handle "X mil"
+      const milMatch = raw.match(/^([0-9.,]+)\s*mil/i);
+      if (milMatch) {
+        const base = parseFloat(milMatch[1].replace(',', '.'));
+        if (!isNaN(base)) {
+          const val = base * 1000;
+          if (val >= 500 && val <= 100000) return val;
+        }
+        continue;
       }
-      const num = parseFloat(val);
-      if (!isNaN(num) && num >= 500 && num <= 50000) {
+      
+      // Handle dual income: take first value before +, e, /
+      const dualMatch = raw.match(/^([0-9.,]+)\s*(?:\+|e\s|\/)/);
+      if (dualMatch) {
+        raw = dualMatch[1];
+      }
+      
+      const num = parseBRNumber(raw);
+      if (num !== null && num >= 500 && num <= 100000) {
         return num;
       }
     }
@@ -79,12 +132,17 @@ function parseBirthDate(text: string): number | null {
   const patterns = [
     /[Dd]ata\s*de\s*[Nn]ascimento[^0-9]*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/,
     /[Dd]ata\s*de\s*[Nn]ascimento[^0-9]*(\d{1,2})(\d{2})(\d{4})/,
+    /[Dd]ata\s*de\s*[Nn]ascimento[^0-9]*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})(?!\d)/,
   ];
   
   for (const pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
-      const year = parseInt(match[3]);
+      let year = parseInt(match[3]);
+      // Handle 2-digit years
+      if (year < 100) {
+        year = year < 30 ? 2000 + year : 1900 + year;
+      }
       if (year > 1940 && year < 2010) {
         const now = new Date();
         return now.getFullYear() - year;
@@ -112,12 +170,12 @@ function normalizeValue(val: string): string {
 
 const FIELD_DEFINITIONS: { key: string; label: string; extractKeys: string[] }[] = [
   { key: 'primeira_casa', label: 'Primeira Casa', extractKeys: ['Primeira Casa', 'Primeira casa'] },
-  { key: 'emprego', label: 'Emprego / Vínculo', extractKeys: ['Emprego', 'Vínculo empregatício', 'Vinculo empregaticio'] },
-  { key: 'casado', label: 'Casado', extractKeys: ['Casado', 'Casado no cartório', 'Casado no cartorio'] },
-  { key: 'filho_menor', label: 'Filho Menor de Idade', extractKeys: ['Tem filho menor de idade', 'Tem filhos menor de idade', 'filho menor'] },
+  { key: 'emprego', label: 'Emprego / Vínculo', extractKeys: ['Vínculo empregatício', 'Vinculo empregaticio', 'Emprego'] },
+  { key: 'casado', label: 'Casado', extractKeys: ['Casado no cartório', 'Casado no cartorio', 'Casado'] },
+  { key: 'filho_menor', label: 'Filho Menor de Idade', extractKeys: ['Tem filhos menor de idade', 'Tem filho menor de idade', 'filho menor'] },
   { key: 'somar_renda', label: 'Somar Renda', extractKeys: ['Se vai somar Renda', 'Somar renda', 'somar renda'] },
-  { key: 'fgts', label: 'FGTS', extractKeys: ['FGTS', 'FGTS ou Reserva de emergência', 'FGTS ou Reserva'] },
-  { key: 'bairro', label: 'Bairro de Preferência', extractKeys: ['Bairro de preferencia', 'Bairro de preferência'] },
+  { key: 'fgts', label: 'FGTS', extractKeys: ['FGTS ou Reserva de emergência', 'FGTS ou Reserva de emergencia', 'FGTS ou Reserva', 'FGTS'] },
+  { key: 'bairro', label: 'Bairro de Preferência', extractKeys: ['Bairro de preferência', 'Bairro de preferencia'] },
   { key: 'horario', label: 'Horário de Preferência', extractKeys: ['Horário de Preferência', 'Horario de Preferencia', 'Melhor horário', 'Melhor horario'] },
 ];
 
