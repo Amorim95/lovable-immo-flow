@@ -1,69 +1,38 @@
 
 
-## Plan: New "Perfil de Cliente" Dashboard
+## Diagnosis: Parsing Bugs in `useClientProfile.ts`
 
-### Summary
-Create a new dashboard page that analyzes the `dados_adicionais` text field from leads, extracting client profile data (income, employment, marital status, etc.) and displaying volume/percentage statistics with date filtering.
+After analyzing real data from RKMF Imoveis and Click Imoveis, I found **3 categories of bugs** causing data loss:
 
-### Data Format Discovery
-The `dados_adicionais` field has two formats that need parsing:
+### Bug 1: Income parsing fails for BR number format without comma
+Values like `"R$ 2.000"`, `"R$ 3.000"`, `"1.600"` are parsed as 2.0, 3.0, 1.6 (float) instead of 2000, 3000, 1600. The code only handles BR format when a comma is present (`2.100,00`), but most leads use dot-only thousands separators.
 
-**Format 1** (pipe-separated):
-```
-Primeira Casa: Sim! | Emprego: Tenho carteira assinada | Casado: Sim | Renda: 2000 | Data de Nascimento: 5121994 | Tem filho menor de idade: Não | Se vai somar Renda: Sim | FGTS: Sim | Bairro de preferencia: Porto da pedra | CPF: ... | Horário de Preferência: Manhã
-```
+Also fails for: `"3 mil"`, `"5 mil"`, `"2,5"` (shorthand for 2500), `"2.2000"` / `"3.9000"` (typos), `"1.600 + 6.000"` (dual income), `"Um salário mínimo"` (text), `"INSS e 2.500"`, `"2.000 reais cada"`.
 
-**Format 2** (numbered lines):
-```
-1 - Vínculo empregatício: Sim, a 9 anos
-2 - Casado no cartório: Sim
-3 - Tem filhos menor de idade?: Sim
-4 - Somar renda: Não
-5 - Data de nascimento: 26/04/1991
-6 - Renda Bruta: R$ 2.100,00
-7 - CPF: ...
-8 - FGTS ou Reserva de emergência: Não
-9 - Bairro de preferência: São Gonçalo
-Melhor horário: 12h às 13h30
-```
+### Bug 2: Field extraction key ordering captures garbage
+Keys are ordered short-first: `['Casado', 'Casado no cartório', ...]` and `['FGTS', 'FGTS ou Reserva de emergência', ...]`. The short key matches first on Format 2 data, capturing wrong values like `"no cartório: Sim"` instead of `"Sim"`, or `"ou Reserva de emergência: Não"` instead of `"Não"`.
 
-### Implementation Steps
+### Bug 3: Birth date regex misses 2-digit years
+Dates like `"26/05/77"` and `"23/05/96"` fail because the regex only accepts 4-digit years (`\d{4}`).
 
-1. **Create hook `src/hooks/useClientProfile.ts`**
-   - Fetch all leads with `dados_adicionais` from the user's company, paginated (batches of 1000)
-   - Apply date range filter on `created_at`
-   - Parse both formats using regex to extract: Primeira Casa, Emprego, Casado, Data de Nascimento, Filho menor, Somar Renda, FGTS, Bairro de preferência, Horário de Preferência, Renda
-   - Compute:
-     - Income distribution in 5 brackets (up to R$1.500, R$1.500-2.499, R$2.500-3.999, R$4.000-5.999, R$6.000+)
-     - For each categorical field: count of each value + percentage
-     - Age distribution from birth dates
+---
 
-2. **Create page `src/pages/PerfilCliente.tsx`**
-   - Desktop page with DateFilter component at top
-   - Card with income distribution (bar chart using recharts)
-   - Grid of cards showing each field's breakdown with volume and percentage
-   - Each card shows: field name, top values with count and percentage bar
-   - Loading and error states
+### Fix Plan (single file: `src/hooks/useClientProfile.ts`)
 
-3. **Create mobile page `src/pages/MobilePerfilCliente.tsx`**
-   - Mobile-optimized layout with MobileHeader
-   - Same data, stacked cards layout
+**1. Rewrite `parseIncome` function**
+- Detect BR dot-only format: if number has dots and segment after last dot is 3 digits, treat dots as thousands separators (e.g., `"2.000"` → 2000)
+- Handle `"X mil"` → multiply by 1000
+- Handle shorthand `"2,5"` → when parsed value < 50, multiply by 1000
+- Handle dual income (`+`, `e`, `/`): take the first numeric value
+- Strip trailing text like `"reais"`, `"mensal"`, `"cada"`
+- Handle `"salário mínimo"` → map to 1412 (current BR minimum wage)
+- Widen range check to 500-100000
 
-4. **Add routes in `src/App.tsx`**
-   - Desktop: `/dashboards/perfil-cliente` → `PerfilCliente`
-   - Mobile: `/dashboards/perfil-cliente` → `PerfilCliente` (with mobile detection)
+**2. Fix `extractField` key ordering**
+- Reorder all `extractKeys` arrays to put longer/more-specific keys first (e.g., `['Casado no cartório', 'Casado no cartorio', 'Casado']`)
+- Add word boundary or colon requirement after short keys to prevent partial matches
 
-5. **Add navigation card in `src/pages/Dashboards.tsx`**
-   - New card "Perfil de Cliente" with Users icon linking to `/dashboards/perfil-cliente`
-
-6. **Add to mobile dashboards in `src/pages/MobileDashboards.tsx`**
-   - New item in `dashboardItems` array for "Perfil de Cliente"
-
-### Technical Details
-
-- **Parsing logic**: Two regex strategies depending on format detection (pipe `|` separator vs numbered lines)
-- **Income extraction**: Handle `R$ 2.100,00`, `2000`, `3,000 reis`, `1759 e 1640` (dual income) formats
-- **Pagination**: Use batch fetching (1000 per batch) to overcome Supabase row limits
-- **Charts**: Use recharts BarChart for income distribution, PieChart for categorical fields
-- **Date filter**: Reuse existing `DateFilter` component and `getDateRangeFromFilter` utility
+**3. Fix `parseBirthDate` for 2-digit years**
+- Add pattern for `(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2})` (2-digit year)
+- Convert: if year < 30 → 2000+year, else → 1900+year
 
