@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { usePerformanceGeral } from "@/hooks/usePerformanceGeral";
 import { useLeadStages } from "@/hooks/useLeadStages";
-import { Loader2, ArrowLeft, TrendingUp, Target, Clock } from "lucide-react";
+import { Loader2, ArrowLeft, TrendingUp, Target } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell } from "recharts";
 import { MobileHeader } from "@/components/MobileHeader";
@@ -139,27 +139,17 @@ const MobilePerformanceGeral = ({ selectedTeamId, selectedUserId, onTeamChange, 
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-orange-500" />
-                  <p className="text-xs text-muted-foreground">Tempo Resposta</p>
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Taxa de Conversão</p>
+                  <p className="text-2xl font-bold text-green-600">{performanceGeral.conversaoGeral}%</p>
                 </div>
-                <p className="text-xl font-bold text-orange-600">{performanceGeral.tempoMedioResposta} min</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-4 h-4 text-green-500" />
-                  <p className="text-xs text-muted-foreground">Conversão</p>
-                </div>
-                <p className="text-xl font-bold text-green-600">{performanceGeral.conversaoGeral}%</p>
-              </CardContent>
-            </Card>
-          </div>
+                <Target className="w-8 h-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Seção de Etiquetas */}

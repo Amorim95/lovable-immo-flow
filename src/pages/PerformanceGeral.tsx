@@ -133,23 +133,13 @@ const PerformanceGeral = () => {
         </CardContent>
       </Card>
 
-      {/* Métricas Principais */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Total de Leads</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-blue-600">{performanceGeral.leadsTotais}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Tempo Médio Resposta</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-orange-600">{performanceGeral.tempoMedioResposta} min</div>
           </CardContent>
         </Card>
 
@@ -161,7 +151,6 @@ const PerformanceGeral = () => {
             <div className="text-3xl font-bold text-green-600">{performanceGeral.conversaoGeral}%</div>
           </CardContent>
         </Card>
-
       </div>
 
       {/* Seção de Métricas de Etiquetas */}

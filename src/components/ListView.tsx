@@ -15,8 +15,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TagSelector } from "@/components/TagSelector";
 import { LeadTransferModal } from "@/components/LeadTransferModal";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useLeadStages } from "@/hooks/useLeadStages";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Phone, ArrowRightLeft, Users, X, ChevronDown } from "lucide-react";
+import { Phone, ArrowRightLeft, Users, X, ChevronDown, FolderSync } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ListViewProps {
   leads: (Lead & { userId?: string })[];
@@ -51,9 +54,11 @@ const stageColors = {
 
 export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate }: ListViewProps) {
   const { isAdmin, isGestor } = useUserRole();
+  const { stages } = useLeadStages();
   const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
   const [visibleCount, setVisibleCount] = useState(50);
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
+  const [bulkStageLoading, setBulkStageLoading] = useState(false);
   const [transferModalData, setTransferModalData] = useState<{
     isOpen: boolean;
     leadIds: string[];
@@ -223,6 +228,46 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
     });
   };
 
+  const handleBulkStageChange = async (stageName: string) => {
+    if (selectedLeadIds.length === 0) return;
+    setBulkStageLoading(true);
+    try {
+      const stage = stages.find(s => s.nome === stageName);
+      const legacyKey = stage?.legacy_key || 'aguardando-atendimento';
+      
+      // Update in batches of 50
+      for (let i = 0; i < selectedLeadIds.length; i += 50) {
+        const batch = selectedLeadIds.slice(i, i + 50);
+        const { error } = await supabase
+          .from('leads')
+          .update({ 
+            stage_name: stageName,
+            etapa: legacyKey as any,
+          })
+          .in('id', batch);
+        if (error) throw error;
+      }
+
+      // Optimistic update
+      if (onOptimisticUpdate) {
+        selectedLeadIds.forEach(id => {
+          onOptimisticUpdate(id, { 
+            stage_name: stageName,
+            etapa: legacyKey as any,
+          });
+        });
+      }
+
+      toast.success(`${selectedLeadIds.length} lead(s) movido(s) para "${stageName}"`);
+      setSelectedLeadIds([]);
+    } catch (err: any) {
+      console.error('Erro ao mover leads:', err);
+      toast.error('Erro ao mover leads de etapa');
+    } finally {
+      setBulkStageLoading(false);
+    }
+  };
+
   return (
     <>
       <div className="bg-card rounded-lg border shadow-sm">
@@ -364,7 +409,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                 {selectedLeadIds.length} lead{selectedLeadIds.length !== 1 ? 's' : ''} selecionado{selectedLeadIds.length !== 1 ? 's' : ''}
               </span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <Button 
                 variant="secondary" 
                 size="sm"
@@ -373,6 +418,17 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                 <X className="w-4 h-4 mr-2" />
                 Cancelar
               </Button>
+              <Select onValueChange={handleBulkStageChange} disabled={bulkStageLoading}>
+                <SelectTrigger className="w-[180px] bg-white text-primary border-white/20 h-9">
+                  <FolderSync className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Mover de Etapa" />
+                </SelectTrigger>
+                <SelectContent>
+                  {stages.map(stage => (
+                    <SelectItem key={stage.id} value={stage.nome}>{stage.nome}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button 
                 variant="default" 
                 size="sm"
