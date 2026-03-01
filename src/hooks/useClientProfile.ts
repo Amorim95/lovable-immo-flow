@@ -38,8 +38,11 @@ const INCOME_BRACKETS = [
 
 function parseBRNumber(raw: string): number | null {
   let val = raw.trim();
-  // Remove trailing text like "reais", "mensal", "cada"
+  // Remove leading minus sign
+  val = val.replace(/^-\s*/, '');
+  // Remove trailing text like "reais", "mensal", "cada", and trailing symbols
   val = val.replace(/\s*(reais|mensal|cada|por\s+mês|mês|mes).*$/i, '').trim();
+  val = val.replace(/[\$\*\.!]+$/, '').trim();
   
   if (!val) return null;
   
@@ -53,7 +56,12 @@ function parseBRNumber(raw: string): number | null {
     return parseFloat(val.replace(/\./g, ''));
   }
   
-  // Format: "2,5" shorthand (comma as decimal, result < 50 means thousands shorthand)
+  // Format: "5,000" or "2,200" (English-style comma-as-thousands separator)
+  if (/^\d{1,3}(,\d{3})+$/.test(val)) {
+    return parseFloat(val.replace(/,/g, ''));
+  }
+  
+  // Format: "2,5" or "3,5" shorthand (comma as decimal, result < 50 means thousands shorthand)
   if (/^\d+,\d{1}$/.test(val)) {
     const num = parseFloat(val.replace(',', '.'));
     if (!isNaN(num) && num < 50) return num * 1000;
@@ -72,14 +80,36 @@ function parseBRNumber(raw: string): number | null {
 }
 
 function parseIncome(text: string): number | null {
-  // Handle "salário mínimo" / "um salário mínimo"
+  // Handle "salário mínimo" / "um salário mínimo" / "um salário"
   if (/sal[aá]rio\s*m[ií]nimo/i.test(text)) {
     return 1412;
   }
   
+  // Handle "X a Y mil" range format (e.g., "2 a 3 mil por mês")
+  const rangeMilMatch = text.match(/[Rr]enda[^0-9]*(\d+(?:[.,]\d+)?)\s*(?:a|até)\s*(\d+(?:[.,]\d+)?)\s*mil/i);
+  if (rangeMilMatch) {
+    const low = parseFloat(rangeMilMatch[1].replace(',', '.'));
+    const high = parseFloat(rangeMilMatch[2].replace(',', '.'));
+    if (!isNaN(low) && !isNaN(high)) {
+      const avg = ((low + high) / 2) * 1000;
+      if (avg >= 500 && avg <= 100000) return avg;
+    }
+  }
+  
+  // Handle range format "de R$X até R$Y" or "de R$X.000 até R$Y.000"  
+  const rangeMatch = text.match(/[Rr]enda[^0-9R$]*de\s*R?\$?\s*([0-9.,]+)\s*(?:a|até)\s*R?\$?\s*([0-9.,]+)/i);
+  if (rangeMatch) {
+    const low = parseBRNumber(rangeMatch[1]);
+    const high = parseBRNumber(rangeMatch[2]);
+    if (low !== null && high !== null) {
+      const avg = (low + high) / 2;
+      if (avg >= 500 && avg <= 100000) return avg;
+    }
+  }
+  
   const patterns = [
-    /[Rr]enda\s*[Bb]ruta[^0-9R$]*(?:R\$\s*)?([0-9.,]+(?:\s*(?:mil|reais|mensal|cada|por\s+mês|mês|mes))?)/i,
-    /[Rr]enda[^0-9R$]*(?:R\$\s*)?([0-9.,]+(?:\s*(?:mil|reais|mensal|cada|por\s+mês|mês|mes))?)/i,
+    /[Rr]enda\s*[Bb]ruta[^0-9R$]*(?:R?\$?\s*)?([0-9.,\-]+(?:\s*(?:mil|reais|mensal|cada|por\s+mês|mês|mes))?)/i,
+    /[Rr]enda[^0-9R$]*(?:R?\$?\s*)?([0-9.,\-]+(?:\s*(?:mil|reais|mensal|cada|por\s+mês|mês|mes))?)/i,
   ];
   
   for (const pattern of patterns) {
@@ -99,7 +129,7 @@ function parseIncome(text: string): number | null {
       }
       
       // Handle dual income: take first value before +, e, /
-      const dualMatch = raw.match(/^([0-9.,]+)\s*(?:\+|e\s|\/)/);
+      const dualMatch = raw.match(/^([0-9.,\-]+)\s*(?:\+|e\s|\/)/);
       if (dualMatch) {
         raw = dualMatch[1];
       }
