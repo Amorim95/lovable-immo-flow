@@ -135,8 +135,14 @@ function parseIncome(text: string): number | null {
       }
       
       const num = parseBRNumber(raw);
-      if (num !== null && num >= 500 && num <= 100000) {
-        return num;
+      if (num !== null) {
+        // Small integers (1-50) are shorthand for thousands (e.g., "3" = R$3.000)
+        if (num > 0 && num <= 50) {
+          return num * 1000;
+        }
+        if (num >= 500 && num <= 100000) {
+          return num;
+        }
       }
     }
   }
