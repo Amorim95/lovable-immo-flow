@@ -1,16 +1,23 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
-import { useClientProfile } from "@/hooks/useClientProfile";
+import { useClientProfile, LeadParsed, INCOME_BRACKETS } from "@/hooks/useClientProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileHeader } from "@/components/MobileHeader";
 import { TeamUserFilters } from "@/components/TeamUserFilters";
+import { ProfileExportDialog } from "@/components/ProfileExportDialog";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { Users, DollarSign, Loader2 } from "lucide-react";
+import { Users, DollarSign, Loader2, Download } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
-function ProfileFieldCard({ label, total, stats }: { label: string; total: number; stats: { value: string; count: number; percentage: number }[] }) {
+function ProfileFieldCard({ label, total, stats, onExport }: { 
+  label: string; 
+  total: number; 
+  stats: { value: string; count: number; percentage: number }[];
+  onExport: (value: string) => void;
+}) {
   if (stats.length === 0) return null;
   
   return (
@@ -21,10 +28,19 @@ function ProfileFieldCard({ label, total, stats }: { label: string; total: numbe
       </CardHeader>
       <CardContent className="space-y-2">
         {stats.map((stat) => (
-          <div key={stat.value} className="space-y-1">
-            <div className="flex justify-between text-sm">
-              <span className="truncate max-w-[60%]">{stat.value}</span>
-              <span className="text-muted-foreground whitespace-nowrap ml-2">{stat.count} ({stat.percentage}%)</span>
+          <div key={stat.value} className="space-y-1 group">
+            <div className="flex justify-between text-sm items-center">
+              <span className="truncate max-w-[55%]">{stat.value}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground whitespace-nowrap">{stat.count} ({stat.percentage}%)</span>
+                <button
+                  onClick={() => onExport(stat.value)}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-muted"
+                  title={`Baixar leads: ${stat.value}`}
+                >
+                  <Download className="w-3.5 h-3.5 text-primary" />
+                </button>
+              </div>
             </div>
             <div className="w-full bg-muted rounded-full h-2">
               <div
@@ -41,10 +57,14 @@ function ProfileFieldCard({ label, total, stats }: { label: string; total: numbe
 
 export default function PerfilCliente() {
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exportLeads, setExportLeads] = useState<LeadParsed[]>([]);
+  const [exportLabel, setExportLabel] = useState('');
 
   const dateRange = useMemo(() => getDateRangeFromFilter(dateFilter, customDateRange), [dateFilter, customDateRange]);
   const { data, loading, error } = useClientProfile(dateRange, selectedTeamId, selectedUserId);
@@ -53,6 +73,31 @@ export default function PerfilCliente() {
     setDateFilter(option);
     if (customRange) setCustomDateRange(customRange);
   };
+
+  const handleExportIncomeBracket = useCallback((bracketLabel: string) => {
+    const bracket = INCOME_BRACKETS.find(b => b.label === bracketLabel);
+    if (!bracket) return;
+    const filtered = data.parsedLeads.filter(l => 
+      l.income !== null && l.income >= bracket.min && l.income < bracket.max
+    );
+    setExportLeads(filtered);
+    setExportLabel(`Renda: ${bracketLabel}`);
+    setExportDialogOpen(true);
+  }, [data.parsedLeads]);
+
+  const handleExportField = useCallback((fieldKey: string, fieldLabel: string, value: string) => {
+    let filtered: LeadParsed[];
+    if (fieldKey === 'idade') {
+      filtered = data.parsedLeads.filter(l => l.ageRange === value);
+    } else {
+      filtered = data.parsedLeads.filter(l => l.fields[fieldKey] === value);
+    }
+    setExportLeads(filtered);
+    setExportLabel(`${fieldLabel}: ${value}`);
+    setExportDialogOpen(true);
+  }, [data.parsedLeads]);
+
+  const companyName = user?.name || 'CRM';
 
   const content = (
     <div className="space-y-6">
@@ -108,12 +153,17 @@ export default function PerfilCliente() {
               </div>
               <p className="text-xs text-muted-foreground">
                 {data.incomeBrackets.reduce((a, b) => a + b.count, 0)} leads com renda identificada
+                <span className="ml-1 text-muted-foreground/60">— clique na barra para baixar</span>
               </p>
             </CardHeader>
             <CardContent>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data.incomeBrackets} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                  <BarChart 
+                    data={data.incomeBrackets} 
+                    margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis dataKey="label" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
                     <YAxis className="fill-muted-foreground" />
@@ -122,13 +172,38 @@ export default function PerfilCliente() {
                       labelStyle={{ color: 'hsl(var(--foreground))' }}
                       formatter={(value: number, name: string, props: any) => [`${value} leads (${props.payload.percentage}%)`, 'Volume']}
                     />
-                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                    <Bar 
+                      dataKey="count" 
+                      radius={[4, 4, 0, 0]} 
+                      cursor="pointer"
+                      onClick={(barData: any) => {
+                        if (barData && barData.label) {
+                          handleExportIncomeBracket(barData.label);
+                        }
+                      }}
+                    >
                       {data.incomeBrackets.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                       ))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+              </div>
+              {/* Download buttons below chart */}
+              <div className="flex flex-wrap gap-2 mt-4 pt-3 border-t border-border">
+                {data.incomeBrackets.map((bracket, idx) => (
+                  bracket.count > 0 && (
+                    <button
+                      key={bracket.label}
+                      onClick={() => handleExportIncomeBracket(bracket.label)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border border-border hover:bg-muted transition-colors"
+                    >
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: CHART_COLORS[idx % CHART_COLORS.length] }} />
+                      <span>{bracket.label}</span>
+                      <Download className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                  )
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -140,11 +215,25 @@ export default function PerfilCliente() {
           </div>
           <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-3'}`}>
             {Object.entries(data.fields).map(([key, field]) => (
-              <ProfileFieldCard key={key} label={field.label} total={field.total} stats={field.stats} />
+              <ProfileFieldCard 
+                key={key} 
+                label={field.label} 
+                total={field.total} 
+                stats={field.stats}
+                onExport={(value) => handleExportField(key, field.label, value)}
+              />
             ))}
           </div>
         </>
       )}
+
+      <ProfileExportDialog
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+        leads={exportLeads}
+        filterLabel={exportLabel}
+        companyName={companyName}
+      />
     </div>
   );
 
