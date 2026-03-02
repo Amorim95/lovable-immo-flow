@@ -143,6 +143,13 @@ function parseIncome(text: string): number | null {
         if (num >= 500 && num <= 100000) {
           return num;
         }
+        // Values > 100000: try interpreting as cents (/100) or extra zeros (/1000)
+        if (num > 100000) {
+          const asCents = num / 100;
+          if (asCents >= 500 && asCents <= 100000) return asCents;
+          const asExtraZeros = num / 1000;
+          if (asExtraZeros >= 500 && asExtraZeros <= 100000) return asExtraZeros;
+        }
       }
     }
   }
