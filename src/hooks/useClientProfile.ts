@@ -21,14 +21,26 @@ interface IncomeBracket {
   percentage: number;
 }
 
+export interface LeadParsed {
+  nome: string;
+  telefone: string;
+  created_at: string;
+  stage_name: string | null;
+  income: number | null;
+  age: number | null;
+  ageRange: string | null;
+  fields: Record<string, string | null>;
+}
+
 export interface ClientProfileData {
   totalLeads: number;
   leadsWithData: number;
   incomeBrackets: IncomeBracket[];
   fields: Record<string, ProfileField>;
+  parsedLeads: LeadParsed[];
 }
 
-const INCOME_BRACKETS = [
+export const INCOME_BRACKETS = [
   { label: 'Até R$ 1.500', min: 0, max: 1500 },
   { label: 'R$ 1.500 - R$ 2.499', min: 1500, max: 2500 },
   { label: 'R$ 2.500 - R$ 3.999', min: 2500, max: 4000 },
@@ -236,7 +248,7 @@ function parseLeadData(dadosAdicionais: string) {
 }
 
 export function useClientProfile(dateRange: DateRange | null, teamId?: string | null, userId?: string | null) {
-  const [rawData, setRawData] = useState<string[]>([]);
+  const [rawData, setRawData] = useState<{ dados_adicionais: string; nome: string; telefone: string; created_at: string; stage_name: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { getCompanyId } = useCompanyFilter();
@@ -267,14 +279,14 @@ export function useClientProfile(dateRange: DateRange | null, teamId?: string | 
           }
         }
 
-        const allData: string[] = [];
+        const allData: { dados_adicionais: string; nome: string; telefone: string; created_at: string; stage_name: string | null }[] = [];
         let from = 0;
         const batchSize = 1000;
         
         while (true) {
           let query = supabase
             .from('leads')
-            .select('dados_adicionais, created_at, user_id')
+            .select('dados_adicionais, created_at, user_id, nome, telefone, stage_name')
             .eq('company_id', companyId)
             .not('dados_adicionais', 'is', null)
             .neq('dados_adicionais', '')
@@ -297,7 +309,13 @@ export function useClientProfile(dateRange: DateRange | null, teamId?: string | 
           if (cancelled) return;
           
           if (data) {
-            allData.push(...data.map(d => d.dados_adicionais!).filter(Boolean));
+            allData.push(...data.filter(d => d.dados_adicionais).map(d => ({
+              dados_adicionais: d.dados_adicionais!,
+              nome: d.nome,
+              telefone: d.telefone,
+              created_at: d.created_at,
+              stage_name: d.stage_name,
+            })));
           }
           
           if (!data || data.length < batchSize) break;
@@ -320,28 +338,50 @@ export function useClientProfile(dateRange: DateRange | null, teamId?: string | 
     const incomes: number[] = [];
     const ages: number[] = [];
     const fieldCounts: Record<string, Record<string, number>> = {};
+    const parsedLeads: LeadParsed[] = [];
     
     for (const def of FIELD_DEFINITIONS) {
       fieldCounts[def.key] = {};
     }
     fieldCounts['idade'] = {};
     
-    for (const text of rawData) {
-      const parsed = parseLeadData(text);
+    for (const item of rawData) {
+      const parsed = parseLeadData(item.dados_adicionais);
+      const ageRange = parsed.age !== null ? getAgeRange(parsed.age) : null;
       
-      if (parsed.income !== null) incomes.push(parsed.income);
-      if (parsed.age !== null) {
-        const range = getAgeRange(parsed.age);
-        fieldCounts['idade'][range] = (fieldCounts['idade'][range] || 0) + 1;
-      }
-      
+      // Normalize field values for the parsed lead
+      const normalizedFields: Record<string, string | null> = {};
       for (const def of FIELD_DEFINITIONS) {
         const val = parsed.fields[def.key];
         if (val) {
-          const normalized = def.key === 'bairro' || def.key === 'horario' || def.key === 'emprego'
+          normalizedFields[def.key] = def.key === 'bairro' || def.key === 'horario' || def.key === 'emprego'
             ? val.charAt(0).toUpperCase() + val.slice(1)
             : normalizeValue(val);
-          fieldCounts[def.key][normalized] = (fieldCounts[def.key][normalized] || 0) + 1;
+        } else {
+          normalizedFields[def.key] = null;
+        }
+      }
+      
+      parsedLeads.push({
+        nome: item.nome,
+        telefone: item.telefone,
+        created_at: item.created_at,
+        stage_name: item.stage_name,
+        income: parsed.income,
+        age: parsed.age,
+        ageRange,
+        fields: normalizedFields,
+      });
+      
+      if (parsed.income !== null) incomes.push(parsed.income);
+      if (parsed.age !== null && ageRange) {
+        fieldCounts['idade'][ageRange] = (fieldCounts['idade'][ageRange] || 0) + 1;
+      }
+      
+      for (const def of FIELD_DEFINITIONS) {
+        const val = normalizedFields[def.key];
+        if (val) {
+          fieldCounts[def.key][val] = (fieldCounts[def.key][val] || 0) + 1;
         }
       }
     }
@@ -397,6 +437,7 @@ export function useClientProfile(dateRange: DateRange | null, teamId?: string | 
       leadsWithData: rawData.length,
       incomeBrackets,
       fields,
+      parsedLeads,
     };
   }, [rawData]);
 
