@@ -448,11 +448,12 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                         disabled={!editMode}
                       />
                       <Button
-                        variant="outline"
                         size="sm"
+                        className="bg-[#25D366] hover:bg-[#1da851] text-white px-4"
                         onClick={() => handleWhatsAppClick(lead.telefone)}
                       >
-                        <Phone className="w-4 h-4" />
+                        <Phone className="w-4 h-4 mr-1" />
+                        WhatsApp
                       </Button>
                     </div>
                   </div>
