@@ -376,9 +376,34 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
               {/* Etapa do Lead */}
               <div className="space-y-4">
                 <h4 className="font-medium text-muted-foreground">Etapa do Lead</h4>
-                <Select
+              <Select
                   value={lead.stage_name || lead.etapa}
-                  onValueChange={(value) => onUpdate(lead.id, { stage_name: value })}
+                  onValueChange={async (value) => {
+                    // Encontrar legacy_key da etapa selecionada
+                    const selectedStage = stages.find(s => s.nome === value);
+                    const legacyKey = selectedStage?.legacy_key || lead.etapa;
+                    
+                    // Salvar no banco com ambos os campos
+                    const updateData: any = { stage_name: value };
+                    if (selectedStage?.legacy_key) {
+                      updateData.etapa = selectedStage.legacy_key;
+                    }
+                    
+                    const { error } = await supabase
+                      .from('leads')
+                      .update(updateData)
+                      .eq('id', lead.id);
+                    
+                    if (error) {
+                      console.error('Erro ao atualizar etapa:', error);
+                      toast.error('Erro ao atualizar etapa');
+                      return;
+                    }
+                    
+                    // Atualizar estado local
+                    onUpdate(lead.id, { stage_name: value, etapa: legacyKey as any });
+                    toast.success('Etapa atualizada!');
+                  }}
                   disabled={stagesLoading}
                 >
                   <SelectTrigger className="w-full">
