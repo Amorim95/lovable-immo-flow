@@ -14,17 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TagSelector } from "@/components/TagSelector";
-const stageLabels = {
-  'aguardando-atendimento': 'Aguardando Atendimento',
-  'tentativas-contato': 'Em Tentativas de Contato',
-  'atendeu': 'Atendeu',
-  'nome-sujo': 'Nome Sujo',
-  'nome-limpo': 'Nome Limpo',
-  'visita': 'Visita',
-  'vendas-fechadas': 'Vendas Fechadas',
-  'em-pausa': 'Em Pausa',
-  'descarte': 'Descarte'
-};
+import { useLeadStages } from "@/hooks/useLeadStages";
 export default function LeadDetails() {
   const {
     id
@@ -38,6 +28,7 @@ export default function LeadDetails() {
   const {
     toast
   } = useToast();
+  const { stages, loading: stagesLoading } = useLeadStages();
 
   // Busca direta do lead pelo ID - muito mais rápido!
   const {
@@ -54,7 +45,7 @@ export default function LeadDetails() {
     nome: '',
     telefone: '',
     dadosAdicionais: '',
-    etapa: 'aguardando-atendimento' as Lead['etapa']
+    stage_name: '' as string
   });
   const [newActivity, setNewActivity] = useState('');
 
@@ -65,7 +56,7 @@ export default function LeadDetails() {
         nome: lead.nome,
         telefone: lead.telefone,
         dadosAdicionais: lead.dadosAdicionais || '',
-        etapa: lead.etapa
+        stage_name: lead.stage_name || lead.etapa
       });
 
       // Registrar visualização do lead
@@ -145,12 +136,14 @@ export default function LeadDetails() {
   const handleSave = async () => {
     if (!lead) return;
     try {
+      const selectedStage = stages.find(s => s.nome === formData.stage_name);
+      const legacyKey = selectedStage?.legacy_key || lead.etapa;
       const supabaseUpdates: any = {
         nome: formData.nome,
         telefone: formData.telefone,
         dados_adicionais: formData.dadosAdicionais,
-        etapa: formData.etapa,
-        stage_name: formData.etapa
+        etapa: legacyKey,
+        stage_name: formData.stage_name
       };
       const {
         error
@@ -394,16 +387,16 @@ export default function LeadDetails() {
 
             <div>
               <Label htmlFor="etapa">Etapa</Label>
-              <Select value={formData.etapa} onValueChange={value => setFormData(prev => ({
+              <Select value={formData.stage_name} onValueChange={value => setFormData(prev => ({
               ...prev,
-              etapa: value as Lead['etapa']
-            }))} disabled={!isEditing}>
+              stage_name: value
+            }))} disabled={!isEditing || stagesLoading}>
                 <SelectTrigger className={!isEditing ? "bg-muted" : ""}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(stageLabels).map(([value, label]) => <SelectItem key={value} value={value}>
-                      {label}
+                  {stages.filter(s => s.ativo).map(stage => <SelectItem key={stage.id} value={stage.nome}>
+                      {stage.nome}
                     </SelectItem>)}
                 </SelectContent>
               </Select>
@@ -438,7 +431,7 @@ export default function LeadDetails() {
                 nome: lead.nome,
                 telefone: lead.telefone,
                 dadosAdicionais: lead.dadosAdicionais,
-                etapa: lead.etapa
+                stage_name: lead.stage_name || lead.etapa
               });
             }} className="flex-1">
                   Cancelar
