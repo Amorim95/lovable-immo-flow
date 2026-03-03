@@ -125,11 +125,13 @@ export function LeadTransferModal({
           const novasAtividades = [...atividadesAtuais, reatribuicaoAtividade];
 
           // Atualizar lead com novo usuário e atividade
+          // stage_order negativo para aparecer no topo da coluna
           const { error } = await supabase
             .from('leads')
             .update({ 
               user_id: selectedUserId,
-              atividades: novasAtividades
+              atividades: novasAtividades,
+              stage_order: -Date.now()
             })
             .eq('id', leadId);
 
