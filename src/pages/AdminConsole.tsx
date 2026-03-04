@@ -13,8 +13,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 
-import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2, LogOut, Edit2 } from "lucide-react";
+import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2, LogOut, Edit2, KeyRound, Loader2 } from "lucide-react";
 import { EditCompanyNameModal } from "@/components/EditCompanyNameModal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 type CompanyRow = {
   id: string;
