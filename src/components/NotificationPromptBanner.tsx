@@ -1,9 +1,132 @@
 import { useState, useEffect } from 'react';
-import { Bell, X, AlertTriangle } from 'lucide-react';
+import { Bell, X, AlertTriangle, Smartphone, Download, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+
+type NotificationBlockReason = 
+  | 'not-supported'
+  | 'ios-not-pwa'
+  | 'ios-old-version'
+  | 'permission-denied'
+  | 'needs-reactivation'
+  | 'needs-activation'
+  | null;
+
+function detectBlockReason(
+  isSupported: boolean,
+  permission: NotificationPermission,
+  hasDbSubscription: boolean | null,
+  subscription: PushSubscription | null
+): NotificationBlockReason {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua);
+  const isStandalone = (window.navigator as any).standalone === true || 
+    window.matchMedia('(display-mode: standalone)').matches;
+
+  // Check iOS version >= 16.4
+  if (isIOS) {
+    const versionMatch = ua.match(/OS (\d+)_(\d+)/);
+    if (versionMatch) {
+      const major = parseInt(versionMatch[1]);
+      const minor = parseInt(versionMatch[2]);
+      if (major < 16 || (major === 16 && minor < 4)) {
+        return 'ios-old-version';
+      }
+    }
+    if (!isStandalone) {
+      return 'ios-not-pwa';
+    }
+  }
+
+  if (!isSupported) return 'not-supported';
+  if (permission === 'denied') return 'permission-denied';
+
+  const hasValidSubscription = subscription && permission === 'granted';
+  if (hasValidSubscription) return null;
+
+  if (hasDbSubscription && !subscription) return 'needs-reactivation';
+  return 'needs-activation';
+}
+
+function getBlockContent(reason: NotificationBlockReason) {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+
+  switch (reason) {
+    case 'not-supported':
+      return {
+        title: '⚠️ Navegador Incompatível',
+        description: 'Seu navegador não suporta notificações push. Use o Google Chrome, Microsoft Edge ou Safari (iOS 16.4+) para receber alertas de novos leads.',
+        gradient: 'bg-gradient-to-r from-red-500/90 to-red-600',
+        icon: <AlertTriangle className="w-5 h-5" />,
+        showButton: false,
+        showDismiss: true,
+      };
+
+    case 'ios-old-version':
+      return {
+        title: '📱 Atualize seu iPhone',
+        description: 'Notificações push exigem iOS 16.4 ou superior. Atualize seu iPhone em Ajustes → Geral → Atualização de Software.',
+        gradient: 'bg-gradient-to-r from-red-500/90 to-red-600',
+        icon: <Smartphone className="w-5 h-5" />,
+        showButton: false,
+        showDismiss: true,
+      };
+
+    case 'ios-not-pwa':
+      return {
+        title: '📲 Instale o App primeiro',
+        description: 'No iPhone, notificações só funcionam com o app instalado. Toque em Compartilhar (↑) → "Adicionar à Tela de Início" e depois abra por lá.',
+        gradient: 'bg-gradient-to-r from-blue-500/90 to-blue-600',
+        icon: <Download className="w-5 h-5" />,
+        showButton: false,
+        showDismiss: true,
+      };
+
+    case 'permission-denied':
+      return {
+        title: '🔔 Notificações Bloqueadas',
+        description: isIOS
+          ? 'Acesse Ajustes → Notificações → CRM.Imob e ative as notificações.'
+          : isAndroid
+          ? 'Toque no cadeado 🔒 na barra de endereço → Permissões → Notificações → Permitir. Depois recarregue a página.'
+          : 'Clique no cadeado 🔒 na barra de endereço → Permissões → Notificações → Permitir. Depois recarregue a página.',
+        gradient: 'bg-gradient-to-r from-red-500/90 to-red-600',
+        icon: <Shield className="w-5 h-5" />,
+        showButton: false,
+        showDismiss: true,
+      };
+
+    case 'needs-reactivation':
+      return {
+        title: '⚠️ Reative suas notificações!',
+        description: 'Houve uma atualização no sistema. Por favor, reative as notificações para continuar recebendo alertas de novos leads.',
+        buttonText: 'Reativar Agora',
+        loadingText: 'Reativando...',
+        gradient: 'bg-gradient-to-r from-amber-500/90 to-orange-500',
+        icon: <AlertTriangle className="w-5 h-5" />,
+        showButton: true,
+        showDismiss: true,
+      };
+
+    case 'needs-activation':
+      return {
+        title: 'Ative as notificações!',
+        description: 'Receba alertas quando um novo lead for atribuído a você, mesmo com o app fechado.',
+        buttonText: 'Ativar Notificações',
+        loadingText: 'Ativando...',
+        gradient: 'bg-gradient-to-r from-primary/90 to-primary',
+        icon: <Bell className="w-5 h-5" />,
+        showButton: true,
+        showDismiss: false,
+      };
+
+    default:
+      return null;
+  }
+}
 
 export function NotificationPromptBanner() {
   const auth = useAuth();
@@ -13,49 +136,34 @@ export function NotificationPromptBanner() {
   const [hasDbSubscription, setHasDbSubscription] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Verificar se o usuário já tem subscription no banco
   useEffect(() => {
     const checkSubscription = async () => {
       if (!user) return;
-      
       try {
         const { data, error } = await supabase
           .from('push_subscriptions')
           .select('id')
           .eq('user_id', user.id)
           .maybeSingle();
-        
-        if (!error) {
-          setHasDbSubscription(!!data);
-        }
+        if (!error) setHasDbSubscription(!!data);
       } catch (error) {
         console.error('Erro ao verificar subscription:', error);
       }
     };
-
     checkSubscription();
   }, [user]);
 
-  // Verificar se foi dispensado recentemente (24h)
-  // IMPORTANTE: Só respeitar dispensa se o usuário JÁ tem subscription no banco
   useEffect(() => {
     const dismissedAt = localStorage.getItem('notification_banner_dismissed');
     if (dismissedAt && hasDbSubscription === true) {
-      // Só respeitar dispensa se usuário já ativou notificações antes
-      const dismissedTime = parseInt(dismissedAt, 10);
-      const now = Date.now();
-      const hoursElapsed = (now - dismissedTime) / (1000 * 60 * 60);
-      
-      // Se foi dispensado há menos de 24 horas, manter dispensado
+      const hoursElapsed = (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 60 * 60);
       if (hoursElapsed < 24) {
         setDismissed(true);
       } else {
-        // Limpar o localStorage após 24 horas
         localStorage.removeItem('notification_banner_dismissed');
         setDismissed(false);
       }
     } else if (hasDbSubscription === false) {
-      // Se nunca ativou, NUNCA pode estar dispensado
       setDismissed(false);
       localStorage.removeItem('notification_banner_dismissed');
     }
@@ -70,114 +178,19 @@ export function NotificationPromptBanner() {
     setLoading(true);
     try {
       const success = await requestPermission();
-      if (success) {
-        setHasDbSubscription(true);
-      }
+      if (success) setHasDbSubscription(true);
     } finally {
       setLoading(false);
     }
   };
 
-  // Detectar se precisa reativar (tem no banco mas não tem subscription ativa no browser)
-  const needsReactivation = hasDbSubscription && !subscription;
-  
-  // Mostrar banner se:
-  // 1. Navegador suporta notificações
-  // 2. Usuário está logado
-  // 3. Não foi dispensado
-  // 4. Já verificamos o status no banco (não está carregando)
-  // 5. NÃO tem uma subscription válida ativa
-  const hasValidSubscription = subscription && permission === 'granted';
-  
-  // DEBUG LOGS - remover depois
-  console.log('[NotificationBanner] DEBUG v1.1:', {
-    isSupported,
-    hasUser: !!user,
-    userId: user?.id,
-    dismissed,
-    hasDbSubscription,
-    hasDbSubscriptionIsNull: hasDbSubscription === null,
-    hasValidSubscription,
-    permission,
-    subscriptionExists: !!subscription,
-    needsReactivation
-  });
-  
-  // Mostrar para todos que não têm subscription válida
-  // hasDbSubscription === null significa que ainda está carregando
-  // hasDbSubscription === false significa que nunca ativou
-  // hasDbSubscription === true significa que tem no banco mas pode precisar reativar
-  const shouldShow = isSupported && 
-    user && 
-    !dismissed && 
-    hasDbSubscription !== null && // Já terminou de carregar
-    !hasValidSubscription; // Não tem subscription ativa
+  const blockReason = detectBlockReason(isSupported, permission, hasDbSubscription, subscription);
 
-  console.log('[NotificationBanner] shouldShow:', shouldShow, 'hasDbSubscription value:', hasDbSubscription);
+  // Don't show if no user, still loading DB check, dismissed, or no block reason
+  if (!user || hasDbSubscription === null || dismissed || !blockReason) return null;
 
-  if (!shouldShow) {
-    return null;
-  }
-  
-  // Detectar se permissão foi negada (precisa de instruções especiais)
-  const permissionDenied = permission === 'denied';
-
-  // Estilo diferente para reativação ou permissão negada
-  const isReactivation = needsReactivation && !permissionDenied;
-
-  // Detectar ambiente para instruções específicas
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const isAndroid = /Android/.test(navigator.userAgent);
-
-  // Determinar mensagem e estilo
-  const getContent = () => {
-    // Prioridade 1: Permissão bloqueada no navegador/dispositivo
-    if (permissionDenied) {
-      const instructions = isIOS
-        ? 'Acesse Ajustes → Notificações → Safari/CRM.Imob e ative as notificações.'
-        : isAndroid
-        ? 'Toque no cadeado 🔒 na barra de endereço → Permissões → Notificações → Permitir.'
-        : 'Clique no cadeado 🔒 na barra de endereço → Permissões → Notificações → Permitir.';
-      
-      return {
-        title: '🔔 Notificações Bloqueadas',
-        description: instructions,
-        buttonText: 'Entendi',
-        gradient: 'bg-gradient-to-r from-red-500/90 to-red-600',
-        icon: <AlertTriangle className="w-5 h-5" />,
-        showButton: false,
-        showDismiss: true
-      };
-    }
-    
-    // Prioridade 2: Reativação necessária
-    if (isReactivation) {
-      return {
-        title: '⚠️ Reative suas notificações!',
-        description: 'Houve uma atualização no sistema. Por favor, reative as notificações para continuar recebendo alertas de novos leads.',
-        buttonText: 'Reativar Agora',
-        loadingText: 'Reativando...',
-        gradient: 'bg-gradient-to-r from-amber-500/90 to-orange-500',
-        icon: <AlertTriangle className="w-5 h-5" />,
-        showButton: true,
-        showDismiss: true
-      };
-    }
-    
-    // Prioridade 3: Primeira ativação
-    return {
-      title: 'Ative as notificações!',
-      description: 'Receba alertas quando um novo lead for atribuído a você, mesmo com o app fechado.',
-      buttonText: 'Ativar Notificações',
-      loadingText: 'Ativando...',
-      gradient: 'bg-gradient-to-r from-primary/90 to-primary',
-      icon: <Bell className="w-5 h-5" />,
-      showButton: true,
-      showDismiss: false
-    };
-  };
-
-  const content = getContent();
+  const content = getBlockContent(blockReason);
+  if (!content) return null;
 
   return (
     <div className={`${content.gradient} text-white rounded-lg p-4 mx-4 mb-4 shadow-lg animate-in slide-in-from-top-2 duration-300`}>
@@ -187,14 +200,10 @@ export function NotificationPromptBanner() {
         </div>
         
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm mb-1">
-            {content.title}
-          </h3>
-          <p className="text-xs opacity-90 mb-3">
-            {content.description}
-          </p>
+          <h3 className="font-semibold text-sm mb-1">{content.title}</h3>
+          <p className="text-xs opacity-90 mb-3">{content.description}</p>
           
-        {content.showButton && (
+          {content.showButton && (
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
@@ -216,7 +225,6 @@ export function NotificationPromptBanner() {
                 )}
               </Button>
               
-              {/* Só mostrar "Agora não" se showDismiss = true */}
               {content.showDismiss && (
                 <Button
                   size="sm"
@@ -231,18 +239,7 @@ export function NotificationPromptBanner() {
           )}
         </div>
         
-        {/* Mostrar X para fechar quando showDismiss = true e não tem botão de ação */}
-        {content.showDismiss && !content.showButton && (
-          <button
-            onClick={handleDismiss}
-            className="flex-shrink-0 text-white/60 hover:text-white transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
-        
-        {/* X para fechar quando showDismiss = true e tem botão */}
-        {content.showDismiss && content.showButton && (
+        {content.showDismiss && (
           <button
             onClick={handleDismiss}
             className="flex-shrink-0 text-white/60 hover:text-white transition-colors"
