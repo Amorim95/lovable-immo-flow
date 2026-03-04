@@ -104,6 +104,49 @@ export default function AdminConsole() {
     return list.filter((r) => r.name.toLowerCase().includes(s) || r.id.toLowerCase().includes(s));
   }, [companiesQuery.data, search]);
 
+  // User search state
+  const [userSearch, setUserSearch] = useState("");
+  const [userSearchResults, setUserSearchResults] = useState<any[]>([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
+  const [resettingUserId, setResettingUserId] = useState<string | null>(null);
+
+  async function handleUserSearch() {
+    if (!userSearch.trim()) return;
+    setSearchingUsers(true);
+    try {
+      const s = userSearch.trim().toLowerCase();
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, name, email, role, status, company_id, companies:company_id(name)")
+        .or(`name.ilike.%${s}%,email.ilike.%${s}%`)
+        .order("name")
+        .limit(50);
+      if (error) throw error;
+      setUserSearchResults(data || []);
+    } catch (e: any) {
+      toast({ title: "Erro na busca", description: e.message, variant: "destructive" });
+    } finally {
+      setSearchingUsers(false);
+    }
+  }
+
+  async function handleResetPassword(userId: string, userName: string) {
+    if (!confirm(`Resetar a senha de "${userName}" para "mudar123"?`)) return;
+    setResettingUserId(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke("reset-user-password", {
+        body: { userId, newPassword: "mudar123" }
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Senha resetada", description: `Senha de "${userName}" alterada para "mudar123".` });
+    } catch (e: any) {
+      toast({ title: "Erro ao resetar", description: e.message, variant: "destructive" });
+    } finally {
+      setResettingUserId(null);
+    }
+  }
+
   async function handleCreate() {
     if (!formData.companyName || !formData.adminName || !formData.adminEmail || !formData.adminPassword) {
       toast({ title: "Campos obrigatórios", description: "Preencha todos os campos.", variant: "destructive" });
