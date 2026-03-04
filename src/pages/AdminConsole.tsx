@@ -320,85 +320,179 @@ export default function AdminConsole() {
           </div>
         </section>
 
-        {/* Companies table */}
-        <section>
-          <Card>
-            <CardHeader className="gap-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Empresas cadastradas</CardTitle>
-                  <CardDescription>Busque, filtre e gerencie rapidamente</CardDescription>
+        <Tabs defaultValue="companies" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="companies" className="gap-2">
+              <Building2 className="w-4 h-4" /> Empresas
+            </TabsTrigger>
+            <TabsTrigger value="users" className="gap-2">
+              <Users className="w-4 h-4" /> Buscar Usuários
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Companies tab */}
+          <TabsContent value="companies">
+            <Card>
+              <CardHeader className="gap-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Empresas cadastradas</CardTitle>
+                    <CardDescription>Busque, filtre e gerencie rapidamente</CardDescription>
+                  </div>
+                  <div className="relative w-64">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome ou ID" className="pl-9" />
+                  </div>
                 </div>
-                <div className="relative w-64">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nome ou ID" className="pl-9" />
-                </div>
-              </div>
-            </CardHeader>
-            <Separator />
-            <CardContent>
-              <Table>
-                <TableCaption>
-                  {companiesQuery.isLoading ? "Carregando empresas..." : `${filtered.length} resultado(s)`}
-                </TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Empresa</TableHead>
-                    <TableHead className="hidden md:table-cell">Criada em</TableHead>
-                    <TableHead>Usuários</TableHead>
-                    <TableHead>Imóveis</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {(filtered || []).map((c) => (
-                    <TableRow key={c.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          {c.logo_url ? (
-                            <img src={c.logo_url} alt={`Logo ${c.name}`} className="w-8 h-8 rounded object-cover" />
-                          ) : (
-                            <div className="w-8 h-8 rounded bg-muted grid place-items-center">
-                              <Building2 className="w-4 h-4 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div>
-                            <div className="font-medium leading-tight">{c.name}</div>
-                            <div className="text-xs text-muted-foreground leading-tight">{c.id}</div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {new Date(c.created_at).toLocaleDateString("pt-BR")}
-                      </TableCell>
-                      <TableCell>{c.user_count}</TableCell>
-                      <TableCell>{c.imoveis_count}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            onClick={() => setEditingCompany({ id: c.id, name: c.name })}
-                          >
-                            <Edit2 className="w-4 h-4 mr-2" /> Editar
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-destructive" 
-                            onClick={() => handleDelete(c.id, c.name)}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" /> Deletar
-                          </Button>
-                        </div>
-                      </TableCell>
+              </CardHeader>
+              <Separator />
+              <CardContent>
+                <Table>
+                  <TableCaption>
+                    {companiesQuery.isLoading ? "Carregando empresas..." : `${filtered.length} resultado(s)`}
+                  </TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Empresa</TableHead>
+                      <TableHead className="hidden md:table-cell">Criada em</TableHead>
+                      <TableHead>Usuários</TableHead>
+                      <TableHead>Imóveis</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </section>
+                  </TableHeader>
+                  <TableBody>
+                    {(filtered || []).map((c) => (
+                      <TableRow key={c.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            {c.logo_url ? (
+                              <img src={c.logo_url} alt={`Logo ${c.name}`} className="w-8 h-8 rounded object-cover" />
+                            ) : (
+                              <div className="w-8 h-8 rounded bg-muted grid place-items-center">
+                                <Building2 className="w-4 h-4 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div>
+                              <div className="font-medium leading-tight">{c.name}</div>
+                              <div className="text-xs text-muted-foreground leading-tight">{c.id}</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {new Date(c.created_at).toLocaleDateString("pt-BR")}
+                        </TableCell>
+                        <TableCell>{c.user_count}</TableCell>
+                        <TableCell>{c.imoveis_count}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => setEditingCompany({ id: c.id, name: c.name })}
+                            >
+                              <Edit2 className="w-4 h-4 mr-2" /> Editar
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-destructive" 
+                              onClick={() => handleDelete(c.id, c.name)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" /> Deletar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Users search tab */}
+          <TabsContent value="users">
+            <Card>
+              <CardHeader>
+                <CardTitle>Buscar Usuários</CardTitle>
+                <CardDescription>Pesquise por nome ou email e resete a senha para "mudar123"</CardDescription>
+                <div className="flex gap-2 mt-3">
+                  <div className="relative flex-1">
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input 
+                      value={userSearch} 
+                      onChange={(e) => setUserSearch(e.target.value)} 
+                      onKeyDown={(e) => e.key === 'Enter' && handleUserSearch()}
+                      placeholder="Digite nome ou email do usuário..." 
+                      className="pl-9" 
+                    />
+                  </div>
+                  <Button onClick={handleUserSearch} disabled={searchingUsers || !userSearch.trim()}>
+                    {searchingUsers ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
+                    Buscar
+                  </Button>
+                </div>
+              </CardHeader>
+              <Separator />
+              <CardContent>
+                {userSearchResults.length === 0 ? (
+                  <div className="py-12 text-center text-muted-foreground">
+                    {searchingUsers ? "Buscando..." : "Pesquise por nome ou email para ver os resultados."}
+                  </div>
+                ) : (
+                  <Table>
+                    <TableCaption>{userSearchResults.length} resultado(s)</TableCaption>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Cargo</TableHead>
+                        <TableHead className="hidden md:table-cell">Empresa</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {userSearchResults.map((u: any) => (
+                        <TableRow key={u.id}>
+                          <TableCell className="font-medium">{u.name}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">{u.email}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="capitalize">{u.role}</Badge>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell text-sm">
+                            {u.companies?.name || '—'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={u.status === 'ativo' ? 'default' : 'outline'} className="capitalize">
+                              {u.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={resettingUserId === u.id}
+                              onClick={() => handleResetPassword(u.id, u.name)}
+                              className="gap-1"
+                            >
+                              {resettingUserId === u.id ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <KeyRound className="w-3 h-3" />
+                              )}
+                              Resetar Senha
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Edit Company Name Modal */}
