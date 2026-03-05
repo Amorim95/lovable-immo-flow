@@ -38,7 +38,7 @@ export const exportToExcel = (leads: LeadExport[], filename: string) => {
   XLSX.writeFile(wb, `${filename}.xlsx`);
 };
 
-export const exportToPDF = async (leads: LeadExport[], filename: string, companyName: string, logoUrl?: string) => {
+export const exportToPDF = async (leads: LeadExport[], filename: string, companyName: string, filterLabel: string, logoUrl?: string) => {
   const doc = new jsPDF();
   
   let startY = 20;
@@ -49,31 +49,34 @@ export const exportToPDF = async (leads: LeadExport[], filename: string, company
       const img = await loadImage(logoUrl);
       doc.addImage(img, 'PNG', 14, 10, 20, 20);
       startY = 18;
-      // Nome da empresa ao lado do logo
       doc.setFontSize(18);
       doc.text(companyName, 38, startY);
       doc.setFontSize(12);
-      doc.text(`Perfil de Cliente - ${filename.split(' - ').slice(2).join(' - ') || 'Exportação'}`, 38, startY + 8);
-      startY = startY + 16;
+      doc.text(`Perfil de Cliente / ${filterLabel}`, 38, startY + 8);
+      doc.setFontSize(10);
+      doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 38, startY + 15);
+      startY = startY + 22;
     } catch {
-      // Se falhar, renderizar sem logo
       doc.setFontSize(18);
       doc.text(companyName, 14, startY);
       doc.setFontSize(12);
-      doc.text('Perfil de Cliente - Exportação de Leads', 14, startY + 8);
-      startY = startY + 16;
+      doc.text(`Perfil de Cliente / ${filterLabel}`, 14, startY + 8);
+      doc.setFontSize(10);
+      doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, startY + 15);
+      startY = startY + 22;
     }
   } else {
     doc.setFontSize(18);
     doc.text(companyName, 14, startY);
     doc.setFontSize(12);
-    doc.text('Perfil de Cliente - Exportação de Leads', 14, startY + 8);
-    startY = startY + 16;
+    doc.text(`Perfil de Cliente / ${filterLabel}`, 14, startY + 8);
+    doc.setFontSize(10);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, startY + 15);
+    startY = startY + 22;
   }
 
   doc.setFontSize(10);
-  doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, startY);
-  doc.text(`Total de leads: ${leads.length}`, 14, startY + 6);
+  doc.text(`Total de leads: ${leads.length}`, 14, startY);
   
   // Tabela
   autoTable(doc, {

@@ -124,7 +124,7 @@ export default function MobileRepiques() {
     }
     
     const filename = `repiques_${new Date().toISOString().split('T')[0]}`;
-    exportToPDF(filteredLeads, filename, settings?.name || 'CRM');
+    exportToPDF(filteredLeads, filename, settings?.name || 'CRM', 'Repiques');
     toast.success(`${filteredLeads.length} leads exportados para PDF`);
     
     // Salvar histórico

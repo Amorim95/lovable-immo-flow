@@ -35,7 +35,7 @@ export function ProfileExportDialog({ open, onOpenChange, leads, filterLabel, co
     if (type === 'excel') {
       exportToExcel(exportData, filename);
     } else {
-      exportToPDF(exportData, filename, companyName, companyLogo || undefined);
+      exportToPDF(exportData, filename, companyName, filterLabel, companyLogo || undefined);
     }
 
     toast.success(`${leads.length} leads exportados com sucesso!`);
