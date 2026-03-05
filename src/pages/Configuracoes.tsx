@@ -12,18 +12,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCompany } from "@/contexts/CompanyContext";
 import { useToast } from "@/hooks/use-toast";
 import { SecuritySettings } from "@/components/SecuritySettings";
+import { WebhookManager } from "@/components/WebhookManager";
 import { AccessControlWrapper } from "@/components/AccessControlWrapper";
 import { supabase } from "@/integrations/supabase/client";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
-import { User, Edit, Settings, Link, Upload, Palette, Moon, Sun, Shield, Layers } from "lucide-react";
+import { User, Edit, Settings, Link, Link2, Upload, Palette, Moon, Sun, Shield, Layers } from "lucide-react";
 import { useLeadStages } from "@/hooks/useLeadStages";
 
 const Configuracoes = () => {
   const { settings, updateSettings } = useCompany();
   const { toast } = useToast();
   const { isAdmin } = usePermissions();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { stages } = useLeadStages();
   const [companyName, setCompanyName] = useState(settings.name);
@@ -159,7 +162,7 @@ const Configuracoes = () => {
             </TabsList>
           }
         >
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="empresa" className="flex items-center gap-2">
               <Edit className="w-4 h-4" />
               Empresa
@@ -168,9 +171,13 @@ const Configuracoes = () => {
               <Layers className="w-4 h-4" />
               Etapas
             </TabsTrigger>
+            <TabsTrigger value="conectar" className="flex items-center gap-2">
+              <Link2 className="w-4 h-4" />
+              Conectar
+            </TabsTrigger>
             <TabsTrigger value="seguranca" className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
-              Acessos e Segurança
+              Segurança
             </TabsTrigger>
           </TabsList>
         </AccessControlWrapper>
@@ -262,6 +269,32 @@ const Configuracoes = () => {
                   <div className="p-4 bg-muted rounded-lg text-center">
                     <p className="text-muted-foreground">
                       Apenas administradores podem configurar as etapas dos leads.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </AccessControlWrapper>
+        <AccessControlWrapper
+          allowCorretor={false}
+          fallback={null}
+        >
+          <TabsContent value="conectar" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Link2 className="w-5 h-5" />
+                  Webhooks (Conectar)
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isAdmin && user?.company_id ? (
+                  <WebhookManager companyId={user.company_id} />
+                ) : (
+                  <div className="p-4 bg-muted rounded-lg text-center">
+                    <p className="text-muted-foreground">
+                      Apenas administradores podem gerenciar webhooks.
                     </p>
                   </div>
                 )}
