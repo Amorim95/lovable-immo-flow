@@ -220,6 +220,8 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          is_legacy: boolean
+          legacy_function_name: string | null
           name: string
           slug: string
           stage_name: string
@@ -232,6 +234,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          is_legacy?: boolean
+          legacy_function_name?: string | null
           name: string
           slug: string
           stage_name: string
@@ -244,6 +248,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          is_legacy?: boolean
+          legacy_function_name?: string | null
           name?: string
           slug?: string
           stage_name?: string
