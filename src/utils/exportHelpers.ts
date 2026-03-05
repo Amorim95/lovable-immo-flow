@@ -76,8 +76,7 @@ export const exportToPDF = async (leads: LeadExport[], filename: string, company
   }
 
   doc.setFontSize(10);
-  doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, startY);
-  doc.text(`Total de leads: ${leads.length}`, 14, startY + 6);
+  doc.text(`Total de leads: ${leads.length}`, 14, startY);
   
   // Tabela
   autoTable(doc, {
