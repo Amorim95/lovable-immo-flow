@@ -25,6 +25,7 @@ export function ProfileExportDialog({ open, onOpenChange, leads, filterLabel, co
       telefone: l.telefone,
       created_at: l.created_at,
       stage_name: l.stage_name || undefined,
+      renda: l.income ?? null,
     }));
 
     const filename = `perfil-cliente-${filterLabel.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-${new Date().toISOString().slice(0, 10)}`;
