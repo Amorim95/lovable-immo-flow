@@ -226,13 +226,15 @@ Deno.serve(async (req) => {
           const novasAtividades = [...atividadesAtuais, repiqueAtividade];
 
           // Atualizar o lead com a nova atividade
+          // stage_order negativo baseado no timestamp garante que o lead aparece no topo do Kanban
           const { error: updateError } = await supabase
             .from('leads')
             .update({
               user_id: nextUser.id,
               assigned_at: new Date().toISOString(),
               repique_count: lead.repique_count + 1,
-              atividades: novasAtividades
+              atividades: novasAtividades,
+              stage_order: -Date.now()
             })
             .eq('id', lead.id);
 
