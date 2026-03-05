@@ -38,7 +38,7 @@ export const exportToExcel = (leads: LeadExport[], filename: string) => {
   XLSX.writeFile(wb, `${filename}.xlsx`);
 };
 
-export const exportToPDF = async (leads: LeadExport[], filename: string, companyName: string, logoUrl?: string) => {
+export const exportToPDF = async (leads: LeadExport[], filename: string, companyName: string, filterLabel: string, logoUrl?: string) => {
   const doc = new jsPDF();
   
   let startY = 20;
