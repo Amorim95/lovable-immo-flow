@@ -130,12 +130,12 @@ export default function AdminConsole() {
     }
   }
 
-  async function handleResetPassword(userId: string, userName: string) {
+  async function handleResetPassword(userId: string, userName: string, userEmail: string) {
     if (!confirm(`Resetar a senha de "${userName}" para "mudar123"?`)) return;
     setResettingUserId(userId);
     try {
       const { data, error } = await supabase.functions.invoke("reset-user-password", {
-        body: { userId, newPassword: "mudar123" }
+        body: { email: userEmail, newPassword: "mudar123" }
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -473,7 +473,7 @@ export default function AdminConsole() {
                               variant="outline"
                               size="sm"
                               disabled={resettingUserId === u.id}
-                              onClick={() => handleResetPassword(u.id, u.name)}
+                              onClick={() => handleResetPassword(u.id, u.name, u.email)}
                               className="gap-1"
                             >
                               {resettingUserId === u.id ? (
