@@ -26,108 +26,112 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Resetando senha para: ${email}`);
+    const normalizedEmail = String(email).trim().toLowerCase();
+    console.log(`Resetando senha para: ${normalizedEmail}`);
 
-    // 1. Buscar usuário em public.users primeiro (rápido)
+    const findAuthUserByEmail = async (targetEmail: string) => {
+      for (let page = 1; page <= 10; page++) {
+        const { data: pageData, error: listError } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 });
+
+        if (listError) {
+          throw new Error(`Erro ao listar usuários auth: ${listError.message}`);
+        }
+
+        const authUser = pageData?.users?.find(
+          (u) => u.email?.toLowerCase() === targetEmail
+        );
+
+        if (authUser) return authUser;
+        if ((pageData?.users?.length ?? 0) < 1000) break;
+      }
+
+      return null;
+    };
+
+    // 1) Buscar usuário no public.users (fonte de verdade do CRM)
     const { data: publicUser } = await supabaseAdmin
       .from('users')
-      .select('id, name')
-      .eq('email', email)
+      .select('id, name, email')
+      .ilike('email', normalizedEmail)
       .maybeSingle();
 
     if (!publicUser) {
       return new Response(
-        JSON.stringify({ error: `Usuário ${email} não encontrado` }),
+        JSON.stringify({ error: `Usuário ${normalizedEmail} não encontrado` }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // 2. Tentar atualizar senha diretamente pelo ID do public.users
+    // 2) Carregar usuário Auth pelo mesmo ID do CRM
+    const { data: authByPublicId, error: getUserByIdError } = await supabaseAdmin.auth.admin.getUserById(publicUser.id);
+
+    if (getUserByIdError || !authByPublicId?.user) {
+      return new Response(
+        JSON.stringify({ error: `Usuário Auth não encontrado para o ID do CRM (${publicUser.id}).` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const authByPublicIdEmail = authByPublicId.user.email?.toLowerCase();
+
+    // 3) Se o email do Auth (ID do CRM) estiver diferente, corrigir o email da identidade correta
+    if (authByPublicIdEmail !== normalizedEmail) {
+      const conflictingAuthUser = await findAuthUserByEmail(normalizedEmail);
+
+      if (conflictingAuthUser && conflictingAuthUser.id !== publicUser.id) {
+        const { data: mappedPublicUser } = await supabaseAdmin
+          .from('users')
+          .select('id')
+          .eq('id', conflictingAuthUser.id)
+          .maybeSingle();
+
+        if (mappedPublicUser) {
+          return new Response(
+            JSON.stringify({ error: `Conflito de identidade: o email ${normalizedEmail} já está vinculado a outro usuário do CRM.` }),
+            { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        console.log(`Removendo usuário auth órfão ${conflictingAuthUser.id} para liberar email ${normalizedEmail}`);
+        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(conflictingAuthUser.id);
+
+        if (deleteError) {
+          return new Response(
+            JSON.stringify({ error: `Erro ao remover usuário auth órfão: ${deleteError.message}` }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      const { error: emailUpdateError } = await supabaseAdmin.auth.admin.updateUserById(publicUser.id, {
+        email: normalizedEmail,
+        email_confirm: true,
+      });
+
+      if (emailUpdateError) {
+        return new Response(
+          JSON.stringify({ error: `Erro ao sincronizar email no Auth: ${emailUpdateError.message}` }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // 4) Reset de senha no usuário Auth que corresponde ao ID do CRM
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       publicUser.id,
       { password: newPassword }
     );
 
-    if (!updateError) {
-      console.log(`✅ Senha atualizada com sucesso para ${email}`);
+    if (updateError) {
       return new Response(
-        JSON.stringify({ success: true, message: `Senha atualizada com sucesso` }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(`Usuário não encontrado no auth pelo ID, tentando criar: ${updateError.message}`);
-
-    // 3. Se falhou (usuário não existe no auth), criar no auth
-    const { data: newAuthUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: newPassword,
-      email_confirm: true,
-      user_metadata: { name: publicUser.name }
-    });
-
-    if (createError) {
-      // Se já existe com outro ID, buscar pelo email e atualizar
-      if (createError.message.includes('already been registered')) {
-        // Buscar nas primeiras páginas do auth
-        for (let page = 1; page <= 10; page++) {
-          const { data: pageData } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 1000 });
-          const authUser = pageData?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
-          if (authUser) {
-            const { error: retryError } = await supabaseAdmin.auth.admin.updateUserById(
-              authUser.id,
-              { password: newPassword }
-            );
-            if (retryError) {
-              return new Response(
-                JSON.stringify({ error: 'Erro ao atualizar senha: ' + retryError.message }),
-                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-              );
-            }
-
-            // Sincronizar IDs se diferentes
-            if (authUser.id !== publicUser.id) {
-              console.log(`Sincronizando IDs: ${publicUser.id} -> ${authUser.id}`);
-              await supabaseAdmin.from('leads').update({ user_id: authUser.id }).eq('user_id', publicUser.id);
-              await supabaseAdmin.from('permissions').update({ user_id: authUser.id }).eq('user_id', publicUser.id);
-              await supabaseAdmin.from('logs').update({ user_id: authUser.id }).eq('user_id', publicUser.id);
-              await supabaseAdmin.from('lead_queue').update({ assigned_to: authUser.id }).eq('assigned_to', publicUser.id);
-              await supabaseAdmin.from('push_subscriptions').update({ user_id: authUser.id }).eq('user_id', publicUser.id);
-              await supabaseAdmin.from('users').update({ id: authUser.id }).eq('id', publicUser.id);
-            }
-
-            console.log(`✅ Senha atualizada via busca auth para ${email}`);
-            return new Response(
-              JSON.stringify({ success: true, message: `Senha atualizada com sucesso` }),
-              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          }
-          if ((pageData?.users?.length ?? 0) < 1000) break;
-        }
-      }
-
-      return new Response(
-        JSON.stringify({ error: 'Erro: ' + createError.message }),
+        JSON.stringify({ error: 'Erro ao atualizar senha: ' + updateError.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Sincronizar IDs se necessário
-    const oldId = publicUser.id;
-    const newId = newAuthUser.user.id;
-    if (oldId !== newId) {
-      console.log(`Sincronizando IDs: ${oldId} -> ${newId}`);
-      await supabaseAdmin.from('leads').update({ user_id: newId }).eq('user_id', oldId);
-      await supabaseAdmin.from('permissions').update({ user_id: newId }).eq('user_id', oldId);
-      await supabaseAdmin.from('logs').update({ user_id: newId }).eq('user_id', oldId);
-      await supabaseAdmin.from('lead_queue').update({ assigned_to: newId }).eq('assigned_to', oldId);
-      await supabaseAdmin.from('push_subscriptions').update({ user_id: newId }).eq('user_id', oldId);
-      await supabaseAdmin.from('users').update({ id: newId }).eq('id', oldId);
-    }
-
-    console.log(`✅ Usuário criado no auth e senha definida: ${email}`);
+    console.log(`✅ Senha atualizada com sucesso para ${normalizedEmail}`);
     return new Response(
-      JSON.stringify({ success: true, message: `Usuário criado no auth com senha definida`, created: true }),
+      JSON.stringify({ success: true, message: `Senha atualizada com sucesso` }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
