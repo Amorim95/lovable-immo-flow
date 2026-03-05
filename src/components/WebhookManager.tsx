@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Webhook, Copy, Check, Loader2, Link2 } from "lucide-react";
+import { Plus, Trash2, Webhook, Copy, Check, Loader2, Link2, HelpCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface WebhookConfig {
   id: string;
@@ -55,6 +56,7 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [newWebhook, setNewWebhook] = useState({ name: "", stage_name: "", tag_ids: [] as string[], team_id: "" });
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const { toast } = useToast();
 
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "loxpoehsddfearnzcdla";
@@ -237,6 +239,119 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
           </Button>
         )}
       </div>
+
+      {/* Help Section */}
+      <Collapsible open={showHelp} onOpenChange={setShowHelp}>
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" size="sm" className="w-full gap-2 justify-between text-muted-foreground hover:text-foreground">
+            <div className="flex items-center gap-2">
+              <HelpCircle className="w-4 h-4" />
+              <span className="text-sm">Como configurar o webhook?</span>
+            </div>
+            {showHelp ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="border rounded-lg p-4 mt-2 space-y-4 bg-muted/30 text-sm">
+            <h4 className="font-semibold text-foreground flex items-center gap-2">
+              <HelpCircle className="w-4 h-4 text-primary" />
+              Guia de Integração do Webhook
+            </h4>
+
+            <div className="grid gap-3">
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Método HTTP</span>
+                <div className="bg-background border rounded-md px-3 py-2">
+                  <code className="text-xs font-mono text-primary font-semibold">POST</code>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Headers</span>
+                <div className="bg-background border rounded-md px-3 py-2 space-y-1">
+                  <div className="flex items-center gap-2 text-xs font-mono">
+                    <span className="text-muted-foreground">Content-Type:</span>
+                    <span className="text-foreground">application/json</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Body Type</span>
+                  <div className="bg-background border rounded-md px-3 py-2">
+                    <code className="text-xs font-mono text-foreground">raw (JSON)</code>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Content Type</span>
+                  <div className="bg-background border rounded-md px-3 py-2">
+                    <code className="text-xs font-mono text-foreground">application/json</code>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Estrutura JSON (Request Body)</span>
+                <div className="bg-background border rounded-md px-3 py-3 overflow-x-auto">
+                  <pre className="text-xs font-mono text-foreground leading-relaxed whitespace-pre">{`{
+  "nome": "Nome do Lead",
+  "telefone": "(11) 99999-9999",
+  "dados_adicionais": "Observações opcionais"
+}`}</pre>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Campos Aceitos</span>
+                <div className="bg-background border rounded-md px-3 py-3 space-y-2">
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex items-start gap-2">
+                      <Badge variant="default" className="text-[10px] px-1.5 shrink-0 mt-0.5">obrigatório</Badge>
+                      <div>
+                        <code className="font-mono text-primary">telefone</code>
+                        <span className="text-muted-foreground ml-1">— Aceita: <code className="font-mono">telefone</code>, <code className="font-mono">phone</code>, <code className="font-mono">tel</code>, <code className="font-mono">whatsapp</code></span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Badge variant="secondary" className="text-[10px] px-1.5 shrink-0 mt-0.5">opcional</Badge>
+                      <div>
+                        <code className="font-mono text-primary">nome</code>
+                        <span className="text-muted-foreground ml-1">— Aceita: <code className="font-mono">nome</code>, <code className="font-mono">name</code>, <code className="font-mono">lead_name</code></span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Badge variant="secondary" className="text-[10px] px-1.5 shrink-0 mt-0.5">opcional</Badge>
+                      <div>
+                        <code className="font-mono text-primary">dados_adicionais</code>
+                        <span className="text-muted-foreground ml-1">— Aceita: <code className="font-mono">dados_adicionais</code>, <code className="font-mono">additional_data</code>, <code className="font-mono">message</code>, <code className="font-mono">observacao</code></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Exemplo cURL</span>
+                <div className="bg-background border rounded-md px-3 py-3 overflow-x-auto">
+                  <pre className="text-[11px] font-mono text-muted-foreground leading-relaxed whitespace-pre">{`curl -X POST \\
+  "SUA_URL_DO_WEBHOOK" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "nome": "João Silva",
+    "telefone": "(11) 91234-5678",
+    "dados_adicionais": "Interesse em apartamento"
+  }'`}</pre>
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                💡 <strong>Dica:</strong> Leads duplicados (mesmo telefone em menos de 24h) são ignorados automaticamente. A distribuição segue round-robin entre os corretores ativos da equipe configurada.
+              </p>
+            </div>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Create form */}
       {showCreateForm && (
