@@ -9,6 +9,7 @@ import { ProfileExportDialog } from "@/components/ProfileExportDialog";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Users, DollarSign, Loader2, Download } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCompany } from "@/contexts/CompanyContext";
 
 const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
@@ -58,6 +59,7 @@ function ProfileFieldCard({ label, total, stats, onExport }: {
 export default function PerfilCliente() {
   const isMobile = useIsMobile();
   const { user } = useAuth();
+  const { settings } = useCompany();
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
@@ -97,7 +99,8 @@ export default function PerfilCliente() {
     setExportDialogOpen(true);
   }, [data.parsedLeads]);
 
-  const companyName = user?.name || 'CRM';
+  const companyName = settings.name || user?.name || 'CRM';
+  const companyLogo = settings.logo || null;
 
   const content = (
     <div className="space-y-6">
@@ -233,6 +236,7 @@ export default function PerfilCliente() {
         leads={exportLeads}
         filterLabel={exportLabel}
         companyName={companyName}
+        companyLogo={companyLogo}
       />
     </div>
   );

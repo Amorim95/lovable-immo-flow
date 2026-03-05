@@ -11,9 +11,10 @@ interface ProfileExportDialogProps {
   leads: LeadParsed[];
   filterLabel: string;
   companyName?: string;
+  companyLogo?: string | null;
 }
 
-export function ProfileExportDialog({ open, onOpenChange, leads, filterLabel, companyName = 'CRM' }: ProfileExportDialogProps) {
+export function ProfileExportDialog({ open, onOpenChange, leads, filterLabel, companyName = 'CRM', companyLogo }: ProfileExportDialogProps) {
   const handleExport = (type: 'excel' | 'pdf') => {
     if (leads.length === 0) {
       toast.error('Nenhum lead para exportar');
@@ -28,12 +29,13 @@ export function ProfileExportDialog({ open, onOpenChange, leads, filterLabel, co
       renda: l.income ?? null,
     }));
 
-    const filename = `perfil-cliente-${filterLabel.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase()}-${new Date().toISOString().slice(0, 10)}`;
+    const safeCompanyName = companyName.replace(/[^a-zA-Z0-9À-ÿ ]/g, '').trim() || 'CRM';
+    const filename = `${safeCompanyName} - Perfil Cliente - ${filterLabel.replace(/[^a-zA-Z0-9À-ÿ ]/g, '-')}-${new Date().toISOString().slice(0, 10)}`;
 
     if (type === 'excel') {
       exportToExcel(exportData, filename);
     } else {
-      exportToPDF(exportData, filename, companyName);
+      exportToPDF(exportData, filename, companyName, companyLogo || undefined);
     }
 
     toast.success(`${leads.length} leads exportados com sucesso!`);

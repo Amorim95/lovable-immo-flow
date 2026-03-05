@@ -38,21 +38,46 @@ export const exportToExcel = (leads: LeadExport[], filename: string) => {
   XLSX.writeFile(wb, `${filename}.xlsx`);
 };
 
-export const exportToPDF = (leads: LeadExport[], filename: string, companyName: string) => {
+export const exportToPDF = async (leads: LeadExport[], filename: string, companyName: string, logoUrl?: string) => {
   const doc = new jsPDF();
   
-  // Cabeçalho
-  doc.setFontSize(18);
-  doc.text(companyName, 14, 20);
-  doc.setFontSize(12);
-  doc.text('Repiques - Exportação de Leads', 14, 28);
+  let startY = 20;
+
+  // Tentar carregar logo
+  if (logoUrl) {
+    try {
+      const img = await loadImage(logoUrl);
+      doc.addImage(img, 'PNG', 14, 10, 20, 20);
+      startY = 18;
+      // Nome da empresa ao lado do logo
+      doc.setFontSize(18);
+      doc.text(companyName, 38, startY);
+      doc.setFontSize(12);
+      doc.text(`Perfil de Cliente - ${filename.split(' - ').slice(2).join(' - ') || 'Exportação'}`, 38, startY + 8);
+      startY = startY + 16;
+    } catch {
+      // Se falhar, renderizar sem logo
+      doc.setFontSize(18);
+      doc.text(companyName, 14, startY);
+      doc.setFontSize(12);
+      doc.text('Perfil de Cliente - Exportação de Leads', 14, startY + 8);
+      startY = startY + 16;
+    }
+  } else {
+    doc.setFontSize(18);
+    doc.text(companyName, 14, startY);
+    doc.setFontSize(12);
+    doc.text('Perfil de Cliente - Exportação de Leads', 14, startY + 8);
+    startY = startY + 16;
+  }
+
   doc.setFontSize(10);
-  doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 34);
-  doc.text(`Total de leads: ${leads.length}`, 14, 40);
+  doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, startY);
+  doc.text(`Total de leads: ${leads.length}`, 14, startY + 6);
   
   // Tabela
   autoTable(doc, {
-    startY: 45,
+    startY: startY + 10,
     head: [['Nome', 'Telefone', 'Data de Criação', 'Etapa', 'Renda']],
     body: leads.map(lead => [
       lead.nome, 
@@ -63,9 +88,27 @@ export const exportToPDF = (leads: LeadExport[], filename: string, companyName: 
     ]),
     styles: { fontSize: 8 },
     headStyles: { fillColor: [59, 130, 246] },
-    margin: { top: 45 }
+    margin: { top: startY + 10 }
   });
   
   // Download
   doc.save(`${filename}.pdf`);
 };
+
+function loadImage(url: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject('no ctx');
+      ctx.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
