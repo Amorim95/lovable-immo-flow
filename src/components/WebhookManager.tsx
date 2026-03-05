@@ -19,6 +19,8 @@ interface WebhookConfig {
   tag_ids: string[];
   team_id: string | null;
   is_active: boolean;
+  is_legacy: boolean;
+  legacy_function_name: string | null;
 }
 
 interface Stage {
@@ -81,6 +83,8 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
           tag_ids: w.tag_ids || [],
           team_id: w.team_id,
           is_active: w.is_active,
+          is_legacy: w.is_legacy || false,
+          legacy_function_name: w.legacy_function_name || null,
         })));
       }
       setStages(stagesRes.data || []);
@@ -97,13 +101,16 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
     return `webhook-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${companyId.slice(0, 8)}`;
   };
 
-  const getWebhookUrl = (slug: string) => {
-    return `https://${projectId}.supabase.co/functions/v1/webhook-lead-dynamic?slug=${slug}`;
+  const getWebhookUrl = (webhook: WebhookConfig) => {
+    if (webhook.is_legacy && webhook.legacy_function_name) {
+      return `https://${projectId}.supabase.co/functions/v1/${webhook.legacy_function_name}`;
+    }
+    return `https://${projectId}.supabase.co/functions/v1/webhook-lead-dynamic?slug=${webhook.slug}`;
   };
 
-  const handleCopyUrl = (slug: string) => {
-    navigator.clipboard.writeText(getWebhookUrl(slug));
-    setCopiedSlug(slug);
+  const handleCopyUrl = (webhook: WebhookConfig) => {
+    navigator.clipboard.writeText(getWebhookUrl(webhook));
+    setCopiedSlug(webhook.slug);
     setTimeout(() => setCopiedSlug(null), 2000);
     toast({ title: "URL copiada!", description: "A URL do webhook foi copiada para a área de transferência." });
   };
@@ -117,7 +124,7 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
       toast({ title: "Erro", description: "Selecione uma etapa obrigatória.", variant: "destructive" });
       return;
     }
-    if (webhooks.length >= MAX_WEBHOOKS) {
+    if (webhooks.filter(w => !w.is_legacy).length >= MAX_WEBHOOKS) {
       toast({ title: "Limite atingido", description: `Máximo de ${MAX_WEBHOOKS} webhooks por empresa.`, variant: "destructive" });
       return;
     }
@@ -207,15 +214,18 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
     );
   }
 
+  const customWebhooks = webhooks.filter(w => !w.is_legacy);
+  const legacyWebhooks = webhooks.filter(w => w.is_legacy);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Link2 className="w-4 h-4" />
           <Label className="text-base font-medium">Webhooks (Conectar)</Label>
-          <Badge variant="secondary" className="text-xs">{webhooks.length}/{MAX_WEBHOOKS}</Badge>
+          <Badge variant="secondary" className="text-xs">{customWebhooks.length}/{MAX_WEBHOOKS}</Badge>
         </div>
-        {webhooks.length < MAX_WEBHOOKS && (
+        {customWebhooks.length < MAX_WEBHOOKS && (
           <Button
             size="sm"
             variant="outline"
@@ -331,28 +341,37 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
             <div key={webhook.id} className="border rounded-lg p-4 space-y-3">
               {/* Header row */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
                   <Webhook className="w-4 h-4 text-primary shrink-0" />
                   <span className="font-medium text-sm truncate">{webhook.name}</span>
                   <Badge variant={webhook.is_active ? "default" : "secondary"} className="text-[10px] px-1.5 shrink-0">
                     {webhook.is_active ? "Ativo" : "Inativo"}
                   </Badge>
+                  {webhook.is_legacy && (
+                    <Badge variant="outline" className="text-[10px] px-1.5 shrink-0 border-amber-400 text-amber-600">
+                      Legado
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Switch
-                    checked={webhook.is_active}
-                    onCheckedChange={() => handleToggleActive(webhook)}
-                    disabled={saving === webhook.id}
-                  />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-7 w-7 text-destructive hover:text-destructive"
-                    onClick={() => handleDelete(webhook)}
-                    disabled={saving === webhook.id}
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
+                  {!webhook.is_legacy && (
+                    <>
+                      <Switch
+                        checked={webhook.is_active}
+                        onCheckedChange={() => handleToggleActive(webhook)}
+                        disabled={saving === webhook.id}
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-destructive hover:text-destructive"
+                        onClick={() => handleDelete(webhook)}
+                        disabled={saving === webhook.id}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -361,13 +380,13 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
                 <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">URL do Webhook</Label>
                 <div className="flex items-start gap-2 bg-muted rounded-md px-3 py-2">
                   <code className="text-[11px] text-muted-foreground break-all flex-1 leading-relaxed select-all">
-                    {getWebhookUrl(webhook.slug)}
+                    {getWebhookUrl(webhook)}
                   </code>
                   <Button
                     size="icon"
                     variant="ghost"
                     className="h-6 w-6 shrink-0 mt-0.5"
-                    onClick={() => handleCopyUrl(webhook.slug)}
+                    onClick={() => handleCopyUrl(webhook)}
                   >
                     {copiedSlug === webhook.slug ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
                   </Button>
