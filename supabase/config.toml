@@ -6,6 +6,9 @@ verify_jwt = true
 [functions.reset-user-password]
 verify_jwt = false
 
+[functions.webhook-lead-dynamic]
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321

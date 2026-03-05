@@ -214,6 +214,60 @@ export type Database = {
         }
         Relationships: []
       }
+      company_webhooks: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          stage_name: string
+          tag_ids: string[] | null
+          team_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          stage_name: string
+          tag_ids?: string[] | null
+          team_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          stage_name?: string
+          tag_ids?: string[] | null
+          team_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_webhooks_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_webhooks_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "equipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipes: {
         Row: {
           company_id: string | null
