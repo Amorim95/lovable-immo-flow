@@ -328,16 +328,17 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
       ) : (
         <div className="space-y-3">
           {webhooks.map(webhook => (
-            <div key={webhook.id} className="border rounded-lg p-3 space-y-2">
+            <div key={webhook.id} className="border rounded-lg p-4 space-y-3">
+              {/* Header row */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Webhook className="w-4 h-4 text-primary" />
-                  <span className="font-medium text-sm">{webhook.name}</span>
-                  <Badge variant={webhook.is_active ? "default" : "secondary"} className="text-[10px] px-1.5">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Webhook className="w-4 h-4 text-primary shrink-0" />
+                  <span className="font-medium text-sm truncate">{webhook.name}</span>
+                  <Badge variant={webhook.is_active ? "default" : "secondary"} className="text-[10px] px-1.5 shrink-0">
                     {webhook.is_active ? "Ativo" : "Inativo"}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 shrink-0">
                   <Switch
                     checked={webhook.is_active}
                     onCheckedChange={() => handleToggleActive(webhook)}
@@ -355,41 +356,47 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
                 </div>
               </div>
 
-              {/* URL */}
-              <div className="flex items-center gap-1 bg-muted rounded px-2 py-1">
-                <code className="text-[10px] text-muted-foreground flex-1 truncate">
-                  {getWebhookUrl(webhook.slug)}
-                </code>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-6 w-6 shrink-0"
-                  onClick={() => handleCopyUrl(webhook.slug)}
-                >
-                  {copiedSlug === webhook.slug ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
-                </Button>
+              {/* URL - full width with word break */}
+              <div className="space-y-1">
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">URL do Webhook</Label>
+                <div className="flex items-start gap-2 bg-muted rounded-md px-3 py-2">
+                  <code className="text-[11px] text-muted-foreground break-all flex-1 leading-relaxed select-all">
+                    {getWebhookUrl(webhook.slug)}
+                  </code>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6 shrink-0 mt-0.5"
+                    onClick={() => handleCopyUrl(webhook.slug)}
+                  >
+                    {copiedSlug === webhook.slug ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                  </Button>
+                </div>
               </div>
 
               {/* Config details */}
-              <div className="flex flex-wrap gap-1.5 text-xs">
-                <Badge variant="outline" className="gap-1 text-[10px]">
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: getStageColor(webhook.stage_name) }} />
-                  {getStageNameDisplay(webhook.stage_name)}
-                </Badge>
-                {webhook.tag_ids.map(tagId => {
-                  const tag = tags.find(t => t.id === tagId);
-                  return tag ? (
-                    <Badge key={tagId} variant="outline" className="gap-1 text-[10px]" style={{ borderColor: tag.cor || undefined }}>
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tag.cor || "#3B82F6" }} />
-                      {tag.nome}
-                    </Badge>
-                  ) : null;
-                })}
-                {webhook.team_id && (
-                  <Badge variant="outline" className="text-[10px]">
-                    Equipe: {teams.find(t => t.id === webhook.team_id)?.nome || "—"}
+              <div className="space-y-1">
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">Configuração</Label>
+                <div className="flex flex-wrap gap-1.5">
+                  <Badge variant="outline" className="gap-1 text-xs py-0.5">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getStageColor(webhook.stage_name) }} />
+                    {getStageNameDisplay(webhook.stage_name)}
                   </Badge>
-                )}
+                  {webhook.tag_ids.map(tagId => {
+                    const tag = tags.find(t => t.id === tagId);
+                    return tag ? (
+                      <Badge key={tagId} variant="outline" className="gap-1 text-xs py-0.5" style={{ borderColor: tag.cor || undefined }}>
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: tag.cor || "#3B82F6" }} />
+                        {tag.nome}
+                      </Badge>
+                    ) : null;
+                  })}
+                  {webhook.team_id && (
+                    <Badge variant="outline" className="text-xs py-0.5">
+                      🏢 {teams.find(t => t.id === webhook.team_id)?.nome || "—"}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           ))}
