@@ -59,6 +59,7 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
   const [showHelp, setShowHelp] = useState(false);
   const { toast } = useToast();
 
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxveHBvZWhzZGRmZWFybnpjZGxhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEyOTg4NjgsImV4cCI6MjA2Njg3NDg2OH0.2jHJynuzjEhK3Gk_OrFMR6zM3Tyq3JWIYjhiVQVx4wY";
   const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID || "loxpoehsddfearnzcdla";
   const MAX_WEBHOOKS = 5;
 
@@ -268,11 +269,27 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
 
               <div className="space-y-1">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Headers</span>
-                <div className="bg-background border rounded-md px-3 py-2 space-y-1">
-                  <div className="flex items-center gap-2 text-xs font-mono">
-                    <span className="text-muted-foreground">Content-Type:</span>
+                <div className="bg-background border rounded-md px-3 py-2 space-y-2">
+                  <div className="flex items-start gap-2 text-xs font-mono">
+                    <span className="text-muted-foreground shrink-0">Content-Type:</span>
                     <span className="text-foreground">application/json</span>
                   </div>
+                  <div className="flex items-start gap-2 text-xs font-mono">
+                    <span className="text-muted-foreground shrink-0">Authorization:</span>
+                    <span className="text-foreground break-all">Bearer {`${SUPABASE_ANON_KEY.slice(0, 20)}...${SUPABASE_ANON_KEY.slice(-10)}`}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 text-[10px] gap-1 px-2"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`Bearer ${SUPABASE_ANON_KEY}`);
+                      toast({ title: "Copiado!", description: "Authorization header copiado para a área de transferência." });
+                    }}
+                  >
+                    <Copy className="w-3 h-3" />
+                    Copiar Authorization completo
+                  </Button>
                 </div>
               </div>
 
@@ -337,6 +354,7 @@ export function WebhookManager({ companyId }: WebhookManagerProps) {
                   <pre className="text-[11px] font-mono text-muted-foreground leading-relaxed whitespace-pre">{`curl -X POST \\
   "SUA_URL_DO_WEBHOOK" \\
   -H "Content-Type: application/json" \\
+  -H "Authorization: Bearer ${SUPABASE_ANON_KEY.slice(0, 20)}..." \\
   -d '{
     "nome": "João Silva",
     "telefone": "(11) 91234-5678",
