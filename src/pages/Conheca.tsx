@@ -40,7 +40,7 @@ const features = [
 
 const plans = [
 {
-  name: "Starter",
+  name: "Você tem tudo por um único valor.",
   price: "Consulte",
   description: "Ideal para corretores autônomos",
   features: [
