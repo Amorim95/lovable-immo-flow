@@ -152,13 +152,12 @@ export default function Conheca() {
               CRM especialista para o mercado imobiliário
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-gray-900">
-              Transforme leads em{" "}
-              <span className="text-blue-600">vendas fechadas</span>
+              Você não precisa de um sistema que promete{" "}
+              <span className="text-blue-600">fazer tudo.</span>
             </h1>
             <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl">
-              Gerencie seus leads, equipes e corretores em um só lugar.
-              Kanban inteligente, repique automático e dashboards em tempo real
-              para você nunca mais perder uma oportunidade.
+              Você precisa de uma ferramenta que cumpre <strong className="text-gray-900">(muito bem)</strong> o que foi feita para fazer.
+              Chega de CRMs imobiliários complexos e lentos. Conheça um CRM focado apenas no que importa, <strong className="text-blue-600">VENDAS</strong>.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Button
