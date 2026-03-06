@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
   BarChart3, Zap, Smartphone, Palette, Share2,
-  CheckCircle2, ArrowRight, Star, ChevronRight, X
+  CheckCircle2, ArrowRight, Star, ChevronRight, X, Instagram
 } from "lucide-react";
+import amorimPhoto from "@/assets/amorim-photo.png";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -67,9 +68,11 @@ export default function Conheca() {
       {/* Hero */}
       <section className="relative overflow-hidden min-h-[90vh] flex flex-col">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
-        <div className="relative flex justify-end px-6 pt-4">
-          <a href="https://www.instagram.com/amorimads" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-400 hover:text-blue-600 transition-colors">
-            @amorimads
+        <div className="relative flex justify-start px-6 pt-4">
+          <a href="https://www.instagram.com/amorimads" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors">
+            <img src={amorimPhoto} alt="Amorim" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+            <Instagram className="w-4 h-4" />
+            <span>@amorimads</span>
           </a>
         </div>
         <div className="relative flex-1 flex items-center max-w-6xl mx-auto px-6 py-24 md:py-32">
