@@ -44,40 +44,11 @@ const plans = [
   price: "Consulte",
   description: "Ideal para corretores autônomos",
   features: [
-  "Até 5 usuários",
-  "Kanban de leads",
-  "Notificações push",
-  "Suporte por e-mail"],
-
-  highlighted: false
-},
-{
-  name: "Profissional",
-  price: "Consulte",
-  description: "Para imobiliárias em crescimento",
-  features: [
-  "Até 30 usuários",
-  "Tudo do Starter",
-  "Repique automático",
-  "Dashboards completos",
-  "Gestão de equipes",
-  "Suporte prioritário"],
-
+    "Até 5 usuários",
+    "Kanban de leads",
+    "Notificações push",
+    "Suporte por e-mail"],
   highlighted: true
-},
-{
-  name: "Enterprise",
-  price: "Sob medida",
-  description: "Para grandes operações",
-  features: [
-  "Usuários ilimitados",
-  "Tudo do Profissional",
-  "Site com domínio próprio",
-  "Webhooks personalizados",
-  "Onboarding dedicado",
-  "SLA garantido"],
-
-  highlighted: false
 }];
 
 
@@ -195,7 +166,7 @@ export default function Conheca() {
               Você não precisa de uma reunião para saber o Preço.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="flex justify-center max-w-md mx-auto">
             {plans.map((plan) =>
             <Card
               key={plan.name}
