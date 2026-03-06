@@ -166,7 +166,7 @@ export default function Conheca() {
               Você não precisa de uma reunião para saber o Preço.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="flex justify-center max-w-md mx-auto">
             {plans.map((plan) =>
             <Card
               key={plan.name}
