@@ -150,7 +150,7 @@ export default function Conheca() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-              O que há de mais avançado em Gestão Comercial hoje.
+              O que há de mais avançado em Gestão Comercial hoje?
             </h2>
             <p className="mt-4 text-gray-600 text-lg max-w-2xl mx-auto">
               Soluções focadas na Gestão de leads de uma forma que você nunca viu
