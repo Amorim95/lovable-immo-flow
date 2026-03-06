@@ -121,7 +121,7 @@ export default function Conheca() {
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
               <Star className="w-3.5 h-3.5" />
-              CRM especialista para o mercado imobiliário
+              Dica de um Especialista em Vendas de Imóveis
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-gray-900">
               Você não precisa de um sistema que promete{" "}
