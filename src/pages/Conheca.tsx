@@ -224,7 +224,7 @@ export default function Conheca() {
           ) : (
             <>
               <DialogHeader>
-                <DialogTitle className="text-xl font-bold text-gray-900">Quero Vender Mais</DialogTitle>
+                <DialogTitle className="text-xl font-bold text-gray-900">Vamos Conhecer Melhor a Ferramenta?</DialogTitle>
                 <DialogDescription className="text-gray-600">Preencha as informações abaixo para agendarmos uma apresentação.</DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-5 mt-2">
