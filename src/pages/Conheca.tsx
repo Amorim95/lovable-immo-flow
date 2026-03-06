@@ -118,6 +118,16 @@ export default function Conheca() {
                 </div>
               </div>
             </div>
+            <div className="mt-6 flex justify-center">
+              <Button
+                size="lg"
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 text-base"
+                onClick={() => document.getElementById("precos")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                Quero saber o Preço
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((f) => (
