@@ -192,7 +192,7 @@ export default function Conheca() {
               Direto ao Ponto, sem Enrolação.
             </h2>
             <p className="mt-4 text-gray-600 text-lg max-w-2xl mx-auto">
-              Escolha o plano ideal para o tamanho da sua operação.
+              Você não precisa de uma reunião para saber o Preço.
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
