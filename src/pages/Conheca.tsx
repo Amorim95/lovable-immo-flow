@@ -41,7 +41,7 @@ const features = [
 const plans = [
 {
   name: "Você tem tudo por um único valor.",
-  price: "Consulte",
+  price: "R$450",
   description: "Ideal para corretores autônomos",
   features: [
     "Até 5 usuários",
