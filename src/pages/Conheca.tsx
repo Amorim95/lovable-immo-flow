@@ -117,8 +117,8 @@ export default function Conheca() {
       {/* Hero */}
       <section className="relative overflow-hidden min-h-[90vh] flex items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
-        <div className="relative max-w-6xl mx-auto px-6 py-24 md:py-32 text-center">
-          <div className="max-w-3xl mx-auto">
+        <div className="relative max-w-6xl mx-auto px-6 py-24 md:py-32 flex items-center">
+          <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
               <Star className="w-3.5 h-3.5" />
               CRM especialista para o mercado imobiliário
@@ -127,7 +127,7 @@ export default function Conheca() {
               Você não precisa de um sistema que promete{" "}
               <span className="text-blue-600">fazer tudo.</span>
             </h1>
-            <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+            <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl">
               Você precisa de uma ferramenta que cumpre <strong className="text-gray-900">(muito bem)</strong> o que foi feita para fazer.
               Chega de CRMs imobiliários complexos e lentos. Conheça um CRM focado apenas no que importa, <strong className="text-blue-600">VENDAS</strong>.
             </p>
