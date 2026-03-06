@@ -42,7 +42,7 @@ const plans = [
 {
   name: "Você tem tudo por um único valor.",
   price: "R$450 por mês",
-  description: "Ideal para corretores autônomos",
+  
   features: [
   "Aplicativo Mobile",
   "Distribuição de Leads",
