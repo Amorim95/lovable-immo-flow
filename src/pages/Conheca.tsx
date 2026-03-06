@@ -131,22 +131,14 @@ export default function Conheca() {
               Você precisa de uma ferramenta que cumpre <strong className="text-gray-900">(muito bem)</strong> o que foi feita para fazer.
               Chega de CRMs imobiliários complexos e lentos. Conheça um CRM focado apenas no que importa pra você hoje, <strong className="text-blue-600">VENDAS</strong>.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+            <div className="mt-8">
               <Button
                 size="lg"
                 className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 text-base"
-                onClick={() => document.getElementById("contato")?.scrollIntoView({ behavior: "smooth" })}
+                onClick={() => document.getElementById("funcionalidades")?.scrollIntoView({ behavior: "smooth" })}
               >
                 Quero conhecer
                 <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-full px-8 text-base border-gray-300 text-gray-700 hover:bg-gray-50"
-                onClick={() => document.getElementById("funcionalidades")?.scrollIntoView({ behavior: "smooth" })}
-              >
-                Ver funcionalidades
               </Button>
             </div>
           </div>
