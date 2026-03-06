@@ -156,6 +156,21 @@ export default function Conheca() {
               Conheça as Melhores Ferramentas focadas em Gestão de Leads.<br />
               Duvido que seu CRM tenha isso Hoje.
             </p>
+
+            {/* Video */}
+            <div className="mt-10 max-w-3xl mx-auto">
+              <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 border border-border bg-card p-2">
+                <div className="rounded-xl overflow-hidden aspect-video">
+                  <iframe
+                    src="https://www.youtube.com/embed/PIDRmt_kjnA"
+                    title="Demonstração MeuCRM.Imob"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((f) => (
