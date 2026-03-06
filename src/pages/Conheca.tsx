@@ -46,7 +46,7 @@ const plans = [
   features: [
   "Aplicativo Mobile",
   "Distribuição de Leads",
-  "Dashboards Completos",
+  "Dashboards Avançados",
   "Integração com campanhas"],
   highlighted: true
 }];
