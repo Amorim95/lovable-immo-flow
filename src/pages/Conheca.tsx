@@ -213,8 +213,37 @@ export default function Conheca() {
         </div>
       </section>
 
+      {/* Flow.Imob */}
+      <section className="py-20 md:py-28 bg-white">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+            Precisa de um Site Arrojado e uma gestão dos seus imóveis de forma eficiente?
+          </h2>
+          <p className="mt-6 text-lg text-gray-600">
+            Conheça também a <strong className="text-blue-600">Flow.Imob</strong>, onde você:
+          </p>
+          <ul className="mt-8 space-y-4 text-left max-w-md mx-auto">
+            {[
+              "Cadastra seus Imóveis",
+              "Controla as Vendas de Unidade por Unidade",
+              "Gestão de Aluguéis",
+              "Cobranças Automáticas",
+              "Tudo isso incorporado automaticamente no seu Site",
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-3 text-gray-700">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-10 inline-block bg-blue-50 border border-blue-200 rounded-2xl px-8 py-4">
+            <p className="text-lg font-semibold text-blue-700">
+              Clientes da MeuCRM.Imob tem <span className="text-2xl font-extrabold">30%</span> de desconto vitalício!
+            </p>
+          </div>
+        </div>
+      </section>
 
-      {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-12">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
