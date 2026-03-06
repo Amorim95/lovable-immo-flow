@@ -77,7 +77,7 @@ export default function Conheca() {
             </a>
             <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
               <Star className="w-3.5 h-3.5" />
-              Dica de um Especialista em Vendas de Imóveis
+              Dica de um Especialista em Marketing Imobiliário
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-gray-900">
               Você não precisa de um sistema que promete{" "}
