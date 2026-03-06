@@ -44,10 +44,10 @@ const plans = [
   price: "R$450 por mês",
   description: "Ideal para corretores autônomos",
   features: [
-  "Até 5 usuários",
-  "Kanban de leads",
-  "Notificações push",
-  "Suporte por e-mail"],
+  "Aplicativo Mobile",
+  "Distribuição de Leads",
+  "Dashboards Completos",
+  "Integração com campanhas"],
   highlighted: true
 }];
 
