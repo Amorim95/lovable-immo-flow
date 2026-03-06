@@ -128,12 +128,11 @@ export default function Conheca() {
               <div className="relative rounded-2xl overflow-hidden shadow-2xl shadow-primary/10 border border-border bg-card p-2">
                 <div className="rounded-xl overflow-hidden aspect-video">
                   <iframe
-                    src="https://www.youtube.com/embed/PIDRmt_kjnA"
+                    src="https://www.youtube.com/embed/lgir3wDyQKU?modestbranding=1&rel=0&showinfo=0&controls=0&iv_load_policy=3&cc_load_policy=0&disablekb=1"
                     title="Demonstração MeuCRM.Imob"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="w-full h-full" />
-                  
                 </div>
               </div>
             </div>
