@@ -114,39 +114,11 @@ export default function Conheca() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src="/lovable-uploads/default-crm-logo.png"
-              alt="MeuCRM.Imob"
-              className="h-9 w-auto"
-            />
-            <span className="text-lg font-bold tracking-tight text-gray-900">
-              MeuCRM<span className="text-blue-600">.Imob</span>
-            </span>
-          </div>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-            <a href="#funcionalidades" className="hover:text-gray-900 transition-colors">Funcionalidades</a>
-            <a href="#precos" className="hover:text-gray-900 transition-colors">Preços</a>
-            <a href="#contato" className="hover:text-gray-900 transition-colors">Contato</a>
-          </nav>
-          <Button
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-5"
-            onClick={() => document.getElementById("contato")?.scrollIntoView({ behavior: "smooth" })}
-          >
-            Fale conosco
-          </Button>
-        </div>
-      </header>
-
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden min-h-[90vh] flex items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
-        <div className="relative max-w-6xl mx-auto px-6 py-24 md:py-32">
-          <div className="max-w-3xl">
+        <div className="relative max-w-6xl mx-auto px-6 py-24 md:py-32 text-center">
+          <div className="max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
               <Star className="w-3.5 h-3.5" />
               CRM especialista para o mercado imobiliário
@@ -155,11 +127,11 @@ export default function Conheca() {
               Você não precisa de um sistema que promete{" "}
               <span className="text-blue-600">fazer tudo.</span>
             </h1>
-            <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl">
+            <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
               Você precisa de uma ferramenta que cumpre <strong className="text-gray-900">(muito bem)</strong> o que foi feita para fazer.
               Chega de CRMs imobiliários complexos e lentos. Conheça um CRM focado apenas no que importa, <strong className="text-blue-600">VENDAS</strong>.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
                 className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 text-base"
