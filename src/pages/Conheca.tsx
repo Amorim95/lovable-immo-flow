@@ -44,10 +44,10 @@ const plans = [
   price: "R$450 por mês",
   description: "Ideal para corretores autônomos",
   features: [
-    "Até 5 usuários",
-    "Kanban de leads",
-    "Notificações push",
-    "Suporte por e-mail"],
+  "Até 5 usuários",
+  "Kanban de leads",
+  "Notificações push",
+  "Suporte por e-mail"],
   highlighted: true
 }];
 
@@ -177,13 +177,13 @@ export default function Conheca() {
               }>
               
                 {plan.highlighted &&
-                <div className="absolute top-0 left-0 right-0 bg-blue-600 text-white text-xs font-bold text-center py-1.5">
+              <div className="absolute top-0 left-0 right-0 bg-blue-600 text-white text-xs font-bold text-center py-1.5">
                     ÚNICO PLANO
                   </div>
               }
                 <CardContent className={`p-8 ${plan.highlighted ? "pt-12" : ""}`}>
                   <h3 className="text-xl font-bold text-gray-900">{plan.name}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{plan.description}</p>
+                  
                   <div className="mt-6 mb-6">
                     <span className="text-3xl font-extrabold text-gray-900">{plan.price}</span>
                   </div>
