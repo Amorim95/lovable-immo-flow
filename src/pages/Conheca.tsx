@@ -204,7 +204,7 @@ export default function Conheca() {
 
       {/* Dialog Formulário */}
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) resetForm(); }}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto mx-4 rounded-2xl sm:mx-auto">
+        <DialogContent className="max-w-[calc(100vw-2.5rem)] sm:max-w-lg max-h-[85vh] overflow-y-auto rounded-2xl">
           {sent ? (
             <div className="py-10 text-center space-y-4">
               <CheckCircle2 className="w-16 h-16 text-blue-600 mx-auto" />
