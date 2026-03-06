@@ -189,7 +189,7 @@ export default function Conheca() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-
+              Direto ao Ponto, sem Enrolação.
             </h2>
             <p className="mt-4 text-gray-600 text-lg max-w-2xl mx-auto">
               Escolha o plano ideal para o tamanho da sua operação.
