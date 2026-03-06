@@ -131,7 +131,7 @@ export default function Conheca() {
               Você precisa de uma ferramenta que cumpre <strong className="text-gray-900">(muito bem)</strong> o que foi feita para fazer.
               Chega de CRMs imobiliários complexos e lentos. Conheça um CRM focado apenas no que importa, <strong className="text-blue-600">VENDAS</strong>.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <Button
                 size="lg"
                 className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 text-base"
