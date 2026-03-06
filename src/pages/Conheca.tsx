@@ -84,7 +84,7 @@ export default function Conheca() {
               <span className="text-blue-600">fazer tudo.</span>
             </h1>
             <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl">
-              Você precisa de uma ferramenta que cumpre <strong className="text-gray-900">(muito bem)</strong> o promete fazer.
+              Você precisa de uma ferramenta que cumpre <strong className="text-gray-900">(muito bem)</strong> o que promete fazer.
               Chega de CRMs imobiliários complexos e lentos. Conheça um CRM focado apenas no que importa hoje pra você, <strong className="text-blue-600">VENDAS</strong>.
             </p>
             <div className="mt-8">
