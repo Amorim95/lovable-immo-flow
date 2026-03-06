@@ -153,7 +153,8 @@ export default function Conheca() {
               O que há de mais Avançado em Gestão Comercial hoje?
             </h2>
             <p className="mt-4 text-gray-600 text-lg max-w-2xl mx-auto">
-              Soluções focadas na Gestão de leads de uma forma que você nunca viu
+              Conheça as Melhores Ferramentas focadas em Gestão de Leads.<br />
+              Duvido que seu CRM tenha isso Hoje.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
