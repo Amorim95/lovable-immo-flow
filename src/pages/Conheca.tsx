@@ -38,35 +38,26 @@ const desafioOptions = ["Falta de leads qualificados", "Leads que não respondem
 export default function Conheca() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sent, setSent] = useState(false);
-  const [sending, setSending] = useState(false);
+  const [sending] = useState(false);
   const [form, setForm] = useState({
-    nome: "",
-    telefone: "",
-    email: "",
     perfil: "",
     pessoas: "",
     leads: "",
     desafio: "",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.nome.trim() || !form.telefone.trim() || !form.email.trim()) {
-      toast.error("Preencha nome, telefone e e-mail.");
-      return;
-    }
     if (!form.perfil || !form.pessoas || !form.leads || !form.desafio) {
       toast.error("Responda todas as perguntas.");
       return;
     }
-    setSending(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setSending(false);
-    setSent(true);
+    window.open("https://calendly.com/quero-vender-mais-imoveis/apresentacaomeucrmimob", "_blank");
+    resetForm();
   };
 
   const resetForm = () => {
-    setForm({ nome: "", telefone: "", email: "", perfil: "", pessoas: "", leads: "", desafio: "" });
+    setForm({ perfil: "", pessoas: "", leads: "", desafio: "" });
     setSent(false);
     setDialogOpen(false);
   };
@@ -228,18 +219,6 @@ export default function Conheca() {
                 <DialogDescription className="text-gray-600">Para agendar uma reunião comigo e poder ter acesso a ferramenta, preciso conhecer sua empresa melhor, preencha esse formulário e marcamos uma reunião,</DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-5 mt-2">
-                <div className="space-y-2">
-                  <Label>Nome</Label>
-                  <Input placeholder="Seu nome completo" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Telefone / WhatsApp</Label>
-                  <Input placeholder="(00) 00000-0000" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input type="email" placeholder="seu@email.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-                </div>
 
                 <RadioQuestion label="Qual é o seu perfil no mercado imobiliário?" options={perfilOptions} value={form.perfil} onChange={(v) => setForm({ ...form, perfil: v })} />
                 <RadioQuestion label="Quantas pessoas trabalham hoje na sua operação comercial?" options={pessoasOptions} value={form.pessoas} onChange={(v) => setForm({ ...form, pessoas: v })} />
