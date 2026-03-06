@@ -177,8 +177,8 @@ export default function Conheca() {
               }>
               
                 {plan.highlighted &&
-              <div className="absolute top-0 left-0 right-0 bg-blue-600 text-white text-xs font-bold text-center py-1.5">
-                    MAIS POPULAR
+                <div className="absolute top-0 left-0 right-0 bg-blue-600 text-white text-xs font-bold text-center py-1.5">
+                    ÚNICO PLANO
                   </div>
               }
                 <CardContent className={`p-8 ${plan.highlighted ? "pt-12" : ""}`}>
