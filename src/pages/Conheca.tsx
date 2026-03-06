@@ -5,16 +5,26 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
-  Users, BarChart3, Zap, Shield, Bell, Globe,
+  BarChart3, Zap, Smartphone, Palette, Share2,
   CheckCircle2, ArrowRight, Building2, Phone, Mail,
   Star, ChevronRight
 } from "lucide-react";
 
 const features = [
   {
-    icon: Users,
-    title: "Gestão de Leads",
-    description: "Kanban intuitivo para acompanhar cada lead do primeiro contato até o fechamento."
+    icon: Palette,
+    title: "Personalize o CRM com a Logo da sua Empresa",
+    description: "Deixe o sistema com a cara do seu negócio. Adicione sua logo e fortaleça sua marca em cada interação."
+  },
+  {
+    icon: Smartphone,
+    title: "Aplicativo Mobile Rápido e Fácil de Usar",
+    description: "Acesse leads, dashboards e notificações direto do celular com um app leve e intuitivo."
+  },
+  {
+    icon: Share2,
+    title: "Distribuição de Leads Rápida e Eficiente",
+    description: "Leads distribuídos automaticamente para o próximo corretor disponível, sem atrasos."
   },
   {
     icon: Zap,
@@ -25,21 +35,6 @@ const features = [
     icon: BarChart3,
     title: "Dashboards Completos",
     description: "Métricas de performance por corretor, equipe e empresa em tempo real."
-  },
-  {
-    icon: Shield,
-    title: "Controle de Acesso",
-    description: "Perfis de admin, gestor e corretor com permissões granulares por funcionalidade."
-  },
-  {
-    icon: Bell,
-    title: "Notificações Push",
-    description: "Alertas instantâneos de novos leads no celular e computador."
-  },
-  {
-    icon: Globe,
-    title: "Site Próprio",
-    description: "Publique imóveis em um site profissional com domínio personalizado."
   },
 ];
 
