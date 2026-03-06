@@ -38,7 +38,7 @@ const desafioOptions = ["Falta de leads qualificados", "Leads que não respondem
 export default function Conheca() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sent, setSent] = useState(false);
-  const [sending, setSending] = useState(false);
+  const [sending] = useState(false);
   const [form, setForm] = useState({
     perfil: "",
     pessoas: "",
