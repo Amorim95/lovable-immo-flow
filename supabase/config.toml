@@ -9,6 +9,9 @@ verify_jwt = false
 [functions.webhook-lead-dynamic]
 verify_jwt = false
 
+[functions.blog-tts]
+verify_jwt = false
+
 [api]
 enabled = true
 port = 54321
