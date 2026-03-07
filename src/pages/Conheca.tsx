@@ -214,6 +214,9 @@ export default function Conheca() {
             <img src="/lovable-uploads/default-crm-logo.png" alt="Logo" className="h-7 w-auto brightness-200" />
             <span className="text-sm text-gray-300 font-semibold">MeuCRM<span className="text-blue-400">.Imob</span></span>
           </div>
+          <div className="flex items-center gap-6">
+            <a href="/blog" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Nosso Blog.Imob</a>
+          </div>
           <p className="text-xs text-gray-500">© {new Date().getFullYear()} MeuCRM.Imob — Todos os direitos reservados.</p>
         </div>
       </footer>
