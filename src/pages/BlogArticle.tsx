@@ -130,11 +130,6 @@ export default function BlogArticle() {
           )}
         </div>
 
-        {/* Audio Player */}
-        <div className="mb-8">
-          <BlogAudioPlayer audioUrl={post.audio_url} />
-        </div>
-
         {/* Title */}
         <h1 className="text-3xl md:text-4xl lg:text-[44px] font-extrabold leading-tight tracking-tight text-gray-900 mb-6">
           {post.title}
@@ -152,10 +147,15 @@ export default function BlogArticle() {
           <img
             src={post.cover_image}
             alt={post.title}
-            className="w-full rounded-2xl mb-10 aspect-video object-cover"
+            className="w-full rounded-2xl mb-8 aspect-video object-cover"
             loading="lazy"
           />
         )}
+
+        {/* Audio Player - below cover image */}
+        <div className="mb-10">
+          <BlogAudioPlayer audioUrl={post.audio_url} />
+        </div>
 
         {/* Content */}
         {post.content && (
