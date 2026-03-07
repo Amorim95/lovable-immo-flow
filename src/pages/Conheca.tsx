@@ -70,12 +70,12 @@ export default function Conheca() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
         <div className="relative max-w-6xl mx-auto px-6 py-24 md:py-32">
           <div className="max-w-3xl">
-            <a href="https://www.instagram.com/amorimads" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors mb-4">
+            <a href="https://www.instagram.com/amorimads" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors mb-4 md:mb-6">
               <img src={amorimPhoto} alt="Amorim" className="w-8 h-8 rounded-full object-cover border border-gray-200" />
               <Instagram className="w-4 h-4" />
               <span>@amorimads</span>
             </a>
-            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6 md:mb-8">
               <Star className="w-3.5 h-3.5" />
               Dica de um Especialista em Vendas Imobiliárias
             </div>
