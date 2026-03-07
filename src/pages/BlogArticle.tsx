@@ -171,7 +171,7 @@ export default function BlogArticle() {
             <Button
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8"
-              onClick={() => navigate("/conheca")}
+              onClick={() => { window.scrollTo(0, 0); navigate("/conheca"); }}
             >
               Conhecer o CRM
               <ArrowRight className="w-4 h-4 ml-1" />
