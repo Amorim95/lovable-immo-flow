@@ -13,10 +13,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 
-import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2, LogOut, Edit2, KeyRound, Loader2 } from "lucide-react";
+import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2, LogOut, Edit2, KeyRound, Loader2, FileText } from "lucide-react";
 import { EditCompanyNameModal } from "@/components/EditCompanyNameModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { BlogPostsList } from "@/components/BlogPostsList";
+import { BlogPostEditor } from "@/components/BlogPostEditor";
 
 type CompanyRow = {
   id: string;
@@ -95,6 +97,10 @@ export default function AdminConsole() {
 
   // Edit company modal state
   const [editingCompany, setEditingCompany] = useState<{ id: string; name: string } | null>(null);
+
+  // Blog state
+  const [blogView, setBlogView] = useState<"list" | "new" | "edit">("list");
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
 
   const [search, setSearch] = useState("");
   const filtered = useMemo(() => {
@@ -328,6 +334,9 @@ export default function AdminConsole() {
             <TabsTrigger value="users" className="gap-2">
               <Users className="w-4 h-4" /> Buscar Usuários
             </TabsTrigger>
+            <TabsTrigger value="blog" className="gap-2">
+              <FileText className="w-4 h-4" /> Blog
+            </TabsTrigger>
           </TabsList>
 
           {/* Companies tab */}
@@ -491,6 +500,21 @@ export default function AdminConsole() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Blog tab */}
+          <TabsContent value="blog">
+            {blogView === "list" ? (
+              <BlogPostsList
+                onNewPost={() => { setBlogView("new"); setEditingPostId(null); }}
+                onEditPost={(id) => { setBlogView("edit"); setEditingPostId(id); }}
+              />
+            ) : (
+              <BlogPostEditor
+                postId={blogView === "edit" ? editingPostId : null}
+                onBack={() => setBlogView("list")}
+              />
+            )}
           </TabsContent>
         </Tabs>
       </main>
