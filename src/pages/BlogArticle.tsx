@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
+import BlogAudioPlayer from "@/components/BlogAudioPlayer";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
