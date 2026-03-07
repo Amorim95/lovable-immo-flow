@@ -44,6 +44,7 @@ import SobreNos from "./pages/SobreNos";
 import Contato from "./pages/Contato";
 import Conheca from "./pages/Conheca";
 import Blog from "./pages/Blog";
+import BlogArticle from "./pages/BlogArticle";
 import Configuracoes from "./pages/Configuracoes";
 import GerenciamentoContas from "./pages/GerenciamentoContas";
 import AdminConsole from "./pages/AdminConsole";
@@ -111,6 +112,7 @@ function AppContent() {
       <Route path="/contato" element={<Contato />} />
       <Route path="/conheca" element={<Conheca />} />
       <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogArticle />} />
       <Route path="/imovel/:id" element={<ImovelDetalhes />} />
       <Route path="/*" element={<ProtectedRoute>
           {isMobile ?
