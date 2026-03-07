@@ -130,6 +130,13 @@ export default function BlogArticle() {
           )}
         </div>
 
+        {/* Audio Player */}
+        {post.content && (
+          <div className="mb-8">
+            <BlogAudioPlayer content={post.content} title={post.title} />
+          </div>
+        )}
+
         {/* Title */}
         <h1 className="text-3xl md:text-4xl lg:text-[44px] font-extrabold leading-tight tracking-tight text-gray-900 mb-6">
           {post.title}
