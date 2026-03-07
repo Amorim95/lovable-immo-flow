@@ -150,7 +150,6 @@ export default function Blog() {
             <p className="text-xs text-gray-500">© {new Date().getFullYear()} MeuCRM.Imob — Todos os direitos reservados.</p>
           </div>
         </footer>
-      </div>
-    </>
+    </div>
   );
 }
