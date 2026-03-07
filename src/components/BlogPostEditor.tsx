@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Volume2 } from "lucide-react";
 
 const CATEGORIES = [
   "CRM Imobiliário",
@@ -27,6 +27,7 @@ interface BlogPostEditorProps {
 export function BlogPostEditor({ postId, onBack }: BlogPostEditorProps) {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [generatingAudio, setGeneratingAudio] = useState(false);
   const [form, setForm] = useState({
     title: "",
     slug: "",
@@ -94,6 +95,49 @@ export function BlogPostEditor({ postId, onBack }: BlogPostEditorProps) {
     }));
   }
 
+  function stripMarkdown(md: string): string {
+    return md
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/^#{1,3}\s+/gm, "")
+      .replace(/\*\*\*(.+?)\*\*\*/g, "$1")
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/\*(.+?)\*/g, "$1")
+      .replace(/^[\-\*]\s+/gm, "")
+      .replace(/\n{2,}/g, ". ")
+      .replace(/\n/g, " ")
+      .trim();
+  }
+
+  async function generateAudio(postId: string, title: string, content: string, slug: string) {
+    setGeneratingAudio(true);
+    try {
+      const plainText = `${title}. ${stripMarkdown(content)}`;
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-tts`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text: plainText, postId, slug }),
+        }
+      );
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Falha ao gerar áudio");
+      }
+      toast({ title: "Áudio gerado", description: "O áudio do artigo foi gerado e salvo com sucesso." });
+    } catch (err: any) {
+      console.error("Audio generation error:", err);
+      toast({ title: "Erro ao gerar áudio", description: err.message, variant: "destructive" });
+    } finally {
+      setGeneratingAudio(false);
+    }
+  }
+
   async function handleSave() {
     if (!form.title.trim() || !form.slug.trim()) {
       toast({ title: "Campos obrigatórios", description: "Título e slug são obrigatórios.", variant: "destructive" });
@@ -117,16 +161,25 @@ export function BlogPostEditor({ postId, onBack }: BlogPostEditorProps) {
         published_at: form.published_at ? new Date(form.published_at).toISOString() : (form.status === "published" ? new Date().toISOString() : null),
       };
 
+      let savedPostId = postId;
+
       if (postId) {
         const { error } = await supabase.from("blog_posts").update(payload).eq("id", postId);
         if (error) throw error;
         toast({ title: "Post atualizado", description: "Alterações salvas com sucesso." });
       } else {
-        const { error } = await supabase.from("blog_posts").insert(payload);
+        const { data, error } = await supabase.from("blog_posts").insert(payload).select("id").single();
         if (error) throw error;
+        savedPostId = data.id;
         toast({ title: "Post criado", description: "Artigo criado com sucesso." });
-        onBack();
       }
+
+      // Auto-generate audio when publishing with content
+      if (form.status === "published" && form.content && savedPostId) {
+        generateAudio(savedPostId, form.title, form.content, form.slug);
+      }
+
+      if (!postId) onBack();
     } catch (e: any) {
       toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
     } finally {
@@ -151,10 +204,16 @@ export function BlogPostEditor({ postId, onBack }: BlogPostEditorProps) {
         </Button>
         <h2 className="text-xl font-bold">{postId ? "Editar Post" : "Novo Post"}</h2>
         <div className="flex-1" />
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving || generatingAudio}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
           Salvar
         </Button>
+        {generatingAudio && (
+          <div className="flex items-center gap-2 text-sm text-blue-600">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Gerando áudio...
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">

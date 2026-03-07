@@ -1,0 +1,1 @@
+ALTER TABLE public.blog_posts ADD COLUMN audio_url text DEFAULT NULL;
