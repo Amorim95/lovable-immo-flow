@@ -27,6 +27,7 @@ interface BlogPostEditorProps {
 export function BlogPostEditor({ postId, onBack }: BlogPostEditorProps) {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [generatingAudio, setGeneratingAudio] = useState(false);
   const [form, setForm] = useState({
     title: "",
     slug: "",
