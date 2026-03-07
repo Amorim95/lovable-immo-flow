@@ -204,10 +204,16 @@ export function BlogPostEditor({ postId, onBack }: BlogPostEditorProps) {
         </Button>
         <h2 className="text-xl font-bold">{postId ? "Editar Post" : "Novo Post"}</h2>
         <div className="flex-1" />
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving || generatingAudio}>
           {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
           Salvar
         </Button>
+        {generatingAudio && (
+          <div className="flex items-center gap-2 text-sm text-blue-600">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Gerando áudio...
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
