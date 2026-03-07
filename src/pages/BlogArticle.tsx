@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Calendar, Tag } from "lucide-react";
+import BlogAudioPlayer from "@/components/BlogAudioPlayer";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -128,6 +129,13 @@ export default function BlogArticle() {
             <span className="text-xs text-gray-500">por {post.author_name}</span>
           )}
         </div>
+
+        {/* Audio Player */}
+        {post.content && (
+          <div className="mb-8">
+            <BlogAudioPlayer content={post.content} title={post.title} />
+          </div>
+        )}
 
         {/* Title */}
         <h1 className="text-3xl md:text-4xl lg:text-[44px] font-extrabold leading-tight tracking-tight text-gray-900 mb-6">
