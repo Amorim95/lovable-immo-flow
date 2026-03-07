@@ -49,51 +49,18 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      {/* Hero - Artigos e Conteúdos */}
-      <section className="relative overflow-hidden min-h-[50vh] flex items-center justify-center">
+      {/* Hero - Artigos e Conteúdos + Posts */}
+      <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
-        <div className="relative max-w-4xl mx-auto px-6 py-20 md:py-28 text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-gray-900">
-            Artigos e Conteúdos
-          </h1>
-          <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
-            Conhecimento prático para transformar sua operação imobiliária.
-          </p>
-        </div>
-      </section>
-
-      {/* Blog.Imob Section */}
-      <section className="py-20 md:py-28 bg-white">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-8">
-            <FileText className="w-3.5 h-3.5" />
-            Conteúdo Estratégico
+        <div className="relative max-w-6xl mx-auto px-6 py-20 md:py-28">
+          <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-gray-900">
+              Artigos e Conteúdos
+            </h1>
+            <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+              Conhecimento prático para transformar sua operação imobiliária.
+            </p>
           </div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight text-gray-900">
-            Blog<span className="text-blue-600">.Imob</span>
-          </h2>
-          <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
-            Conteúdos estratégicos sobre <strong className="text-gray-900">CRM imobiliário</strong>, gestão de leads, vendas imobiliárias e tecnologia para imobiliárias.
-          </p>
-          <p className="mt-4 text-base text-gray-500 max-w-xl mx-auto">
-            Aprenda como estruturar processos comerciais, organizar leads e aumentar as vendas da sua imobiliária utilizando tecnologia e CRM.
-          </p>
-          <div className="mt-8">
-            <Button
-              size="lg"
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 text-base"
-              onClick={() => navigate("/conheca")}
-            >
-              Conhecer o CRM
-              <ArrowRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Posts Grid */}
-      <section className="py-20 md:py-28 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6">
 
           {posts.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -146,9 +113,8 @@ export default function Blog() {
             </div>
           ) : (
             <>
-              {/* Empty state */}
               <div className="max-w-2xl mx-auto">
-                <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-10 md:p-14 text-center">
+                <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-white/60 p-10 md:p-14 text-center">
                   <Sparkles className="w-12 h-12 text-blue-600 mx-auto mb-6" />
                   <h3 className="text-xl font-bold text-gray-900 mb-3">
                     Estamos preparando conteúdos estratégicos sobre CRM imobiliário, vendas e gestão imobiliária.
@@ -164,8 +130,6 @@ export default function Blog() {
                   </ul>
                 </div>
               </div>
-
-              {/* Preview grid skeleton */}
               <div className="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-8 opacity-40 pointer-events-none select-none" aria-hidden="true">
                 {[1, 2, 3].map((i) => (
                   <article key={i} className="rounded-2xl border border-gray-100 bg-white overflow-hidden">
@@ -186,6 +150,35 @@ export default function Blog() {
               </div>
             </>
           )}
+        </div>
+      </section>
+
+      {/* Blog.Imob Section */}
+      <section className="py-20 md:py-28 bg-white">
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-8">
+            <FileText className="w-3.5 h-3.5" />
+            Conteúdo Estratégico
+          </div>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight tracking-tight text-gray-900">
+            Blog<span className="text-blue-600">.Imob</span>
+          </h2>
+          <p className="mt-6 text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+            Conteúdos estratégicos sobre <strong className="text-gray-900">CRM imobiliário</strong>, gestão de leads, vendas imobiliárias e tecnologia para imobiliárias.
+          </p>
+          <p className="mt-4 text-base text-gray-500 max-w-xl mx-auto">
+            Aprenda como estruturar processos comerciais, organizar leads e aumentar as vendas da sua imobiliária utilizando tecnologia e CRM.
+          </p>
+          <div className="mt-8">
+            <Button
+              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-8 text-base"
+              onClick={() => navigate("/conheca")}
+            >
+              Conhecer o CRM
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
         </div>
       </section>
 
