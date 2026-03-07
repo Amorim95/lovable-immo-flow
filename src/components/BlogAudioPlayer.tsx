@@ -1,32 +1,17 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Headphones, Pause, Play, Loader2, Volume2 } from "lucide-react";
 
 interface BlogAudioPlayerProps {
-  content: string;
-  title: string;
+  audioUrl?: string | null;
+  content?: string;
+  title?: string;
 }
 
-function stripMarkdown(md: string): string {
-  return md
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/^#{1,3}\s+/gm, "")
-    .replace(/\*\*\*(.+?)\*\*\*/g, "$1")
-    .replace(/\*\*(.+?)\*\*/g, "$1")
-    .replace(/\*(.+?)\*/g, "$1")
-    .replace(/^[\-\*]\s+/gm, "")
-    .replace(/\n{2,}/g, ". ")
-    .replace(/\n/g, " ")
-    .trim();
-}
-
-export default function BlogAudioPlayer({ content, title }: BlogAudioPlayerProps) {
+export default function BlogAudioPlayer({ audioUrl, content, title }: BlogAudioPlayerProps) {
   const [state, setState] = useState<"idle" | "loading" | "playing" | "paused" | "error">("idle");
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const audioUrlRef = useRef<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const cleanupInterval = () => {
@@ -39,7 +24,6 @@ export default function BlogAudioPlayer({ content, title }: BlogAudioPlayerProps
   useEffect(() => {
     return () => {
       cleanupInterval();
-      if (audioUrlRef.current) URL.revokeObjectURL(audioUrlRef.current);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -47,33 +31,10 @@ export default function BlogAudioPlayer({ content, title }: BlogAudioPlayerProps
     };
   }, []);
 
-  const generateAudio = useCallback(async () => {
+  const startPlayback = useCallback(async (url: string) => {
     setState("loading");
     try {
-      const plainText = `${title}. ${stripMarkdown(content)}`;
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-tts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({ text: plainText }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`TTS request failed: ${response.status}`);
-      }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      audioUrlRef.current = audioUrl;
-
-      const audio = new Audio(audioUrl);
+      const audio = new Audio(url);
       audioRef.current = audio;
 
       audio.addEventListener("loadedmetadata", () => {
@@ -86,6 +47,10 @@ export default function BlogAudioPlayer({ content, title }: BlogAudioPlayerProps
         cleanupInterval();
       });
 
+      audio.addEventListener("error", () => {
+        setState("error");
+      });
+
       await audio.play();
       setState("playing");
 
@@ -95,10 +60,10 @@ export default function BlogAudioPlayer({ content, title }: BlogAudioPlayerProps
         }
       }, 200);
     } catch (err) {
-      console.error("Audio generation error:", err);
+      console.error("Audio playback error:", err);
       setState("error");
     }
-  }, [content, title]);
+  }, []);
 
   const togglePlayPause = useCallback(() => {
     if (!audioRef.current) return;
@@ -119,7 +84,9 @@ export default function BlogAudioPlayer({ content, title }: BlogAudioPlayerProps
 
   const handleClick = () => {
     if (state === "idle" || state === "error") {
-      generateAudio();
+      if (audioUrl) {
+        startPlayback(audioUrl);
+      }
     } else {
       togglePlayPause();
     }
@@ -130,6 +97,16 @@ export default function BlogAudioPlayer({ content, title }: BlogAudioPlayerProps
     const sec = Math.floor(s % 60);
     return `${m}:${sec.toString().padStart(2, "0")}`;
   };
+
+  // No audio available
+  if (!audioUrl) {
+    return (
+      <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-gray-50 text-gray-400 text-sm font-medium border border-gray-200">
+        <Headphones className="w-4 h-4" />
+        Áudio em breve...
+      </div>
+    );
+  }
 
   const currentTime = audioRef.current?.currentTime || 0;
 
@@ -149,7 +126,7 @@ export default function BlogAudioPlayer({ content, title }: BlogAudioPlayerProps
     return (
       <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-blue-50 text-blue-700 text-sm font-medium border border-blue-200">
         <Loader2 className="w-4 h-4 animate-spin" />
-        Gerando áudio...
+        Carregando áudio...
       </div>
     );
   }
