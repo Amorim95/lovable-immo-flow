@@ -1,7 +1,7 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, FileText, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 
 const upcomingTopics = [
   "CRM para imobiliárias",
@@ -16,20 +16,20 @@ const upcomingTopics = [
 export default function Blog() {
   const navigate = useNavigate();
 
-  return (
-    <>
-      <Helmet>
-        <title>Blog.Imob — CRM Imobiliário, Gestão de Leads e Vendas | MeuCRM.Imob</title>
-        <meta name="description" content="Conteúdos estratégicos sobre CRM imobiliário, gestão de leads, vendas imobiliárias e tecnologia para imobiliárias. Aprenda a estruturar processos comerciais e aumentar suas vendas." />
-        <meta name="keywords" content="CRM imobiliário, CRM para imobiliária, CRM para corretores, gestão de leads imobiliários, funil de vendas imobiliário, sistema para imobiliária" />
-        <link rel="canonical" href="https://lovable-immo-flow.lovable.app/blog" />
-        <meta property="og:title" content="Blog.Imob — CRM Imobiliário, Gestão de Leads e Vendas" />
-        <meta property="og:description" content="Conteúdos estratégicos sobre CRM imobiliário, gestão de leads e vendas imobiliárias." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://lovable-immo-flow.lovable.app/blog" />
-      </Helmet>
+  useEffect(() => {
+    document.title = "Blog.Imob — CRM Imobiliário, Gestão de Leads e Vendas | MeuCRM.Imob";
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute("content", "Conteúdos estratégicos sobre CRM imobiliário, gestão de leads, vendas imobiliárias e tecnologia para imobiliárias.");
+    else {
+      const m = document.createElement("meta");
+      m.name = "description";
+      m.content = "Conteúdos estratégicos sobre CRM imobiliário, gestão de leads, vendas imobiliárias e tecnologia para imobiliárias.";
+      document.head.appendChild(m);
+    }
+  }, []);
 
-      <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+  return (
+    <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {/* Hero */}
         <section className="relative overflow-hidden min-h-[60vh] flex items-center justify-center">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
