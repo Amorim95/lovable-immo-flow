@@ -485,11 +485,15 @@ export default function LeadDetails() {
 
             {/* Lista de Atividades */}
             <div className="space-y-3">
-              {lead.atividades && lead.atividades.length > 0 ? [...lead.atividades].reverse().map((atividade, index) => <div key={index} className="border-l-2 border-primary/30 pl-4 py-2">
+              {lead.atividades && lead.atividades.length > 0 ? [...lead.atividades].reverse().map((atividade, index) => <div key={index} className={`border-l-2 ${atividade.tipo === 'etapa' ? 'border-accent' : 'border-primary/30'} pl-4 py-2`}>
                     <div className="flex items-start gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground mt-1" />
+                      {atividade.tipo === 'etapa' ? (
+                        <ArrowRightLeft className="w-4 h-4 text-accent-foreground mt-1" />
+                      ) : (
+                        <Clock className="w-4 h-4 text-muted-foreground mt-1" />
+                      )}
                       <div className="flex-1">
-                        <p className="text-sm text-foreground">{atividade.descricao}</p>
+                        <p className={`text-sm ${atividade.tipo === 'etapa' ? 'font-medium text-foreground' : 'text-foreground'}`}>{atividade.descricao}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {new Date(atividade.data).toLocaleString('pt-BR')} • {atividade.corretor}
                         </p>
