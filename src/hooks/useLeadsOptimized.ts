@@ -178,8 +178,19 @@ export function useLeadsOptimized() {
       if (updates.telefone !== undefined) supabaseUpdates.telefone = updates.telefone;
       if (updates.dadosAdicionais !== undefined) supabaseUpdates.dados_adicionais = updates.dadosAdicionais;
       if (updates.etapa !== undefined) {
-        supabaseUpdates.etapa = updates.etapa;
-        supabaseUpdates.stage_name = updates.etapa; // Sincronizar automaticamente com etapa
+        // Verificar se o valor é uma legacy_key válida do enum
+        const validLegacyKeys = [
+          'aguardando-atendimento', 'tentativas-contato', 'atendeu', 
+          'visita', 'vendas-fechadas', 'em-pausa', 'descarte', 
+          'nome-sujo', 'nome-limpo'
+        ];
+        if (validLegacyKeys.includes(updates.etapa)) {
+          supabaseUpdates.etapa = updates.etapa;
+        }
+        // Se stage_name não foi passado explicitamente, sincronizar com etapa
+        if (updates.stage_name === undefined) {
+          supabaseUpdates.stage_name = updates.etapa;
+        }
       }
       if (updates.stage_name !== undefined) supabaseUpdates.stage_name = updates.stage_name;
       if ((updates as any).stage_order !== undefined) supabaseUpdates.stage_order = (updates as any).stage_order;
