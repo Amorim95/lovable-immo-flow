@@ -126,7 +126,7 @@ const Index = () => {
   };
 
   // Converter dados do Supabase para formato da interface
-  const convertedLeads: (Lead & { userId: string })[] = leads.map(lead => ({
+  const convertedLeads: (Lead & { userId: string; stage_order?: number })[] = leads.map(lead => ({
     id: lead.id,
     nome: lead.nome,
     telefone: lead.telefone,
@@ -137,6 +137,7 @@ const Index = () => {
     dataCriacao: new Date(lead.created_at),
     etapa: lead.etapa as Lead['etapa'],
     stage_name: lead.stage_name,
+    stage_order: lead.stage_order ?? 0,
     etiquetas: lead.lead_tag_relations?.map(rel => rel.lead_tags?.nome as Lead['etiquetas'][0]).filter(Boolean) || [],
     corretor: lead.user?.name || 'Não atribuído',
     atividades: (Array.isArray(lead.atividades) ? lead.atividades : []).map((atividade: any) => ({
