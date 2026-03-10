@@ -138,12 +138,38 @@ export default function LeadDetails() {
     try {
       const selectedStage = stages.find(s => s.nome === formData.stage_name);
       const legacyKey = selectedStage?.legacy_key || lead.etapa;
+      
+      // Verificar se a etapa mudou e registrar no histórico
+      const oldStageName = lead.stage_name || lead.etapa;
+      const newStageName = formData.stage_name;
+      let updatedActivities = lead.atividades || [];
+      
+      if (oldStageName !== newStageName) {
+        const stageChangeActivity: Atividade = {
+          id: Date.now().toString(),
+          tipo: 'etapa',
+          descricao: `Etapa alterada de "${oldStageName}" para "${newStageName}"`,
+          data: new Date(),
+          corretor: user?.name || 'Usuário não identificado'
+        };
+        updatedActivities = [...updatedActivities, stageChangeActivity];
+      }
+      
+      const atividadesJson = updatedActivities.map(atividade => ({
+        id: atividade.id,
+        tipo: atividade.tipo,
+        descricao: atividade.descricao,
+        data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
+        corretor: atividade.corretor
+      }));
+      
       const supabaseUpdates: any = {
         nome: formData.nome,
         telefone: formData.telefone,
         dados_adicionais: formData.dadosAdicionais,
         etapa: legacyKey,
-        stage_name: formData.stage_name
+        stage_name: formData.stage_name,
+        atividades: atividadesJson
       };
       const {
         error
@@ -157,7 +183,7 @@ export default function LeadDetails() {
         });
         return;
       }
-      updateLead(formData);
+      updateLead({ ...formData, atividades: updatedActivities });
       setIsEditing(false);
       toast({
         title: "Lead atualizado",
