@@ -196,12 +196,38 @@ export function useLeadsOptimized() {
       if ((updates as any).stage_order !== undefined) supabaseUpdates.stage_order = (updates as any).stage_order;
       if (updates.userId !== undefined) supabaseUpdates.user_id = updates.userId;
       
-      // Auto-registrar primeiro contato quando etapa muda de "aguardando-atendimento"
-      if (updates.etapa !== undefined && updates.etapa !== 'aguardando-atendimento') {
-        // Verificar se o lead atualmente está em "aguardando-atendimento"
-        const currentLead = leads.find(l => l.id === leadId);
-        if (currentLead && currentLead.etapa === 'aguardando-atendimento') {
-          supabaseUpdates.primeiro_contato_whatsapp = new Date().toISOString();
+      // Registrar mudança de etapa no histórico de atividades
+      const currentLead = leads.find(l => l.id === leadId);
+      if (currentLead && (updates.etapa !== undefined || updates.stage_name !== undefined)) {
+        const oldStageName = currentLead.stage_name || currentLead.etapa || '';
+        const newStageName = updates.stage_name || updates.etapa || '';
+        
+        if (oldStageName !== newStageName) {
+          const stageChangeActivity = {
+            id: Date.now().toString(),
+            tipo: 'etapa',
+            descricao: `Etapa alterada de "${oldStageName}" para "${newStageName}"`,
+            data: new Date().toISOString(),
+            corretor: user?.name || 'Sistema'
+          };
+          
+          const currentActivities = Array.isArray(currentLead.atividades) 
+            ? currentLead.atividades 
+            : [];
+          const updatedActivities = [...currentActivities, stageChangeActivity];
+          supabaseUpdates.atividades = updatedActivities;
+          
+          // Atualizar estado local também
+          setLeads(prev => prev.map(l => 
+            l.id === leadId ? { ...l, atividades: updatedActivities } : l
+          ));
+        }
+        
+        // Auto-registrar primeiro contato quando etapa muda de "aguardando-atendimento"
+        if (updates.etapa !== undefined && updates.etapa !== 'aguardando-atendimento') {
+          if (currentLead.etapa === 'aguardando-atendimento') {
+            supabaseUpdates.primeiro_contato_whatsapp = new Date().toISOString();
+          }
         }
       }
       
