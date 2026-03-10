@@ -106,7 +106,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
     }
     
     if (destinationIndex === 0) {
-      return Math.max(1, withVirtualOrder[0]._virtualOrder - 1000);
+      return withVirtualOrder[0]._virtualOrder - 1000;
     }
     
     if (destinationIndex >= withVirtualOrder.length) {
