@@ -4,9 +4,10 @@ import { LeadCard } from "./LeadCard";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronDown } from "lucide-react";
 import { useLeadStages } from "@/hooks/useLeadStages";
+import { useUserRole } from "@/hooks/useUserRole";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
-const LEADS_PER_PAGE = 50;
+const LEADS_PER_PAGE = 20;
 
 const getColorClasses = (hexColor: string) => {
   return {
@@ -26,6 +27,8 @@ interface KanbanBoardProps {
 export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, onOptimisticUpdate }: KanbanBoardProps) {
   const [stageVisibleCounts, setStageVisibleCounts] = useState<Record<string, number>>({});
   const { stages, loading } = useLeadStages();
+  const { isAdmin, isGestor } = useUserRole();
+  const canTransfer = isAdmin || isGestor;
 
   const getVisibleCount = (stageName: string) => {
     return stageVisibleCounts[stageName] || LEADS_PER_PAGE;
@@ -214,6 +217,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                               onUpdate={(updates) => onLeadUpdate(lead.id, updates)}
                               userId={lead.userId}
                               onOptimisticUpdate={onOptimisticUpdate}
+                              canTransfer={canTransfer}
                             />
                           </div>
                         )}
