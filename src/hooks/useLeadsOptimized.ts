@@ -202,9 +202,8 @@ export function useLeadsOptimized() {
       if (updates.userId !== undefined) supabaseUpdates.user_id = updates.userId;
       
       // Registrar mudança de etapa no histórico de atividades
-      const currentLead = leads.find(l => l.id === leadId);
-      if (currentLead && (updates.etapa !== undefined || updates.stage_name !== undefined)) {
-        const oldStageName = currentLead.stage_name || currentLead.etapa || '';
+      if (updates.etapa !== undefined || updates.stage_name !== undefined) {
+        const oldStageName = previousLeadState.stage_name || previousLeadState.etapa || '';
         const newStageName = updates.stage_name || updates.etapa || '';
         
         if (oldStageName !== newStageName) {
@@ -216,8 +215,8 @@ export function useLeadsOptimized() {
             corretor: user?.name || 'Sistema'
           };
           
-          const currentActivities = Array.isArray(currentLead.atividades) 
-            ? currentLead.atividades 
+          const currentActivities = Array.isArray(previousLeadState.atividades) 
+            ? previousLeadState.atividades 
             : [];
           const updatedActivities = [...currentActivities, stageChangeActivity];
           supabaseUpdates.atividades = updatedActivities;
@@ -230,7 +229,7 @@ export function useLeadsOptimized() {
         
         // Auto-registrar primeiro contato quando etapa muda de "aguardando-atendimento"
         if (updates.etapa !== undefined && updates.etapa !== 'aguardando-atendimento') {
-          if (currentLead.etapa === 'aguardando-atendimento') {
+          if (previousLeadState.etapa === 'aguardando-atendimento') {
             supabaseUpdates.primeiro_contato_whatsapp = new Date().toISOString();
           }
         }
