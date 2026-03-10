@@ -255,8 +255,10 @@ export function useLeadsOptimized() {
           
         if (error) {
           console.error('Erro ao atualizar lead:', error);
-          // Reverter a atualização otimística em caso de erro
-          await loadLeads();
+          // Reverter a atualização otimística com o estado anterior (sem recarregar tudo)
+          setLeads(prev => prev.map(l => 
+            l.id === leadId ? { ...l, ...previousLeadState } : l
+          ));
           return false;
         }
       }
