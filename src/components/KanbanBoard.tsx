@@ -4,6 +4,7 @@ import { LeadCard } from "./LeadCard";
 import { Button } from "@/components/ui/button";
 import { Plus, ChevronDown } from "lucide-react";
 import { useLeadStages } from "@/hooks/useLeadStages";
+import { useUserRole } from "@/hooks/useUserRole";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
 const LEADS_PER_PAGE = 50;
