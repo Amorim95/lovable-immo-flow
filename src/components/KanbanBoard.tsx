@@ -92,21 +92,29 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
     
     if (otherLeads.length === 0) return 1000;
     
+    // Assign virtual orders based on actual sorted position for leads without stage_order
+    const withVirtualOrder = otherLeads.map((lead, idx) => ({
+      ...lead,
+      _virtualOrder: lead.stage_order ?? (idx + 1) * 1000
+    }));
+
+    // Normalize: ensure virtual orders are strictly increasing to match visual order
+    for (let i = 1; i < withVirtualOrder.length; i++) {
+      if (withVirtualOrder[i]._virtualOrder <= withVirtualOrder[i - 1]._virtualOrder) {
+        withVirtualOrder[i]._virtualOrder = withVirtualOrder[i - 1]._virtualOrder + 1;
+      }
+    }
+    
     if (destinationIndex === 0) {
-      // Inserting at the beginning
-      const firstOrder = (otherLeads[0] as any).stage_order ?? 1000;
-      return Math.max(1, firstOrder - 1000);
+      return Math.max(1, withVirtualOrder[0]._virtualOrder - 1000);
     }
     
-    if (destinationIndex >= otherLeads.length) {
-      // Inserting at the end
-      const lastOrder = (otherLeads[otherLeads.length - 1] as any).stage_order ?? otherLeads.length * 1000;
-      return lastOrder + 1000;
+    if (destinationIndex >= withVirtualOrder.length) {
+      return withVirtualOrder[withVirtualOrder.length - 1]._virtualOrder + 1000;
     }
     
-    // Inserting between two leads
-    const prevOrder = (otherLeads[destinationIndex - 1] as any).stage_order ?? (destinationIndex - 1) * 1000;
-    const nextOrder = (otherLeads[destinationIndex] as any).stage_order ?? destinationIndex * 1000;
+    const prevOrder = withVirtualOrder[destinationIndex - 1]._virtualOrder;
+    const nextOrder = withVirtualOrder[destinationIndex]._virtualOrder;
     return Math.floor((prevOrder + nextOrder) / 2);
   };
 
