@@ -296,7 +296,7 @@ export function useLeadsOptimized() {
               
             if (relationError) {
               console.error('Erro ao inserir relações de tags:', relationError);
-              await loadLeads(); // Recarregar em caso de erro
+              setLeads(prev => prev.map(l => l.id === leadId ? { ...l, ...previousLeadState } : l));
               return false;
             }
           }
