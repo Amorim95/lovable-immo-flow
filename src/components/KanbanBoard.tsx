@@ -217,6 +217,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                               onUpdate={(updates) => onLeadUpdate(lead.id, updates)}
                               userId={lead.userId}
                               onOptimisticUpdate={onOptimisticUpdate}
+                              canTransfer={canTransfer}
                             />
                           </div>
                         )}
