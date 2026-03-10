@@ -27,6 +27,8 @@ interface KanbanBoardProps {
 export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, onOptimisticUpdate }: KanbanBoardProps) {
   const [stageVisibleCounts, setStageVisibleCounts] = useState<Record<string, number>>({});
   const { stages, loading } = useLeadStages();
+  const { isAdmin, isGestor } = useUserRole();
+  const canTransfer = isAdmin || isGestor;
 
   const getVisibleCount = (stageName: string) => {
     return stageVisibleCounts[stageName] || LEADS_PER_PAGE;
