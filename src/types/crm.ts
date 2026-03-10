@@ -35,7 +35,7 @@ export type LeadTag =
 
 export interface Atividade {
   id: string;
-  tipo: 'ligacao' | 'whatsapp' | 'email' | 'visita' | 'proposta' | 'observacao';
+  tipo: 'ligacao' | 'whatsapp' | 'email' | 'visita' | 'proposta' | 'observacao' | 'etapa';
   descricao: string;
   data: Date;
   corretor: string;

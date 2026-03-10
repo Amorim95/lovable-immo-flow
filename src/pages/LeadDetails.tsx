@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, MessageCircle, History, Plus, Clock, Copy, Tag } from "lucide-react";
+import { Edit, MessageCircle, History, Plus, Clock, Copy, Tag, ArrowRightLeft } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -138,12 +138,38 @@ export default function LeadDetails() {
     try {
       const selectedStage = stages.find(s => s.nome === formData.stage_name);
       const legacyKey = selectedStage?.legacy_key || lead.etapa;
+      
+      // Verificar se a etapa mudou e registrar no histórico
+      const oldStageName = lead.stage_name || lead.etapa;
+      const newStageName = formData.stage_name;
+      let updatedActivities = lead.atividades || [];
+      
+      if (oldStageName !== newStageName) {
+        const stageChangeActivity: Atividade = {
+          id: Date.now().toString(),
+          tipo: 'etapa',
+          descricao: `Etapa alterada de "${oldStageName}" para "${newStageName}"`,
+          data: new Date(),
+          corretor: user?.name || 'Usuário não identificado'
+        };
+        updatedActivities = [...updatedActivities, stageChangeActivity];
+      }
+      
+      const atividadesJson = updatedActivities.map(atividade => ({
+        id: atividade.id,
+        tipo: atividade.tipo,
+        descricao: atividade.descricao,
+        data: atividade.data instanceof Date ? atividade.data.toISOString() : atividade.data,
+        corretor: atividade.corretor
+      }));
+      
       const supabaseUpdates: any = {
         nome: formData.nome,
         telefone: formData.telefone,
         dados_adicionais: formData.dadosAdicionais,
         etapa: legacyKey,
-        stage_name: formData.stage_name
+        stage_name: formData.stage_name,
+        atividades: atividadesJson
       };
       const {
         error
@@ -157,7 +183,7 @@ export default function LeadDetails() {
         });
         return;
       }
-      updateLead(formData);
+      updateLead({ ...formData, atividades: updatedActivities });
       setIsEditing(false);
       toast({
         title: "Lead atualizado",
@@ -459,11 +485,15 @@ export default function LeadDetails() {
 
             {/* Lista de Atividades */}
             <div className="space-y-3">
-              {lead.atividades && lead.atividades.length > 0 ? [...lead.atividades].reverse().map((atividade, index) => <div key={index} className="border-l-2 border-primary/30 pl-4 py-2">
+              {lead.atividades && lead.atividades.length > 0 ? [...lead.atividades].reverse().map((atividade, index) => <div key={index} className={`border-l-2 ${atividade.tipo === 'etapa' ? 'border-accent' : 'border-primary/30'} pl-4 py-2`}>
                     <div className="flex items-start gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground mt-1" />
+                      {atividade.tipo === 'etapa' ? (
+                        <ArrowRightLeft className="w-4 h-4 text-accent-foreground mt-1" />
+                      ) : (
+                        <Clock className="w-4 h-4 text-muted-foreground mt-1" />
+                      )}
                       <div className="flex-1">
-                        <p className="text-sm text-foreground">{atividade.descricao}</p>
+                        <p className={`text-sm ${atividade.tipo === 'etapa' ? 'font-medium text-foreground' : 'text-foreground'}`}>{atividade.descricao}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {new Date(atividade.data).toLocaleString('pt-BR')} • {atividade.corretor}
                         </p>
