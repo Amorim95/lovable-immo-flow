@@ -1,21 +1,20 @@
 
-import { useState } from "react";
+import { useState, memo, useCallback } from "react";
 import { Lead, LeadTag } from "@/types/crm";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { TagSelector } from "@/components/TagSelector";
 import { LeadTransferModal } from "@/components/LeadTransferModal";
 import { RepiqueBadge } from "@/components/RepiqueBadge";
-import { useUserRole } from "@/hooks/useUserRole";
 import { Phone, User, Calendar, ArrowRightLeft } from "lucide-react";
 
 interface LeadCardProps {
   lead: Lead;
   onClick: () => void;
   onUpdate: (updates: Partial<Lead>) => void;
-  userId?: string; // ID do usuário proprietário do lead
+  userId?: string;
   onOptimisticUpdate?: (leadId: string, updates: Partial<Lead>) => void;
+  canTransfer?: boolean;
 }
 
 const tagConfig: Record<LeadTag, { label: string; className: string }> = {
@@ -29,43 +28,31 @@ const tagConfig: Record<LeadTag, { label: string; className: string }> = {
   }
 };
 
-export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }: LeadCardProps) {
-  const { isAdmin, isGestor } = useUserRole();
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+export const LeadCard = memo(function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate, canTransfer = false }: LeadCardProps) {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
-  
-  const canTransfer = isAdmin || isGestor;
-  
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
-  const formatCurrency = (value: number) => {
-    return value.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    });
-  };
-
-  const handleWhatsAppClick = async (telefone: string, e: React.MouseEvent) => {
+  const handleWhatsAppClick = useCallback(async (telefone: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const cleanPhone = telefone.replace(/\D/g, '');
     
     window.open(`https://wa.me/55${cleanPhone}`, '_blank');
     
-    // Registrar primeiro contato E atividade em uma ÚNICA chamada atômica
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       const { data: userData } = await supabase.auth.getUser();
       
       if (!userData.user) return;
 
-      // Buscar lead com ambos os campos necessários
       const { data: leadData, error: fetchError } = await supabase
         .from('leads')
         .select('atividades, primeiro_contato_whatsapp')
@@ -88,7 +75,6 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
       const existingActivities = Array.isArray(leadData.atividades) ? leadData.atividades : [];
       const updatedActivities = [...existingActivities, contactActivity];
 
-      // Update atômico: atividades + primeiro_contato_whatsapp juntos
       const updateData: any = { atividades: updatedActivities };
       if (!leadData.primeiro_contato_whatsapp) {
         updateData.primeiro_contato_whatsapp = new Date().toISOString();
@@ -105,30 +91,28 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
     } catch (error) {
       console.error('Erro geral ao registrar contato:', error);
     }
-  };
+  }, [lead.id]);
 
-  const handleTagsChange = (newTags: LeadTag[]) => {
+  const handleTagsChange = useCallback((newTags: LeadTag[]) => {
     onUpdate({ etiquetas: newTags });
-  };
+  }, [onUpdate]);
 
-  const handleCorretorClick = (e: React.MouseEvent) => {
+  const handleCorretorClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     if (canTransfer) {
       setIsTransferModalOpen(true);
     }
-  };
+  }, [canTransfer]);
 
-  const handleTransferComplete = (newUserId?: string, newUserName?: string) => {
-    // Fechar modal
+  const handleTransferComplete = useCallback((newUserId?: string, newUserName?: string) => {
     setIsTransferModalOpen(false);
-    // Atualizar dados localmente para exibição imediata
     if (newUserId && newUserName && onOptimisticUpdate) {
       onOptimisticUpdate(lead.id, { 
         userId: newUserId, 
         corretor: newUserName 
       });
     }
-  };
+  }, [lead.id, onOptimisticUpdate]);
 
   return (
     <Card 
@@ -187,20 +171,20 @@ export function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate }
             )}
           </div>
         </div>
-
-        {/* Telefone apenas para exibição */}
       </CardContent>
       
-      {/* Modal de Transferência */}
-      <LeadTransferModal
-        isOpen={isTransferModalOpen}
-        onClose={() => setIsTransferModalOpen(false)}
-        leadIds={[lead.id]}
-        leadNames={[lead.nome]}
-        currentOwnerIds={[userId || lead.id]}
-        currentOwnerNames={[lead.corretor]}
-        onTransferComplete={handleTransferComplete}
-      />
+      {/* Modal de Transferência - só renderiza quando aberto */}
+      {isTransferModalOpen && (
+        <LeadTransferModal
+          isOpen={isTransferModalOpen}
+          onClose={() => setIsTransferModalOpen(false)}
+          leadIds={[lead.id]}
+          leadNames={[lead.nome]}
+          currentOwnerIds={[userId || lead.id]}
+          currentOwnerNames={[lead.corretor]}
+          onTransferComplete={handleTransferComplete}
+        />
+      )}
     </Card>
   );
-}
+});
