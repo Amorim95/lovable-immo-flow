@@ -335,8 +335,19 @@ export default function MobileLeads() {
     setIsNewLeadModalOpen(false);
   };
 
-  const handleStageChange = async (leadId: string, newStage: Lead['etapa']) => {
-    await updateLeadOptimistic(leadId, { etapa: newStage });
+  const handleStageChange = async (leadId: string, newStageValue: string) => {
+    // Encontrar a stage correspondente para obter legacy_key e nome
+    const stage = stages.find(s => (s.legacy_key || s.nome) === newStageValue);
+    if (stage) {
+      const legacyKey = stage.legacy_key || stage.nome;
+      const stageName = stage.nome;
+      await updateLeadOptimistic(leadId, { 
+        etapa: legacyKey as Lead['etapa'],
+        stage_name: stageName
+      });
+    } else {
+      await updateLeadOptimistic(leadId, { etapa: newStageValue as Lead['etapa'] });
+    }
   };
 
   if (loading || roleLoading || teamLoading || stagesLoading) {
