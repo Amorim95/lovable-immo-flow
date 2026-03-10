@@ -123,10 +123,15 @@ export function useLeadsOptimized() {
 
   // Atualização otimística de um lead específico
   const updateLeadOptimistic = async (leadId: string, updates: Partial<Lead>) => {
+    // Capturar o lead ANTES da atualização otimística para referência
+    const currentLead = leads.find(l => l.id === leadId);
+    if (!currentLead) return false;
+    
+    // Snapshot para rollback em caso de erro
+    const previousLeadState = { ...currentLead };
+    
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      
-      // 1. Atualizar otimisticamente o estado local primeiro (sem piscada)
+      // 1. Atualizar otimisticamente o estado local IMEDIATAMENTE (sem piscada)
       setLeads(currentLeads => 
         currentLeads.map(lead => {
           if (lead.id === leadId) {
@@ -197,9 +202,8 @@ export function useLeadsOptimized() {
       if (updates.userId !== undefined) supabaseUpdates.user_id = updates.userId;
       
       // Registrar mudança de etapa no histórico de atividades
-      const currentLead = leads.find(l => l.id === leadId);
-      if (currentLead && (updates.etapa !== undefined || updates.stage_name !== undefined)) {
-        const oldStageName = currentLead.stage_name || currentLead.etapa || '';
+      if (updates.etapa !== undefined || updates.stage_name !== undefined) {
+        const oldStageName = previousLeadState.stage_name || previousLeadState.etapa || '';
         const newStageName = updates.stage_name || updates.etapa || '';
         
         if (oldStageName !== newStageName) {
@@ -211,8 +215,8 @@ export function useLeadsOptimized() {
             corretor: user?.name || 'Sistema'
           };
           
-          const currentActivities = Array.isArray(currentLead.atividades) 
-            ? currentLead.atividades 
+          const currentActivities = Array.isArray(previousLeadState.atividades) 
+            ? previousLeadState.atividades 
             : [];
           const updatedActivities = [...currentActivities, stageChangeActivity];
           supabaseUpdates.atividades = updatedActivities;
@@ -225,7 +229,7 @@ export function useLeadsOptimized() {
         
         // Auto-registrar primeiro contato quando etapa muda de "aguardando-atendimento"
         if (updates.etapa !== undefined && updates.etapa !== 'aguardando-atendimento') {
-          if (currentLead.etapa === 'aguardando-atendimento') {
+          if (previousLeadState.etapa === 'aguardando-atendimento') {
             supabaseUpdates.primeiro_contato_whatsapp = new Date().toISOString();
           }
         }
@@ -251,8 +255,10 @@ export function useLeadsOptimized() {
           
         if (error) {
           console.error('Erro ao atualizar lead:', error);
-          // Reverter a atualização otimística em caso de erro
-          await loadLeads();
+          // Reverter a atualização otimística com o estado anterior (sem recarregar tudo)
+          setLeads(prev => prev.map(l => 
+            l.id === leadId ? { ...l, ...previousLeadState } : l
+          ));
           return false;
         }
       }
@@ -274,7 +280,7 @@ export function useLeadsOptimized() {
             
           if (tagError) {
             console.error('Erro ao buscar tags:', tagError);
-            await loadLeads(); // Recarregar em caso de erro
+            setLeads(prev => prev.map(l => l.id === leadId ? { ...l, ...previousLeadState } : l));
             return false;
           }
           
@@ -290,7 +296,7 @@ export function useLeadsOptimized() {
               
             if (relationError) {
               console.error('Erro ao inserir relações de tags:', relationError);
-              await loadLeads(); // Recarregar em caso de erro
+              setLeads(prev => prev.map(l => l.id === leadId ? { ...l, ...previousLeadState } : l));
               return false;
             }
           }
@@ -300,8 +306,8 @@ export function useLeadsOptimized() {
       return true;
     } catch (error) {
       console.error('Erro ao processar atualização:', error);
-      // Recarregar dados em caso de erro
-      await loadLeads();
+      // Reverter com estado anterior em vez de recarregar tudo
+      setLeads(prev => prev.map(l => l.id === leadId ? { ...l, ...previousLeadState } : l));
       return false;
     }
   };

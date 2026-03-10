@@ -126,6 +126,11 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
     // Only update stage_name if moving between columns
     if (source.droppableId !== destination.droppableId) {
       updates.stage_name = targetStageName;
+      // Também passar legacy_key como etapa para manter consistência com o enum
+      const targetStage = stages.find(s => s.nome === targetStageName);
+      if (targetStage?.legacy_key) {
+        updates.etapa = targetStage.legacy_key;
+      }
     }
 
     onLeadUpdate(draggableId, updates);
