@@ -306,8 +306,8 @@ export function useLeadsOptimized() {
       return true;
     } catch (error) {
       console.error('Erro ao processar atualização:', error);
-      // Recarregar dados em caso de erro
-      await loadLeads();
+      // Reverter com estado anterior em vez de recarregar tudo
+      setLeads(prev => prev.map(l => l.id === leadId ? { ...l, ...previousLeadState } : l));
       return false;
     }
   };
