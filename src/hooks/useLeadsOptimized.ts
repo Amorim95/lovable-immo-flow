@@ -280,7 +280,7 @@ export function useLeadsOptimized() {
             
           if (tagError) {
             console.error('Erro ao buscar tags:', tagError);
-            await loadLeads(); // Recarregar em caso de erro
+            setLeads(prev => prev.map(l => l.id === leadId ? { ...l, ...previousLeadState } : l));
             return false;
           }
           
