@@ -123,10 +123,15 @@ export function useLeadsOptimized() {
 
   // Atualização otimística de um lead específico
   const updateLeadOptimistic = async (leadId: string, updates: Partial<Lead>) => {
+    // Capturar o lead ANTES da atualização otimística para referência
+    const currentLead = leads.find(l => l.id === leadId);
+    if (!currentLead) return false;
+    
+    // Snapshot para rollback em caso de erro
+    const previousLeadState = { ...currentLead };
+    
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      
-      // 1. Atualizar otimisticamente o estado local primeiro (sem piscada)
+      // 1. Atualizar otimisticamente o estado local IMEDIATAMENTE (sem piscada)
       setLeads(currentLeads => 
         currentLeads.map(lead => {
           if (lead.id === leadId) {
