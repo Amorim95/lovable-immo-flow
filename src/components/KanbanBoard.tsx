@@ -7,7 +7,7 @@ import { useLeadStages } from "@/hooks/useLeadStages";
 import { useUserRole } from "@/hooks/useUserRole";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 
-const LEADS_PER_PAGE = 50;
+const LEADS_PER_PAGE = 20;
 
 const getColorClasses = (hexColor: string) => {
   return {
