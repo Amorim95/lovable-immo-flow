@@ -1,51 +1,14 @@
-import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
-import { useLeadStages } from "@/hooks/useLeadStages";
 import { 
   Calendar,
   Users,
-  Clock,
-  UserCheck,
-  CalendarCheck,
-  TrendingUp,
-  Loader2
 } from "lucide-react";
 
 const Dashboards = () => {
   const navigate = useNavigate();
-  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
-  const [customDateRange, setCustomDateRange] = useState<DateRange>();
-  const { stages } = useLeadStages();
-
-  // Calcular o range de data baseado no filtro selecionado
-  const dateRange = useMemo(() => {
-    return getDateRangeFromFilter(dateFilter, customDateRange);
-  }, [dateFilter, customDateRange]);
-
-  // Buscar métricas reais do banco de dados
-  const { metrics, loading, error } = useDashboardMetrics(dateRange);
-
-  // Função para obter ícone e cor com base no nome da etapa
-  const getStageIcon = (stageName: string) => {
-    const lowerName = stageName.toLowerCase();
-    if (lowerName.includes('aguardando')) return { icon: Clock, color: 'yellow' };
-    if (lowerName.includes('visita')) return { icon: CalendarCheck, color: 'purple' };
-    if (lowerName.includes('venda') || lowerName.includes('fechada')) return { icon: TrendingUp, color: 'green' };
-    if (lowerName.includes('contato') || lowerName.includes('tentativa')) return { icon: UserCheck, color: 'blue' };
-    return { icon: Users, color: 'gray' };
-  };
-
-
-  const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
-    setDateFilter(option);
-    if (customRange) {
-      setCustomDateRange(customRange);
-    }
-  };
-
+  const { metrics, loading } = useDashboardMetrics(null);
   return (
     <div className="space-y-6">
       <div>
@@ -55,63 +18,6 @@ const Dashboards = () => {
         </p>
       </div>
 
-      {/* Filtros e Export */}
-      <Card>
-        <CardHeader>
-            <CardTitle>Métricas Gerais</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin mr-2" />
-              <span>Carregando métricas...</span>
-            </div>
-          ) : error ? (
-            <div className="text-red-600 text-center py-8">
-              Erro ao carregar dados: {error}
-            </div>
-          ) : (
-            <>
-              <div className="mb-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Filtro de Data</label>
-                  <DateFilter
-                    value={dateFilter}
-                    customRange={customDateRange}
-                    onValueChange={handleDateFilterChange}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {/* Etapas dinâmicas baseadas na configuração da empresa */}
-                {stages.slice(0, 3).map(stage => {
-                  const { icon: Icon, color } = getStageIcon(stage.nome);
-                  const colorClasses = {
-                    yellow: { bg: 'bg-yellow-500/10 dark:bg-yellow-500/20', text: 'text-yellow-600 dark:text-yellow-400', bold: 'text-yellow-900 dark:text-yellow-300' },
-                    purple: { bg: 'bg-purple-500/10 dark:bg-purple-500/20', text: 'text-purple-600 dark:text-purple-400', bold: 'text-purple-900 dark:text-purple-300' },
-                    green: { bg: 'bg-green-500/10 dark:bg-green-500/20', text: 'text-green-600 dark:text-green-400', bold: 'text-green-900 dark:text-green-300' },
-                    blue: { bg: 'bg-blue-500/10 dark:bg-blue-500/20', text: 'text-blue-600 dark:text-blue-400', bold: 'text-blue-900 dark:text-blue-300' },
-                    gray: { bg: 'bg-muted', text: 'text-muted-foreground', bold: 'text-foreground' }
-                  }[color] || { bg: 'bg-muted', text: 'text-muted-foreground', bold: 'text-foreground' };
-
-                  return (
-                    <div key={stage.id} className={`${colorClasses.bg} p-4 rounded-lg`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Icon className={`w-5 h-5 ${colorClasses.text}`} />
-                        <span className={`text-sm font-medium ${colorClasses.text} truncate`}>{stage.nome}</span>
-                      </div>
-                      <div className={`text-2xl font-bold ${colorClasses.bold}`}>
-                        {metrics.leadsPorEtapa[stage.nome] || 0}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
 
       {/* Cards de Dashboards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
