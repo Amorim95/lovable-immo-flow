@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lead } from "@/types/crm";
-import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
+import { useLeadsOptimized, LeadDateFilter } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { useLeadStages } from "@/hooks/useLeadStages";
