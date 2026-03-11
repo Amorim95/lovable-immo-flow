@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TagSelector } from "@/components/TagSelector";
 import { LeadTransferModal } from "@/components/LeadTransferModal";
-import { RepiqueBadge } from "@/components/RepiqueBadge";
+
 import { RepiqueTimer } from "@/components/RepiqueTimer";
 import { Phone, User, Calendar, ArrowRightLeft } from "lucide-react";
 
@@ -140,9 +140,6 @@ export const LeadCard = memo(function LeadCard({ lead, onClick, onUpdate, userId
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
             <Calendar className="w-3 h-3" />
             <span>{formatDate(lead.dataCriacao)}</span>
-            {(lead as any).repiqueCount > 0 && (
-              <RepiqueBadge count={(lead as any).repiqueCount} />
-            )}
           </div>
           <p className="text-sm text-muted-foreground line-clamp-2">{lead.dadosAdicionais || 'Sem informações adicionais'}</p>
         </div>
