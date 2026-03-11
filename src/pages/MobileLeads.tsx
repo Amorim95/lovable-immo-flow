@@ -37,6 +37,7 @@ export default function MobileLeads() {
   const { user } = useAuth();
   const quote = useDailyQuote();
   const { stages, loading: stagesLoading } = useLeadStages();
+  const { enabled: repiqueEnabled, minutes: repiqueMinutes } = useAutoRepiqueSettings();
   
   // Criar mapa de stages para acesso rápido por nome
   const stageMap = useMemo(() => {
