@@ -21,6 +21,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { RepiqueTimer } from "@/components/RepiqueTimer";
+import { useAutoRepiqueSettings } from "@/hooks/useAutoRepiqueSettings";
 
 interface Equipe {
   id: string;
