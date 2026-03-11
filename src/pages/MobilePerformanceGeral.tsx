@@ -34,7 +34,7 @@ interface MobilePerformanceGeralProps {
 
 const MobilePerformanceGeral = ({ selectedTeamId, selectedUserId, onTeamChange, onUserChange }: MobilePerformanceGeralProps) => {
   const { stages } = useLeadStages();
-  const [dateFilter, setDateFilter] = useState<DateFilterOption>('ultimos-30-dias');
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>('ultimos-7-dias');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
 
   const dateRange = useMemo(() => {
