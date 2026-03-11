@@ -52,6 +52,7 @@ const Index = () => {
   
   const dailyQuote = useDailyQuote();
   const { enabled: autoRepiqueEnabled, minutes: autoRepiqueMinutes } = useAutoRepiqueSettings();
+  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter } = useSavedFilters("leads");
   
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -66,6 +67,24 @@ const Index = () => {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedStageKey, setSelectedStageKey] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Carregar filtros salvos ao montar
+  useEffect(() => {
+    const saved = loadFilters();
+    if (saved) {
+      setDateFilter(saved.dateFilter);
+      if (saved.customDateRange) {
+        setCustomDateRange({ from: new Date(saved.customDateRange.from), to: new Date(saved.customDateRange.to) });
+      }
+      setSelectedUserId(saved.selectedUserId);
+      setSelectedTeamId(saved.selectedTeamId);
+      setSelectedTagIds(saved.selectedTagIds);
+      setSelectedStageKey(saved.selectedStageKey);
+      if (saved.dateFilter !== 'periodo-total' || saved.selectedUserId || saved.selectedTeamId || saved.selectedTagIds.length > 0 || saved.selectedStageKey) {
+        setFiltersOpen(true);
+      }
+    }
+  }, []);
 
   // Pré-selecionar equipe gerenciada automaticamente
   useEffect(() => {
