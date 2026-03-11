@@ -75,9 +75,7 @@ export default function MobileLeads() {
   const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter, isMatchingSaved } = useSavedFilters("mobile-leads");
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
-  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
