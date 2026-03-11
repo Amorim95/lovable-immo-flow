@@ -60,7 +60,7 @@ export default function PerfilCliente() {
   const isMobile = useIsMobile();
   const { user } = useAuth();
   const { settings } = useCompany();
-  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>('ultimos-7-dias');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
