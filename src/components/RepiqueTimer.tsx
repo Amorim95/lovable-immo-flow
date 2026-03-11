@@ -6,6 +6,7 @@ interface RepiqueTimerProps {
   repiqueMinutes: number;
   contacted: boolean;
   repiqueCount: number;
+  showCountdown?: boolean;
 }
 
 export const RepiqueTimer = memo(function RepiqueTimer({

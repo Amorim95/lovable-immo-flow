@@ -128,12 +128,13 @@ export const LeadCard = memo(function LeadCard({ lead, onClick, onUpdate, userId
           <div className="flex items-center gap-2 mb-1">
             <User className="w-4 h-4 text-muted-foreground" />
             <h4 className="font-semibold text-foreground truncate flex-1">{lead.nome}</h4>
-            {autoRepiqueEnabled && (lead as any).assignedAt && (
+            {(lead as any).assignedAt && (
               <RepiqueTimer
                 assignedAt={(lead as any).assignedAt}
                 repiqueMinutes={autoRepiqueMinutes}
                 contacted={!!(lead as any).primeiroContatoWhatsapp}
                 repiqueCount={(lead as any).repiqueCount ?? 0}
+                showCountdown={autoRepiqueEnabled}
               />
             )}
           </div>
