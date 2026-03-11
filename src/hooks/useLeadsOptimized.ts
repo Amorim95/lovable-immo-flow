@@ -1,8 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { Lead } from '@/types/crm';
+
+export interface LeadDateFilter {
+  from?: string; // ISO string
+  to?: string;   // ISO string
+}
 
 interface LeadsData {
   id: string;
@@ -32,17 +37,19 @@ interface LeadsData {
   }[];
 }
 
-export function useLeadsOptimized() {
+export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
   const { user } = useAuth();
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
   const [leads, setLeads] = useState<LeadsData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const dateFilterRef = useRef(dateFilter);
+  dateFilterRef.current = dateFilter;
 
   useEffect(() => {
     if (!user || roleLoading) return;
     loadLeads();
-  }, [user, isAdmin, isGestor, isCorretor, roleLoading]);
+  }, [user, isAdmin, isGestor, isCorretor, roleLoading, dateFilter?.from, dateFilter?.to]);
 
 
   const loadLeads = async () => {
