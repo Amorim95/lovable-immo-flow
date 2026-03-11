@@ -31,29 +31,8 @@ const Index = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { user } = useAuth();
-  const {
-    leads,
-    loading,
-    error,
-    refreshLeads,
-    updateLeadOptimistic
-  } = useLeadsOptimized();
-  const {
-    isAdmin,
-    isGestor,
-    isCorretor,
-    isDono,
-    loading: roleLoading
-  } = useUserRole();
-  const {
-    managedTeamId,
-    loading: teamLoading
-  } = useManagerTeam();
-  
-  const dailyQuote = useDailyQuote();
-  const { enabled: autoRepiqueEnabled, minutes: autoRepiqueMinutes } = useAutoRepiqueSettings();
-  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter, isMatchingSaved } = useSavedFilters("leads");
-  
+
+  // State de filtros (declarados antes do hook para poder passar dateFilter ao backend)
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -67,6 +46,35 @@ const Index = () => {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedStageKey, setSelectedStageKey] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Computar filtro de data para o backend
+  const backendDateFilter = useMemo<LeadDateFilter | undefined>(() => {
+    const range = getDateRangeFromFilter(dateFilter, customDateRange);
+    if (!range) return undefined;
+    return {
+      from: range.from.toISOString(),
+      to: range.to.toISOString(),
+    };
+  }, [dateFilter, customDateRange]);
+
+  const {
+    leads,
+    loading,
+    error,
+    refreshLeads,
+    updateLeadOptimistic
+  } = useLeadsOptimized(backendDateFilter);
+  const {
+    isAdmin,
+    isGestor,
+    isCorretor,
+    isDono,
+    loading: roleLoading
+  } = useUserRole();
+  const {
+    managedTeamId,
+    loading: teamLoading
+  } = useManagerTeam();
 
   // Carregar filtros salvos ao montar
   useEffect(() => {
