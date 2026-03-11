@@ -220,6 +220,8 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                               userId={lead.userId}
                               onOptimisticUpdate={onOptimisticUpdate}
                               canTransfer={canTransfer}
+                              autoRepiqueEnabled={autoRepiqueEnabled}
+                              autoRepiqueMinutes={autoRepiqueMinutes}
                             />
                           </div>
                         )}
