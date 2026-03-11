@@ -64,8 +64,9 @@ export const RepiqueTimer = memo(function RepiqueTimer({
   const seconds = secondsLeft % 60;
   const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
-  const isWarning = secondsLeft <= 120 && secondsLeft > 60;
-  const isCritical = secondsLeft <= 60;
+  const isExpired = secondsLeft === 0;
+  const isWarning = !isExpired && secondsLeft <= 120 && secondsLeft > 60;
+  const isCritical = !isExpired && secondsLeft <= 60;
 
   let colorClasses = 'text-muted-foreground bg-muted/50';
   if (isWarning) {
@@ -74,14 +75,17 @@ export const RepiqueTimer = memo(function RepiqueTimer({
   if (isCritical) {
     colorClasses = 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950/30 animate-repique-blink';
   }
+  if (isExpired) {
+    colorClasses = 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/30';
+  }
 
   return (
     <span
       className={`inline-flex items-center gap-1 text-xs font-mono font-semibold px-1.5 py-0.5 rounded-md ${colorClasses}`}
-      title={secondsLeft === 0 ? 'Tempo esgotado — aguardando redistribuição' : `Tempo restante para atendimento: ${timeStr}`}
+      title={isExpired ? 'Tempo esgotado — aguardando redistribuição' : `Tempo restante para atendimento: ${timeStr}`}
     >
       <Clock className="w-3 h-3" />
-      {secondsLeft === 0 ? '0:00' : timeStr}
+      {isExpired ? '0:00' : timeStr}
     </span>
   );
 });
