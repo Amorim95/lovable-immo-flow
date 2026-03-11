@@ -13,7 +13,8 @@ import { NotificationPromptBanner } from "@/components/NotificationPromptBanner"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Calendar, User, ChevronDown, Filter, Tag, Users } from "lucide-react";
+import { Plus, Search, Calendar, User, ChevronDown, Filter, Tag, Users, Save, Trash2 } from "lucide-react";
+import { useSavedFilters } from "@/hooks/useSavedFilters";
 import { DateFilter, DateFilterOption, getDateRangeFromFilter } from "@/components/DateFilter";
 import { UserFilter } from "@/components/UserFilter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
