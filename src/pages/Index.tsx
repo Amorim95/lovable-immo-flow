@@ -8,7 +8,7 @@ import { NewLeadModal } from "@/components/NewLeadModal";
 import { TeamUserFilters } from "@/components/TeamUserFilters";
 import { TagFilter } from "@/components/TagFilter";
 import { StageFilter } from "@/components/StageFilter";
-import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
+import { useLeadsOptimized, LeadDateFilter } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
