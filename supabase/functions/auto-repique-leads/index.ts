@@ -20,7 +20,6 @@ interface LeadToRepique {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -33,6 +32,41 @@ Deno.serve(async (req) => {
 
     console.log('=== Auto Repique de Leads - Iniciando ===');
 
+    // 1. Buscar empresas com repique automático ativado
+    const { data: companies, error: companiesError } = await supabase
+      .from('company_settings')
+      .select('company_id, auto_repique_enabled, auto_repique_minutes')
+      .eq('auto_repique_enabled', true);
+
+    if (companiesError) {
+      console.error('Erro ao buscar empresas:', companiesError);
+      return new Response(
+        JSON.stringify({ error: 'Erro ao buscar empresas', details: companiesError.message }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!companies || companies.length === 0) {
+      console.log('Nenhuma empresa com repique automático ativado');
+      return new Response(
+        JSON.stringify({ success: true, message: 'Nenhuma empresa com repique ativado', processed: 0 }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`Empresas com repique ativado: ${companies.length}`);
+
+    let totalProcessed = 0;
+    let totalWarnings = 0;
+    const results: any[] = [];
+    const warnings: any[] = [];
+
+    // 2. Para cada empresa, processar avisos e repiques
+    for (const company of companies as CompanySettings[]) {
+      const { company_id, auto_repique_minutes } = company;
+      
+      if (!company_id) continue;
+
       console.log(`Processando empresa: ${company_id} (timeout: ${auto_repique_minutes} min)`);
 
       // ========================================
@@ -40,17 +74,13 @@ Deno.serve(async (req) => {
       // ========================================
       const warningMinutes = auto_repique_minutes - 2;
       
-      // Só enviar avisos se o tempo configurado for maior que 2 minutos
       if (warningMinutes > 0) {
-        // Janela de 1 minuto para evitar avisos duplicados
-        // Ex: timeout 10 min -> aviso entre 8-9 min (apenas 1 execução do cron)
         const warningTimeStart = new Date();
         warningTimeStart.setMinutes(warningTimeStart.getMinutes() - (auto_repique_minutes - 1));
         
         const warningTimeEnd = new Date();
         warningTimeEnd.setMinutes(warningTimeEnd.getMinutes() - warningMinutes);
 
-        // Critério: apenas primeiro_contato_whatsapp = NULL (independente da etapa)
         const { data: leadsToWarn, error: warnError } = await supabase
           .from('leads')
           .select('id, nome, user_id, company_id')
@@ -65,7 +95,6 @@ Deno.serve(async (req) => {
         } else if (leadsToWarn && leadsToWarn.length > 0) {
           console.log(`Leads para aviso na empresa ${company_id}: ${leadsToWarn.length}`);
 
-          // Avisos de repique desativados - apenas log
           for (const lead of leadsToWarn) {
             totalWarnings++;
             warnings.push({
@@ -84,7 +113,6 @@ Deno.serve(async (req) => {
       const timeLimit = new Date();
       timeLimit.setMinutes(timeLimit.getMinutes() - auto_repique_minutes);
 
-      // Critério: apenas primeiro_contato_whatsapp = NULL (independente da etapa)
       const { data: leads, error: leadsError } = await supabase
         .from('leads')
         .select('id, nome, user_id, company_id, repique_count')
@@ -108,7 +136,6 @@ Deno.serve(async (req) => {
       // 3. Processar cada lead
       for (const lead of leads as LeadToRepique[]) {
         try {
-          // Buscar próximo usuário no round-robin (excluindo o usuário atual)
           const { data: nextUser, error: userError } = await supabase
             .from('users')
             .select('id, name')
@@ -126,14 +153,12 @@ Deno.serve(async (req) => {
 
           console.log(`Transferindo lead ${lead.id} de ${lead.user_id} para ${nextUser.id}`);
 
-          // Buscar atividades atuais do lead
           const { data: leadAtual } = await supabase
             .from('leads')
             .select('atividades')
             .eq('id', lead.id)
             .maybeSingle();
 
-          // Criar atividade de reatribuição por repique
           const repiqueAtividade = {
             id: Date.now().toString(),
             tipo: 'observacao',
@@ -145,8 +170,6 @@ Deno.serve(async (req) => {
           const atividadesAtuais = (leadAtual?.atividades as any[]) || [];
           const novasAtividades = [...atividadesAtuais, repiqueAtividade];
 
-          // Atualizar o lead com a nova atividade
-          // stage_order negativo baseado no timestamp garante que o lead aparece no topo do Kanban
           const { error: updateError } = await supabase
             .from('leads')
             .update({
@@ -165,13 +188,11 @@ Deno.serve(async (req) => {
           
           console.log(`Atividade de reatribuição registrada para lead ${lead.id}`);
 
-          // Atualizar ultimo_lead_recebido do novo usuário
           await supabase
             .from('users')
             .update({ ultimo_lead_recebido: new Date().toISOString() })
             .eq('id', nextUser.id);
 
-          // Registrar log de transferência automática
           await supabase
             .from('logs')
             .insert({
@@ -189,7 +210,6 @@ Deno.serve(async (req) => {
               }
             });
 
-          // Enviar notificação push para o novo usuário que recebeu o lead
           try {
             await supabase.functions.invoke('send-push-notification', {
               body: {
