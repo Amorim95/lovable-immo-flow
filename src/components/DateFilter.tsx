@@ -14,7 +14,9 @@ export type DateFilterOption =
   | 'ultimos-7-dias' 
   | 'ultimos-15-dias' 
   | 'ultimos-30-dias' 
-  | 'ultimos-3-meses' 
+  | 'ultimos-3-meses'
+  | 'ultimos-6-meses'
+  | 'este-mes'
   | 'mes-passado' 
   | 'periodo-total' 
   | 'personalizado';
