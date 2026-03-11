@@ -19,7 +19,7 @@ export const RepiqueTimer = memo(function RepiqueTimer({
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
   useEffect(() => {
-    if (contacted || repiqueCount >= 3 || !showCountdown) return;
+    if (contacted || !showCountdown) return;
 
     const deadline = new Date(assignedAt).getTime() + repiqueMinutes * 60 * 1000;
 
@@ -46,8 +46,8 @@ export const RepiqueTimer = memo(function RepiqueTimer({
     );
   }
 
-  // Lead atingiu 3 repiques — não será mais redistribuído
-  if (repiqueCount >= 3) {
+  // Lead atingiu 3 repiques E o tempo expirou — não será mais redistribuído
+  if (repiqueCount >= 3 && (secondsLeft === 0 || secondsLeft === null)) {
     return (
       <span
         className="inline-flex items-center gap-0.5 text-xs font-mono font-semibold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400"
@@ -66,7 +66,6 @@ export const RepiqueTimer = memo(function RepiqueTimer({
 
   const isWarning = secondsLeft <= 120 && secondsLeft > 60;
   const isCritical = secondsLeft <= 60;
-  const isExpired = secondsLeft === 0;
 
   let colorClasses = 'text-muted-foreground bg-muted/50';
   if (isWarning) {
@@ -79,10 +78,10 @@ export const RepiqueTimer = memo(function RepiqueTimer({
   return (
     <span
       className={`inline-flex items-center gap-1 text-xs font-mono font-semibold px-1.5 py-0.5 rounded-md ${colorClasses}`}
-      title={isExpired ? 'Tempo esgotado — aguardando redistribuição' : `Tempo restante para atendimento: ${timeStr}`}
+      title={secondsLeft === 0 ? 'Tempo esgotado — aguardando redistribuição' : `Tempo restante para atendimento: ${timeStr}`}
     >
       <Clock className="w-3 h-3" />
-      {isExpired ? '0:00' : timeStr}
+      {secondsLeft === 0 ? '0:00' : timeStr}
     </span>
   );
 });
