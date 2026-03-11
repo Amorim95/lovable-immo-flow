@@ -417,10 +417,11 @@ const Index = () => {
                   });
                   toast.success("Filtro salvo com sucesso!");
                 }}
-                className="text-primary hover:text-primary"
+                className={hasSavedFilter ? "text-muted-foreground" : "text-primary hover:text-primary"}
+                disabled={hasSavedFilter}
               >
                 <Save className="w-4 h-4 mr-1" />
-                Salvar filtro
+                {hasSavedFilter ? "Filtro salvo" : "Salvar filtro"}
               </Button>
 
               {/* Botão Limpar Filtros + remover salvo */}
