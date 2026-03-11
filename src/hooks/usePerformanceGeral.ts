@@ -74,7 +74,7 @@ export function usePerformanceGeral(dateRange?: DateRange, teamId?: string | nul
         }
       }
 
-      // 1. Buscar todos os leads no período com suas etiquetas usando paginação automática
+      // 1. Buscar todos os leads no período SEM tag relations (query leve para contagem precisa)
       let allLeads: any[] = [];
       let from = 0;
       const pageSize = 1000;
@@ -83,22 +83,7 @@ export function usePerformanceGeral(dateRange?: DateRange, teamId?: string | nul
       while (hasMore) {
         let leadsQuery = supabase
           .from('leads')
-          .select(`
-            id, 
-            etapa, 
-            stage_name, 
-            created_at, 
-            user_id, 
-            primeiro_contato_whatsapp,
-            lead_tag_relations (
-              tag_id,
-              lead_tags (
-                id,
-                nome,
-                cor
-              )
-            )
-          `)
+          .select('id, etapa, stage_name, created_at, user_id, primeiro_contato_whatsapp')
           .order('created_at', { ascending: false })
           .range(from, from + pageSize - 1);
 
@@ -131,6 +116,38 @@ export function usePerformanceGeral(dateRange?: DateRange, teamId?: string | nul
 
       const leadsData = allLeads;
       console.log(`Performance Geral: Total de leads carregados: ${leadsData.length}`);
+
+      // 1b. Buscar tag relations separadamente para os leads carregados
+      const leadIds = leadsData.map((l: any) => l.id);
+      let allTagRelations: any[] = [];
+      
+      // Buscar tag relations em lotes de 500 IDs por vez
+      const tagBatchSize = 500;
+      for (let i = 0; i < leadIds.length; i += tagBatchSize) {
+        const batchIds = leadIds.slice(i, i + tagBatchSize);
+        const { data: tagData } = await supabase
+          .from('lead_tag_relations')
+          .select('lead_id, lead_tags(id, nome, cor)')
+          .in('lead_id', batchIds);
+        
+        if (tagData) {
+          allTagRelations = [...allTagRelations, ...tagData];
+        }
+      }
+
+      // Agrupar tag relations por lead_id
+      const tagsByLeadId: { [leadId: string]: any[] } = {};
+      allTagRelations.forEach((rel: any) => {
+        if (!tagsByLeadId[rel.lead_id]) {
+          tagsByLeadId[rel.lead_id] = [];
+        }
+        tagsByLeadId[rel.lead_id].push(rel);
+      });
+
+      // Anexar tags aos leads
+      leadsData.forEach((lead: any) => {
+        lead.lead_tag_relations = tagsByLeadId[lead.id] || [];
+      });
 
       // 2. Calcular métricas gerais
       const leadsTotais = leadsData?.length || 0;
