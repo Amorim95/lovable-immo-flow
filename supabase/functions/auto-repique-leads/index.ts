@@ -252,8 +252,23 @@ Deno.serve(async (req) => {
               }
             });
 
-          // Notificações de repique desativadas (tanto para novo usuário quanto para usuário antigo)
-          console.log(`Repique processado silenciosamente: lead ${lead.id} transferido de ${lead.user_id} para ${nextUser.id}`);
+          // Enviar notificação push para o novo usuário que recebeu o lead
+          try {
+            await supabase.functions.invoke('send-push-notification', {
+              body: {
+                userId: nextUser.id,
+                title: '🔔 Opa! Novo Lead!',
+                body: `Corre lá, que o lead ${lead.nome} está esperando seu atendimento!`,
+                data: {
+                  leadId: lead.id,
+                  url: '/'
+                }
+              }
+            });
+            console.log(`Notificação enviada para novo usuário ${nextUser.id}`);
+          } catch (notifError) {
+            console.error('Erro ao enviar notificação para novo usuário:', notifError);
+          }
 
           totalProcessed++;
           results.push({
