@@ -18,12 +18,14 @@ import { Input } from "@/components/ui/input";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { useDailyQuote } from "@/hooks/useDailyQuote";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutList, LayoutGrid, Plus, Search, SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-react";
+import { LayoutList, LayoutGrid, Plus, Search, SlidersHorizontal, ChevronDown, ChevronUp, Save, Trash2 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { NotificationPromptBanner } from "@/components/NotificationPromptBanner";
 import { NotificationSoundPlayer } from "@/components/NotificationSoundPlayer";
 import { useAutoRepiqueSettings } from "@/hooks/useAutoRepiqueSettings";
+import { useSavedFilters } from "@/hooks/useSavedFilters";
+import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -50,6 +52,7 @@ const Index = () => {
   
   const dailyQuote = useDailyQuote();
   const { enabled: autoRepiqueEnabled, minutes: autoRepiqueMinutes } = useAutoRepiqueSettings();
+  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter } = useSavedFilters("leads");
   
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -64,6 +67,24 @@ const Index = () => {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedStageKey, setSelectedStageKey] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Carregar filtros salvos ao montar
+  useEffect(() => {
+    const saved = loadFilters();
+    if (saved) {
+      setDateFilter(saved.dateFilter);
+      if (saved.customDateRange) {
+        setCustomDateRange({ from: new Date(saved.customDateRange.from), to: new Date(saved.customDateRange.to) });
+      }
+      setSelectedUserId(saved.selectedUserId);
+      setSelectedTeamId(saved.selectedTeamId);
+      setSelectedTagIds(saved.selectedTagIds);
+      setSelectedStageKey(saved.selectedStageKey);
+      if (saved.dateFilter !== 'periodo-total' || saved.selectedUserId || saved.selectedTeamId || saved.selectedTagIds.length > 0 || saved.selectedStageKey) {
+        setFiltersOpen(true);
+      }
+    }
+  }, []);
 
   // Pré-selecionar equipe gerenciada automaticamente
   useEffect(() => {
@@ -379,6 +400,43 @@ const Index = () => {
                   onStageChange={setSelectedStageKey} 
                   className="w-64" 
                 />
+              )}
+
+              {/* Botão Salvar Filtros */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  saveFilters({
+                    dateFilter,
+                    customDateRange: customDateRange ? { from: customDateRange.from.toISOString(), to: customDateRange.to.toISOString() } : undefined,
+                    selectedUserId,
+                    selectedTeamId,
+                    selectedTagIds,
+                    selectedStageKey,
+                  });
+                  toast.success("Filtro salvo com sucesso!");
+                }}
+                className="text-primary hover:text-primary"
+              >
+                <Save className="w-4 h-4 mr-1" />
+                Salvar filtro
+              </Button>
+
+              {/* Botão Remover Filtro Salvo */}
+              {hasSavedFilter && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    clearSavedFilters();
+                    toast.success("Filtro salvo removido!");
+                  }}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Remover salvo
+                </Button>
               )}
 
               {/* Botão Limpar Filtros */}

@@ -13,7 +13,8 @@ import { NotificationPromptBanner } from "@/components/NotificationPromptBanner"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Calendar, User, ChevronDown, Filter, Tag, Users } from "lucide-react";
+import { Plus, Search, Calendar, User, ChevronDown, Filter, Tag, Users, Save, Trash2 } from "lucide-react";
+import { useSavedFilters } from "@/hooks/useSavedFilters";
 import { DateFilter, DateFilterOption, getDateRangeFromFilter } from "@/components/DateFilter";
 import { UserFilter } from "@/components/UserFilter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -57,6 +58,7 @@ export default function MobileLeads() {
     return stageMap[stageName]?.nome || stageName;
   };
   const { managedTeamId, loading: teamLoading } = useManagerTeam();
+  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter } = useSavedFilters("mobile-leads");
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
@@ -67,6 +69,24 @@ export default function MobileLeads() {
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [equipes, setEquipes] = useState<Equipe[]>([]);
+
+  // Carregar filtros salvos ao montar
+  useEffect(() => {
+    const saved = loadFilters();
+    if (saved) {
+      setDateFilter(saved.dateFilter);
+      if (saved.customDateRange) {
+        setCustomDateRange({ from: new Date(saved.customDateRange.from), to: new Date(saved.customDateRange.to) });
+      }
+      setSelectedUserId(saved.selectedUserId);
+      setSelectedTeamId(saved.selectedTeamId);
+      setSelectedTagIds(saved.selectedTagIds);
+      setSelectedStage(saved.selectedStageKey);
+      if (saved.dateFilter !== 'periodo-total' || saved.selectedUserId || saved.selectedTeamId || saved.selectedTagIds.length > 0 || saved.selectedStageKey) {
+        setFiltersExpanded(true);
+      }
+    }
+  }, []);
   
   // Estado do formulário de novo lead
   // Paginação de leads
@@ -502,6 +522,43 @@ export default function MobileLeads() {
                 selectedTagIds={selectedTagIds}
                 onTagChange={setSelectedTagIds}
               />
+
+              {/* Botões Salvar / Remover filtro */}
+              <div className="flex gap-2 mt-4 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-primary"
+                  onClick={() => {
+                    saveFilters({
+                      dateFilter,
+                      customDateRange: customDateRange ? { from: customDateRange.from.toISOString(), to: customDateRange.to.toISOString() } : undefined,
+                      selectedUserId,
+                      selectedTeamId,
+                      selectedTagIds,
+                      selectedStageKey: selectedStage,
+                    });
+                    toast.success("Filtro salvo com sucesso!");
+                  }}
+                >
+                  <Save className="w-4 h-4 mr-1" />
+                  Salvar filtro
+                </Button>
+                {hasSavedFilter && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive"
+                    onClick={() => {
+                      clearSavedFilters();
+                      toast.success("Filtro salvo removido!");
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Remover
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>
