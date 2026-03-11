@@ -56,7 +56,14 @@ export default function LeadDetails() {
         nome: lead.nome,
         telefone: lead.telefone,
         dadosAdicionais: lead.dadosAdicionais || '',
-        stage_name: lead.stage_name || lead.etapa
+        stage_name: (() => {
+          const currentValue = lead.stage_name || lead.etapa;
+          const matchByName = stages.find(s => s.nome === currentValue);
+          if (matchByName) return currentValue;
+          const matchByLegacy = stages.find(s => s.legacy_key === currentValue);
+          if (matchByLegacy) return matchByLegacy.nome;
+          return currentValue;
+        })()
       });
 
       // Registrar visualização do lead
