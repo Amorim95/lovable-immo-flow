@@ -66,89 +66,75 @@ export function TagSelector({ selectedTags, onTagsChange, variant = 'default' }:
   };
 
   return (
-    <div className="space-y-2">
-      {/* Etiquetas selecionadas */}
-      <div className="flex flex-wrap gap-1 min-h-[32px] p-2 border rounded-md bg-muted">
-        {selectedTags.length > 0 ? (
-          selectedTags.map((tag) => {
-            // Find the tag in available tags to get its database color
-            const availableTag = availableTags.find(t => t.nome === tag);
-            const colorStyle = getTagColor(tag, availableTag?.cor);
-            
-            return (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className={`text-xs cursor-pointer hover:opacity-80 ${colorStyle.className || ''}`}
-                style={colorStyle.className ? undefined : colorStyle}
-                onClick={() => handleTagToggle(tag)}
-              >
-                {getTagDisplayName(tag)}
-                <span className="ml-1 text-xs">✕</span>
-              </Badge>
-            );
-          })
-        ) : (
-          <span className="text-muted-foreground text-sm">Nenhuma etiqueta selecionada</span>
-        )}
-      </div>
-
-      {/* Botão para editar etiquetas */}
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size={isCompact ? "sm" : "default"}
-            className={isCompact ? "h-7 px-2 text-xs" : "w-full"}
-            disabled={loading}
-          >
-            <Tag className={`${isCompact ? "w-3 h-3" : "w-4 h-4"} mr-1`} />
-            {isCompact ? "Tags" : "Adicionar/Remover Etiquetas"}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-72 p-4 bg-popover border shadow-lg z-50" align="start">
-          <div className="space-y-3">
-            <h4 className="font-medium text-sm">Selecionar Etiquetas</h4>
-            <div className="space-y-2">
-              {loading ? (
-                <div className="text-sm text-muted-foreground">Carregando tags...</div>
-              ) : (
-                availableTags.map((tag) => (
-                  <div key={tag.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={tag.nome}
-                      checked={selectedTags.includes(tag.nome as LeadTag)}
-                      onCheckedChange={() => handleTagToggle(tag.nome as LeadTag)}
-                    />
-                    <label
-                      htmlFor={tag.nome}
-                      className="text-sm font-medium leading-none cursor-pointer flex-1"
-                      onClick={() => handleTagToggle(tag.nome as LeadTag)}
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <div className="flex flex-wrap gap-1 min-h-[28px] cursor-pointer hover:opacity-80 transition-opacity">
+          {selectedTags.length > 0 ? (
+            selectedTags.map((tag) => {
+              const availableTag = availableTags.find(t => t.nome === tag);
+              const colorStyle = getTagColor(tag, availableTag?.cor);
+              
+              return (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className={`text-xs ${colorStyle.className || ''}`}
+                  style={colorStyle.className ? undefined : colorStyle}
+                >
+                  {getTagDisplayName(tag)}
+                </Badge>
+              );
+            })
+          ) : (
+            <Badge variant="outline" className="text-xs text-muted-foreground border-dashed">
+              <Tag className="w-3 h-3 mr-1" />
+              Etiquetas
+            </Badge>
+          )}
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-4 bg-popover border shadow-lg z-50" align="start">
+        <div className="space-y-3">
+          <h4 className="font-medium text-sm">Selecionar Etiquetas</h4>
+          <div className="space-y-2">
+            {loading ? (
+              <div className="text-sm text-muted-foreground">Carregando tags...</div>
+            ) : (
+              availableTags.map((tag) => (
+                <div key={tag.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={tag.nome}
+                    checked={selectedTags.includes(tag.nome as LeadTag)}
+                    onCheckedChange={() => handleTagToggle(tag.nome as LeadTag)}
+                  />
+                  <label
+                    htmlFor={tag.nome}
+                    className="text-sm font-medium leading-none cursor-pointer flex-1"
+                    onClick={() => handleTagToggle(tag.nome as LeadTag)}
+                  >
+                    <Badge
+                      variant="secondary"
+                      className={`text-xs ${getTagColor(tag.nome, tag.cor).className || ''}`}
+                      style={getTagColor(tag.nome, tag.cor).className ? undefined : getTagColor(tag.nome, tag.cor)}
                     >
-                      <Badge
-                        variant="secondary"
-                        className={`text-xs ${getTagColor(tag.nome, tag.cor).className || ''}`}
-                        style={getTagColor(tag.nome, tag.cor).className ? undefined : getTagColor(tag.nome, tag.cor)}
-                      >
-                        {getTagDisplayName(tag.nome)}
-                      </Badge>
-                    </label>
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="pt-2 border-t">
-              <Button
-                size="sm"
-                onClick={() => setIsOpen(false)}
-                className="w-full"
-              >
-                Fechar
-              </Button>
-            </div>
+                      {getTagDisplayName(tag.nome)}
+                    </Badge>
+                  </label>
+                </div>
+              ))
+            )}
           </div>
-        </PopoverContent>
-      </Popover>
-    </div>
+          <div className="pt-2 border-t">
+            <Button
+              size="sm"
+              onClick={() => setIsOpen(false)}
+              className="w-full"
+            >
+              Fechar
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
