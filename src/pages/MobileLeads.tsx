@@ -58,6 +58,7 @@ export default function MobileLeads() {
     return stageMap[stageName]?.nome || stageName;
   };
   const { managedTeamId, loading: teamLoading } = useManagerTeam();
+  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter } = useSavedFilters("mobile-leads");
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
@@ -68,6 +69,24 @@ export default function MobileLeads() {
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [equipes, setEquipes] = useState<Equipe[]>([]);
+
+  // Carregar filtros salvos ao montar
+  useEffect(() => {
+    const saved = loadFilters();
+    if (saved) {
+      setDateFilter(saved.dateFilter);
+      if (saved.customDateRange) {
+        setCustomDateRange({ from: new Date(saved.customDateRange.from), to: new Date(saved.customDateRange.to) });
+      }
+      setSelectedUserId(saved.selectedUserId);
+      setSelectedTeamId(saved.selectedTeamId);
+      setSelectedTagIds(saved.selectedTagIds);
+      setSelectedStage(saved.selectedStageKey);
+      if (saved.dateFilter !== 'periodo-total' || saved.selectedUserId || saved.selectedTeamId || saved.selectedTagIds.length > 0 || saved.selectedStageKey) {
+        setFiltersExpanded(true);
+      }
+    }
+  }, []);
   
   // Estado do formulário de novo lead
   // Paginação de leads
