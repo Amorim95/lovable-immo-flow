@@ -14,7 +14,9 @@ export type DateFilterOption =
   | 'ultimos-7-dias' 
   | 'ultimos-15-dias' 
   | 'ultimos-30-dias' 
-  | 'ultimos-3-meses' 
+  | 'ultimos-3-meses'
+  | 'ultimos-6-meses'
+  | 'este-mes'
   | 'mes-passado' 
   | 'periodo-total' 
   | 'personalizado';
@@ -39,6 +41,8 @@ const dateFilterOptions = [
   { value: 'ultimos-15-dias', label: 'Últimos 15 dias' },
   { value: 'ultimos-30-dias', label: 'Últimos 30 dias' },
   { value: 'ultimos-3-meses', label: 'Últimos 3 meses' },
+  { value: 'ultimos-6-meses', label: 'Últimos 6 meses' },
+  { value: 'este-mes', label: 'Este mês' },
   { value: 'mes-passado', label: 'Mês passado' },
   { value: 'periodo-total', label: 'Período Total' },
   { value: 'personalizado', label: 'Personalizado' },
@@ -207,6 +211,20 @@ export function getDateRangeFromFilter(option: DateFilterOption, customRange?: D
       const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
       return {
         from: threeMonthsAgo,
+        to: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
+      };
+    
+    case 'ultimos-6-meses':
+      const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+      return {
+        from: sixMonthsAgo,
+        to: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
+      };
+    
+    case 'este-mes':
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      return {
+        from: firstDayOfMonth,
         to: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
       };
     
