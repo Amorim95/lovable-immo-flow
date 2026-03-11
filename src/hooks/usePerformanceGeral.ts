@@ -157,9 +157,11 @@ export function usePerformanceGeral(dateRange?: DateRange, teamId?: string | nul
       stages.forEach(stage => {
         const count = leadsData?.filter(lead => {
           if (lead.stage_name) {
-            return lead.stage_name === stage.nome;
+            // Comparar com nome da etapa E com legacy_key (leads antigos usam formato slug)
+            return lead.stage_name === stage.nome || 
+                   (stage.legacy_key && lead.stage_name === stage.legacy_key);
           }
-          // Fallback para compatibilidade
+          // Fallback para compatibilidade com campo etapa
           return stage.legacy_key && lead.etapa === stage.legacy_key;
         }).length || 0;
         leadsPorEtapa[stage.nome] = count;
