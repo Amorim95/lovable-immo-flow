@@ -21,6 +21,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { RepiqueTimer } from "@/components/RepiqueTimer";
+import { useAutoRepiqueSettings } from "@/hooks/useAutoRepiqueSettings";
 
 interface Equipe {
   id: string;
@@ -35,6 +37,7 @@ export default function MobileLeads() {
   const { user } = useAuth();
   const quote = useDailyQuote();
   const { stages, loading: stagesLoading } = useLeadStages();
+  const { enabled: repiqueEnabled, minutes: repiqueMinutes } = useAutoRepiqueSettings();
   
   // Criar mapa de stages para acesso rápido por nome
   const stageMap = useMemo(() => {
@@ -605,7 +608,16 @@ export default function MobileLeads() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-foreground truncate">{lead.nome}</h3>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-medium text-foreground truncate">{lead.nome}</h3>
+                    <RepiqueTimer
+                      assignedAt={lead.assignedAt || lead.dataCriacao.toISOString()}
+                      repiqueMinutes={repiqueMinutes}
+                      contacted={!!lead.primeiroContatoWhatsapp}
+                      repiqueCount={lead.repiqueCount || 0}
+                      showCountdown={repiqueEnabled}
+                    />
+                  </div>
                   <p className="text-sm text-muted-foreground truncate">{lead.telefone}</p>
                 </div>
                 <div className="relative">
