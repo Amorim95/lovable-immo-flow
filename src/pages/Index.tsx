@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { useDailyQuote } from "@/hooks/useDailyQuote";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutList, LayoutGrid, Plus, Search, SlidersHorizontal, ChevronDown, ChevronUp, Save, Trash2 } from "lucide-react";
+import { LayoutList, LayoutGrid, Plus, Search, SlidersHorizontal, ChevronDown, ChevronUp, Save } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { NotificationPromptBanner } from "@/components/NotificationPromptBanner";
@@ -423,23 +423,7 @@ const Index = () => {
                 Salvar filtro
               </Button>
 
-              {/* Botão Remover Filtro Salvo */}
-              {hasSavedFilter && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    clearSavedFilters();
-                    toast.success("Filtro salvo removido!");
-                  }}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Remover salvo
-                </Button>
-              )}
-
-              {/* Botão Limpar Filtros */}
+              {/* Botão Limpar Filtros + remover salvo */}
               {(dateFilter !== 'periodo-total' || selectedTeamId || selectedUserId || selectedTagIds.length > 0 || selectedStageKey) && (
                 <Button
                   variant="ghost"
@@ -451,6 +435,7 @@ const Index = () => {
                     setSelectedUserId(null);
                     setSelectedTagIds([]);
                     setSelectedStageKey(null);
+                    clearSavedFilters();
                   }}
                   className="text-muted-foreground hover:text-foreground"
                 >

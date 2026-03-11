@@ -13,7 +13,7 @@ import { NotificationPromptBanner } from "@/components/NotificationPromptBanner"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Calendar, User, ChevronDown, Filter, Tag, Users, Save, Trash2 } from "lucide-react";
+import { Plus, Search, Calendar, User, ChevronDown, Filter, Tag, Users, Save } from "lucide-react";
 import { useSavedFilters } from "@/hooks/useSavedFilters";
 import { DateFilter, DateFilterOption, getDateRangeFromFilter } from "@/components/DateFilter";
 import { UserFilter } from "@/components/UserFilter";
@@ -544,20 +544,23 @@ export default function MobileLeads() {
                   <Save className="w-4 h-4 mr-1" />
                   Salvar filtro
                 </Button>
-                {hasSavedFilter && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive"
-                    onClick={() => {
-                      clearSavedFilters();
-                      toast.success("Filtro salvo removido!");
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" />
-                    Remover
-                  </Button>
-                )}
+                {/* Limpar filtros + remover salvo */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground"
+                  onClick={() => {
+                    setDateFilter('periodo-total');
+                    setCustomDateRange(undefined);
+                    setSelectedUserId(null);
+                    setSelectedTeamId(null);
+                    setSelectedTagIds([]);
+                    setSelectedStage(null);
+                    clearSavedFilters();
+                  }}
+                >
+                  Limpar filtros
+                </Button>
               </div>
             </div>
           )}
