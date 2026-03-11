@@ -52,7 +52,7 @@ const Index = () => {
   
   const dailyQuote = useDailyQuote();
   const { enabled: autoRepiqueEnabled, minutes: autoRepiqueMinutes } = useAutoRepiqueSettings();
-  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter } = useSavedFilters("leads");
+  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter, isMatchingSaved } = useSavedFilters("leads");
   
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
