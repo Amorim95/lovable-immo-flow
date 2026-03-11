@@ -33,68 +33,7 @@ Deno.serve(async (req) => {
 
     console.log('=== Auto Repique de Leads - Iniciando ===');
 
-     // Função para obter data atual no fuso horário de São Paulo
-     const getBrazilDate = () => {
-       const now = new Date();
-       // Converter para horário de Brasília (UTC-3)
-       const brazilOffset = -3 * 60; // -3 horas em minutos
-       const utcOffset = now.getTimezoneOffset(); // offset local em minutos
-       const brazilTime = new Date(now.getTime() + (utcOffset + brazilOffset) * 60 * 1000);
-       return brazilTime;
-     };
-
-     // Função para obter início do dia no horário de Brasília
-     const getBrazilMidnight = () => {
-       const brazilNow = getBrazilDate();
-       // Pegar ano, mês, dia no horário de Brasília
-       const year = brazilNow.getFullYear();
-       const month = brazilNow.getMonth();
-       const day = brazilNow.getDate();
-       // Criar meia-noite de Brasília e converter para UTC
-       // Meia-noite em Brasília = 03:00 UTC
-       return new Date(Date.UTC(year, month, day, 3, 0, 0, 0));
-     };
-
-    // 1. Buscar empresas com repique automático ativado
-    const { data: companies, error: companiesError } = await supabase
-      .from('company_settings')
-      .select('company_id, auto_repique_enabled, auto_repique_minutes')
-      .eq('auto_repique_enabled', true);
-
-    if (companiesError) {
-      console.error('Erro ao buscar empresas:', companiesError);
-      return new Response(
-        JSON.stringify({ error: 'Erro ao buscar empresas', details: companiesError.message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    if (!companies || companies.length === 0) {
-      console.log('Nenhuma empresa com repique automático ativado');
-      return new Response(
-        JSON.stringify({ success: true, message: 'Nenhuma empresa com repique ativado', processed: 0 }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log(`Empresas com repique ativado: ${companies.length}`);
-
-    let totalProcessed = 0;
-    let totalWarnings = 0;
-    const results: any[] = [];
-    const warnings: any[] = [];
-
-    // 2. Para cada empresa, processar avisos e repiques
-    for (const company of companies as CompanySettings[]) {
-      const { company_id, auto_repique_minutes } = company;
-      
-      if (!company_id) continue;
-
       console.log(`Processando empresa: ${company_id} (timeout: ${auto_repique_minutes} min)`);
-
-       // Data de corte: somente leads criados a partir de hoje (horário de Brasília) são elegíveis
-       const cutoffDate = getBrazilMidnight().toISOString();
-       console.log(`Data de corte (meia-noite Brasília em UTC): ${cutoffDate}`);
 
       // ========================================
       // FASE 1: AVISOS (2 minutos antes do timeout)
