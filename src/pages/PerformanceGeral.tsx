@@ -30,7 +30,7 @@ const getStageIcon = (stageName: string) => {
 const PerformanceGeral = () => {
   const isMobile = useIsMobile();
   const { stages } = useLeadStages();
-  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>('ultimos-30-dias');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
