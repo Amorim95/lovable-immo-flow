@@ -211,9 +211,13 @@ export function usePerformanceGeral(dateRange?: DateRange, teamId?: string | nul
 
       // Processar cada lead e suas etiquetas
       leadsData?.forEach(lead => {
-        const etapaNome = lead.stage_name || 
-          stages.find(s => s.legacy_key === lead.etapa)?.nome || 
-          lead.etapa;
+        // Resolver nome da etapa: verificar stage_name contra nome E legacy_key
+        const matchedStage = stages.find(s => 
+          s.nome === lead.stage_name || 
+          (s.legacy_key && s.legacy_key === lead.stage_name) ||
+          (s.legacy_key && s.legacy_key === lead.etapa)
+        );
+        const etapaNome = matchedStage?.nome || lead.stage_name || lead.etapa;
 
         if (etapaNome && lead.lead_tag_relations) {
           lead.lead_tag_relations.forEach((relation: any) => {
