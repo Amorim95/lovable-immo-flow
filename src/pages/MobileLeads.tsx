@@ -231,14 +231,8 @@ export default function MobileLeads() {
     }
 
     // Filtro de data
-    let matchesDate = true;
-    if (dateFilter !== 'periodo-total') {
-      const dateRange = getDateRangeFromFilter(dateFilter, customDateRange);
-      if (dateRange) {
-        const leadDate = lead.dataCriacao;
-        matchesDate = leadDate >= dateRange.from && leadDate <= dateRange.to;
-      }
-    }
+    // Filtro de data já aplicado no backend via useLeadsOptimized
+    const matchesDate = true;
 
     return matchesSearch && matchesUser && matchesTeam && matchesStage && matchesDate && matchesTags;
   });
