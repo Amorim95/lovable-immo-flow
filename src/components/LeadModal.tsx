@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { Lead, Atividade } from "@/types/crm";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAutoRepiqueSettings } from "@/hooks/useAutoRepiqueSettings";
+import { RepiqueTimer } from "@/components/RepiqueTimer";
 import {
   Dialog,
   DialogContent,
