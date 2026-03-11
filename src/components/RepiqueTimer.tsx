@@ -1,12 +1,10 @@
 import { useState, useEffect, memo } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, Check } from 'lucide-react';
 
 interface RepiqueTimerProps {
   assignedAt: string;
   repiqueMinutes: number;
-  /** If true, WhatsApp contact was already made — hide the timer */
   contacted: boolean;
-  /** repique_count >= 3 means no more repiques */
   repiqueCount: number;
 }
 
@@ -34,15 +32,38 @@ export const RepiqueTimer = memo(function RepiqueTimer({
     return () => clearInterval(interval);
   }, [assignedAt, repiqueMinutes, contacted, repiqueCount]);
 
-  if (contacted || repiqueCount >= 3 || secondsLeft === null) return null;
+  // Lead foi atendido (contato WhatsApp feito)
+  if (contacted) {
+    return (
+      <span
+        className="inline-flex items-center gap-0.5 text-xs font-semibold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400"
+        title="Lead atendido"
+      >
+        <Check className="w-3.5 h-3.5" strokeWidth={3} />
+      </span>
+    );
+  }
+
+  // Lead atingiu 3 repiques — não será mais redistribuído
+  if (repiqueCount >= 3) {
+    return (
+      <span
+        className="inline-flex items-center gap-0.5 text-xs font-mono font-semibold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-400"
+        title="Lead redistribuído 3 vezes — limite atingido"
+      >
+        3X
+      </span>
+    );
+  }
+
+  if (secondsLeft === null) return null;
 
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
   const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
-  // Color states
-  const isWarning = secondsLeft <= 120 && secondsLeft > 60; // ≤2min
-  const isCritical = secondsLeft <= 60; // ≤1min
+  const isWarning = secondsLeft <= 120 && secondsLeft > 60;
+  const isCritical = secondsLeft <= 60;
   const isExpired = secondsLeft === 0;
 
   let colorClasses = 'text-muted-foreground bg-muted/50';
