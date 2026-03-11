@@ -41,7 +41,7 @@ const formatDate = (date: Date) => {
   });
 };
 
-export const LeadCard = memo(function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate, canTransfer = false }: LeadCardProps) {
+export const LeadCard = memo(function LeadCard({ lead, onClick, onUpdate, userId, onOptimisticUpdate, canTransfer = false, autoRepiqueEnabled = false, autoRepiqueMinutes = 5 }: LeadCardProps) {
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
   const handleWhatsAppClick = useCallback(async (telefone: string, e: React.MouseEvent) => {
