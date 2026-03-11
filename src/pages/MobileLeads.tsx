@@ -522,6 +522,43 @@ export default function MobileLeads() {
                 selectedTagIds={selectedTagIds}
                 onTagChange={setSelectedTagIds}
               />
+
+              {/* Botões Salvar / Remover filtro */}
+              <div className="flex gap-2 mt-4 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 text-primary"
+                  onClick={() => {
+                    saveFilters({
+                      dateFilter,
+                      customDateRange: customDateRange ? { from: customDateRange.from.toISOString(), to: customDateRange.to.toISOString() } : undefined,
+                      selectedUserId,
+                      selectedTeamId,
+                      selectedTagIds,
+                      selectedStageKey: selectedStage,
+                    });
+                    toast.success("Filtro salvo com sucesso!");
+                  }}
+                >
+                  <Save className="w-4 h-4 mr-1" />
+                  Salvar filtro
+                </Button>
+                {hasSavedFilter && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive"
+                    onClick={() => {
+                      clearSavedFilters();
+                      toast.success("Filtro salvo removido!");
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Remover
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </div>
