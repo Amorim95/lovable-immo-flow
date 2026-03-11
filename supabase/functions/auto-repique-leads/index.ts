@@ -67,7 +67,17 @@ Deno.serve(async (req) => {
       
       if (!company_id) continue;
 
-      console.log(`Processando empresa: ${company_id} (timeout: ${auto_repique_minutes} min)`);
+      // Limite: só processar leads criados a partir de ontem (meia-noite horário Brasil)
+      const now = new Date();
+      const brazilOffset = -3; // UTC-3
+      const brazilNow = new Date(now.getTime() + brazilOffset * 60 * 60 * 1000);
+      const yesterdayMidnight = new Date(brazilNow);
+      yesterdayMidnight.setDate(yesterdayMidnight.getDate() - 1);
+      yesterdayMidnight.setHours(0, 0, 0, 0);
+      // Converter de volta para UTC
+      const cutoffDate = new Date(yesterdayMidnight.getTime() - brazilOffset * 60 * 60 * 1000);
+
+      console.log(`Processando empresa: ${company_id} (timeout: ${auto_repique_minutes} min, cutoff: ${cutoffDate.toISOString()})`);
 
       // ========================================
       // FASE 1: AVISOS (2 minutos antes do timeout)
