@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lead } from "@/types/crm";
 import { KanbanBoard } from "@/components/KanbanBoard";
