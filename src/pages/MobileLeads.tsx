@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lead } from "@/types/crm";
-import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
+import { useLeadsOptimized, LeadDateFilter } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { useLeadStages } from "@/hooks/useLeadStages";
@@ -32,7 +32,18 @@ interface Equipe {
 
 export default function MobileLeads() {
   const navigate = useNavigate();
-  const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
+  // Date filter state must be declared before useLeadsOptimized
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
+
+  // Computar filtro de data para o backend
+  const backendDateFilter = useMemo(() => {
+    const range = getDateRangeFromFilter(dateFilter, customDateRange);
+    if (!range) return undefined;
+    return { from: range.from.toISOString(), to: range.to.toISOString() };
+  }, [dateFilter, customDateRange]);
+
+  const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized(backendDateFilter);
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
   const { user } = useAuth();
   const quote = useDailyQuote();
@@ -64,9 +75,7 @@ export default function MobileLeads() {
   const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter, isMatchingSaved } = useSavedFilters("mobile-leads");
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
-  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -222,14 +231,8 @@ export default function MobileLeads() {
     }
 
     // Filtro de data
-    let matchesDate = true;
-    if (dateFilter !== 'periodo-total') {
-      const dateRange = getDateRangeFromFilter(dateFilter, customDateRange);
-      if (dateRange) {
-        const leadDate = lead.dataCriacao;
-        matchesDate = leadDate >= dateRange.from && leadDate <= dateRange.to;
-      }
-    }
+    // Filtro de data já aplicado no backend via useLeadsOptimized
+    const matchesDate = true;
 
     return matchesSearch && matchesUser && matchesTeam && matchesStage && matchesDate && matchesTags;
   });

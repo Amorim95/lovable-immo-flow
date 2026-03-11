@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lead } from "@/types/crm";
 import { KanbanBoard } from "@/components/KanbanBoard";
@@ -8,7 +8,7 @@ import { NewLeadModal } from "@/components/NewLeadModal";
 import { TeamUserFilters } from "@/components/TeamUserFilters";
 import { TagFilter } from "@/components/TagFilter";
 import { StageFilter } from "@/components/StageFilter";
-import { useLeadsOptimized } from "@/hooks/useLeadsOptimized";
+import { useLeadsOptimized, LeadDateFilter } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
@@ -31,29 +31,8 @@ const Index = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { user } = useAuth();
-  const {
-    leads,
-    loading,
-    error,
-    refreshLeads,
-    updateLeadOptimistic
-  } = useLeadsOptimized();
-  const {
-    isAdmin,
-    isGestor,
-    isCorretor,
-    isDono,
-    loading: roleLoading
-  } = useUserRole();
-  const {
-    managedTeamId,
-    loading: teamLoading
-  } = useManagerTeam();
-  
-  const dailyQuote = useDailyQuote();
-  const { enabled: autoRepiqueEnabled, minutes: autoRepiqueMinutes } = useAutoRepiqueSettings();
-  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter, isMatchingSaved } = useSavedFilters("leads");
-  
+
+  // State de filtros (declarados antes do hook para poder passar dateFilter ao backend)
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -67,6 +46,38 @@ const Index = () => {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedStageKey, setSelectedStageKey] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Computar filtro de data para o backend
+  const backendDateFilter = useMemo<LeadDateFilter | undefined>(() => {
+    const range = getDateRangeFromFilter(dateFilter, customDateRange);
+    if (!range) return undefined;
+    return {
+      from: range.from.toISOString(),
+      to: range.to.toISOString(),
+    };
+  }, [dateFilter, customDateRange]);
+
+  const {
+    leads,
+    loading,
+    error,
+    refreshLeads,
+    updateLeadOptimistic
+  } = useLeadsOptimized(backendDateFilter);
+  const {
+    isAdmin,
+    isGestor,
+    isCorretor,
+    isDono,
+    loading: roleLoading
+  } = useUserRole();
+  const {
+    managedTeamId,
+    loading: teamLoading
+  } = useManagerTeam();
+  const dailyQuote = useDailyQuote();
+  const { enabled: autoRepiqueEnabled, minutes: autoRepiqueMinutes } = useAutoRepiqueSettings();
+  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter, isMatchingSaved } = useSavedFilters("leads");
 
   // Carregar filtros salvos ao montar
   useEffect(() => {
@@ -184,8 +195,8 @@ const Index = () => {
     const matchesSearch = lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
       (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) || 
       lead.corretor.toLowerCase().includes(searchTerm.toLowerCase());
-    const dateRange = getDateRangeFromFilter(dateFilter, customDateRange);
-    const matchesDate = !dateRange || (lead.dataCriacao >= dateRange.from && lead.dataCriacao <= dateRange.to);
+    // Filtro de data já é aplicado no backend via useLeadsOptimized
+    const matchesDate = true;
 
     // Filtro por usuário (apenas para admin, gestor e dono)
     let matchesUser = true;
