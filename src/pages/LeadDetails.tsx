@@ -69,7 +69,7 @@ export default function LeadDetails() {
       // Registrar visualização do lead
       registerLeadView(lead);
     }
-  }, [lead]);
+  }, [lead, stages]);
 
   // Função para registrar visualização do lead
   const registerLeadView = async (leadData: Lead) => {
