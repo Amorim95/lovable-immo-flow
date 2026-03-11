@@ -58,7 +58,7 @@ export default function MobileLeads() {
     return stageMap[stageName]?.nome || stageName;
   };
   const { managedTeamId, loading: teamLoading } = useManagerTeam();
-  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter } = useSavedFilters("mobile-leads");
+  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter, isMatchingSaved } = useSavedFilters("mobile-leads");
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
@@ -525,26 +525,32 @@ export default function MobileLeads() {
 
               {/* Botões Salvar / Remover filtro */}
               <div className="flex gap-2 mt-4 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={`flex-1 ${hasSavedFilter ? "text-muted-foreground" : "text-primary"}`}
-                  disabled={hasSavedFilter}
-                  onClick={() => {
-                    saveFilters({
-                      dateFilter,
-                      customDateRange: customDateRange ? { from: customDateRange.from.toISOString(), to: customDateRange.to.toISOString() } : undefined,
-                      selectedUserId,
-                      selectedTeamId,
-                      selectedTagIds,
-                      selectedStageKey: selectedStage,
-                    });
-                    toast.success("Filtro salvo com sucesso!");
-                  }}
-                >
-                  <Save className="w-4 h-4 mr-1" />
-                  {hasSavedFilter ? "Filtro salvo" : "Salvar filtro"}
-                </Button>
+                {(() => {
+                  const currentFilters = {
+                    dateFilter,
+                    customDateRange: customDateRange ? { from: customDateRange.from.toISOString(), to: customDateRange.to.toISOString() } : undefined,
+                    selectedUserId,
+                    selectedTeamId,
+                    selectedTagIds,
+                    selectedStageKey: selectedStage,
+                  };
+                  const isSaved = isMatchingSaved(currentFilters);
+                  return (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={`flex-1 ${isSaved ? "text-muted-foreground" : "text-primary"}`}
+                      disabled={isSaved}
+                      onClick={() => {
+                        saveFilters(currentFilters);
+                        toast.success("Filtro salvo com sucesso!");
+                      }}
+                    >
+                      <Save className="w-4 h-4 mr-1" />
+                      {isSaved ? "Filtro salvo" : "Salvar filtro"}
+                    </Button>
+                  );
+                })()}
                 {/* Limpar filtros + remover salvo */}
                 <Button
                   variant="ghost"

@@ -52,7 +52,7 @@ const Index = () => {
   
   const dailyQuote = useDailyQuote();
   const { enabled: autoRepiqueEnabled, minutes: autoRepiqueMinutes } = useAutoRepiqueSettings();
-  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter } = useSavedFilters("leads");
+  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter, isMatchingSaved } = useSavedFilters("leads");
   
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -403,26 +403,32 @@ const Index = () => {
               )}
 
               {/* Botão Salvar Filtros */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  saveFilters({
-                    dateFilter,
-                    customDateRange: customDateRange ? { from: customDateRange.from.toISOString(), to: customDateRange.to.toISOString() } : undefined,
-                    selectedUserId,
-                    selectedTeamId,
-                    selectedTagIds,
-                    selectedStageKey,
-                  });
-                  toast.success("Filtro salvo com sucesso!");
-                }}
-                className={hasSavedFilter ? "text-muted-foreground" : "text-primary hover:text-primary"}
-                disabled={hasSavedFilter}
-              >
-                <Save className="w-4 h-4 mr-1" />
-                {hasSavedFilter ? "Filtro salvo" : "Salvar filtro"}
-              </Button>
+              {(() => {
+                const currentFilters = {
+                  dateFilter,
+                  customDateRange: customDateRange ? { from: customDateRange.from.toISOString(), to: customDateRange.to.toISOString() } : undefined,
+                  selectedUserId,
+                  selectedTeamId,
+                  selectedTagIds,
+                  selectedStageKey,
+                };
+                const isSaved = isMatchingSaved(currentFilters);
+                return (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      saveFilters(currentFilters);
+                      toast.success("Filtro salvo com sucesso!");
+                    }}
+                    className={isSaved ? "text-muted-foreground" : "text-primary hover:text-primary"}
+                    disabled={isSaved}
+                  >
+                    <Save className="w-4 h-4 mr-1" />
+                    {isSaved ? "Filtro salvo" : "Salvar filtro"}
+                  </Button>
+                );
+              })()}
 
               {/* Botão Limpar Filtros + remover salvo */}
               {(dateFilter !== 'periodo-total' || selectedTeamId || selectedUserId || selectedTagIds.length > 0 || selectedStageKey) && (

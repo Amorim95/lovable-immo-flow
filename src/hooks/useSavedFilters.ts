@@ -19,17 +19,20 @@ export function useSavedFilters(page: string = "leads") {
   const storageKey = `${STORAGE_KEY_PREFIX}${page}_${user?.id || "anonymous"}`;
 
   const [hasSavedFilter, setHasSavedFilter] = useState(false);
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(null);
 
-  // Check if saved filter exists
   useEffect(() => {
     if (!user?.id) return;
     const saved = localStorage.getItem(storageKey);
     setHasSavedFilter(!!saved);
+    setSavedSnapshot(saved);
   }, [storageKey, user?.id]);
 
   const saveFilters = useCallback((filters: SavedFilters) => {
-    localStorage.setItem(storageKey, JSON.stringify(filters));
+    const json = JSON.stringify(filters);
+    localStorage.setItem(storageKey, json);
     setHasSavedFilter(true);
+    setSavedSnapshot(json);
   }, [storageKey]);
 
   const loadFilters = useCallback((): SavedFilters | null => {
@@ -45,7 +48,13 @@ export function useSavedFilters(page: string = "leads") {
   const clearSavedFilters = useCallback(() => {
     localStorage.removeItem(storageKey);
     setHasSavedFilter(false);
+    setSavedSnapshot(null);
   }, [storageKey]);
 
-  return { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter };
+  const isMatchingSaved = useCallback((currentFilters: SavedFilters): boolean => {
+    if (!savedSnapshot) return false;
+    return JSON.stringify(currentFilters) === savedSnapshot;
+  }, [savedSnapshot]);
+
+  return { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter, isMatchingSaved };
 }
