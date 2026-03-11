@@ -68,7 +68,13 @@ export const RepiqueTimer = memo(function RepiqueTimer({
   const isWarning = !isExpired && secondsLeft <= 120 && secondsLeft > 60;
   const isCritical = !isExpired && secondsLeft <= 60;
 
+  // Prefixo com contagem de repiques (1X, 2X, 3X)
+  const repiquePrefix = repiqueCount > 0 ? `${repiqueCount}X ` : '';
+
   let colorClasses = 'text-muted-foreground bg-muted/50';
+  if (repiqueCount > 0 && !isExpired && !isWarning && !isCritical) {
+    colorClasses = 'text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/30';
+  }
   if (isWarning) {
     colorClasses = 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950/30';
   }
@@ -85,7 +91,7 @@ export const RepiqueTimer = memo(function RepiqueTimer({
       title={isExpired ? 'Tempo esgotado — aguardando redistribuição' : `Tempo restante para atendimento: ${timeStr}`}
     >
       <Clock className="w-3 h-3" />
-      {isExpired ? '0:00' : timeStr}
+      {isExpired ? `${repiquePrefix}0:00` : `${repiquePrefix}${timeStr}`}
     </span>
   );
 });
