@@ -195,8 +195,8 @@ const Index = () => {
     const matchesSearch = lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
       (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) || 
       lead.corretor.toLowerCase().includes(searchTerm.toLowerCase());
-    const dateRange = getDateRangeFromFilter(dateFilter, customDateRange);
-    const matchesDate = !dateRange || (lead.dataCriacao >= dateRange.from && lead.dataCriacao <= dateRange.to);
+    // Filtro de data já é aplicado no backend via useLeadsOptimized
+    const matchesDate = true;
 
     // Filtro por usuário (apenas para admin, gestor e dono)
     let matchesUser = true;
