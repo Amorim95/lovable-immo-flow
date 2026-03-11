@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { Lead, Atividade } from "@/types/crm";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAutoRepiqueSettings } from "@/hooks/useAutoRepiqueSettings";
+import { RepiqueTimer } from "@/components/RepiqueTimer";
 import {
   Dialog,
   DialogContent,
@@ -41,6 +43,7 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { stages, loading: stagesLoading } = useLeadStages();
+  const { enabled: autoRepiqueEnabled, minutes: autoRepiqueMinutes } = useAutoRepiqueSettings();
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Partial<Lead>>({});
   const [newActivity, setNewActivity] = useState("");
@@ -346,6 +349,19 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                   lead.nome
                 )}
               </DialogTitle>
+
+              {/* Timer / ✅ / 3X indicator */}
+              {(lead as any).assignedAt && (
+                <div className="flex-shrink-0">
+                  <RepiqueTimer
+                    assignedAt={(lead as any).assignedAt}
+                    repiqueMinutes={autoRepiqueMinutes}
+                    contacted={!!(lead as any).primeiroContatoWhatsapp}
+                    repiqueCount={(lead as any).repiqueCount ?? 0}
+                    showCountdown={autoRepiqueEnabled}
+                  />
+                </div>
+              )}
               
               {/* Tags no topo direito - com espaço para o botão de fechar */}
               <div className="flex-shrink-0 max-w-xs mr-10">
