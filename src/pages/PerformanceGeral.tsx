@@ -265,7 +265,7 @@ const PerformanceGeral = () => {
                 })}
                 {stages.length === 0 && (
                   <tr>
-                    <td colSpan={Object.keys(performanceGeral.totalPorEtiqueta).length + 2} 
+                    <td colSpan={Object.keys(performanceGeral.totalPorEtiqueta).length + 3} 
                         className="text-center py-4 text-muted-foreground">
                       Nenhuma etapa configurada
                     </td>
