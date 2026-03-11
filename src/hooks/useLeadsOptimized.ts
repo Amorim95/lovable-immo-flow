@@ -16,6 +16,9 @@ interface LeadsData {
   updated_at: string;
   user_id?: string;
   atividades?: any;
+  assigned_at?: string;
+  primeiro_contato_whatsapp?: string;
+  repique_count?: number;
   user?: {
     name: string;
     equipe_id?: string;
@@ -71,6 +74,9 @@ export function useLeadsOptimized() {
             updated_at,
             user_id,
             atividades,
+            assigned_at,
+            primeiro_contato_whatsapp,
+            repique_count,
             user:users(name, equipe_id),
             lead_tag_relations(
               lead_tags(

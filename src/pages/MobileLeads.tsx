@@ -128,7 +128,7 @@ export default function MobileLeads() {
   };
 
   // Converter dados do Supabase para formato da interface
-  const convertedLeads: Lead[] = leads.map(lead => ({
+  const convertedLeads: (Lead & { assignedAt?: string; primeiroContatoWhatsapp?: string; repiqueCount?: number })[] = leads.map(lead => ({
     id: lead.id,
     nome: lead.nome,
     telefone: lead.telefone,
@@ -148,7 +148,10 @@ export default function MobileLeads() {
       corretor: atividade.corretor
     })),
     status: 'ativo',
-    stage_name: lead.stage_name || undefined
+    stage_name: lead.stage_name || undefined,
+    assignedAt: lead.assigned_at || undefined,
+    primeiroContatoWhatsapp: lead.primeiro_contato_whatsapp || undefined,
+    repiqueCount: lead.repique_count ?? 0
   }));
 
   // Aplicar filtros
