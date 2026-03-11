@@ -684,6 +684,16 @@ export default function MobileLeads() {
                   </div>
                 )}
               </div>
+              
+              <div className="mt-2">
+                <RepiqueTimer
+                  assignedAt={lead.assignedAt || lead.dataCriacao.toISOString()}
+                  repiqueMinutes={repiqueMinutes}
+                  contacted={!!lead.primeiroContatoWhatsapp}
+                  repiqueCount={lead.repiqueCount || 0}
+                  showCountdown={repiqueEnabled}
+                />
+              </div>
             </div>
             ))}
             
