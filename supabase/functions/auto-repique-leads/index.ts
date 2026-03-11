@@ -252,42 +252,8 @@ Deno.serve(async (req) => {
               }
             });
 
-          // Enviar notificação push para o novo usuário
-          try {
-            await supabase.functions.invoke('send-push-notification', {
-              body: {
-                userId: nextUser.id,
-                title: '🔔 Alerta de Oportunidade 🔔',
-                body: `O lead ${lead.nome} não foi atendido por outro corretor no tempo limite e foi enviado agora para você atender!`,
-                data: {
-                  leadId: lead.id,
-                  url: '/'
-                }
-              }
-            });
-            console.log(`Notificação enviada para novo usuário ${nextUser.id}`);
-          } catch (notifError) {
-            console.error('Erro ao enviar notificação para novo usuário:', notifError);
-          }
-
-          // Enviar notificação push para o usuário antigo (que perdeu o lead)
-          try {
-            await supabase.functions.invoke('send-push-notification', {
-              body: {
-                userId: lead.user_id,
-                title: '💔 Acabou o tempo 💔',
-                body: `Seu tempo limite de atender o lead: ${lead.nome} foi expirado e ele foi para outro Corretor.`,
-                data: {
-                  leadId: lead.id,
-                  url: '/',
-                  type: 'lead_lost'
-                }
-              }
-            });
-            console.log(`Notificação de perda enviada para usuário antigo ${lead.user_id}`);
-          } catch (notifError) {
-            console.error('Erro ao enviar notificação para usuário antigo:', notifError);
-          }
+          // Notificações de repique desativadas (tanto para novo usuário quanto para usuário antigo)
+          console.log(`Repique processado silenciosamente: lead ${lead.id} transferido de ${lead.user_id} para ${nextUser.id}`);
 
           totalProcessed++;
           results.push({
