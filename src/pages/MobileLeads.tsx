@@ -32,7 +32,18 @@ interface Equipe {
 
 export default function MobileLeads() {
   const navigate = useNavigate();
-  const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized();
+  // Date filter state must be declared before useLeadsOptimized
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
+
+  // Computar filtro de data para o backend
+  const backendDateFilter = useMemo(() => {
+    const range = getDateRangeFromFilter(dateFilter, customDateRange);
+    if (!range) return undefined;
+    return { from: range.from.toISOString(), to: range.to.toISOString() };
+  }, [dateFilter, customDateRange]);
+
+  const { leads, loading, error, refreshLeads, updateLeadOptimistic } = useLeadsOptimized(backendDateFilter);
   const { isAdmin, isGestor, isCorretor, loading: roleLoading } = useUserRole();
   const { user } = useAuth();
   const quote = useDailyQuote();
