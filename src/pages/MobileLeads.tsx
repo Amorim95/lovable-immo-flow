@@ -619,6 +619,7 @@ export default function MobileLeads() {
                     />
                   </div>
                   <p className="text-sm text-muted-foreground truncate">{lead.telefone}</p>
+                </div>
                 <div className="relative">
                   <Select
                     value={lead.etapa}
