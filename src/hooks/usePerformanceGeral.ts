@@ -157,9 +157,11 @@ export function usePerformanceGeral(dateRange?: DateRange, teamId?: string | nul
       stages.forEach(stage => {
         const count = leadsData?.filter(lead => {
           if (lead.stage_name) {
-            return lead.stage_name === stage.nome;
+            // Comparar com nome da etapa E com legacy_key (leads antigos usam formato slug)
+            return lead.stage_name === stage.nome || 
+                   (stage.legacy_key && lead.stage_name === stage.legacy_key);
           }
-          // Fallback para compatibilidade
+          // Fallback para compatibilidade com campo etapa
           return stage.legacy_key && lead.etapa === stage.legacy_key;
         }).length || 0;
         leadsPorEtapa[stage.nome] = count;
@@ -174,7 +176,8 @@ export function usePerformanceGeral(dateRange?: DateRange, teamId?: string | nul
       
       const vendas = leadsData?.filter(lead => {
         if (lead.stage_name && vendaStage) {
-          return lead.stage_name === vendaStage.nome;
+          return lead.stage_name === vendaStage.nome || 
+                 (vendaStage.legacy_key && lead.stage_name === vendaStage.legacy_key);
         }
         return lead.etapa === 'vendas-fechadas';
       }).length || 0;
@@ -209,9 +212,13 @@ export function usePerformanceGeral(dateRange?: DateRange, teamId?: string | nul
 
       // Processar cada lead e suas etiquetas
       leadsData?.forEach(lead => {
-        const etapaNome = lead.stage_name || 
-          stages.find(s => s.legacy_key === lead.etapa)?.nome || 
-          lead.etapa;
+        // Resolver nome da etapa: verificar stage_name contra nome E legacy_key
+        const matchedStage = stages.find(s => 
+          s.nome === lead.stage_name || 
+          (s.legacy_key && s.legacy_key === lead.stage_name) ||
+          (s.legacy_key && s.legacy_key === lead.etapa)
+        );
+        const etapaNome = matchedStage?.nome || lead.stage_name || lead.etapa;
 
         if (etapaNome && lead.lead_tag_relations) {
           lead.lead_tag_relations.forEach((relation: any) => {
