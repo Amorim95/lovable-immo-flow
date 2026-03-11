@@ -239,12 +239,16 @@ const PerformanceGeral = () => {
                     <th key={etiqueta} className="text-center py-3 px-4 font-medium">{etiqueta}</th>
                   ))}
                   <th className="text-right py-3 px-4 font-medium">Total</th>
+                  <th className="text-right py-3 px-4 font-medium">%</th>
                 </tr>
               </thead>
               <tbody>
                 {stages.map(stage => {
                   const etapaData = performanceGeral.etiquetasPorEtapa[stage.nome] || {};
                   const totalEtapa = performanceGeral.leadsPorEtapa[stage.nome] || 0;
+                  const percentual = performanceGeral.leadsTotais > 0 
+                    ? ((totalEtapa / performanceGeral.leadsTotais) * 100).toFixed(1) 
+                    : '0.0';
                   
                   return (
                     <tr key={stage.id} className="border-b hover:bg-muted/50">
@@ -255,12 +259,13 @@ const PerformanceGeral = () => {
                         </td>
                       ))}
                       <td className="text-right py-3 px-4 font-medium">{totalEtapa}</td>
+                      <td className="text-right py-3 px-4 font-medium">{percentual}%</td>
                     </tr>
                   );
                 })}
                 {stages.length === 0 && (
                   <tr>
-                    <td colSpan={Object.keys(performanceGeral.totalPorEtiqueta).length + 2} 
+                    <td colSpan={Object.keys(performanceGeral.totalPorEtiqueta).length + 3} 
                         className="text-center py-4 text-muted-foreground">
                       Nenhuma etapa configurada
                     </td>
