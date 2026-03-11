@@ -147,6 +147,26 @@ export function LeadTransferModal({
 
       await Promise.all(transferPromises);
 
+      // Enviar notificação push para o novo usuário
+      if (successCount > 0 && selectedUserId) {
+        try {
+          const leadNamesText = successCount === 1 
+            ? leadNames[0] 
+            : `${successCount} leads`;
+          
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              userId: selectedUserId,
+              title: '🔔 Opa! Novo Lead!',
+              body: `Corre lá, que o lead ${leadNamesText} está esperando seu atendimento!`,
+              data: { url: '/' }
+            }
+          });
+        } catch (notifError) {
+          console.error('Erro ao enviar notificação push:', notifError);
+        }
+      }
+
       // Feedback baseado no resultado
       if (successCount === totalLeads) {
         toast({

@@ -222,22 +222,8 @@ Deno.serve(async (req) => {
               }
             });
 
-          try {
-            await supabase.functions.invoke('send-push-notification', {
-              body: {
-                userId: nextUser.id,
-                title: '🔔 Opa! Novo Lead!',
-                body: `Corre lá, que o lead ${lead.nome} está esperando seu atendimento!`,
-                data: {
-                  leadId: lead.id,
-                  url: '/'
-                }
-              }
-            });
-            console.log(`Notificação enviada para novo usuário ${nextUser.id}`);
-          } catch (notifError) {
-            console.error('Erro ao enviar notificação para novo usuário:', notifError);
-          }
+          // Notificação push removida do repique automático — 
+          // apenas webhooks e transferências manuais enviam push
 
           totalProcessed++;
           results.push({
