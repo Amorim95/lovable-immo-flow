@@ -1,51 +1,14 @@
-import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
 import { useDashboardMetrics } from "@/hooks/useDashboardMetrics";
-import { useLeadStages } from "@/hooks/useLeadStages";
 import { 
   Calendar,
   Users,
-  Clock,
-  UserCheck,
-  CalendarCheck,
-  TrendingUp,
-  Loader2
 } from "lucide-react";
 
 const Dashboards = () => {
   const navigate = useNavigate();
-  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
-  const [customDateRange, setCustomDateRange] = useState<DateRange>();
-  const { stages } = useLeadStages();
-
-  // Calcular o range de data baseado no filtro selecionado
-  const dateRange = useMemo(() => {
-    return getDateRangeFromFilter(dateFilter, customDateRange);
-  }, [dateFilter, customDateRange]);
-
-  // Buscar métricas reais do banco de dados
-  const { metrics, loading, error } = useDashboardMetrics(dateRange);
-
-  // Função para obter ícone e cor com base no nome da etapa
-  const getStageIcon = (stageName: string) => {
-    const lowerName = stageName.toLowerCase();
-    if (lowerName.includes('aguardando')) return { icon: Clock, color: 'yellow' };
-    if (lowerName.includes('visita')) return { icon: CalendarCheck, color: 'purple' };
-    if (lowerName.includes('venda') || lowerName.includes('fechada')) return { icon: TrendingUp, color: 'green' };
-    if (lowerName.includes('contato') || lowerName.includes('tentativa')) return { icon: UserCheck, color: 'blue' };
-    return { icon: Users, color: 'gray' };
-  };
-
-
-  const handleDateFilterChange = (option: DateFilterOption, customRange?: DateRange) => {
-    setDateFilter(option);
-    if (customRange) {
-      setCustomDateRange(customRange);
-    }
-  };
-
+  const { metrics, loading } = useDashboardMetrics(null);
   return (
     <div className="space-y-6">
       <div>
