@@ -41,6 +41,8 @@ const dateFilterOptions = [
   { value: 'ultimos-15-dias', label: 'Últimos 15 dias' },
   { value: 'ultimos-30-dias', label: 'Últimos 30 dias' },
   { value: 'ultimos-3-meses', label: 'Últimos 3 meses' },
+  { value: 'ultimos-6-meses', label: 'Últimos 6 meses' },
+  { value: 'este-mes', label: 'Este mês' },
   { value: 'mes-passado', label: 'Mês passado' },
   { value: 'periodo-total', label: 'Período Total' },
   { value: 'personalizado', label: 'Personalizado' },
