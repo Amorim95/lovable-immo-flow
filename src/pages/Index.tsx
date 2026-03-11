@@ -423,23 +423,7 @@ const Index = () => {
                 Salvar filtro
               </Button>
 
-              {/* Botão Remover Filtro Salvo */}
-              {hasSavedFilter && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    clearSavedFilters();
-                    toast.success("Filtro salvo removido!");
-                  }}
-                  className="text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Remover salvo
-                </Button>
-              )}
-
-              {/* Botão Limpar Filtros */}
+              {/* Botão Limpar Filtros + remover salvo */}
               {(dateFilter !== 'periodo-total' || selectedTeamId || selectedUserId || selectedTagIds.length > 0 || selectedStageKey) && (
                 <Button
                   variant="ghost"
@@ -451,6 +435,7 @@ const Index = () => {
                     setSelectedUserId(null);
                     setSelectedTagIds([]);
                     setSelectedStageKey(null);
+                    clearSavedFilters();
                   }}
                   className="text-muted-foreground hover:text-foreground"
                 >
