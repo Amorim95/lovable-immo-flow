@@ -214,6 +214,20 @@ export function getDateRangeFromFilter(option: DateFilterOption, customRange?: D
         to: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
       };
     
+    case 'ultimos-6-meses':
+      const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+      return {
+        from: sixMonthsAgo,
+        to: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
+      };
+    
+    case 'este-mes':
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      return {
+        from: firstDayOfMonth,
+        to: new Date(today.getTime() + 24 * 60 * 60 * 1000 - 1)
+      };
+    
     case 'mes-passado':
       const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
