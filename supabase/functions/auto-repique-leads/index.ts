@@ -129,6 +129,7 @@ Deno.serve(async (req) => {
         .select('id, nome, user_id, company_id, repique_count')
         .eq('company_id', company_id)
         .is('primeiro_contato_whatsapp', null)
+        .gte('created_at', cutoffDate.toISOString())
         .lt('assigned_at', timeLimit.toISOString())
         .lt('repique_count', 3);
 
