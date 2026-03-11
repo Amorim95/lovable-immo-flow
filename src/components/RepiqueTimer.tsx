@@ -6,18 +6,20 @@ interface RepiqueTimerProps {
   repiqueMinutes: number;
   contacted: boolean;
   repiqueCount: number;
+  showCountdown?: boolean;
 }
 
 export const RepiqueTimer = memo(function RepiqueTimer({
   assignedAt,
   repiqueMinutes,
   contacted,
-  repiqueCount
+  repiqueCount,
+  showCountdown = true
 }: RepiqueTimerProps) {
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
   useEffect(() => {
-    if (contacted || repiqueCount >= 3) return;
+    if (contacted || repiqueCount >= 3 || !showCountdown) return;
 
     const deadline = new Date(assignedAt).getTime() + repiqueMinutes * 60 * 1000;
 
