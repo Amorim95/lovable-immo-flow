@@ -608,16 +608,7 @@ export default function MobileLeads() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="font-medium text-foreground truncate">{lead.nome}</h3>
-                    <RepiqueTimer
-                      assignedAt={lead.assignedAt || lead.dataCriacao.toISOString()}
-                      repiqueMinutes={repiqueMinutes}
-                      contacted={!!lead.primeiroContatoWhatsapp}
-                      repiqueCount={lead.repiqueCount || 0}
-                      showCountdown={repiqueEnabled}
-                    />
-                  </div>
+                  <h3 className="font-medium text-foreground truncate">{lead.nome}</h3>
                   <p className="text-sm text-muted-foreground truncate">{lead.telefone}</p>
                 </div>
                 <div className="relative">
@@ -692,6 +683,16 @@ export default function MobileLeads() {
                     })}
                   </div>
                 )}
+              </div>
+              
+              <div className="mt-2">
+                <RepiqueTimer
+                  assignedAt={lead.assignedAt || lead.dataCriacao.toISOString()}
+                  repiqueMinutes={repiqueMinutes}
+                  contacted={!!lead.primeiroContatoWhatsapp}
+                  repiqueCount={lead.repiqueCount || 0}
+                  showCountdown={repiqueEnabled}
+                />
               </div>
             </div>
             ))}
