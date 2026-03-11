@@ -39,7 +39,7 @@ const Index = () => {
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
   const [newLeadStage, setNewLeadStage] = useState<Lead['etapa']>('aguardando-atendimento');
   const [searchTerm, setSearchTerm] = useState('');
-  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>('ultimos-30-dias');
   const [customDateRange, setCustomDateRange] = useState<DateRange>();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
