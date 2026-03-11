@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { TagSelector } from "@/components/TagSelector";
 import { LeadTransferModal } from "@/components/LeadTransferModal";
 import { RepiqueBadge } from "@/components/RepiqueBadge";
+import { RepiqueTimer } from "@/components/RepiqueTimer";
 import { Phone, User, Calendar, ArrowRightLeft } from "lucide-react";
 
 interface LeadCardProps {
@@ -15,6 +16,8 @@ interface LeadCardProps {
   userId?: string;
   onOptimisticUpdate?: (leadId: string, updates: Partial<Lead>) => void;
   canTransfer?: boolean;
+  autoRepiqueEnabled?: boolean;
+  autoRepiqueMinutes?: number;
 }
 
 const tagConfig: Record<LeadTag, { label: string; className: string }> = {
