@@ -33,7 +33,7 @@ interface Equipe {
 export default function MobileLeads() {
   const navigate = useNavigate();
   // Date filter state must be declared before useLeadsOptimized
-  const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>('ultimos-30-dias');
   const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
 
   // Computar filtro de data para o backend
