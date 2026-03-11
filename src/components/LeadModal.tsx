@@ -393,7 +393,15 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
               <div className="space-y-4">
                 <h4 className="font-medium text-muted-foreground">Etapa do Lead</h4>
               <Select
-                  value={lead.stage_name || lead.etapa}
+                  value={(() => {
+                    const currentValue = lead.stage_name || lead.etapa;
+                    // Se o valor atual já corresponde a um nome de etapa, usar diretamente
+                    if (stages.find(s => s.nome === currentValue)) return currentValue;
+                    // Se o valor é uma legacy_key, resolver para o nome da etapa
+                    const matchByLegacy = stages.find(s => s.legacy_key === currentValue);
+                    if (matchByLegacy) return matchByLegacy.nome;
+                    return currentValue;
+                  })()}
                   onValueChange={async (value) => {
                     // Encontrar legacy_key da etapa selecionada
                     const selectedStage = stages.find(s => s.nome === value);
