@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TagSelector } from "@/components/TagSelector";
 import { LeadTransferModal } from "@/components/LeadTransferModal";
-import { RepiqueBadge } from "@/components/RepiqueBadge";
+
 import { RepiqueTimer } from "@/components/RepiqueTimer";
 import { Phone, User, Calendar, ArrowRightLeft } from "lucide-react";
 
