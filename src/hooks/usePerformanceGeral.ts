@@ -176,7 +176,8 @@ export function usePerformanceGeral(dateRange?: DateRange, teamId?: string | nul
       
       const vendas = leadsData?.filter(lead => {
         if (lead.stage_name && vendaStage) {
-          return lead.stage_name === vendaStage.nome;
+          return lead.stage_name === vendaStage.nome || 
+                 (vendaStage.legacy_key && lead.stage_name === vendaStage.legacy_key);
         }
         return lead.etapa === 'vendas-fechadas';
       }).length || 0;
