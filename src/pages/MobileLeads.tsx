@@ -528,7 +528,8 @@ export default function MobileLeads() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex-1 text-primary"
+                  className={`flex-1 ${hasSavedFilter ? "text-muted-foreground" : "text-primary"}`}
+                  disabled={hasSavedFilter}
                   onClick={() => {
                     saveFilters({
                       dateFilter,
@@ -542,7 +543,7 @@ export default function MobileLeads() {
                   }}
                 >
                   <Save className="w-4 h-4 mr-1" />
-                  Salvar filtro
+                  {hasSavedFilter ? "Filtro salvo" : "Salvar filtro"}
                 </Button>
                 {/* Limpar filtros + remover salvo */}
                 <Button
