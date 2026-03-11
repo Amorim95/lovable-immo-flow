@@ -22,9 +22,11 @@ interface KanbanBoardProps {
   onLeadClick: (lead: Lead) => void;
   onCreateLead?: (stageName: string) => void;
   onOptimisticUpdate?: (leadId: string, updates: Partial<Lead>) => void;
+  autoRepiqueEnabled?: boolean;
+  autoRepiqueMinutes?: number;
 }
 
-export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, onOptimisticUpdate }: KanbanBoardProps) {
+export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, onOptimisticUpdate, autoRepiqueEnabled, autoRepiqueMinutes }: KanbanBoardProps) {
   const [stageVisibleCounts, setStageVisibleCounts] = useState<Record<string, number>>({});
   const { stages, loading } = useLeadStages();
   const { isAdmin, isGestor } = useUserRole();
