@@ -13,7 +13,8 @@ export const RepiqueTimer = memo(function RepiqueTimer({
   assignedAt,
   repiqueMinutes,
   contacted,
-  repiqueCount
+  repiqueCount,
+  showCountdown = true
 }: RepiqueTimerProps) {
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
