@@ -67,7 +67,7 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
       let isFirstBatch = true;
 
       while (hasMore) {
-        const { data, error } = await supabase
+        let query = supabase
           .from('leads')
           .select(`
             id,
@@ -93,8 +93,18 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
               )
             )
           `)
-          .order('created_at', { ascending: false })
-          .range(from, from + pageSize - 1);
+          .order('created_at', { ascending: false });
+
+        // Aplicar filtro de data no backend quando disponível
+        const df = dateFilterRef.current;
+        if (df?.from) {
+          query = query.gte('created_at', df.from);
+        }
+        if (df?.to) {
+          query = query.lte('created_at', df.to);
+        }
+
+        const { data, error } = await query.range(from, from + pageSize - 1);
 
         if (error) {
           console.error('Error loading leads:', error);
