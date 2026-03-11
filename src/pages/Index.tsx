@@ -23,6 +23,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Badge } from "@/components/ui/badge";
 import { NotificationPromptBanner } from "@/components/NotificationPromptBanner";
 import { NotificationSoundPlayer } from "@/components/NotificationSoundPlayer";
+import { useAutoRepiqueSettings } from "@/hooks/useAutoRepiqueSettings";
 
 const Index = () => {
   const navigate = useNavigate();
