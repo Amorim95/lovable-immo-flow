@@ -422,7 +422,9 @@ const Index = () => {
               onLeadUpdate={handleLeadUpdate} 
               onLeadClick={handleLeadClick} 
               onCreateLead={handleCreateLeadInStage} 
-              onOptimisticUpdate={updateLeadOptimistic} 
+              onOptimisticUpdate={updateLeadOptimistic}
+              autoRepiqueEnabled={autoRepiqueEnabled}
+              autoRepiqueMinutes={autoRepiqueMinutes}
             />
           </div>
         )}
