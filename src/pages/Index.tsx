@@ -402,6 +402,43 @@ const Index = () => {
                 />
               )}
 
+              {/* Botão Salvar Filtros */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  saveFilters({
+                    dateFilter,
+                    customDateRange: customDateRange ? { from: customDateRange.from.toISOString(), to: customDateRange.to.toISOString() } : undefined,
+                    selectedUserId,
+                    selectedTeamId,
+                    selectedTagIds,
+                    selectedStageKey,
+                  });
+                  toast.success("Filtro salvo com sucesso!");
+                }}
+                className="text-primary hover:text-primary"
+              >
+                <Save className="w-4 h-4 mr-1" />
+                Salvar filtro
+              </Button>
+
+              {/* Botão Remover Filtro Salvo */}
+              {hasSavedFilter && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    clearSavedFilters();
+                    toast.success("Filtro salvo removido!");
+                  }}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Remover salvo
+                </Button>
+              )}
+
               {/* Botão Limpar Filtros */}
               {(dateFilter !== 'periodo-total' || selectedTeamId || selectedUserId || selectedTagIds.length > 0 || selectedStageKey) && (
                 <Button
