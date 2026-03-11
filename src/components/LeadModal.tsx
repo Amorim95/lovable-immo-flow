@@ -43,6 +43,7 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { stages, loading: stagesLoading } = useLeadStages();
+  const { enabled: autoRepiqueEnabled, minutes: autoRepiqueMinutes } = useAutoRepiqueSettings();
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Partial<Lead>>({});
   const [newActivity, setNewActivity] = useState("");
