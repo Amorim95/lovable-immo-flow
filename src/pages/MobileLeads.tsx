@@ -58,7 +58,7 @@ export default function MobileLeads() {
     return stageMap[stageName]?.nome || stageName;
   };
   const { managedTeamId, loading: teamLoading } = useManagerTeam();
-  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter } = useSavedFilters("mobile-leads");
+  const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter, isMatchingSaved } = useSavedFilters("mobile-leads");
   const [searchTerm, setSearchTerm] = useState('');
   const [isNewLeadModalOpen, setIsNewLeadModalOpen] = useState(false);
   const [dateFilter, setDateFilter] = useState<DateFilterOption>('periodo-total');
