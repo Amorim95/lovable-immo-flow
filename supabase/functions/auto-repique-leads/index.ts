@@ -127,32 +127,15 @@ Deno.serve(async (req) => {
         } else if (leadsToWarn && leadsToWarn.length > 0) {
           console.log(`Leads para aviso na empresa ${company_id}: ${leadsToWarn.length}`);
 
+          // Avisos de repique desativados - apenas log
           for (const lead of leadsToWarn) {
-            try {
-              // Enviar notificação de aviso para o usuário ATUAL
-              await supabase.functions.invoke('send-push-notification', {
-                body: {
-                  userId: lead.user_id,
-                  title: '⚠️ Em 2 min você vai perder uma oportunidade! ⚠️',
-                  body: `Se você não atender o Lead: ${lead.nome} ele será enviado para outro corretor!`,
-                  data: {
-                    leadId: lead.id,
-                    url: '/',
-                    type: 'repique_warning'
-                  }
-                }
-              });
-              console.log(`Aviso enviado para usuário ${lead.user_id} sobre lead ${lead.id}`);
-              
-              totalWarnings++;
-              warnings.push({
-                leadId: lead.id,
-                leadName: lead.nome,
-                userId: lead.user_id
-              });
-            } catch (notifError) {
-              console.error('Erro ao enviar aviso:', notifError);
-            }
+            totalWarnings++;
+            warnings.push({
+              leadId: lead.id,
+              leadName: lead.nome,
+              userId: lead.user_id
+            });
+            console.log(`Lead ${lead.id} próximo do repique (aviso silencioso)`);
           }
         }
       }
