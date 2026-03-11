@@ -276,3 +276,12 @@ All colors MUST be HSL.
   color: #4B5563;
   font-style: italic;
 }
+
+@keyframes repique-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.animate-repique-blink {
+  animation: repique-blink 0.8s ease-in-out infinite;
+}

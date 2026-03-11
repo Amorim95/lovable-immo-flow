@@ -74,6 +74,9 @@ export function useLeadsOptimized() {
             updated_at,
             user_id,
             atividades,
+            assigned_at,
+            primeiro_contato_whatsapp,
+            repique_count,
             user:users(name, equipe_id),
             lead_tag_relations(
               lead_tags(

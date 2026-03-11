@@ -126,7 +126,7 @@ const Index = () => {
   };
 
   // Converter dados do Supabase para formato da interface
-  const convertedLeads: (Lead & { userId: string; stage_order?: number })[] = leads.map(lead => ({
+  const convertedLeads: (Lead & { userId: string; stage_order?: number; assignedAt?: string; primeiroContatoWhatsapp?: string; repiqueCount?: number })[] = leads.map(lead => ({
     id: lead.id,
     nome: lead.nome,
     telefone: lead.telefone,
@@ -148,7 +148,10 @@ const Index = () => {
       corretor: atividade.corretor
     })),
     status: 'ativo',
-    userId: lead.user_id || lead.id
+    userId: lead.user_id || lead.id,
+    assignedAt: lead.assigned_at || undefined,
+    primeiroContatoWhatsapp: lead.primeiro_contato_whatsapp || undefined,
+    repiqueCount: lead.repique_count ?? 0
   }));
 
   // Extrair datas únicas dos leads para o DateFilter
