@@ -49,6 +49,7 @@ const Index = () => {
   } = useManagerTeam();
   
   const dailyQuote = useDailyQuote();
+  const { enabled: autoRepiqueEnabled, minutes: autoRepiqueMinutes } = useAutoRepiqueSettings();
   
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
