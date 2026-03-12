@@ -165,6 +165,20 @@ Deno.serve(async (req: Request) => {
       await supabase.from("lead_tag_relations").insert(tagRelations);
     }
 
+    // Save notification to history
+    try {
+      await supabase.from("notifications").insert({
+        user_id: assignedUserId,
+        company_id: companyId,
+        title: "🔔 Novo Lead!",
+        body: `${nome} - ${telefone}`,
+        type: "lead",
+        lead_id: leadId,
+      });
+    } catch (notifErr) {
+      console.error("Notification history error (non-fatal):", notifErr);
+    }
+
     // Send push notification
     try {
       const { data: subscriptions } = await supabase

@@ -242,6 +242,20 @@ Deno.serve(async (req) => {
       console.log('Etiqueta "Lead Qualificado pela IA" adicionada com sucesso');
     }
 
+    // Salvar notificação no histórico
+    try {
+      await supabase.from('notifications').insert({
+        user_id: nextUser.id,
+        company_id: companyId,
+        title: '🔔 Opa! Novo Lead!',
+        body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`,
+        type: 'lead',
+        lead_id: leadResult.lead_id,
+      });
+    } catch (notifError) {
+      console.error('Erro ao salvar notificação no histórico:', notifError);
+    }
+
     // Enviar notificação push para o usuário
     console.log('Enviando notificação push para o usuário:', nextUser.id);
     try {
