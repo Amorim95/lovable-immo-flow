@@ -99,18 +99,7 @@ const Index = () => {
   }, []);
 
   // Abrir lead via query param (ex: notificação no desktop)
-  useEffect(() => {
-    const leadId = searchParams.get('leadId');
-    if (leadId && leads.length > 0) {
-      const lead = leads.find(l => l.id === leadId);
-      if (lead) {
-        setSelectedLead(lead as unknown as Lead);
-        setIsModalOpen(true);
-      }
-      searchParams.delete('leadId');
-      setSearchParams(searchParams, { replace: true });
-    }
-  }, [searchParams, leads]);
+  const pendingLeadId = searchParams.get('leadId');
 
   // Pré-selecionar equipe gerenciada automaticamente
   useEffect(() => {
@@ -206,6 +195,19 @@ const Index = () => {
   // Extrair datas únicas dos leads para o DateFilter
   const availableDates = [...new Set(convertedLeads.map(lead => lead.dataCriacao.toDateString()))].map(dateString => new Date(dateString));
   
+  // Abrir lead via query param após conversão (ex: notificação no desktop)
+  useEffect(() => {
+    if (pendingLeadId && convertedLeads.length > 0) {
+      const lead = convertedLeads.find(l => l.id === pendingLeadId);
+      if (lead) {
+        setSelectedLead(lead);
+        setIsModalOpen(true);
+      }
+      searchParams.delete('leadId');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [pendingLeadId, convertedLeads]);
+
   const filteredLeads = convertedLeads.filter(lead => {
     const matchesSearch = lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
       (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) || 
