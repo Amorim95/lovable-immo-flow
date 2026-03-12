@@ -99,18 +99,7 @@ const Index = () => {
   }, []);
 
   // Abrir lead via query param (ex: notificação no desktop)
-  useEffect(() => {
-    const leadId = searchParams.get('leadId');
-    if (leadId && leads.length > 0) {
-      const lead = leads.find(l => l.id === leadId);
-      if (lead) {
-        setSelectedLead(lead as unknown as Lead);
-        setIsModalOpen(true);
-      }
-      searchParams.delete('leadId');
-      setSearchParams(searchParams, { replace: true });
-    }
-  }, [searchParams, leads]);
+  const pendingLeadId = searchParams.get('leadId');
 
   // Pré-selecionar equipe gerenciada automaticamente
   useEffect(() => {
