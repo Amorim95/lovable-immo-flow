@@ -127,6 +127,20 @@ serve(async (req) => {
         console.log('Tag "Não Qualificado" adicionada ao lead:', leadId);
       }
 
+      // Salvar notificação no histórico
+      try {
+        await supabaseClient.from('notifications').insert({
+          user_id: nextUserId,
+          company_id: EMPRESA_RKMF_ID,
+          title: '🔔 Opa! Novo Lead!',
+          body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`,
+          type: 'lead',
+          lead_id: leadId,
+        });
+      } catch (notifErr) {
+        console.error('Erro ao salvar notificação:', notifErr);
+      }
+
       // Notificação push
       try {
         await supabaseClient.functions.invoke('send-push-notification', {
