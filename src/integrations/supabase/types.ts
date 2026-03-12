@@ -913,6 +913,64 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string
+          company_id: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          lead_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          lead_id?: string | null
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          lead_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           can_access_configurations: boolean
