@@ -158,6 +158,7 @@ function AppContent() {
                   <main className="flex-1 p-6 mx-[7px]">
                     <Routes>
                       <Route path="/" element={<Index />} />
+                      <Route path="/lead/:id" element={<LeadDetails />} />
                       <Route path="/dashboards" element={<Dashboards />} />
                       <Route path="/dashboards/performance-geral" element={<PerformanceGeral />} />
                       <Route path="/dashboards/perfil-cliente" element={<PerfilCliente />} />
