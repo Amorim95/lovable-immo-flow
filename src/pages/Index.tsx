@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Lead } from "@/types/crm";
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { ListView } from "@/components/ListView";
@@ -29,6 +29,7 @@ import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const { user } = useAuth();
 
@@ -96,6 +97,20 @@ const Index = () => {
       }
     }
   }, []);
+
+  // Abrir lead via query param (ex: notificação no desktop)
+  useEffect(() => {
+    const leadId = searchParams.get('leadId');
+    if (leadId && leads.length > 0) {
+      const lead = leads.find(l => l.id === leadId);
+      if (lead) {
+        setSelectedLead(lead as unknown as Lead);
+        setIsModalOpen(true);
+      }
+      searchParams.delete('leadId');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, leads]);
 
   // Pré-selecionar equipe gerenciada automaticamente
   useEffect(() => {

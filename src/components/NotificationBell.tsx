@@ -96,7 +96,11 @@ export function NotificationBell() {
       markAsRead(notification.id);
     }
     if (notification.lead_id) {
-      navigate(`/lead/${notification.lead_id}`);
+      if (isMobile) {
+        navigate(`/lead/${notification.lead_id}`);
+      } else {
+        navigate(`/?leadId=${notification.lead_id}`);
+      }
       setOpen(false);
     }
   };
