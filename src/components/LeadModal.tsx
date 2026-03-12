@@ -494,7 +494,7 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                   <div>
                     <Label>Data de Criação</Label>
                     <Input
-                      value={formatDate(lead.dataCriacao)}
+                      value={formatDate(lead.dataCriacao || (lead as any).created_at)}
                       disabled
                     />
                   </div>
