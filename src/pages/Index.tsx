@@ -104,10 +104,9 @@ const Index = () => {
     if (leadId && leads.length > 0) {
       const lead = leads.find(l => l.id === leadId);
       if (lead) {
-        setSelectedLead(lead);
+        setSelectedLead(lead as unknown as Lead);
         setIsModalOpen(true);
       }
-      // Limpar o param da URL
       searchParams.delete('leadId');
       setSearchParams(searchParams, { replace: true });
     }
