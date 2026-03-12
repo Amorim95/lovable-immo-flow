@@ -129,6 +129,20 @@ serve(async (req) => {
         }
       }
 
+      // Salvar notificação no histórico
+      try {
+        await supabaseClient.from('notifications').insert({
+          user_id: nextUserId,
+          company_id: EMPRESA_RKMF_ID,
+          title: '🔔 Opa! Novo Lead!',
+          body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`,
+          type: 'lead',
+          lead_id: result.lead_id,
+        });
+      } catch (notifErr) {
+        console.error('Erro ao salvar notificação:', notifErr);
+      }
+
       try {
         await supabaseClient.functions.invoke('send-push-notification', {
           body: {

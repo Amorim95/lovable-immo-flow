@@ -8,6 +8,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useCompanyAccess } from "@/hooks/useCompanyAccess";
 import { LayoutList, Calendar, Users, Settings, Building2, Globe, FileDown } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 const menuItems = [{
   title: "Leads",
   url: "/",
@@ -113,15 +114,19 @@ export function CRMSidebar() {
                 </div>}
             </div>
           )}
-          {!collapsed && <div>
-              <h1 className="text-lg font-bold text-foreground">
-                {settings.name || 'Sistema CRM'}
-              </h1>
+          {!collapsed && <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <h1 className="text-lg font-bold text-foreground">
+                  {settings.name || 'Sistema CRM'}
+                </h1>
+                <NotificationBell />
+              </div>
               <p className="text-xs text-muted-foreground">Feito Por: Rhenan Amorim</p>
               <div className="mt-2">
                 <UserRoleBadge showIcon={false} variant="outline" />
               </div>
             </div>}
+          {collapsed && <NotificationBell />}
         </div>
       </div>
 

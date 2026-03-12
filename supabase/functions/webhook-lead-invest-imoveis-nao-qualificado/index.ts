@@ -124,6 +124,20 @@ Deno.serve(async (req) => {
         console.log('[webhook-lead-invest-imoveis-nao-qualificado] Tag "Não Qualificado" adicionada');
       }
 
+      // Salvar notificação no histórico
+      try {
+        await supabase.from('notifications').insert({
+          user_id: nextUserId,
+          company_id: COMPANY_ID,
+          title: '🔔 Opa! Novo Lead!',
+          body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`,
+          type: 'lead',
+          lead_id: leadId,
+        });
+      } catch (notifErr) {
+        console.error('[webhook-lead-invest-imoveis-nao-qualificado] Erro ao salvar notificação:', notifErr);
+      }
+
       // Notificação push
       try {
         await supabase.functions.invoke('send-push-notification', {

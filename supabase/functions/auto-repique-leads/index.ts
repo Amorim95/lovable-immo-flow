@@ -222,6 +222,20 @@ Deno.serve(async (req) => {
               }
             });
 
+          // Salvar notificação de repique no histórico (sem push)
+          try {
+            await supabase.from('notifications').insert({
+              user_id: nextUser.id,
+              company_id: company_id,
+              title: '🔄 Lead Reatribuído',
+              body: `O lead ${lead.nome} foi reatribuído para você (${lead.repique_count + 1}º repique)`,
+              type: 'repique',
+              lead_id: lead.id,
+            });
+          } catch (notifErr) {
+            console.error('Erro ao salvar notificação de repique:', notifErr);
+          }
+
           // Notificação push removida do repique automático — 
           // apenas webhooks e transferências manuais enviam push
 

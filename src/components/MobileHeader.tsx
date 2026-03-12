@@ -1,6 +1,7 @@
 import { useCompany } from "@/contexts/CompanyContext";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface MobileHeaderProps {
   title?: string;
@@ -50,8 +51,9 @@ export function MobileHeader({
         </div>
       )}
 
-      {/* Coluna direita - Elementos opcionais */}
-      <div className="flex items-center min-w-[40px] justify-end gap-2">
+      {/* Coluna direita - Sino + Elementos opcionais */}
+      <div className="flex items-center min-w-[40px] justify-end gap-1">
+        <NotificationBell />
         {rightElement}
       </div>
     </header>

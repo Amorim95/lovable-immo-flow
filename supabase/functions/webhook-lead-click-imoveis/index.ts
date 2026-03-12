@@ -117,6 +117,20 @@ Deno.serve(async (req) => {
         console.error('[webhook-lead-click-imoveis] Erro ao atualizar ultimo_lead_recebido:', updateError);
       }
 
+      // Salvar notificação no histórico
+      try {
+        await supabase.from('notifications').insert({
+          user_id: nextUser.id,
+          company_id: CLICK_IMOVEIS_COMPANY_ID,
+          title: '🔔 Opa! Novo Lead!',
+          body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`,
+          type: 'lead',
+          lead_id: result.lead_id,
+        });
+      } catch (notifErr) {
+        console.error('[webhook-lead-click-imoveis] Erro ao salvar notificação:', notifErr);
+      }
+
       // Enviar notificação push para o usuário
       console.log('[webhook-lead-click-imoveis] Enviando notificação push para:', nextUser.id);
       try {
