@@ -8,6 +8,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useCompanyAccess } from "@/hooks/useCompanyAccess";
 import { LayoutList, Calendar, Users, Settings, Building2, Globe, FileDown } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 const menuItems = [{
   title: "Leads",
   url: "/",
