@@ -98,6 +98,21 @@ const Index = () => {
     }
   }, []);
 
+  // Abrir lead via query param (ex: notificação no desktop)
+  useEffect(() => {
+    const leadId = searchParams.get('leadId');
+    if (leadId && leads.length > 0) {
+      const lead = leads.find(l => l.id === leadId);
+      if (lead) {
+        setSelectedLead(lead);
+        setIsModalOpen(true);
+      }
+      // Limpar o param da URL
+      searchParams.delete('leadId');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, leads]);
+
   // Pré-selecionar equipe gerenciada automaticamente
   useEffect(() => {
     if (!teamLoading && managedTeamId && !selectedTeamId) {
