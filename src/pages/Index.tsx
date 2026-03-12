@@ -29,6 +29,7 @@ import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isMobile = useIsMobile();
   const { user } = useAuth();
 
