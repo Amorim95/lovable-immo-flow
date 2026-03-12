@@ -102,6 +102,15 @@ Deno.serve(async (req) => {
         console.log('ultimo_lead_recebido atualizado para Janaina Vidalete');
       }
 
+      // Salvar notificação no histórico
+      try {
+        await supabase.from('notifications').insert({
+          user_id: JANAINA_VIDALETE_USER_ID, company_id: MAYS_IMOB_COMPANY_ID,
+          title: '🔔 Opa! Novo Lead!', body: `Corre lá, que o lead ${body.nome} está esperando seu atendimento!`,
+          type: 'lead', lead_id: result.lead_id,
+        });
+      } catch (e) { console.error('Erro ao salvar notificação:', e); }
+
       // Enviar notificação push para o usuário
       try {
         await supabase.functions.invoke('send-push-notification', {

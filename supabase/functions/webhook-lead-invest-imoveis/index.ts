@@ -113,15 +113,19 @@ Deno.serve(async (req) => {
         .update({ assigned_at: new Date().toISOString() })
         .eq('id', result.lead_id);
 
+      // Salvar notificação no histórico
+      try {
+        await supabase.from('notifications').insert({
+          user_id: nextUserId, company_id: COMPANY_ID,
+          title: '🔔 Opa! Novo Lead!', body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`,
+          type: 'lead', lead_id: result.lead_id,
+        });
+      } catch (e) { console.error('Erro ao salvar notificação:', e); }
+
       // Notificação push
       try {
         await supabase.functions.invoke('send-push-notification', {
-          body: {
-            userId: nextUserId,
-            title: '🔔 Opa! Novo Lead!',
-            body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`,
-            data: { leadId: result.lead_id, url: '/' }
-          }
+          body: { userId: nextUserId, title: '🔔 Opa! Novo Lead!', body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`, data: { leadId: result.lead_id, url: '/' } }
         });
         console.log('Notificação push enviada para:', nextUserId);
       } catch (notifError) {

@@ -118,13 +118,16 @@ serve(async (req) => {
     // Enviar notificação push para o usuário (apenas se não for duplicata)
     if (!result.is_duplicate) {
       try {
+        await supabaseClient.from('notifications').insert({
+          user_id: nextUserId, company_id: EMPRESA_ARAUJO_ID,
+          title: '🔔 Opa! Novo Lead!', body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`,
+          type: 'lead', lead_id: result.lead_id,
+        });
+      } catch (e) { console.error('Erro ao salvar notificação:', e); }
+
+      try {
         await supabaseClient.functions.invoke('send-push-notification', {
-          body: {
-            userId: nextUserId,
-            title: '🔔 Opa! Novo Lead!',
-            body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`,
-            data: { leadId: result.lead_id, url: '/' }
-          }
+          body: { userId: nextUserId, title: '🔔 Opa! Novo Lead!', body: `Corre lá, que o lead ${leadData.nome} está esperando seu atendimento!`, data: { leadId: result.lead_id, url: '/' } }
         });
         console.log('Notificação push enviada para usuário:', nextUserId);
       } catch (notificationError) {
