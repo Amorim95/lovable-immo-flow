@@ -51,8 +51,9 @@ export function MobileHeader({
         </div>
       )}
 
-      {/* Coluna direita - Elementos opcionais */}
-      <div className="flex items-center min-w-[40px] justify-end gap-2">
+      {/* Coluna direita - Sino + Elementos opcionais */}
+      <div className="flex items-center min-w-[40px] justify-end gap-1">
+        <NotificationBell />
         {rightElement}
       </div>
     </header>
