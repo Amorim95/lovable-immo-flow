@@ -246,8 +246,11 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('pt-BR', {
+  const formatDate = (date: Date | string | undefined) => {
+    if (!date) return '-';
+    const d = date instanceof Date ? date : new Date(date);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -491,7 +494,7 @@ export function LeadModal({ lead, isOpen, onClose, onUpdate }: LeadModalProps) {
                   <div>
                     <Label>Data de Criação</Label>
                     <Input
-                      value={formatDate(lead.dataCriacao)}
+                      value={formatDate(lead.dataCriacao || (lead as any).created_at)}
                       disabled
                     />
                   </div>
