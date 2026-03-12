@@ -22,10 +22,14 @@ export function useNotifications() {
     if (!user?.id) return;
     
     try {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
       const { data, error } = await supabase
         .from('notifications')
         .select('id, title, body, type, lead_id, is_read, created_at')
         .eq('user_id', user.id)
+        .gte('created_at', sevenDaysAgo.toISOString())
         .order('created_at', { ascending: false })
         .limit(50);
 
