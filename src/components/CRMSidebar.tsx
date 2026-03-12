@@ -114,15 +114,19 @@ export function CRMSidebar() {
                 </div>}
             </div>
           )}
-          {!collapsed && <div>
-              <h1 className="text-lg font-bold text-foreground">
-                {settings.name || 'Sistema CRM'}
-              </h1>
+          {!collapsed && <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <h1 className="text-lg font-bold text-foreground">
+                  {settings.name || 'Sistema CRM'}
+                </h1>
+                <NotificationBell />
+              </div>
               <p className="text-xs text-muted-foreground">Feito Por: Rhenan Amorim</p>
               <div className="mt-2">
                 <UserRoleBadge showIcon={false} variant="outline" />
               </div>
             </div>}
+          {collapsed && <NotificationBell />}
         </div>
       </div>
 

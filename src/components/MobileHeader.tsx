@@ -1,6 +1,7 @@
 import { useCompany } from "@/contexts/CompanyContext";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 
 interface MobileHeaderProps {
   title?: string;
