@@ -195,6 +195,19 @@ const Index = () => {
   // Extrair datas únicas dos leads para o DateFilter
   const availableDates = [...new Set(convertedLeads.map(lead => lead.dataCriacao.toDateString()))].map(dateString => new Date(dateString));
   
+  // Abrir lead via query param após conversão (ex: notificação no desktop)
+  useEffect(() => {
+    if (pendingLeadId && convertedLeads.length > 0) {
+      const lead = convertedLeads.find(l => l.id === pendingLeadId);
+      if (lead) {
+        setSelectedLead(lead);
+        setIsModalOpen(true);
+      }
+      searchParams.delete('leadId');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [pendingLeadId, convertedLeads]);
+
   const filteredLeads = convertedLeads.filter(lead => {
     const matchesSearch = lead.nome.toLowerCase().includes(searchTerm.toLowerCase()) || 
       (lead.dadosAdicionais && lead.dadosAdicionais.toLowerCase().includes(searchTerm.toLowerCase())) || 
