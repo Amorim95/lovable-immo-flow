@@ -50,11 +50,14 @@ export function NewLeadModal({ isOpen, onClose, onCreateLead, initialStage = 'ag
       console.log('🚀 Criando lead:', formData);
       
       // Inserir lead com user_id do usuário logado
+      // Normalizar telefone: remover tudo que não é dígito
+      const normalizedPhone = formData.telefone.replace(/[^0-9]/g, '');
+      
       const { data, error } = await supabase
         .from('leads')
         .insert({
           nome: formData.nome,
-          telefone: formData.telefone,
+          telefone: normalizedPhone,
           dados_adicionais: formData.dadosAdicionais || null,
           etapa: initialStage,
           user_id: user.id // Explicitamente definir o user_id
