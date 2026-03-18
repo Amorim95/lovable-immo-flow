@@ -43,6 +43,10 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
     }));
   };
 
+  const hasManualOrder = (lead: { stage_order?: number | null }) => {
+    return lead.stage_order != null && lead.stage_order !== 0;
+  };
+
   const getLeadsByStage = useCallback((stageName: string) => {
     const currentStage = stages.find(s => s.nome === stageName);
     
@@ -67,23 +71,22 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
       return false;
     });
 
-    // Ordenar: leads novos (sem ordem manual) no topo por data desc, depois leads com ordem manual
+    // Hierarquia: ordem manual sempre tem prioridade; sem ordem manual, ordenar por data desc
     return filtered.sort((a, b) => {
       const orderA = (a as any).stage_order;
       const orderB = (b as any).stage_order;
       
-      const hasManualA = orderA != null && orderA !== 0;
-      const hasManualB = orderB != null && orderB !== 0;
+      const hasManualA = hasManualOrder(a);
+      const hasManualB = hasManualOrder(b);
       
-      // New leads (no manual order) come first, sorted by newest
-      if (!hasManualA && !hasManualB) {
-        return new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime();
+      if (hasManualA && hasManualB) {
+        return orderA - orderB;
       }
-      // New leads always on top
-      if (!hasManualA) return -1;
-      if (!hasManualB) return 1;
-      // Both have manual order, respect it
-      return orderA - orderB;
+
+      if (hasManualA) return -1;
+      if (hasManualB) return 1;
+
+      return new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime();
     });
   }, [leads, stages]);
 
@@ -97,15 +100,18 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
   }, [stages, getLeadsByStage]);
 
   const calculateNewOrder = (stageLeads: any[], destinationIndex: number, draggedLeadId: string) => {
-    // Filter out the dragged lead from the list
     const otherLeads = stageLeads.filter(l => l.id !== draggedLeadId);
     
     if (otherLeads.length === 0) return 1000;
+
+    const ensureNonZeroOrder = (order: number, fallback: number) => {
+      return order === 0 ? fallback : order;
+    };
     
-    // Assign virtual orders based on actual sorted position for leads without stage_order
+    // Assign virtual orders based on actual sorted position for leads without manual order
     const withVirtualOrder = otherLeads.map((lead, idx) => ({
       ...lead,
-      _virtualOrder: lead.stage_order ?? (idx + 1) * 1000
+      _virtualOrder: hasManualOrder(lead) ? lead.stage_order : (idx + 1) * 1000
     }));
 
     // Normalize: ensure virtual orders are strictly increasing to match visual order
@@ -116,16 +122,16 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
     }
     
     if (destinationIndex === 0) {
-      return withVirtualOrder[0]._virtualOrder - 1000;
+      return ensureNonZeroOrder(withVirtualOrder[0]._virtualOrder - 1000, -0.5);
     }
     
     if (destinationIndex >= withVirtualOrder.length) {
-      return withVirtualOrder[withVirtualOrder.length - 1]._virtualOrder + 1000;
+      return ensureNonZeroOrder(withVirtualOrder[withVirtualOrder.length - 1]._virtualOrder + 1000, 0.5);
     }
     
     const prevOrder = withVirtualOrder[destinationIndex - 1]._virtualOrder;
     const nextOrder = withVirtualOrder[destinationIndex]._virtualOrder;
-    return Math.floor((prevOrder + nextOrder) / 2);
+    return ensureNonZeroOrder((prevOrder + nextOrder) / 2, prevOrder < 0 ? -0.5 : 0.5);
   };
 
   const handleDragEnd = (result: DropResult) => {
