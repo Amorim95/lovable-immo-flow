@@ -241,6 +241,11 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
+              </div>
+
+              <Droppable droppableId={stage.nome}>
+                {(provided, snapshot) => (
+                  <div
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar min-h-[60px] transition-colors ${
