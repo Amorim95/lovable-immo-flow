@@ -29,7 +29,7 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, onOptimisticUpdate, autoRepiqueEnabled, autoRepiqueMinutes }: KanbanBoardProps) {
   const [stageVisibleCounts, setStageVisibleCounts] = useState<Record<string, number>>({});
-  const [stageSortOrder, setStageSortOrder] = useState<Record<string, 'newest' | 'oldest'>>({});
+  const [stageSortOrder, setStageSortOrder] = useState<Record<string, 'newest' | 'oldest' | undefined>>({});
   const { stages, loading } = useLeadStages();
   const { isAdmin, isGestor } = useUserRole();
   const canTransfer = isAdmin || isGestor;
@@ -51,7 +51,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
 
   const getLeadsByStage = useCallback((stageName: string) => {
     const currentStage = stages.find(s => s.nome === stageName);
-    const sortOrder = stageSortOrder[stageName] || 'newest';
+    const sortOrder = stageSortOrder[stageName]; // undefined = default (hybrid), 'newest' | 'oldest' = pure date
     
     const filtered = leads.filter((lead) => {
       if (lead.stage_name === stageName) return true;
@@ -74,14 +74,20 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
       return false;
     });
 
-    // Se há ordenação por data ativa na coluna, ignorar stage_order
+    // Quando o usuário clicou no botão de ordenar, ordena puramente por data
     if (sortOrder === 'oldest') {
       return filtered.sort((a, b) => 
         new Date(a.dataCriacao).getTime() - new Date(b.dataCriacao).getTime()
       );
     }
 
-    // Default 'newest': leads com ordem manual primeiro, depois por data desc
+    if (sortOrder === 'newest') {
+      return filtered.sort((a, b) => 
+        new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime()
+      );
+    }
+
+    // Default (sem clique no botão): leads com ordem manual primeiro, depois por data desc
     return filtered.sort((a, b) => {
       const hasManualA = hasManualOrder(a);
       const hasManualB = hasManualOrder(b);
@@ -209,25 +215,36 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0"
+                          className={`h-7 w-7 p-0 ${stageSortOrder[stage.nome] ? 'bg-accent' : ''}`}
                           onClick={() => {
-                            setStageSortOrder(prev => ({
-                              ...prev,
-                              [stage.nome]: prev[stage.nome] === 'oldest' ? 'newest' : 'oldest'
-                            }));
+                            setStageSortOrder(prev => {
+                              const current = prev[stage.nome];
+                              const next = !current ? 'newest' : current === 'newest' ? 'oldest' : undefined;
+                              const updated = { ...prev };
+                              if (next) {
+                                updated[stage.nome] = next;
+                              } else {
+                                delete updated[stage.nome];
+                              }
+                              return updated;
+                            });
                           }}
                           title={`Ordenar por data`}
                         >
-                          {(stageSortOrder[stage.nome] || 'newest') === 'newest' 
+                          {!stageSortOrder[stage.nome]
                             ? <ArrowDown className="w-3.5 h-3.5 text-muted-foreground" />
-                            : <ArrowUp className="w-3.5 h-3.5 text-muted-foreground" />
+                            : stageSortOrder[stage.nome] === 'newest'
+                              ? <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                              : <ArrowUp className="w-3.5 h-3.5 text-primary" />
                           }
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="bottom" className="text-xs">
-                        {(stageSortOrder[stage.nome] || 'newest') === 'newest' 
-                          ? 'Mais novos primeiro' 
-                          : 'Mais antigos primeiro'}
+                        {!stageSortOrder[stage.nome]
+                          ? 'Ordenar por data (mais novos)' 
+                          : stageSortOrder[stage.nome] === 'newest'
+                            ? 'Mais novos primeiro (clique para mais antigos)'
+                            : 'Mais antigos primeiro (clique para desativar)'}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
