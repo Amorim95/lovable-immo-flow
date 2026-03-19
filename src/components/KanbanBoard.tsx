@@ -2,10 +2,11 @@ import { useState, useMemo, useCallback } from "react";
 import { Lead, LeadStage } from "@/types/crm";
 import { LeadCard } from "./LeadCard";
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronDown } from "lucide-react";
+import { Plus, ChevronDown, ArrowUp, ArrowDown } from "lucide-react";
 import { useLeadStages } from "@/hooks/useLeadStages";
 import { useUserRole } from "@/hooks/useUserRole";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 const LEADS_PER_PAGE = 20;
 
