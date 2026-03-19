@@ -2,10 +2,11 @@ import { useState, useMemo, useCallback } from "react";
 import { Lead, LeadStage } from "@/types/crm";
 import { LeadCard } from "./LeadCard";
 import { Button } from "@/components/ui/button";
-import { Plus, ChevronDown } from "lucide-react";
+import { Plus, ChevronDown, ArrowUp, ArrowDown } from "lucide-react";
 import { useLeadStages } from "@/hooks/useLeadStages";
 import { useUserRole } from "@/hooks/useUserRole";
 import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 const LEADS_PER_PAGE = 20;
 
@@ -28,6 +29,7 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, onOptimisticUpdate, autoRepiqueEnabled, autoRepiqueMinutes }: KanbanBoardProps) {
   const [stageVisibleCounts, setStageVisibleCounts] = useState<Record<string, number>>({});
+  const [stageSortOrder, setStageSortOrder] = useState<Record<string, 'newest' | 'oldest'>>({});
   const { stages, loading } = useLeadStages();
   const { isAdmin, isGestor } = useUserRole();
   const canTransfer = isAdmin || isGestor;
@@ -49,6 +51,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
 
   const getLeadsByStage = useCallback((stageName: string) => {
     const currentStage = stages.find(s => s.nome === stageName);
+    const sortOrder = stageSortOrder[stageName] || 'newest';
     
     const filtered = leads.filter((lead) => {
       if (lead.stage_name === stageName) return true;
@@ -71,16 +74,20 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
       return false;
     });
 
-    // Hierarquia: ordem manual sempre tem prioridade; sem ordem manual, ordenar por data desc
+    // Se há ordenação por data ativa na coluna, ignorar stage_order
+    if (sortOrder === 'oldest') {
+      return filtered.sort((a, b) => 
+        new Date(a.dataCriacao).getTime() - new Date(b.dataCriacao).getTime()
+      );
+    }
+
+    // Default 'newest': leads com ordem manual primeiro, depois por data desc
     return filtered.sort((a, b) => {
-      const orderA = (a as any).stage_order;
-      const orderB = (b as any).stage_order;
-      
       const hasManualA = hasManualOrder(a);
       const hasManualB = hasManualOrder(b);
       
       if (hasManualA && hasManualB) {
-        return orderA - orderB;
+        return (a as any).stage_order - (b as any).stage_order;
       }
 
       if (hasManualA) return -1;
@@ -88,7 +95,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
 
       return new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime();
     });
-  }, [leads, stages]);
+  }, [leads, stages, stageSortOrder]);
 
   // Pre-compute all stage leads
   const stageLeadsMap = useMemo(() => {
@@ -195,15 +202,45 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                     {stageLeads.length}
                   </span>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 w-8 p-0"
-                  onClick={() => onCreateLead?.(stage.nome)}
-                  title={`Adicionar lead em ${stage.nome}`}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <TooltipProvider delayDuration={200}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => {
+                            setStageSortOrder(prev => ({
+                              ...prev,
+                              [stage.nome]: prev[stage.nome] === 'oldest' ? 'newest' : 'oldest'
+                            }));
+                          }}
+                          title={`Ordenar por data`}
+                        >
+                          {(stageSortOrder[stage.nome] || 'newest') === 'newest' 
+                            ? <ArrowDown className="w-3.5 h-3.5 text-muted-foreground" />
+                            : <ArrowUp className="w-3.5 h-3.5 text-muted-foreground" />
+                          }
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs">
+                        {(stageSortOrder[stage.nome] || 'newest') === 'newest' 
+                          ? 'Mais novos primeiro' 
+                          : 'Mais antigos primeiro'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0"
+                    onClick={() => onCreateLead?.(stage.nome)}
+                    title={`Adicionar lead em ${stage.nome}`}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
 
               <Droppable droppableId={stage.nome}>
