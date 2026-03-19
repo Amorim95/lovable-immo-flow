@@ -215,25 +215,36 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-7 w-7 p-0"
+                          className={`h-7 w-7 p-0 ${stageSortOrder[stage.nome] ? 'bg-accent' : ''}`}
                           onClick={() => {
-                            setStageSortOrder(prev => ({
-                              ...prev,
-                              [stage.nome]: prev[stage.nome] === 'oldest' ? 'newest' : 'oldest'
-                            }));
+                            setStageSortOrder(prev => {
+                              const current = prev[stage.nome];
+                              const next = !current ? 'newest' : current === 'newest' ? 'oldest' : undefined;
+                              const updated = { ...prev };
+                              if (next) {
+                                updated[stage.nome] = next;
+                              } else {
+                                delete updated[stage.nome];
+                              }
+                              return updated;
+                            });
                           }}
                           title={`Ordenar por data`}
                         >
-                          {(stageSortOrder[stage.nome] || 'newest') === 'newest' 
+                          {!stageSortOrder[stage.nome]
                             ? <ArrowDown className="w-3.5 h-3.5 text-muted-foreground" />
-                            : <ArrowUp className="w-3.5 h-3.5 text-muted-foreground" />
+                            : stageSortOrder[stage.nome] === 'newest'
+                              ? <ArrowDown className="w-3.5 h-3.5 text-primary" />
+                              : <ArrowUp className="w-3.5 h-3.5 text-primary" />
                           }
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="bottom" className="text-xs">
-                        {(stageSortOrder[stage.nome] || 'newest') === 'newest' 
-                          ? 'Mais novos primeiro' 
-                          : 'Mais antigos primeiro'}
+                        {!stageSortOrder[stage.nome]
+                          ? 'Ordenar por data (mais novos)' 
+                          : stageSortOrder[stage.nome] === 'newest'
+                            ? 'Mais novos primeiro (clique para mais antigos)'
+                            : 'Mais antigos primeiro (clique para desativar)'}
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
