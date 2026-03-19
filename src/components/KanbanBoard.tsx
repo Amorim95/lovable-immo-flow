@@ -29,6 +29,7 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, onOptimisticUpdate, autoRepiqueEnabled, autoRepiqueMinutes }: KanbanBoardProps) {
   const [stageVisibleCounts, setStageVisibleCounts] = useState<Record<string, number>>({});
+  const [stageSortOrder, setStageSortOrder] = useState<Record<string, 'newest' | 'oldest'>>({});
   const { stages, loading } = useLeadStages();
   const { isAdmin, isGestor } = useUserRole();
   const canTransfer = isAdmin || isGestor;
