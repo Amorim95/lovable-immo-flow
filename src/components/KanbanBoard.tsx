@@ -51,7 +51,7 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
 
   const getLeadsByStage = useCallback((stageName: string) => {
     const currentStage = stages.find(s => s.nome === stageName);
-    const sortOrder = stageSortOrder[stageName] || 'newest';
+    const sortOrder = stageSortOrder[stageName]; // undefined = default (hybrid), 'newest' | 'oldest' = pure date
     
     const filtered = leads.filter((lead) => {
       if (lead.stage_name === stageName) return true;
@@ -74,14 +74,20 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
       return false;
     });
 
-    // Se há ordenação por data ativa na coluna, ignorar stage_order
+    // Quando o usuário clicou no botão de ordenar, ordena puramente por data
     if (sortOrder === 'oldest') {
       return filtered.sort((a, b) => 
         new Date(a.dataCriacao).getTime() - new Date(b.dataCriacao).getTime()
       );
     }
 
-    // Default 'newest': leads com ordem manual primeiro, depois por data desc
+    if (sortOrder === 'newest') {
+      return filtered.sort((a, b) => 
+        new Date(b.dataCriacao).getTime() - new Date(a.dataCriacao).getTime()
+      );
+    }
+
+    // Default (sem clique no botão): leads com ordem manual primeiro, depois por data desc
     return filtered.sort((a, b) => {
       const hasManualA = hasManualOrder(a);
       const hasManualB = hasManualOrder(b);
