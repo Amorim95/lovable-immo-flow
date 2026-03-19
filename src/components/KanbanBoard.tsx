@@ -202,20 +202,45 @@ export function KanbanBoard({ leads, onLeadUpdate, onLeadClick, onCreateLead, on
                     {stageLeads.length}
                   </span>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 w-8 p-0"
-                  onClick={() => onCreateLead?.(stage.nome)}
-                  title={`Adicionar lead em ${stage.nome}`}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-
-              <Droppable droppableId={stage.nome}>
-                {(provided, snapshot) => (
-                  <div
+                <div className="flex items-center gap-1">
+                  <TooltipProvider delayDuration={200}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => {
+                            setStageSortOrder(prev => ({
+                              ...prev,
+                              [stage.nome]: prev[stage.nome] === 'oldest' ? 'newest' : 'oldest'
+                            }));
+                          }}
+                          title={`Ordenar por data`}
+                        >
+                          {(stageSortOrder[stage.nome] || 'newest') === 'newest' 
+                            ? <ArrowDown className="w-3.5 h-3.5 text-muted-foreground" />
+                            : <ArrowUp className="w-3.5 h-3.5 text-muted-foreground" />
+                          }
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="text-xs">
+                        {(stageSortOrder[stage.nome] || 'newest') === 'newest' 
+                          ? 'Mais novos primeiro' 
+                          : 'Mais antigos primeiro'}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 p-0"
+                    onClick={() => onCreateLead?.(stage.nome)}
+                    title={`Adicionar lead em ${stage.nome}`}
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar min-h-[60px] transition-colors ${
