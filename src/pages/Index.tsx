@@ -276,7 +276,10 @@ const Index = () => {
     return matchesSearch && matchesDate && matchesUser && matchesTeam && matchesTags && matchesStage;
   });
 
-  if (loading || roleLoading || teamLoading) {
+  // Apenas exibir skeleton em tela cheia no carregamento inicial.
+  // Em trocas de filtro (com leads já em memória), mantemos a UI visível
+  // para evitar a sensação de que o filtro anterior persiste.
+  if ((loading && convertedLeads.length === 0) || roleLoading || teamLoading) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
@@ -500,6 +503,14 @@ const Index = () => {
           </CollapsibleContent>
         </Collapsible>
       </div>
+
+      {/* Indicador de atualização em background (durante troca de filtro) */}
+      {loading && convertedLeads.length > 0 && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground -mt-2">
+          <div className="h-3 w-3 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <span>Atualizando leads...</span>
+        </div>
+      )}
 
       {/* Content */}
       <div className="min-h-[600px] transition-all duration-300 ease-in-out">
