@@ -68,6 +68,25 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
   } | null>(null);
   
   const canTransfer = isAdmin || isGestor;
+  const fallbackStages = Object.entries(stageLabels).map(([legacy_key, nome]) => ({
+    id: legacy_key,
+    nome,
+    legacy_key,
+  }));
+  const availableStages = stages.length > 0 ? stages : fallbackStages;
+
+  const resolveStageForLead = (lead: Lead) => {
+    const matchedByName = stages.find(stage => stage.nome === lead.stage_name);
+    if (matchedByName) return matchedByName;
+
+    const matchedByLegacyStageName = stages.find(stage => stage.legacy_key && stage.legacy_key === lead.stage_name);
+    if (matchedByLegacyStageName) return matchedByLegacyStageName;
+
+    const matchedByEtapa = stages.find(stage => stage.legacy_key && stage.legacy_key === lead.etapa);
+    if (matchedByEtapa) return matchedByEtapa;
+
+    return fallbackStages.find(stage => stage.legacy_key === lead.etapa || stage.legacy_key === lead.stage_name);
+  };
   
   // Limitar leads visíveis para performance
   const visibleLeads = leads.slice(0, visibleCount);
@@ -154,8 +173,18 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
     onLeadUpdate(leadId, { etiquetas: newTags });
   };
 
-  const handleStageChange = (leadId: string, newStage: Lead['etapa']) => {
-    onLeadUpdate(leadId, { etapa: newStage });
+  const handleStageChange = (leadId: string, selectedValue: string) => {
+    const selectedStage = stages.find(stage => stage.nome === selectedValue || stage.legacy_key === selectedValue);
+
+    if (selectedStage) {
+      onLeadUpdate(leadId, {
+        stage_name: selectedStage.nome,
+        etapa: (selectedStage.legacy_key || selectedValue) as Lead['etapa'],
+      });
+      return;
+    }
+
+    onLeadUpdate(leadId, { etapa: selectedValue as Lead['etapa'] });
   };
 
   const handleCorretorClick = (lead: Lead & { userId?: string }, e: React.MouseEvent) => {
@@ -295,7 +324,11 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
             </TableRow>
           </TableHeader>
         <TableBody>
-            {visibleLeads.map((lead, index) => (
+            {visibleLeads.map((lead, index) => {
+              const resolvedStage = resolveStageForLead(lead);
+              const selectValue = resolvedStage?.nome || lead.stage_name || lead.etapa;
+
+              return (
               <TableRow
                 key={lead.id}
                 className={`cursor-pointer hover:bg-muted/50 transition-colors ${
@@ -320,22 +353,18 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                 <TableCell className="font-medium">{lead.nome}</TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
                 <Select
-                  value={lead.etapa}
-                  onValueChange={(value) => handleStageChange(lead.id, value as Lead['etapa'])}
+                   value={selectValue}
+                   onValueChange={(value) => handleStageChange(lead.id, value)}
                 >
                   <SelectTrigger className="w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="aguardando-atendimento">Aguardando Atendimento</SelectItem>
-                    <SelectItem value="tentativas-contato">Em Tentativas de Contato</SelectItem>
-                    <SelectItem value="atendeu">Atendeu</SelectItem>
-                    <SelectItem value="nome-sujo">Nome Sujo</SelectItem>
-                    <SelectItem value="nome-limpo">Nome Limpo</SelectItem>
-                    <SelectItem value="visita">Visita</SelectItem>
-                    <SelectItem value="vendas-fechadas">Vendas Fechadas</SelectItem>
-                    <SelectItem value="em-pausa">Em Pausa</SelectItem>
-                    <SelectItem value="descarte">Descarte</SelectItem>
+                     {availableStages.map(stage => (
+                       <SelectItem key={stage.id} value={stage.nome}>
+                         {stage.nome}
+                       </SelectItem>
+                     ))}
                   </SelectContent>
                 </Select>
               </TableCell>
@@ -359,7 +388,7 @@ export function ListView({ leads, onLeadClick, onLeadUpdate, onOptimisticUpdate 
                 </div>
               </TableCell>
             </TableRow>
-          ))}
+          );})}
         </TableBody>
       </Table>
       
