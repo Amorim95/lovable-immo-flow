@@ -62,6 +62,11 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
       setLoading(true);
       setError(null);
 
+      // Quando "Período Total" estiver selecionado (sem filtro de data),
+      // não exibimos os leads em partes — esperamos carregar tudo e mostramos
+      // de uma vez para evitar a sensação de "a contagem ficou subindo".
+      const isPeriodoTotal = !dateFilterRef.current?.from && !dateFilterRef.current?.to;
+
       // Carregar leads em lotes de 1000, mas iniciar exibição após o primeiro lote
       let allLeads: LeadsData[] = [];
       let from = 0;
@@ -125,12 +130,14 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
 
         allLeads = [...allLeads, ...data];
 
-        // Substituir leads exibidos a cada lote para refletir o filtro atual
-        // (evita que a contagem antiga "persista" durante a troca de filtro).
-        setLeads(allLeads);
-        if (isFirstBatch) {
-          setLoading(false); // Desativa loading de tela cheia após primeiro lote
-          isFirstBatch = false;
+        // Para filtros com data, atualizamos progressivamente (UX rápida).
+        // Para "Período Total", aguardamos terminar para exibir tudo de uma vez.
+        if (!isPeriodoTotal) {
+          setLeads(allLeads);
+          if (isFirstBatch) {
+            setLoading(false); // Desativa loading de tela cheia após primeiro lote
+            isFirstBatch = false;
+          }
         }
 
         // Se retornou menos que o pageSize, chegamos ao fim
