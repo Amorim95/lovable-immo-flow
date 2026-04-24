@@ -12,6 +12,7 @@ import { useLeadsOptimized, LeadDateFilter } from "@/hooks/useLeadsOptimized";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
+import { useLeadStages } from "@/hooks/useLeadStages";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +77,7 @@ const Index = () => {
     managedTeamId,
     loading: teamLoading
   } = useManagerTeam();
+  const { stages } = useLeadStages();
   const dailyQuote = useDailyQuote();
   const { enabled: autoRepiqueEnabled, minutes: autoRepiqueMinutes } = useAutoRepiqueSettings();
   const { saveFilters, loadFilters, clearSavedFilters, hasSavedFilter, isMatchingSaved } = useSavedFilters("leads");
@@ -248,11 +250,28 @@ const Index = () => {
     // Filtro por etapa (apenas no modo lista)
     let matchesStage = true;
     if (selectedStageKey && viewMode === 'list') {
-      // Comparar contra stage_name, etapa e legacy_key (case-insensitive)
-      const selectedLower = selectedStageKey.toLowerCase();
-      const matchesStageName = lead.stage_name?.toLowerCase() === selectedLower;
-      const matchesEtapa = lead.etapa?.toLowerCase() === selectedLower;
-      matchesStage = matchesStageName || matchesEtapa;
+      const selectedStage = stages.find(stage =>
+        stage.nome === selectedStageKey || stage.legacy_key === selectedStageKey
+      );
+
+      if (selectedStage) {
+        if (lead.stage_name === selectedStage.nome) {
+          matchesStage = true;
+        } else if (selectedStage.legacy_key && lead.stage_name === selectedStage.legacy_key) {
+          const belongsToOtherStage = stages.some(stage =>
+            stage.id !== selectedStage.id && (
+              stage.nome === lead.stage_name || stage.legacy_key === lead.stage_name
+            )
+          );
+          matchesStage = !belongsToOtherStage;
+        } else {
+          matchesStage = (!lead.stage_name || lead.stage_name === '') &&
+            !!selectedStage.legacy_key &&
+            lead.etapa === selectedStage.legacy_key;
+        }
+      } else {
+        matchesStage = lead.stage_name === selectedStageKey || lead.etapa === selectedStageKey;
+      }
     }
     return matchesSearch && matchesDate && matchesUser && matchesTeam && matchesTags && matchesStage;
   });
