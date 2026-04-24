@@ -281,24 +281,12 @@ const Index = () => {
   // para evitar a sensação de que o filtro anterior persiste.
   if ((loading && convertedLeads.length === 0) || roleLoading || teamLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-6 px-6 text-center">
-        <div className="relative">
-          <div className="w-24 h-24 rounded-full border-[6px] border-muted" />
-          <div className="absolute inset-0 w-24 h-24 rounded-full border-[6px] border-transparent border-t-primary border-r-primary animate-spin" />
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
+          <div className="h-4 bg-muted rounded w-1/2"></div>
         </div>
-        <div className="space-y-2">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground animate-pulse">
-            Carregando leads...
-          </h2>
-          <p className="text-base md:text-lg text-muted-foreground max-w-md">
-            Estamos buscando todos os leads do período selecionado. Isso pode levar alguns segundos.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <span className="w-3 h-3 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]" />
-          <span className="w-3 h-3 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]" />
-          <span className="w-3 h-3 rounded-full bg-primary animate-bounce" />
-        </div>
+        <div className="h-96 bg-muted rounded animate-pulse"></div>
       </div>
     );
   }
