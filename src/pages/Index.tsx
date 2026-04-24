@@ -276,7 +276,10 @@ const Index = () => {
     return matchesSearch && matchesDate && matchesUser && matchesTeam && matchesTags && matchesStage;
   });
 
-  if (loading || roleLoading || teamLoading) {
+  // Apenas exibir skeleton em tela cheia no carregamento inicial.
+  // Em trocas de filtro (com leads já em memória), mantemos a UI visível
+  // para evitar a sensação de que o filtro anterior persiste.
+  if ((loading && convertedLeads.length === 0) || roleLoading || teamLoading) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse">
