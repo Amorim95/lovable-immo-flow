@@ -504,6 +504,14 @@ const Index = () => {
         </Collapsible>
       </div>
 
+      {/* Indicador de atualização em background (durante troca de filtro) */}
+      {loading && convertedLeads.length > 0 && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground -mt-2">
+          <div className="h-3 w-3 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <span>Atualizando leads...</span>
+        </div>
+      )}
+
       {/* Content */}
       <div className="min-h-[600px] transition-all duration-300 ease-in-out">
         {isMobile || viewMode === 'list' ? (
