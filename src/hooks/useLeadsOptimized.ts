@@ -124,11 +124,12 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
         }
 
         allLeads = [...allLeads, ...data];
-        
-        // Exibir leads imediatamente após o primeiro lote para UX mais rápida
+
+        // Substituir leads exibidos a cada lote para refletir o filtro atual
+        // (evita que a contagem antiga "persista" durante a troca de filtro).
+        setLeads(allLeads);
         if (isFirstBatch) {
-          setLeads(allLeads);
-          setLoading(false); // Desativa loading após primeiro lote
+          setLoading(false); // Desativa loading de tela cheia após primeiro lote
           isFirstBatch = false;
         }
 
