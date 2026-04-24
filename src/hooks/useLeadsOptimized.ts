@@ -44,6 +44,7 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const dateFilterRef = useRef(dateFilter);
+  const latestRequestIdRef = useRef(0);
   dateFilterRef.current = dateFilter;
 
   useEffect(() => {
@@ -54,6 +55,8 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
 
   const loadLeads = async () => {
     if (!user) return;
+
+    const requestId = ++latestRequestIdRef.current;
 
     try {
       setLoading(true);
@@ -106,6 +109,10 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
 
         const { data, error } = await query.range(from, from + pageSize - 1);
 
+        if (requestId !== latestRequestIdRef.current) {
+          return;
+        }
+
         if (error) {
           console.error('Error loading leads:', error);
           setError('Erro ao carregar leads');
@@ -135,12 +142,23 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
 
       // Atualizar com todos os leads após carregar tudo
       console.log(`Total de leads carregados: ${allLeads.length}`);
+
+      if (requestId !== latestRequestIdRef.current) {
+        return;
+      }
+
       setLeads(allLeads);
     } catch (error) {
+      if (requestId !== latestRequestIdRef.current) {
+        return;
+      }
+
       console.error('Error loading leads:', error);
       setError('Erro interno ao carregar leads');
     } finally {
-      setLoading(false);
+      if (requestId === latestRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
