@@ -6,6 +6,10 @@ import { usePerformanceGeral } from "@/hooks/usePerformanceGeral";
 import { useLeadStages } from "@/hooks/useLeadStages";
 import { TeamUserFilters } from "@/components/TeamUserFilters";
 import { Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { toast } from "@/hooks/use-toast";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -76,6 +80,110 @@ const PerformanceGeral = () => {
     }
   };
 
+  const formatDateLabel = () => {
+    if (dateRange?.from && dateRange?.to) {
+      const f = dateRange.from.toLocaleDateString('pt-BR');
+      const t = dateRange.to.toLocaleDateString('pt-BR');
+      return `${f} a ${t}`;
+    }
+    return 'Período Total';
+  };
+
+  const handleDownloadPDF = () => {
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+
+      doc.setFontSize(18);
+      doc.text('Performance Geral', pageWidth / 2, 18, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Período: ${formatDateLabel()}`, pageWidth / 2, 26, { align: 'center' });
+      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, pageWidth / 2, 32, { align: 'center' });
+
+      doc.setTextColor(0);
+      doc.setFontSize(12);
+      doc.text('Resumo', 14, 44);
+      autoTable(doc, {
+        startY: 48,
+        head: [['Métrica', 'Valor']],
+        body: [
+          ['Total de Leads', String(performanceGeral.leadsTotais)],
+          ['Taxa de Conversão', `${performanceGeral.conversaoGeral}%`],
+          ['Tempo Médio de Resposta (h)', String(performanceGeral.tempoMedioResposta)],
+        ],
+        theme: 'striped',
+        headStyles: { fillColor: [37, 99, 235] },
+      });
+
+      let nextY = (doc as any).lastAutoTable.finalY + 10;
+      doc.setFontSize(12);
+      doc.text('Leads por Etapa', 14, nextY);
+      autoTable(doc, {
+        startY: nextY + 4,
+        head: [['Etapa', 'Total', '%']],
+        body: stages.map(stage => {
+          const total = performanceGeral.leadsPorEtapa[stage.nome] || 0;
+          const pct = performanceGeral.leadsTotais > 0
+            ? ((total / performanceGeral.leadsTotais) * 100).toFixed(1)
+            : '0.0';
+          return [stage.nome, String(total), `${pct}%`];
+        }),
+        theme: 'striped',
+        headStyles: { fillColor: [37, 99, 235] },
+      });
+
+      const etiquetas = Object.keys(performanceGeral.totalPorEtiqueta);
+      if (etiquetas.length > 0) {
+        nextY = (doc as any).lastAutoTable.finalY + 10;
+        doc.setFontSize(12);
+        doc.text('Total por Etiqueta', 14, nextY);
+        autoTable(doc, {
+          startY: nextY + 4,
+          head: [['Etiqueta', 'Total', '%']],
+          body: Object.entries(performanceGeral.totalPorEtiqueta).map(([nome, total]) => {
+            const pct = performanceGeral.leadsTotais > 0
+              ? ((total / performanceGeral.leadsTotais) * 100).toFixed(1)
+              : '0.0';
+            return [nome, String(total), `${pct}%`];
+          }),
+          theme: 'striped',
+          headStyles: { fillColor: [37, 99, 235] },
+        });
+
+        nextY = (doc as any).lastAutoTable.finalY + 10;
+        doc.setFontSize(12);
+        doc.text('Etiquetas por Etapa', 14, nextY);
+        autoTable(doc, {
+          startY: nextY + 4,
+          head: [['Etapa', ...etiquetas, 'Total', '%']],
+          body: stages.map(stage => {
+            const etapaData = performanceGeral.etiquetasPorEtapa[stage.nome] || {};
+            const totalEtapa = performanceGeral.leadsPorEtapa[stage.nome] || 0;
+            const pct = performanceGeral.leadsTotais > 0
+              ? ((totalEtapa / performanceGeral.leadsTotais) * 100).toFixed(1)
+              : '0.0';
+            return [
+              stage.nome,
+              ...etiquetas.map(e => String(etapaData[e] || 0)),
+              String(totalEtapa),
+              `${pct}%`,
+            ];
+          }),
+          theme: 'striped',
+          headStyles: { fillColor: [37, 99, 235] },
+          styles: { fontSize: 8 },
+        });
+      }
+
+      doc.save(`performance-geral-${new Date().toISOString().slice(0, 10)}.pdf`);
+      toast({ title: 'PDF gerado', description: 'O relatório foi baixado com sucesso.' });
+    } catch (e) {
+      console.error(e);
+      toast({ title: 'Erro ao gerar PDF', variant: 'destructive' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -108,6 +216,10 @@ const PerformanceGeral = () => {
             <p className="text-muted-foreground mt-1">Visão consolidada de toda a empresa</p>
           </div>
         </div>
+        <Button onClick={handleDownloadPDF} className="gap-2">
+          <Download className="w-4 h-4" />
+          Baixar PDF
+        </Button>
       </div>
 
       {/* Filtros */}
