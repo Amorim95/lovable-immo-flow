@@ -10,6 +10,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Users, DollarSign, Loader2, Download } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCompany } from "@/contexts/CompanyContext";
+import { Button } from "@/components/ui/button";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { toast } from "@/hooks/use-toast";
 
 const CHART_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
@@ -102,13 +106,91 @@ export default function PerfilCliente() {
   const companyName = settings.name || user?.name || 'CRM';
   const companyLogo = settings.logo || null;
 
+  const formatPeriodLabel = () => {
+    if (dateRange?.from && dateRange?.to) {
+      return `${dateRange.from.toLocaleDateString('pt-BR')} a ${dateRange.to.toLocaleDateString('pt-BR')}`;
+    }
+    return 'Período Total';
+  };
+
+  const handleDownloadPDF = () => {
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+
+      doc.setFontSize(18);
+      doc.text('Perfil de Cliente', pageWidth / 2, 18, { align: 'center' });
+      doc.setFontSize(11);
+      doc.text(companyName, pageWidth / 2, 25, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Período: ${formatPeriodLabel()}`, pageWidth / 2, 32, { align: 'center' });
+      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, pageWidth / 2, 38, { align: 'center' });
+      doc.setTextColor(0);
+
+      doc.setFontSize(12);
+      doc.text(`Total de leads com dados adicionais: ${data.totalLeads}`, 14, 50);
+
+      // Income distribution
+      const incomeRows = data.incomeBrackets
+        .filter(b => b.count > 0)
+        .map(b => [b.label, String(b.count), `${b.percentage}%`]);
+      if (incomeRows.length > 0) {
+        doc.setFontSize(12);
+        doc.text('Distribuição de Renda', 14, 60);
+        autoTable(doc, {
+          startY: 64,
+          head: [['Faixa', 'Leads', '%']],
+          body: incomeRows,
+          theme: 'striped',
+          headStyles: { fillColor: [37, 99, 235] },
+        });
+      }
+
+      // Detailed profile fields
+      Object.entries(data.fields).forEach(([_, field]) => {
+        if (!field.stats || field.stats.length === 0) return;
+        const lastY = (doc as any).lastAutoTable?.finalY || 70;
+        const nextY = lastY + 10;
+        doc.setFontSize(12);
+        doc.text(`${field.label} (${field.total} leads)`, 14, nextY);
+        autoTable(doc, {
+          startY: nextY + 4,
+          head: [['Valor', 'Leads', '%']],
+          body: field.stats.map(s => [s.value, String(s.count), `${s.percentage}%`]),
+          theme: 'striped',
+          headStyles: { fillColor: [37, 99, 235] },
+          styles: { fontSize: 9 },
+        });
+      });
+
+      doc.save(`perfil-cliente-${new Date().toISOString().slice(0, 10)}.pdf`);
+      toast({ title: 'PDF gerado', description: 'O relatório foi baixado com sucesso.' });
+    } catch (e) {
+      console.error(e);
+      toast({ title: 'Erro ao gerar PDF', variant: 'destructive' });
+    }
+  };
+
   const content = (
     <div className="space-y-6">
       {!isMobile && (
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Perfil de Cliente</h1>
-          <p className="text-muted-foreground mt-1">Análise do perfil dos leads baseada nos dados adicionais</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Perfil de Cliente</h1>
+            <p className="text-muted-foreground mt-1">Análise do perfil dos leads baseada nos dados adicionais</p>
+          </div>
+          <Button onClick={handleDownloadPDF} disabled={loading} className="gap-2">
+            <Download className="w-4 h-4" />
+            Baixar PDF
+          </Button>
         </div>
+      )}
+      {isMobile && (
+        <Button onClick={handleDownloadPDF} disabled={loading} className="w-full gap-2">
+          <Download className="w-4 h-4" />
+          Baixar relatório em PDF
+        </Button>
       )}
 
       {/* Filters */}
