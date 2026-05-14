@@ -86,22 +86,32 @@ export function useRepiquesExport() {
       let leadTagMap: Record<string, Array<{ tag_id: string; lead_tags?: { nome: string } }>> = {};
       
       try {
-        // Buscar tags também com paginação se necessário
-        const { data: tagRelations } = await supabase
-          .from('lead_tag_relations')
-          .select('lead_id, tag_id, lead_tags(nome)')
-          .in('lead_id', allLeads.map(l => l.id));
-        
-        // Criar mapa lead_id -> [tag_relations]
-        tagRelations?.forEach(rel => {
-          if (!leadTagMap[rel.lead_id]) {
-            leadTagMap[rel.lead_id] = [];
+        // Buscar tags em lotes para evitar URL gigante (Failed to fetch com muitos IDs)
+        const leadIds = allLeads.map(l => l.id);
+        const TAG_BATCH_SIZE = 200;
+
+        for (let i = 0; i < leadIds.length; i += TAG_BATCH_SIZE) {
+          const batch = leadIds.slice(i, i + TAG_BATCH_SIZE);
+          const { data: tagRelations, error: tagErr } = await supabase
+            .from('lead_tag_relations')
+            .select('lead_id, tag_id, lead_tags(nome)')
+            .in('lead_id', batch);
+
+          if (tagErr) {
+            console.warn(`Erro ao carregar tags do lote ${i}:`, tagErr);
+            continue;
           }
-          leadTagMap[rel.lead_id].push({
-            tag_id: rel.tag_id,
-            lead_tags: rel.lead_tags
+
+          tagRelations?.forEach(rel => {
+            if (!leadTagMap[rel.lead_id]) {
+              leadTagMap[rel.lead_id] = [];
+            }
+            leadTagMap[rel.lead_id].push({
+              tag_id: rel.tag_id,
+              lead_tags: rel.lead_tags
+            });
           });
-        });
+        }
       } catch (tagError) {
         console.warn('Erro ao carregar tags (não crítico):', tagError);
         // Continua mesmo se tags falharem
