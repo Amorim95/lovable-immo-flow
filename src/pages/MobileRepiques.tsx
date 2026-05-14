@@ -22,15 +22,21 @@ interface Equipe {
 }
 
 export default function MobileRepiques() {
-  const { leads, loading, error } = useRepiquesExport();
   const { settings } = useCompany();
-  
-  // Estados dos filtros
-  const [dateFilter, setDateFilter] = useState<DateFilterOption>("periodo-total");
+
+  const [dateFilter, setDateFilter] = useState<DateFilterOption>("ultimos-30-dias");
   const [customDateRange, setCustomDateRange] = useState<{ from: Date; to: Date } | undefined>();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [selectedEquipeId, setSelectedEquipeId] = useState<string | null>(null);
   const [selectedStageNames, setSelectedStageNames] = useState<string[]>([]);
+  const [exporting, setExporting] = useState(false);
+
+  const serverDateRange = useMemo(
+    () => getDateRangeFromFilter(dateFilter, customDateRange),
+    [dateFilter, customDateRange]
+  );
+
+  const { leads, loading, error, enrichLeadsForExport } = useRepiquesExport(serverDateRange);
 
   // Buscar equipes
   const { data: equipes = [] } = useQuery({
@@ -64,83 +70,58 @@ export default function MobileRepiques() {
   // Filtrar leads
   const filteredLeads = useMemo(() => {
     return leads.filter(lead => {
-      // Filtro de período
-      const dateRange = getDateRangeFromFilter(dateFilter, customDateRange);
-      if (dateRange) {
-        const leadDate = new Date(lead.created_at);
-        if (leadDate < dateRange.from || leadDate > dateRange.to) {
-          return false;
-        }
-      }
-      
-      // Filtro de equipe
-      if (selectedEquipeId && lead.user?.equipe_id !== selectedEquipeId) {
-        return false;
-      }
-      
-      // Filtro de usuário
       if (selectedUserId && lead.user_id !== selectedUserId) {
         return false;
       }
-      
-      // Filtro de etapas
       if (selectedStageNames.length > 0 && !selectedStageNames.includes(lead.stage_name || '')) {
         return false;
       }
-      
       return true;
     });
-  }, [leads, dateFilter, customDateRange, selectedEquipeId, selectedUserId, selectedStageNames]);
+  }, [leads, selectedUserId, selectedStageNames]);
 
-  const handleExportExcel = async () => {
+  const runExport = async (type: 'excel' | 'pdf') => {
     if (filteredLeads.length === 0) {
       toast.error("Nenhum lead encontrado para exportar");
       return;
     }
-    
-    const filename = `repiques_${new Date().toISOString().split('T')[0]}`;
-    exportToExcel(filteredLeads, filename);
-    toast.success(`${filteredLeads.length} leads exportados para Excel`);
-    
-    // Salvar histórico
-    await saveExportHistory({
-      exportType: 'excel',
-      totalLeads: filteredLeads.length,
-      filtersApplied: {
-        dateFilter,
-        customDateRange,
-        selectedEquipeId,
-        selectedUserId,
-        selectedStageNames,
-      },
-      filename: `${filename}.xlsx`
-    });
+    setExporting(true);
+    let warningId: string | number | undefined;
+    if (filteredLeads.length > 1000) {
+      warningId = toast.loading(`Muitos leads estão sendo exportados (${filteredLeads.length}), aguarde...`);
+    }
+    try {
+      const enriched = await enrichLeadsForExport(filteredLeads);
+      const finalLeads = selectedEquipeId
+        ? enriched.filter(l => l.equipe_id === selectedEquipeId)
+        : enriched;
+
+      const filename = `repiques_${new Date().toISOString().split('T')[0]}`;
+      if (type === 'excel') {
+        exportToExcel(finalLeads, filename);
+      } else {
+        await exportToPDF(finalLeads, filename, settings?.name || 'CRM', 'Repiques');
+      }
+      if (warningId) toast.dismiss(warningId);
+      toast.success(`${finalLeads.length} leads exportados para ${type === 'excel' ? 'Excel' : 'PDF'}`);
+
+      await saveExportHistory({
+        exportType: type,
+        totalLeads: finalLeads.length,
+        filtersApplied: { dateFilter, customDateRange, selectedEquipeId, selectedUserId, selectedStageNames },
+        filename: `${filename}.${type === 'excel' ? 'xlsx' : 'pdf'}`,
+      });
+    } catch (e) {
+      if (warningId) toast.dismiss(warningId);
+      console.error(e);
+      toast.error('Erro ao exportar leads');
+    } finally {
+      setExporting(false);
+    }
   };
 
-  const handleExportPDF = async () => {
-    if (filteredLeads.length === 0) {
-      toast.error("Nenhum lead encontrado para exportar");
-      return;
-    }
-    
-    const filename = `repiques_${new Date().toISOString().split('T')[0]}`;
-    exportToPDF(filteredLeads, filename, settings?.name || 'CRM', 'Repiques');
-    toast.success(`${filteredLeads.length} leads exportados para PDF`);
-    
-    // Salvar histórico
-    await saveExportHistory({
-      exportType: 'pdf',
-      totalLeads: filteredLeads.length,
-      filtersApplied: {
-        dateFilter,
-        customDateRange,
-        selectedEquipeId,
-        selectedUserId,
-        selectedStageNames,
-      },
-      filename: `${filename}.pdf`
-    });
-  };
+  const handleExportExcel = () => runExport('excel');
+  const handleExportPDF = () => runExport('pdf');
 
   const handleDateChange = (option: DateFilterOption, customRange?: { from: Date; to: Date }) => {
     setDateFilter(option);
@@ -246,13 +227,13 @@ export default function MobileRepiques() {
               <CardTitle>Exportar</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              <Button onClick={handleExportExcel} className="gap-2 w-full" disabled={filteredLeads.length === 0}>
+              <Button onClick={handleExportExcel} className="gap-2 w-full" disabled={filteredLeads.length === 0 || exporting}>
                 <FileSpreadsheet className="w-4 h-4" />
-                Exportar Excel
+                {exporting ? 'Exportando...' : 'Exportar Excel'}
               </Button>
-              <Button onClick={handleExportPDF} variant="outline" className="gap-2 w-full" disabled={filteredLeads.length === 0}>
+              <Button onClick={handleExportPDF} variant="outline" className="gap-2 w-full" disabled={filteredLeads.length === 0 || exporting}>
                 <FileDown className="w-4 h-4" />
-                Exportar PDF
+                {exporting ? 'Exportando...' : 'Exportar PDF'}
               </Button>
             </CardContent>
           </Card>
