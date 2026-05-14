@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileDown, FileSpreadsheet } from "lucide-react";
@@ -46,6 +46,16 @@ export default function Repiques() {
   );
 
   const { leads, loading, error, enrichLeadsForExport } = useRepiquesExport(serverDateRange);
+
+  // Aviso quando carregando "Período Total" (pode demorar)
+  useEffect(() => {
+    const TOAST_ID = 'repiques-periodo-total-loading';
+    if (dateFilter === 'periodo-total' && loading) {
+      toast.loading('Muitos leads sendo processados, aguarde...', { id: TOAST_ID });
+    } else {
+      toast.dismiss(TOAST_ID);
+    }
+  }, [dateFilter, loading]);
 
   // Buscar equipes
   const { data: equipes = [] } = useQuery({
