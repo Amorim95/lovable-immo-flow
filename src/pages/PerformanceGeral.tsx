@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
@@ -10,6 +10,7 @@ import { Download } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell } from "recharts";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -46,6 +47,16 @@ const PerformanceGeral = () => {
 
   // Buscar dados reais do banco - sempre chamar todos os hooks
   const { performanceGeral, evolutionData, loading, error } = usePerformanceGeral(dateRange, selectedTeamId, selectedUserId);
+
+  // Aviso de carregamento longo (período total ou personalizado amplo)
+  useEffect(() => {
+    const TOAST_ID = 'perf-geral-loading';
+    if (loading && dateFilter === 'periodo-total') {
+      sonnerToast.loading('Muitos leads sendo processados, aguarde...', { id: TOAST_ID });
+    } else {
+      sonnerToast.dismiss(TOAST_ID);
+    }
+  }, [loading, dateFilter]);
 
   // Usar versão mobile em dispositivos móveis APÓS todos os hooks
   if (isMobile) {

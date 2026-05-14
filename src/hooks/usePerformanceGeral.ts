@@ -117,23 +117,22 @@ export function usePerformanceGeral(dateRange?: DateRange, teamId?: string | nul
       const leadsData = allLeads;
       console.log(`Performance Geral: Total de leads carregados: ${leadsData.length}`);
 
-      // 1b. Buscar tag relations separadamente para os leads carregados
+      // 1b. Buscar tag relations em PARALELO para os leads carregados
       const leadIds = leadsData.map((l: any) => l.id);
-      let allTagRelations: any[] = [];
-      
-      // Buscar tag relations em lotes de 500 IDs por vez
-      const tagBatchSize = 500;
+      const tagBatchSize = 1000;
+      const tagBatches: string[][] = [];
       for (let i = 0; i < leadIds.length; i += tagBatchSize) {
-        const batchIds = leadIds.slice(i, i + tagBatchSize);
-        const { data: tagData } = await supabase
-          .from('lead_tag_relations')
-          .select('lead_id, lead_tags(id, nome, cor)')
-          .in('lead_id', batchIds);
-        
-        if (tagData) {
-          allTagRelations = [...allTagRelations, ...tagData];
-        }
+        tagBatches.push(leadIds.slice(i, i + tagBatchSize));
       }
+      const tagResults = await Promise.all(
+        tagBatches.map(batchIds =>
+          supabase
+            .from('lead_tag_relations')
+            .select('lead_id, lead_tags(id, nome, cor)')
+            .in('lead_id', batchIds)
+        )
+      );
+      const allTagRelations: any[] = tagResults.flatMap(r => r.data || []);
 
       // Agrupar tag relations por lead_id
       const tagsByLeadId: { [leadId: string]: any[] } = {};

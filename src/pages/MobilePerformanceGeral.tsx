@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DateFilter, DateFilterOption, DateRange, getDateRangeFromFilter } from "@/components/DateFilter";
@@ -9,6 +9,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { PieChart, Pie, Cell } from "recharts";
 import { MobileHeader } from "@/components/MobileHeader";
 import { TeamUserFilters } from "@/components/TeamUserFilters";
+import { toast as sonnerToast } from "sonner";
 
 // Function to get stage icon and color
 const getStageIcon = (stageName: string) => {
@@ -42,6 +43,15 @@ const MobilePerformanceGeral = ({ selectedTeamId, selectedUserId, onTeamChange, 
   }, [dateFilter, customDateRange]);
 
   const { performanceGeral, loading, error } = usePerformanceGeral(dateRange, selectedTeamId, selectedUserId);
+
+  useEffect(() => {
+    const TOAST_ID = 'perf-geral-loading-mobile';
+    if (loading && dateFilter === 'periodo-total') {
+      sonnerToast.loading('Muitos leads sendo processados, aguarde...', { id: TOAST_ID });
+    } else {
+      sonnerToast.dismiss(TOAST_ID);
+    }
+  }, [loading, dateFilter]);
 
   // Criar dados de status dinâmicos e config baseados nas etapas da empresa
   const dadosStatus = stages.map(stage => {
