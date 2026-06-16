@@ -91,15 +91,7 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
             atividades,
             assigned_at,
             primeiro_contato_whatsapp,
-            repique_count,
-            user:users(name, equipe_id),
-            lead_tag_relations(
-              lead_tags(
-                id,
-                nome,
-                cor
-              )
-            )
+            repique_count
           `)
           .order('created_at', { ascending: false });
 
@@ -112,7 +104,7 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
           query = query.lte('created_at', df.to);
         }
 
-        const { data, error } = await query.range(from, from + pageSize - 1);
+        const { data: leadsData, error } = await query.range(from, from + pageSize - 1);
 
         if (requestId !== latestRequestIdRef.current) {
           return;
@@ -124,11 +116,48 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
           return;
         }
 
-        if (!data || data.length === 0) {
+        if (!leadsData || leadsData.length === 0) {
           break;
         }
 
-        allLeads = [...allLeads, ...data];
+        // Buscar users e tags em paralelo (queries separadas, sem JOIN pesado)
+        const userIds = Array.from(new Set(leadsData.map(l => l.user_id).filter(Boolean))) as string[];
+        const leadIds = leadsData.map(l => l.id);
+
+        const [usersRes, relationsRes] = await Promise.all([
+          userIds.length > 0
+            ? supabase.from('users').select('id, name, equipe_id').in('id', userIds)
+            : Promise.resolve({ data: [], error: null }),
+          leadIds.length > 0
+            ? supabase
+                .from('lead_tag_relations')
+                .select('lead_id, lead_tags(id, nome, cor)')
+                .in('lead_id', leadIds)
+            : Promise.resolve({ data: [], error: null }),
+        ]);
+
+        if (requestId !== latestRequestIdRef.current) return;
+
+        const usersMap = new Map<string, { name: string; equipe_id?: string }>();
+        (usersRes.data || []).forEach((u: any) => {
+          usersMap.set(u.id, { name: u.name, equipe_id: u.equipe_id });
+        });
+
+        const relationsByLead = new Map<string, { lead_tags: { id: string; nome: string; cor: string } }[]>();
+        (relationsRes.data || []).forEach((r: any) => {
+          if (!r.lead_tags) return;
+          const arr = relationsByLead.get(r.lead_id) || [];
+          arr.push({ lead_tags: r.lead_tags });
+          relationsByLead.set(r.lead_id, arr);
+        });
+
+        const enriched: LeadsData[] = leadsData.map((l: any) => ({
+          ...l,
+          user: l.user_id ? usersMap.get(l.user_id) : undefined,
+          lead_tag_relations: relationsByLead.get(l.id) || [],
+        }));
+
+        allLeads = [...allLeads, ...enriched];
 
         // Para filtros com data, atualizamos progressivamente (UX rápida).
         // Para "Período Total", aguardamos terminar para exibir tudo de uma vez.
@@ -141,7 +170,7 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
         }
 
         // Se retornou menos que o pageSize, chegamos ao fim
-        if (data.length < pageSize) {
+        if (leadsData.length < pageSize) {
           hasMore = false;
         } else {
           from += pageSize;
