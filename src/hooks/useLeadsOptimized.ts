@@ -124,17 +124,35 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
         const userIds = Array.from(new Set(leadsData.map(l => l.user_id).filter(Boolean))) as string[];
         const leadIds = leadsData.map(l => l.id);
 
-        const [usersRes, relationsRes] = await Promise.all([
+        // Buscar tags em chunks para evitar URL muito longa (.in com 1000 UUIDs ~37KB
+        // estourava limite do PostgREST e voltava vazio, fazendo leads aparecerem sem etiquetas)
+        const chunk = <T,>(arr: T[], size: number): T[][] => {
+          const out: T[][] = [];
+          for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+          return out;
+        };
+        const leadIdChunks = chunk(leadIds, 200);
+
+        const [usersRes, ...relationChunks] = await Promise.all([
           userIds.length > 0
             ? supabase.from('users').select('id, name, equipe_id').in('id', userIds)
             : Promise.resolve({ data: [], error: null }),
-          leadIds.length > 0
-            ? supabase
-                .from('lead_tag_relations')
-                .select('lead_id, lead_tags(id, nome, cor)')
-                .in('lead_id', leadIds)
-            : Promise.resolve({ data: [], error: null }),
+          ...leadIdChunks.map(ids =>
+            supabase
+              .from('lead_tag_relations')
+              .select('lead_id, lead_tags(id, nome, cor)')
+              .in('lead_id', ids)
+          ),
         ]);
+
+        const relationsData: any[] = [];
+        relationChunks.forEach((res: any, idx) => {
+          if (res.error) {
+            console.error(`[useLeadsOptimized] Erro ao buscar tags (chunk ${idx}):`, res.error);
+          } else if (res.data) {
+            relationsData.push(...res.data);
+          }
+        });
 
         if (requestId !== latestRequestIdRef.current) return;
 
@@ -144,7 +162,7 @@ export function useLeadsOptimized(dateFilter?: LeadDateFilter) {
         });
 
         const relationsByLead = new Map<string, { lead_tags: { id: string; nome: string; cor: string } }[]>();
-        (relationsRes.data || []).forEach((r: any) => {
+        relationsData.forEach((r: any) => {
           if (!r.lead_tags) return;
           const arr = relationsByLead.get(r.lead_id) || [];
           arr.push({ lead_tags: r.lead_tags });
