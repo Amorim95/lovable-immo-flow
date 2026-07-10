@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { BlockedAccountBanner } from '@/components/BlockedAccountBanner';
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ const Login = () => {
   const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const [showBlockedBanner, setShowBlockedBanner] = useState(false);
 
   // Redirecionar se já estiver logado
   if (user && !loading) {
@@ -56,6 +58,8 @@ const Login = () => {
         title: "Login realizado",
         description: "Bem-vindo ao sistema!"
       });
+    } else if (result.error === 'BLOCKED_ACCOUNT') {
+      setShowBlockedBanner(true);
     } else {
       toast({
         title: "Erro no login",
