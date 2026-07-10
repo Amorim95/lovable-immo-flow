@@ -408,6 +408,11 @@ export default function AdminConsole() {
                             <div>
                               <div className="font-medium leading-tight">{c.name}</div>
                               <div className="text-xs text-muted-foreground leading-tight">{c.id}</div>
+                              {c.blocked && (
+                                <Badge variant="destructive" className="mt-1 gap-1">
+                                  <Lock className="w-3 h-3" /> Bloqueada
+                                </Badge>
+                              )}
                             </div>
                           </div>
                         </TableCell>
@@ -424,6 +429,18 @@ export default function AdminConsole() {
                               onClick={() => setEditingCompany({ id: c.id, name: c.name })}
                             >
                               <Edit2 className="w-4 h-4 mr-2" /> Editar
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={c.blocked ? "text-green-600 hover:text-green-700" : "text-amber-600 hover:text-amber-700"}
+                              onClick={() => handleToggleBlock(c.id, c.name, c.blocked)}
+                            >
+                              {c.blocked ? (
+                                <><Unlock className="w-4 h-4 mr-2" /> Desbloquear</>
+                              ) : (
+                                <><Lock className="w-4 h-4 mr-2" /> Bloquear</>
+                              )}
                             </Button>
                             <Button 
                               variant="ghost" 
