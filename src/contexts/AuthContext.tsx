@@ -147,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if ((userData as any).companies?.blocked) {
           await supabase.auth.signOut();
           setLoading(false);
-          return { success: false, error: 'Acesso bloqueado. Entre em contato com o suporte.' };
+          return { success: false, error: 'BLOCKED_ACCOUNT' };
         }
 
         const appUser: AppUser = {
