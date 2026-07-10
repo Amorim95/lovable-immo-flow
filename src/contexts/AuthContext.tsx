@@ -125,13 +125,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Buscar dados do usuário na tabela public.users
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('*')
+          .select('*, companies:company_id(blocked)')
           .eq('id', data.user.id)
           .maybeSingle();
 
         if (userError || !userData) {
           setLoading(false);
           return { success: false, error: 'Erro ao carregar dados do usuário' };
+        }
+
+        // Bloquear acesso se a empresa estiver bloqueada
+        if ((userData as any).companies?.blocked) {
+          await supabase.auth.signOut();
+          setLoading(false);
+          return { success: false, error: 'Acesso bloqueado. Entre em contato com o suporte.' };
         }
 
         const appUser: AppUser = {

@@ -127,6 +127,7 @@ export type Database = {
       }
       companies: {
         Row: {
+          blocked: boolean
           created_at: string
           id: string
           logo_url: string | null
@@ -134,6 +135,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          blocked?: boolean
           created_at?: string
           id?: string
           logo_url?: string | null
@@ -141,6 +143,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          blocked?: boolean
           created_at?: string
           id?: string
           logo_url?: string | null
