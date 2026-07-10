@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 
-import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2, LogOut, Edit2, KeyRound, Loader2, FileText } from "lucide-react";
+import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2, LogOut, Edit2, KeyRound, Loader2, FileText, Lock, Unlock } from "lucide-react";
 import { EditCompanyNameModal } from "@/components/EditCompanyNameModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -189,6 +189,28 @@ export default function AdminConsole() {
       statsQuery.refetch();
     } catch (e: any) {
       toast({ title: "Erro ao deletar", description: e.message || "Tente novamente.", variant: "destructive" });
+    }
+  }
+
+  async function handleToggleBlock(companyId: string, name: string, currentlyBlocked: boolean) {
+    const action = currentlyBlocked ? "desbloquear" : "bloquear";
+    const confirmMsg = currentlyBlocked
+      ? `Desbloquear os acessos da empresa "${name}"? Os usuários voltarão a poder entrar normalmente.`
+      : `Bloquear os acessos da empresa "${name}"? Nenhum usuário conseguirá entrar até que o bloqueio seja removido.`;
+    if (!confirm(confirmMsg)) return;
+    try {
+      const { error } = await supabase
+        .from("companies")
+        .update({ blocked: !currentlyBlocked })
+        .eq("id", companyId);
+      if (error) throw error;
+      toast({
+        title: currentlyBlocked ? "Empresa desbloqueada" : "Empresa bloqueada",
+        description: `"${name}" ${currentlyBlocked ? "voltou ao normal" : "está sem acesso"}.`,
+      });
+      companiesQuery.refetch();
+    } catch (e: any) {
+      toast({ title: `Erro ao ${action}`, description: e.message || "Tente novamente.", variant: "destructive" });
     }
   }
 
