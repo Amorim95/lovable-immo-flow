@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { BlockedAccountBanner } from '@/components/BlockedAccountBanner';
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ const Login = () => {
   const [showForgotPasswordDialog, setShowForgotPasswordDialog] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const [showBlockedBanner, setShowBlockedBanner] = useState(false);
 
   // Redirecionar se já estiver logado
   if (user && !loading) {
@@ -56,6 +58,8 @@ const Login = () => {
         title: "Login realizado",
         description: "Bem-vindo ao sistema!"
       });
+    } else if (result.error === 'BLOCKED_ACCOUNT') {
+      setShowBlockedBanner(true);
     } else {
       toast({
         title: "Erro no login",
@@ -115,6 +119,9 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden">
+      {showBlockedBanner && (
+        <BlockedAccountBanner onClose={() => setShowBlockedBanner(false)} />
+      )}
       {/* Elementos decorativos de fundo com tons de azul */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full transform -translate-x-32 -translate-y-32 opacity-20"></div>
       <div className="absolute top-20 right-0 w-48 h-48 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full transform translate-x-24 opacity-20"></div>
