@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 
-import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2, LogOut, Edit2, KeyRound, Loader2, FileText } from "lucide-react";
+import { Building2, Users, LayoutList, Plus, RefreshCw, ShieldCheck, Search, Trash2, LogOut, Edit2, KeyRound, Loader2, FileText, Lock, Unlock } from "lucide-react";
 import { EditCompanyNameModal } from "@/components/EditCompanyNameModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,7 @@ type CompanyRow = {
   created_at: string;
   user_count: number;
   imoveis_count: number;
+  blocked: boolean;
 };
 
 export default function AdminConsole() {
@@ -66,7 +67,7 @@ export default function AdminConsole() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("companies")
-        .select("id, name, logo_url, created_at")
+        .select("id, name, logo_url, created_at, blocked")
         .order("created_at", { ascending: false });
       if (error) throw error;
 
@@ -83,6 +84,7 @@ export default function AdminConsole() {
             created_at: c.created_at as any,
             user_count: userCount || 0,
             imoveis_count: imoveisCount || 0,
+            blocked: (c as any).blocked ?? false,
           };
         })
       );
@@ -187,6 +189,28 @@ export default function AdminConsole() {
       statsQuery.refetch();
     } catch (e: any) {
       toast({ title: "Erro ao deletar", description: e.message || "Tente novamente.", variant: "destructive" });
+    }
+  }
+
+  async function handleToggleBlock(companyId: string, name: string, currentlyBlocked: boolean) {
+    const action = currentlyBlocked ? "desbloquear" : "bloquear";
+    const confirmMsg = currentlyBlocked
+      ? `Desbloquear os acessos da empresa "${name}"? Os usuários voltarão a poder entrar normalmente.`
+      : `Bloquear os acessos da empresa "${name}"? Nenhum usuário conseguirá entrar até que o bloqueio seja removido.`;
+    if (!confirm(confirmMsg)) return;
+    try {
+      const { error } = await supabase
+        .from("companies")
+        .update({ blocked: !currentlyBlocked })
+        .eq("id", companyId);
+      if (error) throw error;
+      toast({
+        title: currentlyBlocked ? "Empresa desbloqueada" : "Empresa bloqueada",
+        description: `"${name}" ${currentlyBlocked ? "voltou ao normal" : "está sem acesso"}.`,
+      });
+      companiesQuery.refetch();
+    } catch (e: any) {
+      toast({ title: `Erro ao ${action}`, description: e.message || "Tente novamente.", variant: "destructive" });
     }
   }
 
@@ -384,6 +408,11 @@ export default function AdminConsole() {
                             <div>
                               <div className="font-medium leading-tight">{c.name}</div>
                               <div className="text-xs text-muted-foreground leading-tight">{c.id}</div>
+                              {c.blocked && (
+                                <Badge variant="destructive" className="mt-1 gap-1">
+                                  <Lock className="w-3 h-3" /> Bloqueada
+                                </Badge>
+                              )}
                             </div>
                           </div>
                         </TableCell>
@@ -400,6 +429,18 @@ export default function AdminConsole() {
                               onClick={() => setEditingCompany({ id: c.id, name: c.name })}
                             >
                               <Edit2 className="w-4 h-4 mr-2" /> Editar
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={c.blocked ? "text-green-600 hover:text-green-700" : "text-amber-600 hover:text-amber-700"}
+                              onClick={() => handleToggleBlock(c.id, c.name, c.blocked)}
+                            >
+                              {c.blocked ? (
+                                <><Unlock className="w-4 h-4 mr-2" /> Desbloquear</>
+                              ) : (
+                                <><Lock className="w-4 h-4 mr-2" /> Bloquear</>
+                              )}
                             </Button>
                             <Button 
                               variant="ghost" 
