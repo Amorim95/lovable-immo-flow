@@ -27,6 +27,7 @@ type CompanyRow = {
   created_at: string;
   user_count: number;
   imoveis_count: number;
+  blocked: boolean;
 };
 
 export default function AdminConsole() {
@@ -66,7 +67,7 @@ export default function AdminConsole() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("companies")
-        .select("id, name, logo_url, created_at")
+        .select("id, name, logo_url, created_at, blocked")
         .order("created_at", { ascending: false });
       if (error) throw error;
 
@@ -83,6 +84,7 @@ export default function AdminConsole() {
             created_at: c.created_at as any,
             user_count: userCount || 0,
             imoveis_count: imoveisCount || 0,
+            blocked: (c as any).blocked ?? false,
           };
         })
       );
