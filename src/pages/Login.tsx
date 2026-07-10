@@ -119,6 +119,9 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 relative overflow-hidden">
+      {showBlockedBanner && (
+        <BlockedAccountBanner onClose={() => setShowBlockedBanner(false)} />
+      )}
       {/* Elementos decorativos de fundo com tons de azul */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full transform -translate-x-32 -translate-y-32 opacity-20"></div>
       <div className="absolute top-20 right-0 w-48 h-48 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full transform translate-x-24 opacity-20"></div>
